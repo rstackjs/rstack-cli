@@ -1,4 +1,27 @@
 {
   "search.useIgnoreFiles": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "search.exclude": {
+    "**/.git": true,
+    "**/dist": true,
+    "**/dist-*": true,
+    "**/coverage": true,
+    "**/doc_build": true,
+    "**/node_modules": true,
+    "**/tsconfig.tsbuildinfo": true
+  },
+  "files.exclude": {
+    "**/.DS_Store": true
+  },
+  "mdx.validate.validateFileLinks": "ignore",
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[mdx]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  }
 }
