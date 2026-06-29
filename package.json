@@ -14,6 +14,10 @@
       "default": "./dist/index.js"
     }
   },
+  "bin": {
+    "rs": "./bin/rs.js",
+    "rstack": "./bin/rs.js"
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
