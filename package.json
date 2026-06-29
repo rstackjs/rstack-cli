@@ -1,0 +1,40 @@
+{
+  "name": "rstack",
+  "version": "0.0.0",
+  "repository": "https://github.com/rstackjs/rstack",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rslib",
+    "dev": "rslib -w",
+    "lint": "rslint && prettier -c .",
+    "lint:write": "rslint --fix && prettier -w .",
+    "test": "playwright test",
+    "bump": "pnpx bumpp"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@rsbuild/core": "^2.1.1",
+    "@rslib/core": "^0.23.1",
+    "@rslint/core": "^0.6.3",
+    "@types/node": "^24.12.4",
+    "playwright": "^1.60.0",
+    "prettier": "^3.8.3",
+    "typescript": "^6.0.3"
+  },
+  "packageManager": "pnpm@11.9.0",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
