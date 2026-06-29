@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "rstack": "workspace:*",
-    "@rsbuild/plugin-react": "^2.1.0",
+    "@rsbuild/plugin-react": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "typescript": "catalog:"
