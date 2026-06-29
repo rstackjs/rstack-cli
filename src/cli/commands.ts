@@ -1,7 +1,7 @@
 import cac from 'cac';
 import { logger } from '@rsbuild/core';
 import { initRsbuild } from './rsbuild.js';
-import type { BuildOptions, DevOptions } from './types.js';
+import type { BuildOptions, DevOptions, PreviewOptions } from './types.js';
 
 declare global {
   const RSTACK_VERSION: string;
@@ -17,9 +17,11 @@ export function setupCommands(): void {
       const rsbuild = await initRsbuild({
         options,
       });
+
       if (!rsbuild) {
         return;
       }
+
       await rsbuild.startDevServer();
     } catch (err) {
       logger.error('Failed to start dev server.');
@@ -40,6 +42,7 @@ export function setupCommands(): void {
         const rsbuild = await initRsbuild({
           options,
         });
+
         if (!rsbuild) {
           return;
         }
@@ -62,6 +65,26 @@ export function setupCommands(): void {
           logger.error('Failed to build.');
         }
 
+        logger.error(err);
+        process.exit(1);
+      }
+    });
+
+  cli
+    .command('preview', 'Preview the production build locally via Rsbuild')
+    .action(async (options: PreviewOptions) => {
+      try {
+        const rsbuild = await initRsbuild({
+          options,
+        });
+
+        if (!rsbuild) {
+          return;
+        }
+
+        await rsbuild.preview();
+      } catch (err) {
+        logger.error('Failed to start preview server.');
         logger.error(err);
         process.exit(1);
       }

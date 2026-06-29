@@ -8,3 +8,5 @@ export type BuildOptions = {
 };
 
 export type DevOptions = RsbuildCommonOptions;
+
+export type PreviewOptions = RsbuildCommonOptions;
