@@ -27,14 +27,16 @@
     "dev": "rslib -w",
     "format": "oxfmt .",
     "format:check": "oxfmt . --check",
-    "lint": "rslint && pnpm format:check",
-    "lint:write": "rslint --fix && pnpm format",
+    "lint": "rslint && node --run format:check",
+    "lint:write": "rslint --fix && node --run format",
     "test": "echo 'pass'",
     "bump": "pnpx bumpp"
   },
+  "dependencies": {
+    "@rsbuild/core": "catalog:"
+  },
   "devDependencies": {
     "@playwright/test": "catalog:",
-    "@rsbuild/core": "catalog:",
     "@rslib/core": "catalog:",
     "@rslint/core": "catalog:",
     "@types/node": "catalog:",

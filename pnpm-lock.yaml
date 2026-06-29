@@ -52,13 +52,14 @@ catalogs:
 importers:
 
   .:
+    dependencies:
+      '@rsbuild/core':
+        specifier: 'catalog:'
+        version: 2.1.1
     devDependencies:
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.60.0
-      '@rsbuild/core':
-        specifier: 'catalog:'
-        version: 2.1.1
       '@rslib/core':
         specifier: 'catalog:'
         version: 0.23.1(typescript@6.0.3)
