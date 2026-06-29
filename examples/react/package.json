@@ -12,10 +12,10 @@
     "react-dom": "catalog:"
   },
   "devDependencies": {
-    "rstack": "workspace:*",
     "@rsbuild/plugin-react": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "rstack": "workspace:*",
     "typescript": "catalog:"
   }
 }

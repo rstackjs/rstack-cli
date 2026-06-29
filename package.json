@@ -1,24 +1,30 @@
 {
   "name": "rstack",
   "version": "0.0.0",
-  "repository": "https://github.com/rstackjs/rstack",
   "license": "MIT",
+  "repository": "https://github.com/rstackjs/rstack",
+  "files": [
+    "dist"
+  ],
   "type": "module",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "build": "rslib",
     "dev": "rslib -w",
-    "lint": "rslint && prettier -c .",
-    "lint:write": "rslint --fix && prettier -w .",
+    "format": "oxfmt .",
+    "format:check": "oxfmt . --check",
+    "lint": "rslint && pnpm format:check",
+    "lint:write": "rslint --fix && pnpm format",
     "test": "playwright test",
     "bump": "pnpx bumpp"
   },
@@ -29,13 +35,9 @@
     "@rslint/core": "catalog:",
     "@types/node": "catalog:",
     "cac": "catalog:",
+    "oxfmt": "catalog:",
     "playwright": "catalog:",
-    "prettier": "catalog:",
     "typescript": "catalog:"
   },
-  "packageManager": "pnpm@11.9.0",
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  }
+  "packageManager": "pnpm@11.9.0"
 }
