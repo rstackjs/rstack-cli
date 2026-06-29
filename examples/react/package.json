@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "rs build",
-    "dev": "rs dev --open",
+    "dev": "rs dev",
     "preview": "rs preview"
   },
   "dependencies": {

@@ -1,7 +1,7 @@
 import cac from 'cac';
 import { logger } from '@rsbuild/core';
 import { initRsbuild } from './rsbuild.js';
-import type { BuildOptions } from './types.js';
+import type { BuildOptions, DevOptions } from './types.js';
 
 declare global {
   const RSTACK_VERSION: string;
@@ -11,6 +11,22 @@ export function setupCommands(): void {
   const cli = cac('rs');
 
   cli.version(RSTACK_VERSION);
+
+  cli.command('dev', 'Start the Rsbuild dev server').action(async (options: DevOptions) => {
+    try {
+      const rsbuild = await initRsbuild({
+        options,
+      });
+      if (!rsbuild) {
+        return;
+      }
+      await rsbuild.startDevServer();
+    } catch (err) {
+      logger.error('Failed to start dev server.');
+      logger.error(err);
+      process.exit(1);
+    }
+  });
 
   cli
     .command('build', 'Run Rsbuild to build the app for production')
