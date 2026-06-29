@@ -1,0 +1,21 @@
+{
+  "name": "@examples/react",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rs build",
+    "dev": "rs dev --open",
+    "preview": "rs preview"
+  },
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "rstack": "workspace:*",
+    "@rsbuild/plugin-react": "^2.1.0",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "typescript": "catalog:"
+  }
+}
