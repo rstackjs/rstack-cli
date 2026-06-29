@@ -1,4 +1,5 @@
 import { logger } from '@rsbuild/core';
+import { setupCommands } from './commands.js';
 
 const { argv } = process;
 
@@ -18,7 +19,7 @@ export function runCLI(): void {
   initNodeEnv(command);
 
   try {
-    // setupCommands();
+    setupCommands();
   } catch (err) {
     logger.error('Failed to start Rstack CLI.');
     logger.error(err);
