@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "license": "MIT",
   "repository": "https://github.com/rstackjs/rstack",
+  "bin": {
+    "rs": "./bin/rs.js",
+    "rstack": "./bin/rs.js"
+  },
   "files": [
     "dist"
   ],
@@ -13,10 +17,6 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
-  },
-  "bin": {
-    "rs": "./bin/rs.js",
-    "rstack": "./bin/rs.js"
   },
   "publishConfig": {
     "access": "public",
