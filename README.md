@@ -10,9 +10,9 @@
 
 Rstack CLI is a unified local CLI for web development.
 
-It brings the Rstack toolchain together behind one local CLI, including [Rsbuild](https://github.com/web-infra-dev/rsbuild), [Rslib](https://github.com/web-infra-dev/rslib), [Rstest](https://github.com/web-infra-dev/rstest), [Rslint](https://github.com/web-infra-dev/rslint), and [Rspress](https://github.com/web-infra-dev/rspress). It also includes built-in formatting support via [Oxfmt](https://github.com/oxc-project/oxc).
+It provides one entry point for [Rsbuild](https://github.com/web-infra-dev/rsbuild), [Rslib](https://github.com/web-infra-dev/rslib), [Rstest](https://github.com/web-infra-dev/rstest), [Rslint](https://github.com/web-infra-dev/rslint), and [Rspress](https://github.com/web-infra-dev/rspress), with built-in formatting support via [Oxfmt](https://github.com/oxc-project/oxc).
 
-Rstack CLI unifies the Rstack toolchain without locking you into a new workflow. Use it alongside [pnpm](https://github.com/pnpm/pnpm), [Turborepo](https://github.com/vercel/turborepo), [Nx](https://github.com/nrwl/nx), [Bun](https://github.com/oven-sh/bun), or whatever already works for your project.
+It fits into your existing workflow instead of taking it over. Use it alongside [pnpm](https://github.com/pnpm/pnpm), [Turborepo](https://github.com/vercel/turborepo), [Nx](https://github.com/nrwl/nx), [Bun](https://github.com/oven-sh/bun), or whatever already works for your project.
 
 ## Features
 
