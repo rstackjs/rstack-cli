@@ -35,4 +35,7 @@ jobs:
           run_install: true
 
       - name: Run Lint
-        run: pnpm run lint
+        run: node --run lint
+
+      - name: Check Spell
+        run: node --run check-spell

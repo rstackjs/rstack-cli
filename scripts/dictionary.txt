@@ -1,0 +1,6 @@
+# Custom Dictionary Words
+rslib
+rslint
+rsbuild
+rspack
+rstack

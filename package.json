@@ -24,6 +24,7 @@
   },
   "scripts": {
     "build": "rslib",
+    "check-spell": "pnpm dlx cspell",
     "dev": "rslib -w",
     "format": "oxfmt .",
     "format:check": "oxfmt . --check",
@@ -41,6 +42,7 @@
     "@rslint/core": "catalog:",
     "@types/node": "catalog:",
     "cac": "catalog:",
+    "cspell-ban-words": "catalog:",
     "oxfmt": "catalog:",
     "playwright": "catalog:",
     "typescript": "catalog:"

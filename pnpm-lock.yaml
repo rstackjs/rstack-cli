@@ -33,6 +33,9 @@ catalogs:
     cac:
       specifier: ^7.0.0
       version: 7.0.0
+    cspell-ban-words:
+      specifier: ^0.0.4
+      version: 0.0.4
     oxfmt:
       specifier: ^0.56.0
       version: 0.56.0
@@ -72,6 +75,9 @@ importers:
       cac:
         specifier: 'catalog:'
         version: 7.0.0
+      cspell-ban-words:
+        specifier: 'catalog:'
+        version: 0.0.4
       oxfmt:
         specifier: 'catalog:'
         version: 0.56.0
@@ -507,6 +513,9 @@ packages:
     resolution: {integrity: sha512-tixWYgm5ZoOD+3g6UTea91eow5z6AAHaho3g0V9CNSNb45gM8SmflpAc+GRd1InC4AqN/07Unrgp56Y94N9hJQ==}
     engines: {node: '>=20.19.0'}
 
+  cspell-ban-words@0.0.4:
+    resolution: {integrity: sha512-w+18WPFAEmo2F+Fr4L29+GdY5ckOLN95WPwb/arfrtuzzB5VzQRFyIujo0T7pq+xFE0Z2gjfLn33Wk/u5ctNQQ==}
+
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
@@ -867,6 +876,8 @@ snapshots:
       csstype: 3.2.3
 
   cac@7.0.0: {}
+
+  cspell-ban-words@0.0.4: {}
 
   csstype@3.2.3: {}
 
