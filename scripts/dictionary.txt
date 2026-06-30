@@ -1,6 +1,10 @@
 # Custom Dictionary Words
+oxfmt
+rsbuild
 rslib
 rslint
-rsbuild
 rspack
+rspress
 rstack
+rstest
+turborepo
