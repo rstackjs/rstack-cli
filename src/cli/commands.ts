@@ -1,6 +1,5 @@
 import cac from 'cac';
 import { logger } from '@rsbuild/core';
-import { initRsbuild } from './rsbuild.js';
 import type { BuildOptions, DevOptions, PreviewOptions } from './types.js';
 
 declare global {
@@ -14,6 +13,7 @@ export function setupCommands(): void {
 
   cli.command('dev', 'Start the Rsbuild dev server').action(async (options: DevOptions) => {
     try {
+      const { initRsbuild } = await import('./rsbuild.js');
       const rsbuild = await initRsbuild({
         options,
       });
@@ -39,6 +39,7 @@ export function setupCommands(): void {
           process.env.RSPACK_UNSAFE_FAST_DROP = 'true';
         }
 
+        const { initRsbuild } = await import('./rsbuild.js');
         const rsbuild = await initRsbuild({
           options,
         });
@@ -74,6 +75,7 @@ export function setupCommands(): void {
     .command('preview', 'Preview the production build locally via Rsbuild')
     .action(async (options: PreviewOptions) => {
       try {
+        const { initRsbuild } = await import('./rsbuild.js');
         const rsbuild = await initRsbuild({
           options,
         });
