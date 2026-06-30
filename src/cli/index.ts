@@ -4,12 +4,22 @@ import { setupCommands } from './commands.js';
 const { argv } = process;
 
 function initNodeEnv(command: string | undefined) {
-  if (!process.env.NODE_ENV) {
-    if (command === 'build' || command === 'preview') {
+  if (process.env.NODE_ENV) {
+    return;
+  }
+
+  switch (command) {
+    case 'build':
+    case 'preview':
       process.env.NODE_ENV = 'production';
-    } else if (command === 'dev') {
+      break;
+    case 'dev':
       process.env.NODE_ENV = 'development';
-    }
+      break;
+    case 'test':
+      process.env.NODE_ENV = 'test';
+      process.env.RSTEST = 'true';
+      break;
   }
 }
 
