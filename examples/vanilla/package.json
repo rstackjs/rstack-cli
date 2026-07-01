@@ -1,0 +1,22 @@
+{
+  "name": "@examples/vanilla",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rs build",
+    "dev": "rs dev",
+    "test": "rs test",
+    "preview": "rs preview"
+  },
+  "devDependencies": {
+    "@rsbuild/core": "catalog:",
+    "@rstest/adapter-rsbuild": "catalog:",
+    "@rstest/core": "catalog:",
+    "@testing-library/dom": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@types/node": "catalog:",
+    "happy-dom": "catalog:",
+    "rstack": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

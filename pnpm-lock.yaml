@@ -152,6 +152,36 @@ importers:
         specifier: 'catalog:'
         version: 6.0.3
 
+  examples/vanilla:
+    devDependencies:
+      '@rsbuild/core':
+        specifier: 'catalog:'
+        version: 2.1.1
+      '@rstest/adapter-rsbuild':
+        specifier: 'catalog:'
+        version: 0.10.6(@rsbuild/core@2.1.1)(@rstest/core@0.10.6(happy-dom@20.10.6))
+      '@rstest/core':
+        specifier: 'catalog:'
+        version: 0.10.6(happy-dom@20.10.6)
+      '@testing-library/dom':
+        specifier: 'catalog:'
+        version: 10.4.1
+      '@testing-library/jest-dom':
+        specifier: 'catalog:'
+        version: 6.9.1
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.12.4
+      happy-dom:
+        specifier: 'catalog:'
+        version: 20.10.6
+      rstack:
+        specifier: workspace:*
+        version: link:../..
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
 packages:
 
   '@adobe/css-tools@4.5.0':
