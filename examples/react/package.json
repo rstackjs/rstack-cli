@@ -5,6 +5,7 @@
   "scripts": {
     "build": "rs build",
     "dev": "rs dev",
+    "test": "rs test",
     "preview": "rs preview"
   },
   "dependencies": {
@@ -13,8 +14,14 @@
   },
   "devDependencies": {
     "@rsbuild/plugin-react": "catalog:",
+    "@rstest/adapter-rsbuild": "catalog:",
+    "@rstest/core": "catalog:",
+    "@testing-library/dom": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "happy-dom": "catalog:",
     "rstack": "workspace:*",
     "typescript": "catalog:"
   }
