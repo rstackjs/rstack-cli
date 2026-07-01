@@ -45,9 +45,6 @@ catalogs:
     '@types/react-dom':
       specifier: ^19.2.3
       version: 19.2.3
-    cac:
-      specifier: ^7.0.0
-      version: 7.0.0
     cspell-ban-words:
       specifier: ^0.0.4
       version: 0.0.4
@@ -93,9 +90,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.12.4
-      cac:
-        specifier: 'catalog:'
-        version: 7.0.0
       cspell-ban-words:
         specifier: 'catalog:'
         version: 0.0.4
@@ -766,10 +760,6 @@ packages:
     resolution: {integrity: sha512-nEh+kZOPY1w+gcCMobZ6ETUp9WfibndnosbpwB1iJk/8Gt5ZF2bhS6+B6bPYz424KtwsR6Rflc3tCz1/ghX2dQ==}
     engines: {node: '>=4.0'}
 
-  cac@7.0.0:
-    resolution: {integrity: sha512-tixWYgm5ZoOD+3g6UTea91eow5z6AAHaho3g0V9CNSNb45gM8SmflpAc+GRd1InC4AqN/07Unrgp56Y94N9hJQ==}
-    engines: {node: '>=20.19.0'}
-
   cspell-ban-words@0.0.4:
     resolution: {integrity: sha512-w+18WPFAEmo2F+Fr4L29+GdY5ckOLN95WPwb/arfrtuzzB5VzQRFyIujo0T7pq+xFE0Z2gjfLn33Wk/u5ctNQQ==}
 
@@ -1372,8 +1362,6 @@ snapshots:
   buffer-image-size@0.6.4:
     dependencies:
       '@types/node': 24.12.4
-
-  cac@7.0.0: {}
 
   cspell-ban-words@0.0.4: {}
 

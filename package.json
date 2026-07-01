@@ -42,7 +42,6 @@
     "@rslib/core": "catalog:",
     "@rslint/core": "catalog:",
     "@types/node": "catalog:",
-    "cac": "catalog:",
     "cspell-ban-words": "catalog:",
     "oxfmt": "catalog:",
     "playwright": "catalog:",

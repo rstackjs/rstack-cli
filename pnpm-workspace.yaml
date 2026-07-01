@@ -19,7 +19,6 @@ catalog:
   '@types/node': '^24.12.4'
   '@types/react': '^19.2.17'
   '@types/react-dom': '^19.2.3'
-  'cac': '^7.0.0'
   'cspell-ban-words': '^0.0.4'
   'happy-dom': '^20.10.6'
   'oxfmt': '^0.56.0'
