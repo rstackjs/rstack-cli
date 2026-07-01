@@ -34,7 +34,8 @@
     "bump": "pnpx bumpp"
   },
   "dependencies": {
-    "@rsbuild/core": "catalog:"
+    "@rsbuild/core": "catalog:",
+    "@rstest/core": "catalog:"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",

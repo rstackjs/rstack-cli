@@ -8,6 +8,7 @@ declare global {
 
 export function setupCommands(): void {
   const cli = cac('rs');
+  const { argv } = process;
 
   cli.version(RSTACK_VERSION);
 
@@ -91,6 +92,13 @@ export function setupCommands(): void {
         process.exit(1);
       }
     });
+
+  cli.command('test [...args]', 'Run tests with Rstest').action(async () => {
+    const { runCLI } = await import('@rstest/core');
+    const args = argv.slice(argv.indexOf('test') + 1);
+    process.argv = [process.execPath, 'rstest', ...args];
+    runCLI();
+  });
 
   cli.parse();
 }
