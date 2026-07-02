@@ -11,9 +11,12 @@ export function getConfig(type: 'app'): RsbuildConfigDefinition | undefined;
 export function getConfig(type: 'test'): RstestConfigExport | undefined;
 export function getConfig(type: ConfigType): Config | undefined {
   const result = registry.get(type);
-  registry.clear();
   return result;
 }
+
+export const clearConfig = () => {
+  registry.clear();
+};
 
 const setConfig = (type: ConfigType, config: Config): void => {
   if (registry.has(type)) {

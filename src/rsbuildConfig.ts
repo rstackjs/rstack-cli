@@ -1,6 +1,17 @@
-import { loadConfig, type RsbuildConfigDefinition } from '@rsbuild/core';
-import { getConfig } from './define.js';
+import { loadConfig, type RsbuildConfigDefinition, type ConfigParams } from '@rsbuild/core';
+import { getConfig, clearConfig } from './define.js';
 import { configFileNames } from './constants.js';
+
+const resolveRsbuildConfig = async (params: ConfigParams) => {
+  const appConfig = getConfig('app');
+  if (!appConfig) {
+    return {};
+  }
+  if (typeof appConfig === 'function') {
+    return appConfig(params);
+  }
+  return appConfig;
+};
 
 const loadRsbuildConfig: RsbuildConfigDefinition = async (params) => {
   await loadConfig({
@@ -8,17 +19,9 @@ const loadRsbuildConfig: RsbuildConfigDefinition = async (params) => {
     configFileNames,
   });
 
-  const configExport = getConfig('app');
-
-  if (!configExport) {
-    return {};
-  }
-
-  if (typeof configExport === 'function') {
-    return configExport(params);
-  }
-
-  return configExport;
+  const appConfig = await resolveRsbuildConfig(params);
+  clearConfig();
+  return appConfig;
 };
 
 export default loadRsbuildConfig;

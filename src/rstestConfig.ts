@@ -1,25 +1,48 @@
-import { loadConfig } from '@rsbuild/core';
-import type { RstestConfigExport } from '@rstest/core';
-import { getConfig } from './define.js';
+import { loadConfig, type ConfigParams } from '@rsbuild/core';
+import type { RstestConfig, RstestConfigExport } from '@rstest/core';
+import { getConfig, clearConfig } from './define.js';
 import { configFileNames } from './constants.js';
 
-const loadRstestConfig: RstestConfigExport = async () => {
+const extendsConfig = async (testConfig: RstestConfig, params: ConfigParams) => {
+  if ('extends' in testConfig) {
+    return testConfig;
+  }
+
+  const appConfig = getConfig('app');
+  if (appConfig) {
+    const { toRstestConfig } = await import('@rstest/adapter-rsbuild');
+    const rsbuildConfig = typeof appConfig === 'function' ? await appConfig(params) : appConfig;
+
+    testConfig.extends = toRstestConfig({
+      rsbuildConfig,
+    });
+  }
+
+  return testConfig;
+};
+
+const resolveRstestConfig = async () => {
+  const testConfig = getConfig('test');
+  if (!testConfig) {
+    return {};
+  }
+  if (typeof testConfig === 'function') {
+    return testConfig();
+  }
+  return testConfig;
+};
+
+const loadRstestConfig = (async (params: ConfigParams) => {
   await loadConfig({
     loader: 'native',
     configFileNames,
   });
 
-  const configExport = getConfig('test');
+  const testConfig = await resolveRstestConfig();
+  const finalConfig = extendsConfig(testConfig, params);
 
-  if (!configExport) {
-    return {};
-  }
-
-  if (typeof configExport === 'function') {
-    return configExport();
-  }
-
-  return configExport;
-};
+  clearConfig();
+  return finalConfig;
+}) as RstestConfigExport;
 
 export default loadRstestConfig;

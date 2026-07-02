@@ -1,4 +1,3 @@
-import { withRsbuildConfig } from '@rstest/adapter-rsbuild';
 import { define } from 'rstack';
 
 define.app(async () => {
@@ -9,7 +8,6 @@ define.app(async () => {
 });
 
 define.test({
-  extends: withRsbuildConfig(),
   setupFiles: ['./tests/rstest.setup.ts'],
 });
 

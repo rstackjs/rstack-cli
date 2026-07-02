@@ -10,7 +10,6 @@
   },
   "devDependencies": {
     "@rsbuild/core": "catalog:",
-    "@rstest/adapter-rsbuild": "catalog:",
     "@rstest/core": "catalog:",
     "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",

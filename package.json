@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@rsbuild/core": "catalog:",
+    "@rstest/adapter-rsbuild": "catalog:",
     "@rstest/core": "catalog:"
   },
   "devDependencies": {
