@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "pr-creator": {
+      "source": "rstackjs/agent-skills",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/pr-creator/SKILL.md",
+      "computedHash": "c49fcbba72894d08a34d054a00720610d19a2e87e25942aee05da09e87b268df"
+    }
+  }
+}
