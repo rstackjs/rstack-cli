@@ -1,7 +1,10 @@
 import { withRsbuildConfig } from '@rstest/adapter-rsbuild';
-import { defineConfig } from '@rstest/core';
+import { define } from 'rstack';
 
-export default defineConfig({
+define.test({
   extends: withRsbuildConfig(),
   setupFiles: ['./tests/rstest.setup.ts'],
 });
+
+// TODO: remove
+export default {}

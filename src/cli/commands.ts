@@ -1,3 +1,5 @@
+import { join } from 'node:path';
+
 declare global {
   const RSTACK_VERSION: string;
 }
@@ -27,8 +29,13 @@ async function runRsbuildCLI(args: string[]): Promise<void> {
 }
 
 async function runRstestCLI(args: string[]): Promise<void> {
-  process.argv = [process.execPath, 'rstest', ...args];
-
+  process.argv = [
+    process.execPath,
+    'rstest',
+    ...args,
+    '-c',
+    join(import.meta.dirname, 'rstestConfig.js'),
+  ];
   const { runCLI } = await import('@rstest/core');
   runCLI();
 }

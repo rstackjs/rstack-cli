@@ -3,17 +3,17 @@ import type { RstestConfigExport } from '@rstest/core';
 
 export type ConfigType = 'app' | 'test';
 
-type AppConfig = RsbuildConfigDefinition;
-type TestConfig = RstestConfigExport;
-type Config = AppConfig | TestConfig;
+type Config = RsbuildConfigDefinition | RstestConfigExport;
 
 const registry = new Map<ConfigType, Config>();
 
-export const resetRegistry = (): void => {
+export function getConfig(type: 'app'): RsbuildConfigDefinition | undefined;
+export function getConfig(type: 'test'): RstestConfigExport | undefined;
+export function getConfig(type: ConfigType): Config | undefined {
+  const result = registry.get(type);
   registry.clear();
-};
-
-export const getConfig = (type: ConfigType): Config | undefined => registry.get(type);
+  return result;
+}
 
 const setConfig = (type: ConfigType, config: Config): void => {
   if (registry.has(type)) {
