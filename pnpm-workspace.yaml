@@ -5,6 +5,10 @@ allowBuilds:
   core-js: false
   simple-git-hooks: false
 
+catalogMode: prefer
+
+cleanupUnusedCatalogs: true
+
 catalog:
   '@playwright/test': '^1.60.0'
   '@rsbuild/core': '^2.1.1'
@@ -26,3 +30,25 @@ catalog:
   'react': '^19.2.7'
   'react-dom': '^19.2.7'
   'typescript': '^6.0.3'
+
+dedupePeers: true
+
+autoInstallPeers: false
+
+engineStrict: true
+
+hoistPattern: []
+
+# Reduce the risk of installing compromised packages
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - '@rspack/*'
+  - '@rsbuild/*'
+  - '@rslib/*'
+  - '@rspress/*'
+  - '@rstest/*'
+  - '@rslint/*'
+  - '@rstack-dev/doc-ui'
+  - 'rsbuild-plugin-*'
+  - '@swc/*'
+  - 'heading-case'
