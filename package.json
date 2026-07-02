@@ -1,46 +1,21 @@
 {
-  "name": "rstack",
-  "version": "0.0.0",
+  "name": "rstack-monorepo",
+  "private": true,
   "license": "MIT",
   "repository": "https://github.com/rstackjs/rstack",
-  "bin": {
-    "rs": "./bin/rs.js",
-    "rstack": "./bin/rs.js"
-  },
-  "files": [
-    "dist"
-  ],
   "type": "module",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
   "scripts": {
-    "build": "rslib",
+    "build": "pnpm --filter './packages/**' build",
     "check-spell": "pnpm dlx cspell",
-    "dev": "rslib -w",
+    "dev": "pnpm --filter './packages/**' dev",
     "format": "oxfmt .",
     "format:check": "oxfmt . --check",
     "lint": "rslint && node --run format:check",
     "lint:write": "rslint --fix && node --run format",
-    "test": "echo 'pass'",
-    "bump": "pnpx bumpp"
-  },
-  "dependencies": {
-    "@rsbuild/core": "catalog:",
-    "@rstest/adapter-rsbuild": "catalog:",
-    "@rstest/core": "catalog:"
+    "test": "pnpm --filter './packages/**' test"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
-    "@rslib/core": "catalog:",
     "@rslint/core": "catalog:",
     "@types/node": "catalog:",
     "cspell-ban-words": "catalog:",

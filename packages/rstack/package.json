@@ -1,0 +1,41 @@
+{
+  "name": "rstack",
+  "version": "0.0.0",
+  "license": "MIT",
+  "repository": "https://github.com/rstackjs/rstack",
+  "bin": {
+    "rs": "./bin/rs.js",
+    "rstack": "./bin/rs.js"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "rslib",
+    "dev": "rslib -w",
+    "test": "echo 'pass'"
+  },
+  "dependencies": {
+    "@rsbuild/core": "catalog:",
+    "@rstest/adapter-rsbuild": "catalog:",
+    "@rstest/core": "catalog:"
+  },
+  "devDependencies": {
+    "@rslib/core": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}
