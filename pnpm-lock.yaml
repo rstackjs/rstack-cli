@@ -107,7 +107,7 @@ importers:
         specifier: 'catalog:'
         version: 6.0.3
 
-  examples/react:
+  examples/react-app:
     dependencies:
       react:
         specifier: 'catalog:'
@@ -119,9 +119,6 @@ importers:
       '@rsbuild/plugin-react':
         specifier: 'catalog:'
         version: 2.1.0(@rsbuild/core@2.1.3)(@rspack/core@2.1.2)
-      '@rstest/core':
-        specifier: 'catalog:'
-        version: 0.10.6(happy-dom@20.10.6)
       '@testing-library/dom':
         specifier: 'catalog:'
         version: 10.4.1
@@ -147,14 +144,8 @@ importers:
         specifier: 'catalog:'
         version: 6.0.3
 
-  examples/vanilla:
+  examples/vanilla-app:
     devDependencies:
-      '@rsbuild/core':
-        specifier: 'catalog:'
-        version: 2.1.3
-      '@rstest/core':
-        specifier: 'catalog:'
-        version: 0.10.6(happy-dom@20.10.6)
       '@testing-library/dom':
         specifier: 'catalog:'
         version: 10.4.1

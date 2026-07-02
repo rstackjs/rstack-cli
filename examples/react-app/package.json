@@ -1,5 +1,5 @@
 {
-  "name": "@examples/react",
+  "name": "@examples/react-app",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,7 +14,6 @@
   },
   "devDependencies": {
     "@rsbuild/plugin-react": "catalog:",
-    "@rstest/core": "catalog:",
     "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",

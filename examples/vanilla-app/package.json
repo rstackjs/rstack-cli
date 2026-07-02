@@ -1,5 +1,5 @@
 {
-  "name": "@examples/vanilla",
+  "name": "@examples/vanilla-app",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,8 +9,6 @@
     "preview": "rs preview"
   },
   "devDependencies": {
-    "@rsbuild/core": "catalog:",
-    "@rstest/core": "catalog:",
     "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@types/node": "catalog:",
