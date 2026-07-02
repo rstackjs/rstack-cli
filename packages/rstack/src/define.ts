@@ -26,7 +26,20 @@ const setConfig = (type: ConfigType, config: Config): void => {
 };
 
 type Define = {
+  /**
+   * Defines the Rsbuild config for the app.
+   *
+   * This config is used by the `rs dev`, `rs build`, and `rs preview` commands.
+   */
   app: (config: RsbuildConfigDefinition) => void;
+  /**
+   * Defines the Rstest config for tests.
+   *
+   * This config is used by the `rs test` command. 
+   * 
+   * If `define.app` is also used, Rstest automatically extends the app config unless
+   * `extends` is set explicitly.
+   */
   test: (config: RstestConfigExport) => void;
 };
 
