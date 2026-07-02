@@ -22,7 +22,13 @@ Options:
   -v, --version             Display version number`;
 
 async function runRsbuildCLI(args: string[]): Promise<void> {
-  process.argv = [process.execPath, 'rsbuild', ...args];
+  process.argv = [
+    process.execPath,
+    'rsbuild',
+    ...args,
+    '-c',
+    join(import.meta.dirname, 'rsbuildConfig.js'),
+  ];
 
   const { runCLI } = await import('@rsbuild/core');
   runCLI();
