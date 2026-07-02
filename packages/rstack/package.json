@@ -7,6 +7,9 @@
     "rs": "./bin/rs.js",
     "rstack": "./bin/rs.js"
   },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "files": [
     "bin",
     "dist"
