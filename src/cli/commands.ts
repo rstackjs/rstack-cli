@@ -22,7 +22,7 @@ Options:
   -v, --version             Display version number`;
 
 async function runRsbuildCLI(args: string[]): Promise<void> {
-  process.argv = [
+  const argv = [
     process.execPath,
     'rsbuild',
     ...args,
@@ -31,7 +31,7 @@ async function runRsbuildCLI(args: string[]): Promise<void> {
   ];
 
   const { runCLI } = await import('@rsbuild/core');
-  runCLI();
+  runCLI({ argv });
 }
 
 async function runRstestCLI(args: string[]): Promise<void> {
