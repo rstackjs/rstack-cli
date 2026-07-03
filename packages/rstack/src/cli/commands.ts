@@ -8,20 +8,21 @@ declare global {
 const helpMessage = `Rstack v${RSTACK_VERSION}
 
 Usage:
-  $ rs [command] [options]
+  $ rs [command] [...options]
 
 Commands:
-  dev      [Rsbuild]     Start the dev server
-  build    [Rsbuild]     Build the app for production
-  preview  [Rsbuild]     Preview the production build locally
-  lib      [Rslib]       Build libraries
-  test     [Rstest]      Run tests
-  staged   [lint-staged] Run tasks on staged files
+  dev      Start the app dev server
+  build    Build the app for production
+  preview  Preview the app production build locally
+  lib      Build library outputs
+  test     Run tests
+  staged   Run configured tasks on staged Git files
 
-  For details on a sub-command, run:
+For command-specific options, run:
   $ rs <command> -h
 
 Options:
+  -h, --help                Display this help message
   -v, --version             Display version number`;
 
 function hasConfigArg(args: string[]): boolean {
