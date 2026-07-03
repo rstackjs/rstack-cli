@@ -12,6 +12,7 @@
     "format:check": "oxfmt . --check",
     "lint": "rslint && node --run format:check",
     "lint:write": "rslint --fix && node --run format",
+    "prepare": "husky",
     "test": "pnpm --filter './packages/**' test"
   },
   "devDependencies": {
@@ -19,8 +20,10 @@
     "@rslint/core": "catalog:",
     "@types/node": "catalog:",
     "cspell-ban-words": "catalog:",
+    "husky": "catalog:",
     "oxfmt": "catalog:",
     "playwright": "catalog:",
+    "rstack": "workspace:*",
     "typescript": "catalog:"
   },
   "packageManager": "pnpm@11.9.0"

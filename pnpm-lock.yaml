@@ -52,6 +52,9 @@ catalogs:
     happy-dom:
       specifier: ^20.10.6
       version: 20.10.6
+    husky:
+      specifier: ^9.1.7
+      version: 9.1.7
     lint-staged:
       specifier: ^16.4.0
       version: 16.4.0
@@ -87,12 +90,18 @@ importers:
       cspell-ban-words:
         specifier: 'catalog:'
         version: 0.0.4
+      husky:
+        specifier: 'catalog:'
+        version: 9.1.7
       oxfmt:
         specifier: 'catalog:'
         version: 0.56.0
       playwright:
         specifier: 'catalog:'
         version: 1.60.0
+      rstack:
+        specifier: workspace:*
+        version: link:packages/rstack
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -849,6 +858,11 @@ packages:
     resolution: {integrity: sha512-6QD0ilzDDt93tX44y8tbmZdAcdTRYDhUP+Asgi6pC8Pp5IA3cvaZGyoVN/EGtlq9ziT65iPuBBn3ASLr6hCgVw==}
     engines: {node: '>=20.0.0'}
 
+  husky@9.1.7:
+    resolution: {integrity: sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   indent-string@4.0.0:
     resolution: {integrity: sha512-EdDDZu4A2OyIK7Lr/2zG+w5jmbuk1DVBnEwREQvBzspBJkCEbRa8GxU1lghYcaGJCnRWibjDXlq779X1/y5xwg==}
     engines: {node: '>=8'}
@@ -1551,6 +1565,8 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+
+  husky@9.1.7: {}
 
   indent-string@4.0.0: {}
 
