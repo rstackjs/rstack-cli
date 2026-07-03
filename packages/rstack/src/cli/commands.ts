@@ -48,11 +48,8 @@ async function runRstestCLI(args: string[]): Promise<void> {
     argv.push('-c', join(import.meta.dirname, 'rstestConfig.js'));
   }
 
-  // TODO
-  process.argv = argv;
-
   const { runCLI } = await import('@rstest/core');
-  runCLI();
+  runCLI({ argv });
 }
 
 async function runRslibCLI(args: string[]): Promise<void> {
