@@ -1,4 +1,3 @@
-import lintStaged from 'lint-staged';
 import { clearConfig, getConfig, loadRstackConfig } from './config.js';
 
 const stagedHelpMessage = `Rstack v${RSTACK_VERSION}
@@ -33,6 +32,10 @@ export async function runStagedCLI(args: string[]): Promise<void> {
     );
   }
 
+  const { default: lintStaged } = await import(
+    /* rspackChunkName: 'lintStaged' */
+    'lint-staged'
+  );
   const success = await lintStaged({
     config: stagedConfig,
   });

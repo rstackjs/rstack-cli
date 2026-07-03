@@ -35,12 +35,12 @@
   "dependencies": {
     "@rsbuild/core": "catalog:",
     "@rslib/core": "catalog:",
-    "@rstest/core": "catalog:",
-    "lint-staged": "catalog:"
+    "@rstest/core": "catalog:"
   },
   "devDependencies": {
     "@rstest/adapter-rsbuild": "catalog:",
     "@types/node": "catalog:",
+    "lint-staged": "catalog:",
     "typescript": "catalog:"
   },
   "engines": {

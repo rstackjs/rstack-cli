@@ -178,9 +178,6 @@ importers:
       '@rstest/core':
         specifier: 'catalog:'
         version: 0.10.6(happy-dom@20.10.6)
-      lint-staged:
-        specifier: 'catalog:'
-        version: 16.4.0
     devDependencies:
       '@rstest/adapter-rsbuild':
         specifier: 'catalog:'
@@ -188,6 +185,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.2
+      lint-staged:
+        specifier: 'catalog:'
+        version: 16.4.0
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
