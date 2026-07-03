@@ -1,20 +1,22 @@
 import type { RsbuildConfigDefinition } from '@rsbuild/core';
 import type { ConfigParams as RslibConfigParams, RslibConfig } from '@rslib/core';
 import type { RstestConfigExport } from '@rstest/core';
+import type { Configuration as StagedConfig } from 'lint-staged';
 
-export type ConfigType = 'app' | 'lib' | 'test';
+export type ConfigType = 'app' | 'lib' | 'test' | 'staged';
 
 export type RslibConfigDefinition =
   | RslibConfig
   | ((params: RslibConfigParams) => RslibConfig | Promise<RslibConfig>);
 
-type Config = RsbuildConfigDefinition | RslibConfigDefinition | RstestConfigExport;
+type Config = RsbuildConfigDefinition | RslibConfigDefinition | RstestConfigExport | StagedConfig;
 
 const registry = new Map<ConfigType, Config>();
 
 export function getConfig(type: 'app'): RsbuildConfigDefinition | undefined;
 export function getConfig(type: 'lib'): RslibConfigDefinition | undefined;
 export function getConfig(type: 'test'): RstestConfigExport | undefined;
+export function getConfig(type: 'staged'): StagedConfig | undefined;
 export function getConfig(type: ConfigType): Config | undefined {
   return registry.get(type);
 }
@@ -52,10 +54,17 @@ type Define = {
    * `extends` is set explicitly.
    */
   test: (config: RstestConfigExport) => void;
+  /**
+   * Defines the lint-staged config for staged files.
+   *
+   * This config is used by the `rs staged` command.
+   */
+  staged: (config: StagedConfig) => void;
 };
 
 export const define: Define = {
   app: (config) => setConfig('app', config),
   lib: (config) => setConfig('lib', config),
   test: (config) => setConfig('test', config),
+  staged: (config) => setConfig('staged', config),
 };

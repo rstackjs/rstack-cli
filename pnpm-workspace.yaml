@@ -26,6 +26,7 @@ catalog:
   '@types/react-dom': '^19.2.3'
   'cspell-ban-words': '^0.0.4'
   'happy-dom': '^20.10.6'
+  'lint-staged': '^16.4.0'
   'oxfmt': '^0.56.0'
   'playwright': '^1.60.0'
   'react': '^19.2.7'

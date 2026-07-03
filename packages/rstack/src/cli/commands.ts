@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import { runStagedCLI } from '../staged.js';
 
 declare global {
   const RSTACK_VERSION: string;
@@ -10,11 +11,12 @@ Usage:
   $ rs [command] [options]
 
 Commands:
-  dev      [Rsbuild] Start the dev server
-  build    [Rsbuild] Build the app for production
-  preview  [Rsbuild] Preview the production build locally
-  lib      [Rslib]   Build libraries
-  test     [Rstest]  Run tests
+  dev      [Rsbuild]     Start the dev server
+  build    [Rsbuild]     Build the app for production
+  preview  [Rsbuild]     Preview the production build locally
+  lib      [Rslib]       Build libraries
+  test     [Rstest]      Run tests
+  staged   [lint-staged] Run tasks on staged files
 
   For details on a sub-command, run:
   $ rs <command> -h
@@ -86,6 +88,11 @@ export async function setupCommands(): Promise<void> {
 
   if (command === 'test') {
     await runRstestCLI(args.slice(1));
+    return;
+  }
+
+  if (command === 'staged') {
+    await runStagedCLI(args.slice(1));
     return;
   }
 

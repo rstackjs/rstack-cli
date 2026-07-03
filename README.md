@@ -10,7 +10,7 @@
 
 Rstack CLI is a unified local CLI for web development.
 
-It provides one entry point for [Rsbuild](https://github.com/web-infra-dev/rsbuild), [Rslib](https://github.com/web-infra-dev/rslib), [Rstest](https://github.com/web-infra-dev/rstest), [Rslint](https://github.com/web-infra-dev/rslint), and [Rspress](https://github.com/web-infra-dev/rspress), with built-in formatting support via [Oxfmt](https://github.com/oxc-project/oxc).
+It provides one entry point for [Rsbuild](https://github.com/web-infra-dev/rsbuild), [Rslib](https://github.com/web-infra-dev/rslib), [Rstest](https://github.com/web-infra-dev/rstest), [Rslint](https://github.com/web-infra-dev/rslint), and [Rspress](https://github.com/web-infra-dev/rspress), with built-in formatting support via [Oxfmt](https://github.com/oxc-project/oxc) and staged-file task support via [lint-staged](https://github.com/lint-staged/lint-staged).
 
 It fits into your existing workflow instead of taking it over. Use it alongside [pnpm](https://github.com/pnpm/pnpm), [Turborepo](https://github.com/vercel/turborepo), [Nx](https://github.com/nrwl/nx), [Bun](https://github.com/oven-sh/bun), or whatever already works for your project.
 
@@ -41,7 +41,8 @@ bun add -d rstack
     "build": "rs build",
     "preview": "rs preview",
     "lib": "rs lib",
-    "test": "rs test"
+    "test": "rs test",
+    "staged": "rs staged"
   }
 }
 ```
