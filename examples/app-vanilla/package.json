@@ -1,5 +1,5 @@
 {
-  "name": "@examples/vanilla-app",
+  "name": "@examples/app-vanilla",
   "private": true,
   "type": "module",
   "scripts": {

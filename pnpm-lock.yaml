@@ -94,7 +94,7 @@ importers:
         specifier: 'catalog:'
         version: 6.0.3
 
-  examples/react-app:
+  examples/app-react:
     dependencies:
       react:
         specifier: 'catalog:'
@@ -131,7 +131,7 @@ importers:
         specifier: 'catalog:'
         version: 6.0.3
 
-  examples/vanilla-app:
+  examples/app-vanilla:
     devDependencies:
       '@testing-library/dom':
         specifier: 'catalog:'
@@ -150,6 +150,27 @@ importers:
         version: link:../../packages/rstack
       typescript:
         specifier: 'catalog:'
+        version: 6.0.3
+
+  examples/lib-node:
+    devDependencies:
+      '@rslib/core':
+        specifier: ^0.23.1
+        version: 0.23.1(typescript@6.0.3)
+      '@rstest/adapter-rslib':
+        specifier: ^0.10.6
+        version: 0.10.6(@rslib/core@0.23.1)(@rstest/core@0.10.6)(typescript@6.0.3)
+      '@rstest/core':
+        specifier: ^0.10.6
+        version: 0.10.6(happy-dom@20.10.6)
+      '@types/node':
+        specifier: ^24.13.2
+        version: 24.13.2
+      rstack:
+        specifier: workspace:*
+        version: link:../../packages/rstack
+      typescript:
+        specifier: ^6.0.3
         version: 6.0.3
 
   packages/rstack:
@@ -667,6 +688,16 @@ packages:
       '@rsbuild/core': '*'
       '@rstest/core': ^0.10.6
 
+  '@rstest/adapter-rslib@0.10.6':
+    resolution: {integrity: sha512-QMlAjT68eEESdVPJr46Wf1khLKuftXxDQKtqcPtWe8t7QdDUpu6YPS3QCEXX1kYFpcPlWdCFJo8irxBzNDqCYQ==}
+    peerDependencies:
+      '@rslib/core': '>=0.18.6'
+      '@rstest/core': ^0.10.6
+      typescript: ^5 || ^6
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   '@rstest/core@0.10.6':
     resolution: {integrity: sha512-nX61dw2Tnxfwy/jGZEuNbh2tzapgaH6Iwj4Aw5d2wxUwxptUL3ddUxFF5M1ZSWoLEVG30VaPg3ITzrSo5sdbTg==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -720,6 +751,9 @@ packages:
 
   '@types/node@24.12.4':
     resolution: {integrity: sha512-GUUEShf+PBCGW2KaXwcIt3Yk+e3pkKwWKb9GSyM9WQVE+ep2jzmHdGsHzu4wgcZy5fN9FBdVzjpBQsYlpfpgLA==}
+
+  '@types/node@24.13.2':
+    resolution: {integrity: sha512-fRa09kZTgu8o71KFcDjUFuc7F+dEbZYZmkI0mg5YBTRs0yMKjYHsq/c0urDKeDb+D5qVgXOdFcuu+DZPKOITwA==}
 
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
@@ -896,6 +930,9 @@ packages:
 
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
+
+  undici-types@7.18.2:
+    resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
 
   whatwg-mimetype@3.0.0:
     resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
@@ -1269,6 +1306,13 @@ snapshots:
       '@rsbuild/core': 2.1.3
       '@rstest/core': 0.10.6(happy-dom@20.10.6)
 
+  '@rstest/adapter-rslib@0.10.6(@rslib/core@0.23.1)(@rstest/core@0.10.6)(typescript@6.0.3)':
+    dependencies:
+      '@rslib/core': 0.23.1(typescript@6.0.3)
+      '@rstest/core': 0.10.6(happy-dom@20.10.6)
+    optionalDependencies:
+      typescript: 6.0.3
+
   '@rstest/core@0.10.6(happy-dom@20.10.6)':
     dependencies:
       '@rsbuild/core': 2.0.15
@@ -1330,6 +1374,10 @@ snapshots:
   '@types/node@24.12.4':
     dependencies:
       undici-types: 7.16.0
+
+  '@types/node@24.13.2':
+    dependencies:
+      undici-types: 7.18.2
 
   '@types/react-dom@19.2.3(@types/react@19.2.17)':
     dependencies:
@@ -1477,6 +1525,8 @@ snapshots:
   typescript@6.0.3: {}
 
   undici-types@7.16.0: {}
+
+  undici-types@7.18.2: {}
 
   whatwg-mimetype@3.0.0: {}
 
