@@ -1,13 +1,13 @@
 import type { ConfigParams } from '@rsbuild/core';
 import type { RstestConfig, RstestConfigExport } from '@rstest/core';
-import { getConfig, clearConfig, loadRstackConfig } from './config.js';
+import { loadRstackConfig, type Configs } from './config.js';
 
-const extendsConfig = async (testConfig: RstestConfig, params: ConfigParams) => {
+const extendsConfig = async (configs: Configs, testConfig: RstestConfig, params: ConfigParams) => {
   if ('extends' in testConfig) {
     return testConfig;
   }
 
-  const appConfig = getConfig('app');
+  const appConfig = configs.app;
   if (appConfig) {
     const { withRsbuildConfig } = await import(
       /* rspackChunkName: 'adapterRsbuild' */
@@ -20,7 +20,7 @@ const extendsConfig = async (testConfig: RstestConfig, params: ConfigParams) => 
     });
   }
 
-  const libConfig = getConfig('lib');
+  const libConfig = configs.lib;
   if (libConfig) {
     const { withRslibConfig } = await import(
       /* rspackChunkName: 'adapterRslib' */
@@ -36,8 +36,8 @@ const extendsConfig = async (testConfig: RstestConfig, params: ConfigParams) => 
   return testConfig;
 };
 
-const resolveRstestConfig = async () => {
-  const testConfig = getConfig('test');
+const resolveRstestConfig = async (configs: Configs) => {
+  const testConfig = configs.test;
   if (!testConfig) {
     return {};
   }
@@ -48,12 +48,9 @@ const resolveRstestConfig = async () => {
 };
 
 const loadRstestConfig = (async (params: ConfigParams) => {
-  await loadRstackConfig();
-  const testConfig = await resolveRstestConfig();
-  const finalConfig = extendsConfig(testConfig, params);
-
-  clearConfig();
-  return finalConfig;
+  const configs = await loadRstackConfig();
+  const testConfig = await resolveRstestConfig(configs);
+  return extendsConfig(configs, testConfig, params);
 }) as RstestConfigExport;
 
 export default loadRstestConfig;

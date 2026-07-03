@@ -1,9 +1,8 @@
 import type { ConfigParams, RslibConfig } from '@rslib/core';
-import type { RslibConfigDefinition } from './config.js';
-import { getConfig, clearConfig, loadRstackConfig } from './config.js';
+import { loadRstackConfig, type Configs, type RslibConfigDefinition } from './config.js';
 
-const resolveRslibConfig = async (params: ConfigParams): Promise<RslibConfig> => {
-  const libConfig = getConfig('lib');
+const resolveRslibConfig = async (configs: Configs, params: ConfigParams): Promise<RslibConfig> => {
+  const libConfig = configs.lib;
   if (!libConfig) {
     // TODO: should allow empty object to be returned
     return { lib: [{}] };
@@ -15,10 +14,8 @@ const resolveRslibConfig = async (params: ConfigParams): Promise<RslibConfig> =>
 };
 
 const loadRslibConfig = (async (params: ConfigParams) => {
-  await loadRstackConfig();
-  const libConfig = await resolveRslibConfig(params);
-  clearConfig();
-  return libConfig;
+  const configs = await loadRstackConfig();
+  return resolveRslibConfig(configs, params);
 }) as RslibConfigDefinition;
 
 export default loadRslibConfig;

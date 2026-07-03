@@ -3,8 +3,6 @@ import type { ConfigParams as RslibConfigParams, RslibConfig } from '@rslib/core
 import type { defineConfig as defineRslintConfig } from '@rslint/core';
 import type { RstestConfigExport } from '@rstest/core';
 
-export type ConfigType = 'app' | 'lib' | 'test' | 'lint' | 'staged';
-
 export type RslibConfigDefinition =
   | RslibConfig
   | ((params: RslibConfigParams) => RslibConfig | Promise<RslibConfig>);
@@ -15,34 +13,15 @@ export type StagedConfig = Record<string, StagedTask>;
 
 export type RslintConfig = Parameters<typeof defineRslintConfig>[0];
 
-type Config =
-  | RsbuildConfigDefinition
-  | RslibConfigDefinition
-  | RstestConfigExport
-  | RslintConfig
-  | StagedConfig;
-
-const registry = new Map<ConfigType, Config>();
-
-export function getConfig(type: 'app'): RsbuildConfigDefinition | undefined;
-export function getConfig(type: 'lib'): RslibConfigDefinition | undefined;
-export function getConfig(type: 'test'): RstestConfigExport | undefined;
-export function getConfig(type: 'lint'): RslintConfig | undefined;
-export function getConfig(type: 'staged'): StagedConfig | undefined;
-export function getConfig(type: ConfigType): Config | undefined {
-  return registry.get(type);
-}
-
-export const clearConfig = () => {
-  registry.clear();
+export type Configs = {
+  app?: RsbuildConfigDefinition;
+  lib?: RslibConfigDefinition;
+  test?: RstestConfigExport;
+  lint?: RslintConfig;
+  staged?: StagedConfig;
 };
 
-const setConfig = (type: ConfigType, config: Config): void => {
-  if (registry.has(type)) {
-    throw new Error(`The "${type}" config has already been defined.`);
-  }
-  registry.set(type, config);
-};
+let configs: Configs = {};
 
 type Define = {
   /**
@@ -80,6 +59,13 @@ type Define = {
   staged: (config: StagedConfig) => void;
 };
 
+const setConfig = <T extends keyof Configs>(type: T, config: Configs[T]): void => {
+  if (configs[type]) {
+    throw new Error(`The "${type}" config has already been defined.`);
+  }
+  configs[type] = config;
+};
+
 export const define: Define = {
   app: (config) => setConfig('app', config),
   lib: (config) => setConfig('lib', config),
@@ -88,8 +74,8 @@ export const define: Define = {
   staged: (config) => setConfig('staged', config),
 };
 
-export const loadRstackConfig = () => {
-  return loadConfig({
+export const loadRstackConfig = async () => {
+  await loadConfig({
     loader: 'native',
     exportName: false,
     configFileNames: [
@@ -99,4 +85,8 @@ export const loadRstackConfig = () => {
       'rstack.config.mjs',
     ],
   });
+
+  const result = configs;
+  configs = {};
+  return result;
 };

@@ -1,9 +1,7 @@
-import { getConfig, clearConfig, loadRstackConfig, type RslintConfig } from './config.js';
+import { loadRstackConfig, type RslintConfig } from './config.js';
 
-await loadRstackConfig();
+const configs = await loadRstackConfig();
 
-const lintConfig: RslintConfig = getConfig('lint') ?? [];
-
-clearConfig();
+const lintConfig: RslintConfig = configs.lint ?? [];
 
 export default lintConfig;

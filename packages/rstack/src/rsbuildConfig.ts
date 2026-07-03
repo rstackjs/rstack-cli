@@ -1,8 +1,8 @@
 import type { RsbuildConfigDefinition, ConfigParams } from '@rsbuild/core';
-import { getConfig, clearConfig, loadRstackConfig } from './config.js';
+import { loadRstackConfig, type Configs } from './config.js';
 
-const resolveRsbuildConfig = async (params: ConfigParams) => {
-  const appConfig = getConfig('app');
+const resolveRsbuildConfig = async (configs: Configs, params: ConfigParams) => {
+  const appConfig = configs.app;
   if (!appConfig) {
     return {};
   }
@@ -13,10 +13,8 @@ const resolveRsbuildConfig = async (params: ConfigParams) => {
 };
 
 const loadRsbuildConfig: RsbuildConfigDefinition = async (params) => {
-  await loadRstackConfig();
-  const appConfig = await resolveRsbuildConfig(params);
-  clearConfig();
-  return appConfig;
+  const configs = await loadRstackConfig();
+  return resolveRsbuildConfig(configs, params);
 };
 
 export default loadRsbuildConfig;
