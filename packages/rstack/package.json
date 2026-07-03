@@ -21,7 +21,8 @@
     "./test": {
       "types": "./dist/test.d.ts",
       "default": "./dist/test.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "publishConfig": {
     "access": "public",
