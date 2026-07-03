@@ -19,10 +19,10 @@
     "test:watch": "rs test -w"
   },
   "devDependencies": {
-    "@rslib/core": "^0.23.1",
-    "@rstest/core": "^0.10.6",
-    "@types/node": "^24.13.2",
+    "@rslib/core": "catalog:",
+    "@rstest/core": "catalog:",
+    "@types/node": "catalog:",
     "rstack": "workspace:*",
-    "typescript": "^6.0.3"
+    "typescript": "catalog:"
   }
 }
