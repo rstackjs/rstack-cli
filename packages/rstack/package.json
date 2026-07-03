@@ -22,6 +22,9 @@
       "types": "./dist/test.d.ts",
       "default": "./dist/test.js"
     },
+    "./types": {
+      "types": "./types.d.ts"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {

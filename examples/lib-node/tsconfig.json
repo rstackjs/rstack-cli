@@ -3,6 +3,7 @@
     "lib": ["ES2022"],
     "noEmit": true,
     "skipLibCheck": true,
+    "types": ["rstack/types", "node"],
     "isolatedModules": true,
     "resolveJsonModule": true,
     "moduleResolution": "bundler",

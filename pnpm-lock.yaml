@@ -118,9 +118,6 @@ importers:
         specifier: 'catalog:'
         version: 19.2.7(react@19.2.7)
     devDependencies:
-      '@rsbuild/core':
-        specifier: 'catalog:'
-        version: 2.1.4
       '@rsbuild/plugin-react':
         specifier: 'catalog:'
         version: 2.1.0(@rsbuild/core@2.1.4)(@rspack/core@2.1.2)
