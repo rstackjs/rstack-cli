@@ -6,6 +6,7 @@
     "types": ["node"],
     "lib": ["DOM", "ESNext"],
     "declaration": true,
+    "isolatedDeclarations": true,
     "isolatedModules": true,
     "skipLibCheck": true,
     "module": "nodenext",

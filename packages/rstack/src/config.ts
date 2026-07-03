@@ -71,7 +71,7 @@ export const define: Define = {
   staged: (config) => setConfig('staged', config),
 };
 
-export const loadRstackConfig = async () => {
+export const loadRstackConfig = async (): Promise<Configs> => {
   await loadConfig({
     loader: 'native',
     exportName: false,
