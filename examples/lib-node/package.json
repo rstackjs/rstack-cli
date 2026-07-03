@@ -13,14 +13,13 @@
     "dist"
   ],
   "scripts": {
-    "build": "rslib",
-    "dev": "rslib --watch",
-    "test": "rstest",
-    "test:watch": "rstest --watch"
+    "build": "rs lib",
+    "dev": "rs lib -w",
+    "test": "rs test",
+    "test:watch": "rs test -w"
   },
   "devDependencies": {
     "@rslib/core": "^0.23.1",
-    "@rstest/adapter-rslib": "^0.10.6",
     "@rstest/core": "^0.10.6",
     "@types/node": "^24.13.2",
     "rstack": "workspace:*",
