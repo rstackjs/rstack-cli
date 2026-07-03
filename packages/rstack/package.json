@@ -35,6 +35,7 @@
   "dependencies": {
     "@rsbuild/core": "catalog:",
     "@rslib/core": "catalog:",
+    "@rslint/core": "catalog:",
     "@rstest/core": "catalog:"
   },
   "devDependencies": {

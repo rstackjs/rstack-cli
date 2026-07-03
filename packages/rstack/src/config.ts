@@ -1,8 +1,9 @@
 import { loadConfig, type RsbuildConfigDefinition } from '@rsbuild/core';
 import type { ConfigParams as RslibConfigParams, RslibConfig } from '@rslib/core';
+import type { defineConfig as defineRslintConfig } from '@rslint/core';
 import type { RstestConfigExport } from '@rstest/core';
 
-export type ConfigType = 'app' | 'lib' | 'test' | 'staged';
+export type ConfigType = 'app' | 'lib' | 'test' | 'lint' | 'staged';
 
 export type RslibConfigDefinition =
   | RslibConfig
@@ -12,13 +13,21 @@ export type StagedTask = string | string[];
 
 export type StagedConfig = Record<string, StagedTask>;
 
-type Config = RsbuildConfigDefinition | RslibConfigDefinition | RstestConfigExport | StagedConfig;
+export type RslintConfig = Parameters<typeof defineRslintConfig>[0];
+
+type Config =
+  | RsbuildConfigDefinition
+  | RslibConfigDefinition
+  | RstestConfigExport
+  | RslintConfig
+  | StagedConfig;
 
 const registry = new Map<ConfigType, Config>();
 
 export function getConfig(type: 'app'): RsbuildConfigDefinition | undefined;
 export function getConfig(type: 'lib'): RslibConfigDefinition | undefined;
 export function getConfig(type: 'test'): RstestConfigExport | undefined;
+export function getConfig(type: 'lint'): RslintConfig | undefined;
 export function getConfig(type: 'staged'): StagedConfig | undefined;
 export function getConfig(type: ConfigType): Config | undefined {
   return registry.get(type);
@@ -58,6 +67,12 @@ type Define = {
    */
   test: (config: RstestConfigExport) => void;
   /**
+   * Defines the Rslint config for linting.
+   *
+   * This config is used by the `rs lint` command.
+   */
+  lint: (config: RslintConfig) => void;
+  /**
    * Defines the lint-staged config for staged files.
    *
    * This config is used by the `rs staged` command.
@@ -69,6 +84,7 @@ export const define: Define = {
   app: (config) => setConfig('app', config),
   lib: (config) => setConfig('lib', config),
   test: (config) => setConfig('test', config),
+  lint: (config) => setConfig('lint', config),
   staged: (config) => setConfig('staged', config),
 };
 

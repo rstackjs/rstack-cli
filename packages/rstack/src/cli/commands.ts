@@ -15,6 +15,7 @@ Commands:
   build    Build the app for production
   preview  Preview the app production build locally
   lib      Build library outputs
+  lint     Run lint checks
   test     Run tests
   staged   Run configured tasks on staged Git files
 
@@ -68,6 +69,10 @@ async function runRslibCLI(args: string[]): Promise<void> {
   runCLI();
 }
 
+async function runRslintCLI(): Promise<void> {
+  // TODO
+}
+
 export async function setupCommands(): Promise<void> {
   const args = process.argv.slice(2);
   const command = args[0];
@@ -89,6 +94,11 @@ export async function setupCommands(): Promise<void> {
 
   if (command === 'test') {
     await runRstestCLI(args.slice(1));
+    return;
+  }
+
+  if (command === 'lint') {
+    await runRslintCLI();
     return;
   }
 
