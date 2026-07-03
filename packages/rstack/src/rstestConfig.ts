@@ -9,14 +9,27 @@ const extendsConfig = async (testConfig: RstestConfig, params: ConfigParams) => 
 
   const appConfig = getConfig('app');
   if (appConfig) {
-    const { toRstestConfig } = await import(
+    const { withRsbuildConfig } = await import(
       /* rspackChunkName: 'adapterRsbuild' */
       '@rstest/adapter-rsbuild'
     );
-    const rsbuildConfig = typeof appConfig === 'function' ? await appConfig(params) : appConfig;
+    const config = typeof appConfig === 'function' ? await appConfig(params) : appConfig;
 
-    testConfig.extends = toRstestConfig({
-      rsbuildConfig,
+    testConfig.extends = withRsbuildConfig({
+      config,
+    });
+  }
+
+  const libConfig = getConfig('lib');
+  if (libConfig) {
+    const { withRslibConfig } = await import(
+      /* rspackChunkName: 'adapterRslib' */
+      '@rstest/adapter-rslib'
+    );
+    const config = typeof libConfig === 'function' ? await libConfig(params) : libConfig;
+
+    testConfig.extends = withRslibConfig({
+      config,
     });
   }
 

@@ -23,7 +23,10 @@ catalogs:
       specifier: ^0.6.3
       version: 0.6.3
     '@rstest/adapter-rsbuild':
-      specifier: ^0.10.6
+      specifier: https://pkg.pr.new/@rstest/adapter-rsbuild@880348c
+      version: 0.10.6
+    '@rstest/adapter-rslib':
+      specifier: https://pkg.pr.new/@rstest/adapter-rslib@880348c
       version: 0.10.6
     '@rstest/core':
       specifier: ^0.10.6
@@ -193,7 +196,10 @@ importers:
     devDependencies:
       '@rstest/adapter-rsbuild':
         specifier: 'catalog:'
-        version: 0.10.6(@rsbuild/core@2.1.4)(@rstest/core@0.10.6)
+        version: https://pkg.pr.new/@rstest/adapter-rsbuild@880348c(@rsbuild/core@2.1.4)(@rstest/core@0.10.6)
+      '@rstest/adapter-rslib':
+        specifier: 'catalog:'
+        version: https://pkg.pr.new/@rstest/adapter-rslib@880348c(@rslib/core@0.23.1)(@rstest/core@0.10.6)(typescript@6.0.3)
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.2
@@ -691,11 +697,23 @@ packages:
       '@rspack/core':
         optional: true
 
-  '@rstest/adapter-rsbuild@0.10.6':
-    resolution: {integrity: sha512-TvQk6HgrqfueTw6WJ9IHI2TZRmi2Uqj7rXodZurNSv3t7FSiaAZfAhEgNzJFKvULfMapFZhfAQxWFiulryY/HA==}
+  '@rstest/adapter-rsbuild@https://pkg.pr.new/@rstest/adapter-rsbuild@880348c':
+    resolution: {integrity: sha512-G1cfCg+2hWo1Kart/I1M2w2aEpemwaNg03H8s80G5FlITdaAjaLj/pEstvgV+kvc8922GlPbbYB+tiOcqb+7lA==, tarball: https://pkg.pr.new/@rstest/adapter-rsbuild@880348c}
+    version: 0.10.6
     peerDependencies:
       '@rsbuild/core': '*'
       '@rstest/core': ^0.10.6
+
+  '@rstest/adapter-rslib@https://pkg.pr.new/@rstest/adapter-rslib@880348c':
+    resolution: {integrity: sha512-9XMPxkBiWZWh3+5HDW9pPrhp+KI+ixL1DwQjfqW8pjwpKBUkAOjTIN7hZ8tglHd9QvUuuPuyJFyC3N3ZbwXSug==, tarball: https://pkg.pr.new/@rstest/adapter-rslib@880348c}
+    version: 0.10.6
+    peerDependencies:
+      '@rslib/core': '>=0.18.6'
+      '@rstest/core': ^0.10.6
+      typescript: ^5 || ^6
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   '@rstest/core@0.10.6':
     resolution: {integrity: sha512-nX61dw2Tnxfwy/jGZEuNbh2tzapgaH6Iwj4Aw5d2wxUwxptUL3ddUxFF5M1ZSWoLEVG30VaPg3ITzrSo5sdbTg==}
@@ -1413,10 +1431,17 @@ snapshots:
     optionalDependencies:
       '@rspack/core': 2.1.2(@swc/helpers@0.5.23)
 
-  '@rstest/adapter-rsbuild@0.10.6(@rsbuild/core@2.1.4)(@rstest/core@0.10.6)':
+  '@rstest/adapter-rsbuild@https://pkg.pr.new/@rstest/adapter-rsbuild@880348c(@rsbuild/core@2.1.4)(@rstest/core@0.10.6)':
     dependencies:
       '@rsbuild/core': 2.1.4
       '@rstest/core': 0.10.6(happy-dom@20.10.6)
+
+  '@rstest/adapter-rslib@https://pkg.pr.new/@rstest/adapter-rslib@880348c(@rslib/core@0.23.1)(@rstest/core@0.10.6)(typescript@6.0.3)':
+    dependencies:
+      '@rslib/core': 0.23.1(typescript@6.0.3)
+      '@rstest/core': 0.10.6(happy-dom@20.10.6)
+    optionalDependencies:
+      typescript: 6.0.3
 
   '@rstest/core@0.10.6(happy-dom@20.10.6)':
     dependencies:

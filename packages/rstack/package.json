@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@rstest/adapter-rsbuild": "catalog:",
+    "@rstest/adapter-rslib": "catalog:",
     "@types/node": "catalog:",
     "lint-staged": "catalog:",
     "typescript": "catalog:"
