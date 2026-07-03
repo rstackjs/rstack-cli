@@ -3,6 +3,7 @@
     "target": "ES2022",
     "lib": ["DOM", "ES2022"],
     "jsx": "react-jsx",
+    "types": ["@rsbuild/core/types"],
     "skipLibCheck": true,
     "verbatimModuleSyntax": true,
     "resolveJsonModule": true,

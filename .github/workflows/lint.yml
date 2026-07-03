@@ -34,8 +34,11 @@ jobs:
         with:
           run_install: true
 
-      - name: Run Lint
+      - name: Lint
         run: node --run lint
 
+      - name: Check Format
+        run: node --run check:format
+
       - name: Check Spell
-        run: node --run check-spell
+        run: node --run check:spell

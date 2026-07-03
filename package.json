@@ -6,12 +6,11 @@
   "type": "module",
   "scripts": {
     "build": "pnpm --filter './packages/**' build",
-    "check-spell": "pnpm dlx cspell",
+    "check:format": "oxfmt . --check",
+    "check:spell": "pnpm dlx cspell",
     "dev": "pnpm --filter './packages/**' dev",
     "format": "oxfmt .",
-    "format:check": "oxfmt . --check",
-    "lint": "rslint && node --run format:check",
-    "lint:write": "rslint --fix && node --run format",
+    "lint": "rslint --type-check",
     "prepare": "husky",
     "test": "pnpm --filter './packages/**' test"
   },
