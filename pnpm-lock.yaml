@@ -157,6 +157,9 @@ importers:
       '@rsbuild/core':
         specifier: 'catalog:'
         version: 2.1.3
+      '@rslib/core':
+        specifier: 'catalog:'
+        version: 0.23.1(typescript@6.0.3)
       '@rstest/adapter-rsbuild':
         specifier: 'catalog:'
         version: 0.10.6(@rsbuild/core@2.1.3)(@rstest/core@0.10.6)
@@ -164,9 +167,6 @@ importers:
         specifier: 'catalog:'
         version: 0.10.6(happy-dom@20.10.6)
     devDependencies:
-      '@rslib/core':
-        specifier: 'catalog:'
-        version: 0.23.1(typescript@6.0.3)
       '@types/node':
         specifier: 'catalog:'
         version: 24.12.4

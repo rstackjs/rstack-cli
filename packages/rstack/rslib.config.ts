@@ -7,6 +7,7 @@ export default defineConfig({
     entry: {
       index: './src/index.ts',
       rsbuildConfig: './src/rsbuildConfig.ts',
+      rslibConfig: './src/rslibConfig.ts',
       rstestConfig: './src/rstestConfig.ts',
     },
     define: {

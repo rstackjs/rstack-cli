@@ -13,6 +13,7 @@ Commands:
   dev      [Rsbuild] Start the dev server
   build    [Rsbuild] Build the app for production
   preview  [Rsbuild] Preview the production build locally
+  lib      [Rslib]   Build libraries
   test     [Rstest]  Run tests
 
   For details on a sub-command, run:
@@ -50,6 +51,20 @@ async function runRstestCLI(args: string[]): Promise<void> {
   runCLI();
 }
 
+async function runRslibCLI(args: string[]): Promise<void> {
+  const argv = [process.execPath, 'rslib', ...args];
+
+  if (!hasConfigArg(args)) {
+    argv.push('-c', join(import.meta.dirname, 'rslibConfig.js'));
+  }
+
+  // TODO
+  process.argv = argv;
+
+  const { runCLI } = await import('@rslib/core');
+  runCLI();
+}
+
 export async function setupCommands(): Promise<void> {
   const args = process.argv.slice(2);
   const command = args[0];
@@ -61,6 +76,11 @@ export async function setupCommands(): Promise<void> {
 
   if (command === '-v' || command === '--version') {
     console.log(`Rstack v${RSTACK_VERSION}`);
+    return;
+  }
+
+  if (command === 'lib') {
+    await runRslibCLI(args.slice(1));
     return;
   }
 

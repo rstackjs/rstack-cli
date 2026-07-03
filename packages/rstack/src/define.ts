@@ -1,17 +1,22 @@
 import type { RsbuildConfigDefinition } from '@rsbuild/core';
+import type { ConfigParams as RslibConfigParams, RslibConfig } from '@rslib/core';
 import type { RstestConfigExport } from '@rstest/core';
 
-export type ConfigType = 'app' | 'test';
+export type ConfigType = 'app' | 'lib' | 'test';
 
-type Config = RsbuildConfigDefinition | RstestConfigExport;
+export type RslibConfigDefinition =
+  | RslibConfig
+  | ((params: RslibConfigParams) => RslibConfig | Promise<RslibConfig>);
+
+type Config = RsbuildConfigDefinition | RslibConfigDefinition | RstestConfigExport;
 
 const registry = new Map<ConfigType, Config>();
 
 export function getConfig(type: 'app'): RsbuildConfigDefinition | undefined;
+export function getConfig(type: 'lib'): RslibConfigDefinition | undefined;
 export function getConfig(type: 'test'): RstestConfigExport | undefined;
 export function getConfig(type: ConfigType): Config | undefined {
-  const result = registry.get(type);
-  return result;
+  return registry.get(type);
 }
 
 export const clearConfig = () => {
@@ -33,10 +38,16 @@ type Define = {
    */
   app: (config: RsbuildConfigDefinition) => void;
   /**
+   * Defines the Rslib config for libraries.
+   *
+   * This config is used by the `rs lib` command.
+   */
+  lib: (config: RslibConfigDefinition) => void;
+  /**
    * Defines the Rstest config for tests.
    *
-   * This config is used by the `rs test` command. 
-   * 
+   * This config is used by the `rs test` command.
+   *
    * If `define.app` is also used, Rstest automatically extends the app config unless
    * `extends` is set explicitly.
    */
@@ -45,5 +56,6 @@ type Define = {
 
 export const define: Define = {
   app: (config) => setConfig('app', config),
+  lib: (config) => setConfig('lib', config),
   test: (config) => setConfig('test', config),
 };

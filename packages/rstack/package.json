@@ -7,9 +7,6 @@
     "rs": "./bin/rs.js",
     "rstack": "./bin/rs.js"
   },
-  "engines": {
-    "node": ">=22.12.0"
-  },
   "files": [
     "bin",
     "dist"
@@ -33,12 +30,15 @@
   },
   "dependencies": {
     "@rsbuild/core": "catalog:",
+    "@rslib/core": "catalog:",
     "@rstest/adapter-rsbuild": "catalog:",
     "@rstest/core": "catalog:"
   },
   "devDependencies": {
-    "@rslib/core": "catalog:",
     "@types/node": "catalog:",
     "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

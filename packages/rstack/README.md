@@ -39,7 +39,9 @@ bun add -d rstack
   "scripts": {
     "dev": "rs dev",
     "build": "rs build",
-    "preview": "rs preview"
+    "preview": "rs preview",
+    "lib": "rs lib",
+    "test": "rs test"
   }
 }
 ```
@@ -50,6 +52,8 @@ Then run the scripts with your preferred package manager:
 pnpm dev
 pnpm build
 pnpm preview
+pnpm lib
+pnpm test
 ```
 
 ## Credits
