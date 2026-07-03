@@ -19,8 +19,6 @@
     "test:watch": "rs test -w"
   },
   "devDependencies": {
-    "@rslib/core": "catalog:",
-    "@rstest/core": "catalog:",
     "@types/node": "catalog:",
     "rstack": "workspace:*",
     "typescript": "catalog:"

@@ -9,6 +9,7 @@ export default defineConfig({
       rsbuildConfig: './src/rsbuildConfig.ts',
       rslibConfig: './src/rslibConfig.ts',
       rstestConfig: './src/rstestConfig.ts',
+      test: './src/test.ts',
     },
     define: {
       RSTACK_VERSION: JSON.stringify(pkgJson.version),

@@ -1,4 +1,4 @@
-import { expect, test } from '@rstest/core';
+import { expect, test } from 'rstack/test';
 import { screen } from '@testing-library/dom';
 
 test('test dom', () => {

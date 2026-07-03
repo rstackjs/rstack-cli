@@ -154,12 +154,6 @@ importers:
 
   examples/lib-node:
     devDependencies:
-      '@rslib/core':
-        specifier: 'catalog:'
-        version: 0.23.1(typescript@6.0.3)
-      '@rstest/core':
-        specifier: 'catalog:'
-        version: 0.10.6(happy-dom@20.10.6)
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.2
