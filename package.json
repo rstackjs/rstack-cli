@@ -8,7 +8,6 @@
     "build": "pnpm --filter './packages/**' build",
     "check:format": "oxfmt . --check",
     "check:spell": "pnpm dlx cspell",
-    "dev": "pnpm --filter './packages/**' dev",
     "format": "oxfmt .",
     "lint": "rslint --type-check",
     "prepare": "husky",
