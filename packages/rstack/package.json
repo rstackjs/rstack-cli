@@ -35,10 +35,10 @@
   "dependencies": {
     "@rsbuild/core": "catalog:",
     "@rslib/core": "catalog:",
-    "@rstest/adapter-rsbuild": "catalog:",
     "@rstest/core": "catalog:"
   },
   "devDependencies": {
+    "@rstest/adapter-rsbuild": "catalog:",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   },
