@@ -1,13 +1,16 @@
 import { loadConfig, type RsbuildConfigDefinition } from '@rsbuild/core';
 import type { ConfigParams as RslibConfigParams, RslibConfig } from '@rslib/core';
 import type { RstestConfigExport } from '@rstest/core';
-import type { Configuration as StagedConfig } from 'lint-staged';
 
 export type ConfigType = 'app' | 'lib' | 'test' | 'staged';
 
 export type RslibConfigDefinition =
   | RslibConfig
   | ((params: RslibConfigParams) => RslibConfig | Promise<RslibConfig>);
+
+export type StagedTask = string | string[];
+
+export type StagedConfig = Record<string, StagedTask>;
 
 type Config = RsbuildConfigDefinition | RslibConfigDefinition | RstestConfigExport | StagedConfig;
 
