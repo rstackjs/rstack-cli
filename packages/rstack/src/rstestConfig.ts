@@ -12,7 +12,8 @@ const extendsConfig = async (testConfig: RstestConfig, params: ConfigParams) => 
   if (appConfig) {
     const { toRstestConfig } = await import(
       /* rspackChunkName: 'adapterRsbuild' */
-      '@rstest/adapter-rsbuild');
+      '@rstest/adapter-rsbuild'
+    );
     const rsbuildConfig = typeof appConfig === 'function' ? await appConfig(params) : appConfig;
 
     testConfig.extends = toRstestConfig({
