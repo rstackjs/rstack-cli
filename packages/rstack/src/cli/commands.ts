@@ -62,11 +62,8 @@ async function runRslibCLI(args: string[]): Promise<void> {
     argv.push('-c', join(import.meta.dirname, 'rslibConfig.js'));
   }
 
-  // TODO
-  process.argv = argv;
-
   const { runCLI } = await import('@rslib/core');
-  runCLI();
+  runCLI({ argv });
 }
 
 async function runRslintCLI(): Promise<void> {
