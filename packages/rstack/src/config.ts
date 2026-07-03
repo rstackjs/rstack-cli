@@ -1,4 +1,4 @@
-import type { RsbuildConfigDefinition } from '@rsbuild/core';
+import { loadConfig, type RsbuildConfigDefinition } from '@rsbuild/core';
 import type { ConfigParams as RslibConfigParams, RslibConfig } from '@rslib/core';
 import type { RstestConfigExport } from '@rstest/core';
 import type { Configuration as StagedConfig } from 'lint-staged';
@@ -67,4 +67,19 @@ export const define: Define = {
   lib: (config) => setConfig('lib', config),
   test: (config) => setConfig('test', config),
   staged: (config) => setConfig('staged', config),
+};
+
+export const loadRstackConfig = () => {
+  return loadConfig({
+    loader: 'native',
+    exportName: false,
+    configFileNames: [
+      'rstack.config.ts',
+      'rstack.config.js',
+      'rstack.config.mts',
+      'rstack.config.mjs',
+      'rstack.config.cts',
+      'rstack.config.cjs',
+    ],
+  });
 };

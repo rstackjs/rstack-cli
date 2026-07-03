@@ -1,7 +1,6 @@
-import { loadConfig, type ConfigParams } from '@rsbuild/core';
+import type { ConfigParams } from '@rsbuild/core';
 import type { RstestConfig, RstestConfigExport } from '@rstest/core';
-import { getConfig, clearConfig } from './define.js';
-import { configFileNames } from './constants.js';
+import { getConfig, clearConfig, loadRstackConfig } from './config.js';
 
 const extendsConfig = async (testConfig: RstestConfig, params: ConfigParams) => {
   if ('extends' in testConfig) {
@@ -36,11 +35,7 @@ const resolveRstestConfig = async () => {
 };
 
 const loadRstestConfig = (async (params: ConfigParams) => {
-  await loadConfig({
-    loader: 'native',
-    configFileNames,
-  });
-
+  await loadRstackConfig();
   const testConfig = await resolveRstestConfig();
   const finalConfig = extendsConfig(testConfig, params);
 

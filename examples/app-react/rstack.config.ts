@@ -10,6 +10,3 @@ define.app(async () => {
 define.test({
   setupFiles: ['./tests/rstest.setup.ts'],
 });
-
-// TODO: remove
-export default {};

@@ -1,6 +1,5 @@
-import { loadConfig, type RsbuildConfigDefinition, type ConfigParams } from '@rsbuild/core';
-import { getConfig, clearConfig } from './define.js';
-import { configFileNames } from './constants.js';
+import type { RsbuildConfigDefinition, ConfigParams } from '@rsbuild/core';
+import { getConfig, clearConfig, loadRstackConfig } from './config.js';
 
 const resolveRsbuildConfig = async (params: ConfigParams) => {
   const appConfig = getConfig('app');
@@ -14,11 +13,7 @@ const resolveRsbuildConfig = async (params: ConfigParams) => {
 };
 
 const loadRsbuildConfig: RsbuildConfigDefinition = async (params) => {
-  await loadConfig({
-    loader: 'native',
-    configFileNames,
-  });
-
+  await loadRstackConfig();
   const appConfig = await resolveRsbuildConfig(params);
   clearConfig();
   return appConfig;

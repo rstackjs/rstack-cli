@@ -1,8 +1,6 @@
-import { loadConfig } from '@rsbuild/core';
 import type { ConfigParams, RslibConfig } from '@rslib/core';
-import type { RslibConfigDefinition } from './define.js';
-import { getConfig, clearConfig } from './define.js';
-import { configFileNames } from './constants.js';
+import type { RslibConfigDefinition } from './config.js';
+import { getConfig, clearConfig, loadRstackConfig } from './config.js';
 
 const resolveRslibConfig = async (params: ConfigParams): Promise<RslibConfig> => {
   const libConfig = getConfig('lib');
@@ -17,11 +15,7 @@ const resolveRslibConfig = async (params: ConfigParams): Promise<RslibConfig> =>
 };
 
 const loadRslibConfig = (async (params: ConfigParams) => {
-  await loadConfig({
-    loader: 'native',
-    configFileNames,
-  });
-
+  await loadRstackConfig();
   const libConfig = await resolveRslibConfig(params);
   clearConfig();
   return libConfig;

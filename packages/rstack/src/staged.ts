@@ -1,7 +1,5 @@
-import { loadConfig } from '@rsbuild/core';
 import lintStaged from 'lint-staged';
-import { configFileNames } from './constants.js';
-import { clearConfig, getConfig } from './define.js';
+import { clearConfig, getConfig, loadRstackConfig } from './config.js';
 
 const stagedHelpMessage = `Rstack v${RSTACK_VERSION}
 
@@ -15,10 +13,7 @@ Options:
 
 async function loadStagedConfig() {
   try {
-    await loadConfig({
-      loader: 'native',
-      configFileNames,
-    });
+    await loadRstackConfig();
     return getConfig('staged');
   } finally {
     clearConfig();
