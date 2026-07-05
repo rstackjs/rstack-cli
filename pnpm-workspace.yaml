@@ -12,10 +12,10 @@ cleanupUnusedCatalogs: true
 
 catalog:
   '@playwright/test': '^1.60.0'
-  '@rsbuild/core': '^2.1.4'
+  '@rsbuild/core': '~2.1.4'
   '@rsbuild/plugin-react': '^2.1.0'
-  '@rslib/core': '^0.23.2'
-  '@rslint/core': '^0.6.3'
+  '@rslib/core': '~0.23.2'
+  '@rslint/core': '~0.6.3'
   '@rstest/adapter-rsbuild': 'https://pkg.pr.new/@rstest/adapter-rsbuild@880348c'
   '@rstest/adapter-rslib': 'https://pkg.pr.new/@rstest/adapter-rslib@880348c'
   '@rstest/core': 'https://pkg.pr.new/@rstest/core@880348c'

@@ -11,16 +11,16 @@ catalogs:
       specifier: ^1.60.0
       version: 1.60.0
     '@rsbuild/core':
-      specifier: ^2.1.4
+      specifier: ~2.1.4
       version: 2.1.4
     '@rsbuild/plugin-react':
       specifier: ^2.1.0
       version: 2.1.0
     '@rslib/core':
-      specifier: ^0.23.2
+      specifier: ~0.23.2
       version: 0.23.2
     '@rslint/core':
-      specifier: ^0.6.3
+      specifier: ~0.6.3
       version: 0.6.3
     '@rstest/adapter-rsbuild':
       specifier: https://pkg.pr.new/@rstest/adapter-rsbuild@880348c
