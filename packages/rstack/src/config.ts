@@ -18,8 +18,28 @@ export type Configs = {
   staged?: StagedConfig;
 };
 
-let configs: Configs = {};
-let configPath: string | undefined;
+type ConfigState = {
+  configs: Configs;
+  configPath?: string;
+};
+
+declare global {
+  // rslint-disable-next-line no-var
+  var __rstackConfigState: ConfigState | undefined;
+}
+
+export const getConfigState = (): ConfigState => {
+  // Rsbuild's fresh import loader can load this module more than once when it
+  // imports the internal rstack config. Keep CLI state on globalThis so the
+  // `--config` path set by the CLI is visible to the fresh-imported instance.
+  if (!globalThis.__rstackConfigState) {
+    globalThis.__rstackConfigState = {
+      configs: {},
+    };
+  }
+
+  return globalThis.__rstackConfigState;
+};
 
 type Define = {
   /**
@@ -58,10 +78,12 @@ type Define = {
 };
 
 const setConfig = <T extends keyof Configs>(type: T, config: Configs[T]): void => {
-  if (configs[type]) {
+  const state = getConfigState();
+
+  if (state.configs[type]) {
     throw new Error(`The "${type}" config has already been defined.`);
   }
-  configs[type] = config;
+  state.configs[type] = config;
 };
 
 export const define: Define = {
@@ -72,16 +94,14 @@ export const define: Define = {
   staged: (config) => setConfig('staged', config),
 };
 
-export const setConfigPath = (path: string | undefined): void => {
-  configPath = path;
-};
-
 export const loadRstackConfig = async (): Promise<Configs> => {
+  const state = getConfigState();
+
   await loadConfig({
     loader: 'native',
     exportName: false,
-    ...(configPath !== undefined
-      ? { path: configPath }
+    ...(state.configPath !== undefined
+      ? { path: state.configPath }
       : {
           configFileNames: [
             'rstack.config.ts',
@@ -92,7 +112,7 @@ export const loadRstackConfig = async (): Promise<Configs> => {
         }),
   });
 
-  const result = configs;
-  configs = {};
+  const result = state.configs;
+  state.configs = {};
   return result;
 };

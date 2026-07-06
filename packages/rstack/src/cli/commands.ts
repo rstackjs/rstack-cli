@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { setConfigPath } from '../config.js';
+import { getConfigState } from '../config.js';
 import { runStagedCLI } from '../staged.js';
 
 declare global {
@@ -135,7 +135,7 @@ async function runRslintCLI(): Promise<void> {
 
 export async function setupCommands(): Promise<void> {
   const { args, configPath } = parseCliArgs(process.argv.slice(2));
-  setConfigPath(configPath);
+  getConfigState().configPath = configPath;
   const command = args[0];
 
   if (!command || command === '-h' || command === '--help') {
