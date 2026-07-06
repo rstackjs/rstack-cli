@@ -19,6 +19,7 @@ export type Configs = {
 };
 
 let configs: Configs = {};
+let configPath: string | undefined;
 
 type Define = {
   /**
@@ -71,16 +72,24 @@ export const define: Define = {
   staged: (config) => setConfig('staged', config),
 };
 
+export const setConfigPath = (path: string | undefined): void => {
+  configPath = path;
+};
+
 export const loadRstackConfig = async (): Promise<Configs> => {
   await loadConfig({
     loader: 'native',
     exportName: false,
-    configFileNames: [
-      'rstack.config.ts',
-      'rstack.config.js',
-      'rstack.config.mts',
-      'rstack.config.mjs',
-    ],
+    ...(configPath !== undefined
+      ? { path: configPath }
+      : {
+          configFileNames: [
+            'rstack.config.ts',
+            'rstack.config.js',
+            'rstack.config.mts',
+            'rstack.config.mjs',
+          ],
+        }),
   });
 
   const result = configs;
