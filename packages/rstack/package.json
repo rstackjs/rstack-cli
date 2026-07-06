@@ -9,7 +9,8 @@
   },
   "files": [
     "bin",
-    "dist"
+    "dist",
+    "types"
   ],
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -23,7 +24,13 @@
       "default": "./dist/test.js"
     },
     "./types": {
-      "types": "./types.d.ts"
+      "types": "./types/index.d.ts"
+    },
+    "./test/globals": {
+      "types": "./types/test/globals.d.ts"
+    },
+    "./test/importMeta": {
+      "types": "./types/test/importMeta.d.ts"
     },
     "./package.json": "./package.json"
   },
