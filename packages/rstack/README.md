@@ -1,6 +1,6 @@
 # Rstack CLI
 
-A unified local CLI for web development.
+One CLI for JavaScript development, powered by Rstack.
 
 ## License
 

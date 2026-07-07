@@ -8,11 +8,13 @@
   <a href="https://github.com/rstackjs/rstack/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square&colorA=564341&colorB=EDED91" alt="license" /></a>
 </p>
 
-Rstack CLI is a unified local CLI for web development.
+Rstack CLI brings the Rstack toolchain together for JavaScript development, with one CLI and one consistent workflow.
 
-It provides one entry point for [Rsbuild](https://github.com/web-infra-dev/rsbuild), [Rslib](https://github.com/web-infra-dev/rslib), [Rstest](https://github.com/web-infra-dev/rstest), [Rslint](https://github.com/web-infra-dev/rslint), and [Rspress](https://github.com/web-infra-dev/rspress), with built-in formatting support via [Oxfmt](https://github.com/oxc-project/oxc) and staged-file task support via [lint-staged](https://github.com/lint-staged/lint-staged).
+It provides one place to run and configure [Rsbuild](https://github.com/web-infra-dev/rsbuild), [Rslib](https://github.com/web-infra-dev/rslib), [Rstest](https://github.com/web-infra-dev/rstest), [Rslint](https://github.com/web-infra-dev/rslint), and [Rspress](https://github.com/web-infra-dev/rspress).
 
-It fits into your existing workflow instead of taking it over. Use it alongside [pnpm](https://github.com/pnpm/pnpm), [Turborepo](https://github.com/vercel/turborepo), [Nx](https://github.com/nrwl/nx), [Bun](https://github.com/oven-sh/bun), or whatever already works for your project.
+It also covers common local development tasks, with formatting powered by [Oxfmt](https://github.com/oxc-project/oxc) and staged-file commands powered by [lint-staged](https://github.com/lint-staged/lint-staged), giving Rstack projects a complete development experience out of the box.
+
+Rstack CLI fits into your existing project workflow. It does not replace your runtime, package manager, or task runner, such as [pnpm](https://github.com/pnpm/pnpm), [Bun](https://github.com/oven-sh/bun), [Turborepo](https://github.com/vercel/turborepo), [Nx](https://github.com/nrwl/nx), and [Nub](https://github.com/nubjs/nub). Instead, it focuses on providing one place to run and configure Rstack tools.
 
 ## Features
 
