@@ -1,20 +1,19 @@
 import { loadConfig, type RsbuildConfigDefinition } from '@rsbuild/core';
 import type { RslibConfigDefinition } from '@rslib/core';
-import type { defineConfig as defineRslintConfig } from '@rslint/core';
+import type { RslintConfig } from '@rslint/core';
 import type { RstestConfigExport } from '@rstest/core';
 
 export type StagedTask = string | string[];
 
 export type StagedConfig = Record<string, StagedTask>;
 
-// TODO: import from `@rslib/core`
-export type RslintConfig = Parameters<typeof defineRslintConfig>[0];
+export type RslintConfigDefinition = RslintConfig | (() => Promise<RslintConfig>);
 
 export type Configs = {
   app?: RsbuildConfigDefinition;
   lib?: RslibConfigDefinition;
   test?: RstestConfigExport;
-  lint?: RslintConfig;
+  lint?: RslintConfigDefinition;
   staged?: StagedConfig;
 };
 
@@ -68,7 +67,7 @@ type Define = {
    *
    * This config is used by the `rs lint` command.
    */
-  lint: (config: RslintConfig) => void;
+  lint: (config: RslintConfig | (() => Promise<RslintConfig>)) => void;
   /**
    * Defines the lint-staged config for staged files.
    *

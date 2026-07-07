@@ -9,7 +9,7 @@
     "check:format": "oxfmt . --check",
     "check:spell": "pnpm dlx cspell",
     "format": "oxfmt .",
-    "lint": "rslint --type-check",
+    "lint": "rs lint --type-check",
     "prepare": "husky",
     "test": "pnpm --filter './packages/**' test"
   },
