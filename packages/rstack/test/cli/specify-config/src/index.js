@@ -1,1 +1,1 @@
-console.log('rstack config works');
+console.log(DEFINE_VALUE);

@@ -1,12 +1,9 @@
 import { define } from 'rstack';
 
 define.app({
-  output: {
-    filenameHash: false,
-  },
   source: {
-    entry: {
-      index: './src/index.js',
+    define: {
+      DEFINE_VALUE: JSON.stringify('specify config works'),
     },
   },
 });

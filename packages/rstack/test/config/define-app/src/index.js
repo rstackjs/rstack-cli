@@ -1,4 +1,1 @@
-const message = DEFINE_APP_TEST_VALUE;
-
-document.body.innerHTML = `<main id="root">${message}</main>`;
-console.log(message);
+document.body.innerHTML = `<main id="root">${DEFINE_APP_TEST_VALUE}</main>`;

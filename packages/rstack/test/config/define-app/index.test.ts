@@ -1,22 +1,21 @@
-import { readFile, rm } from 'node:fs/promises';
+import { rm } from 'node:fs/promises';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
-import { execCli } from '#test-helpers';
+import { execCli, getDistFiles, getFileContent } from '#test-helpers';
 
 const cwd = import.meta.dirname;
 const expectedText = 'define.app works';
 
 test('should build app with define.app config', async () => {
   const distPath = path.join(cwd, 'dist');
-
   await rm(distPath, { recursive: true, force: true });
 
   try {
-    execCli(['build'], {
-      cwd,
-    });
+    execCli(['build'], { cwd });
 
-    const output = await readFile(path.join(distPath, 'static/js/index.js'), 'utf-8');
+    const files = await getDistFiles(distPath);
+    const output = getFileContent(files, 'static/js/index.js');
+
     expect(output).toContain(expectedText);
   } finally {
     await rm(distPath, { recursive: true, force: true });
