@@ -4,7 +4,7 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "rootDir": "..",
-    "types": ["node", "rstack/test/globals"],
+    "types": ["node"],
     "paths": {
       "rstack": ["../src/index.ts"],
       "rstack/lint": ["../src/lint.ts"],

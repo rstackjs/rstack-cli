@@ -8,6 +8,9 @@ node_modules
 dist/
 test-results
 
+# Temp files
+test-temp-*
+
 # IDE
 .vscode/*
 !.vscode/settings.json
