@@ -4,7 +4,7 @@
     "allowImportingTsExtensions": true,
     "emitDeclarationOnly": true,
     "composite": true,
-    "rootDir": ".",
+    "rootDir": "..",
     "types": ["node", "rstack/test/globals"],
     "paths": {
       "rstack": ["../src/index.ts"],
@@ -12,5 +12,5 @@
       "#test-helpers": ["./helpers/index.ts"]
     }
   },
-  "include": ["./**/*.ts"]
+  "include": ["./**/*.ts", "../src"]
 }
