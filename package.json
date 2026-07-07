@@ -14,13 +14,10 @@
     "test": "pnpm --filter './packages/**' test"
   },
   "devDependencies": {
-    "@playwright/test": "catalog:",
-    "@rslint/core": "catalog:",
     "@types/node": "catalog:",
     "cspell-ban-words": "catalog:",
     "husky": "catalog:",
     "oxfmt": "catalog:",
-    "playwright": "catalog:",
     "rstack": "workspace:*",
     "typescript": "catalog:"
   },
