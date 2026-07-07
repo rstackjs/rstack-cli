@@ -5,8 +5,10 @@
     "emitDeclarationOnly": true,
     "composite": true,
     "rootDir": ".",
-    "types": ["node", "@rstest/core/globals"],
+    "types": ["node", "rstack/test/globals"],
     "paths": {
+      "rstack": ["../src/index.ts"],
+      "rstack/test": ["../src/test.ts"],
       "#test-helpers": ["./helpers/index.ts"]
     }
   },

@@ -1,4 +1,4 @@
-import { expect, test } from '@rstest/core';
+import { expect, test } from 'rstack/test';
 
 const commonTestMethods = ['test', 'it', 'describe', 'expect', 'beforeAll', 'afterAll'] as const;
 
