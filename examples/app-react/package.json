@@ -5,6 +5,7 @@
   "scripts": {
     "build": "rs build",
     "dev": "rs dev",
+    "lint": "rs lint",
     "test": "rs test",
     "preview": "rs preview"
   },

@@ -15,6 +15,7 @@
   "scripts": {
     "build": "rs lib",
     "dev": "rs lib -w",
+    "lint": "rs lint",
     "test": "rs test",
     "test:watch": "rs test -w"
   },
