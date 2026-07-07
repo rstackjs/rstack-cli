@@ -1,7 +1,7 @@
 import { readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
-import { execCli } from '../helpers/cli.ts';
+import { execCli } from '../../helpers/cli.ts';
 
 const cwd = import.meta.dirname;
 
