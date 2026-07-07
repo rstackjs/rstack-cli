@@ -41,7 +41,7 @@
   "scripts": {
     "build": "rslib",
     "dev": "rslib -w",
-    "test": "echo 'pass'"
+    "test": "rs test"
   },
   "dependencies": {
     "@rsbuild/core": "catalog:",

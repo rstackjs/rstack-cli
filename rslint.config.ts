@@ -6,7 +6,11 @@ export default defineConfig([
   {
     languageOptions: {
       parserOptions: {
-        project: ['./packages/*/tsconfig.json', './examples/*/tsconfig.json'],
+        project: [
+          './packages/*/tsconfig.json',
+          './packages/*/test/tsconfig.json',
+          './examples/*/tsconfig.json',
+        ],
       },
     },
   },
