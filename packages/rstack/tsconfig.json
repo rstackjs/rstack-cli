@@ -4,13 +4,17 @@
     "outDir": "./dist",
     "target": "ES2023",
     "types": ["node"],
-    "lib": ["DOM", "ESNext"],
+    "lib": ["ESNext"],
     "declaration": true,
     "isolatedDeclarations": true,
-    "isolatedModules": true,
     "skipLibCheck": true,
     "module": "nodenext",
     "moduleResolution": "nodenext"
   },
+  "references": [
+    {
+      "path": "./test"
+    }
+  ],
   "include": ["src"]
 }

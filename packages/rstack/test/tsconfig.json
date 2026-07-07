@@ -2,9 +2,13 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "rootDir": "..",
-    "types": ["node", "@rstest/core/globals"]
+    "emitDeclarationOnly": true,
+    "composite": true,
+    "rootDir": ".",
+    "types": ["node", "@rstest/core/globals"],
+    "paths": {
+      "#test-helpers": ["./helpers/index.ts"]
+    }
   },
   "include": ["./**/*.ts"]
 }
