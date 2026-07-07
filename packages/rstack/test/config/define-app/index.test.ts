@@ -9,7 +9,7 @@ test('should build app with define.app config', async ({ cwd, execCli, expect })
   await rm(distPath, { recursive: true, force: true });
 
   try {
-    execCli(['build']);
+    execCli('build');
 
     const files = await getDistFiles(distPath);
     const output = getFileContent(files, 'static/js/index.js');

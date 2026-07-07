@@ -8,7 +8,7 @@ test('should build lib with define.lib config', async ({ cwd, execCli, expect })
   const distPath = path.join(cwd, 'dist');
   await rm(distPath, { recursive: true, force: true });
 
-  execCli(['lib']);
+  execCli('lib');
 
   const files = await getDistFiles(distPath);
   const output = getFileContent(files, 'index.js');

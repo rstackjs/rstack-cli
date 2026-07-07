@@ -20,8 +20,8 @@ export const test: CliTest = baseTest.extend<CliTestFixtures>({
     await use(path.dirname(testPath));
   },
   execCli: async ({ cwd }, use) => {
-    const execCli: ExecCli = (args, options = {}) =>
-      baseExecCli(args, { ...options, cwd: options.cwd ?? cwd });
+    const execCli: ExecCli = (command, options = {}) =>
+      baseExecCli(command, { ...options, cwd: options.cwd ?? cwd });
 
     await use(execCli);
   },
