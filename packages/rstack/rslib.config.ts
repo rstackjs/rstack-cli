@@ -10,6 +10,7 @@ export default defineConfig({
       rslibConfig: './src/rslibConfig.ts',
       rslintConfig: './src/rslintConfig.ts',
       rstestConfig: './src/rstestConfig.ts',
+      lint: './src/lint.ts',
       test: './src/test.ts',
     },
     define: {
