@@ -23,14 +23,14 @@ catalogs:
       specifier: ~0.6.3
       version: 0.6.3
     '@rstest/adapter-rsbuild':
-      specifier: https://pkg.pr.new/@rstest/adapter-rsbuild@880348c
-      version: 0.10.6
+      specifier: ~0.11.0
+      version: 0.11.0
     '@rstest/adapter-rslib':
-      specifier: https://pkg.pr.new/@rstest/adapter-rslib@880348c
-      version: 0.10.6
+      specifier: ~0.11.0
+      version: 0.11.0
     '@rstest/core':
-      specifier: https://pkg.pr.new/@rstest/core@880348c
-      version: 0.10.6
+      specifier: ~0.11.0
+      version: 0.11.0
     '@testing-library/dom':
       specifier: ^10.4.1
       version: 10.4.1
@@ -192,14 +192,14 @@ importers:
         version: 0.6.3
       '@rstest/core':
         specifier: 'catalog:'
-        version: https://pkg.pr.new/@rstest/core@880348c(happy-dom@20.10.6)
+        version: 0.11.0(happy-dom@20.10.6)
     devDependencies:
       '@rstest/adapter-rsbuild':
         specifier: 'catalog:'
-        version: https://pkg.pr.new/@rstest/adapter-rsbuild@880348c(@rsbuild/core@2.1.4)(@rstest/core@0.10.6)
+        version: 0.11.0(@rsbuild/core@2.1.4)(@rstest/core@0.11.0)
       '@rstest/adapter-rslib':
         specifier: 'catalog:'
-        version: https://pkg.pr.new/@rstest/adapter-rslib@880348c(@rslib/core@0.23.2)(@rstest/core@0.10.6)(typescript@6.0.3)
+        version: 0.11.0(@rslib/core@0.23.2)(@rstest/core@0.11.0)(typescript@6.0.3)
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.2
@@ -604,27 +604,24 @@ packages:
       '@rspack/core':
         optional: true
 
-  '@rstest/adapter-rsbuild@https://pkg.pr.new/@rstest/adapter-rsbuild@880348c':
-    resolution: {integrity: sha512-G1cfCg+2hWo1Kart/I1M2w2aEpemwaNg03H8s80G5FlITdaAjaLj/pEstvgV+kvc8922GlPbbYB+tiOcqb+7lA==, tarball: https://pkg.pr.new/@rstest/adapter-rsbuild@880348c}
-    version: 0.10.6
+  '@rstest/adapter-rsbuild@0.11.0':
+    resolution: {integrity: sha512-otrR3yqQ5Uyskm0hu8c0fjP1eFk6bMJALnYhUl6V1CKp/monoowFMa6XEqdY2d4aHv6oa8XWGLfU4LWne1Vg9A==}
     peerDependencies:
       '@rsbuild/core': '*'
-      '@rstest/core': ^0.10.6
+      '@rstest/core': ^0.11.0
 
-  '@rstest/adapter-rslib@https://pkg.pr.new/@rstest/adapter-rslib@880348c':
-    resolution: {integrity: sha512-9XMPxkBiWZWh3+5HDW9pPrhp+KI+ixL1DwQjfqW8pjwpKBUkAOjTIN7hZ8tglHd9QvUuuPuyJFyC3N3ZbwXSug==, tarball: https://pkg.pr.new/@rstest/adapter-rslib@880348c}
-    version: 0.10.6
+  '@rstest/adapter-rslib@0.11.0':
+    resolution: {integrity: sha512-xouLiDYOd79jWORVMcyhFcIOtaqgfFGDHNjLab6+Ni6uzXmi47VuB3zgxV2rZHPBtOvTg50DGuc//qZUhs7Dng==}
     peerDependencies:
       '@rslib/core': '>=0.18.6'
-      '@rstest/core': ^0.10.6
+      '@rstest/core': ^0.11.0
       typescript: ^5 || ^6
     peerDependenciesMeta:
       typescript:
         optional: true
 
-  '@rstest/core@https://pkg.pr.new/@rstest/core@880348c':
-    resolution: {integrity: sha512-IDZCAmHCsPIPawBg/oacx5IufcRMbZEvbvxAijk/ilguxlqe07KL3KY+1eQiUfkVp0Z5d6WeRe09mSeG7MuR6Q==, tarball: https://pkg.pr.new/@rstest/core@880348c}
-    version: 0.10.6
+  '@rstest/core@0.11.0':
+    resolution: {integrity: sha512-buy6EV9R6d0O9WMOSG0C91jwMcNYDw4Q0uFQNuwPpQLH85rTlVyuUM7EnEnvVGv5lG6dpgGwNTdRWx6mvWybag==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -1256,19 +1253,19 @@ snapshots:
     optionalDependencies:
       '@rspack/core': 2.1.2(@swc/helpers@0.5.23)
 
-  '@rstest/adapter-rsbuild@https://pkg.pr.new/@rstest/adapter-rsbuild@880348c(@rsbuild/core@2.1.4)(@rstest/core@0.10.6)':
+  '@rstest/adapter-rsbuild@0.11.0(@rsbuild/core@2.1.4)(@rstest/core@0.11.0)':
     dependencies:
       '@rsbuild/core': 2.1.4
-      '@rstest/core': https://pkg.pr.new/@rstest/core@880348c(happy-dom@20.10.6)
+      '@rstest/core': 0.11.0(happy-dom@20.10.6)
 
-  '@rstest/adapter-rslib@https://pkg.pr.new/@rstest/adapter-rslib@880348c(@rslib/core@0.23.2)(@rstest/core@0.10.6)(typescript@6.0.3)':
+  '@rstest/adapter-rslib@0.11.0(@rslib/core@0.23.2)(@rstest/core@0.11.0)(typescript@6.0.3)':
     dependencies:
       '@rslib/core': 0.23.2(typescript@6.0.3)
-      '@rstest/core': https://pkg.pr.new/@rstest/core@880348c(happy-dom@20.10.6)
+      '@rstest/core': 0.11.0(happy-dom@20.10.6)
     optionalDependencies:
       typescript: 6.0.3
 
-  '@rstest/core@https://pkg.pr.new/@rstest/core@880348c(happy-dom@20.10.6)':
+  '@rstest/core@0.11.0(happy-dom@20.10.6)':
     dependencies:
       '@rsbuild/core': 2.1.4
       '@types/chai': 5.2.3
