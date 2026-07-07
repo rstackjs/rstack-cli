@@ -2,8 +2,7 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "allowImportingTsExtensions": true,
-    "emitDeclarationOnly": true,
-    "composite": true,
+    "noEmit": true,
     "rootDir": "..",
     "types": ["node", "rstack/test/globals"],
     "paths": {

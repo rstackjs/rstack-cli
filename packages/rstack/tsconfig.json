@@ -11,10 +11,5 @@
     "module": "nodenext",
     "moduleResolution": "nodenext"
   },
-  "references": [
-    {
-      "path": "./test"
-    }
-  ],
   "include": ["src"]
 }
