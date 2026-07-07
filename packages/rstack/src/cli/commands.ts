@@ -129,8 +129,15 @@ async function runRslibCLI(args: string[]): Promise<void> {
   runCLI({ argv });
 }
 
-async function runRslintCLI(): Promise<void> {
-  // TODO
+async function runRslintCLI(args: string[]): Promise<void> {
+  const argv = [
+    process.execPath,
+    'rslint',
+    ...insertConfigArg(args, '--config', join(import.meta.dirname, 'rslintConfig.js')),
+  ];
+
+  const { runCLI } = await import('@rslint/core');
+  await runCLI({ argv });
 }
 
 export async function setupCommands(): Promise<void> {
@@ -159,7 +166,7 @@ export async function setupCommands(): Promise<void> {
   }
 
   if (command === 'lint') {
-    await runRslintCLI();
+    await runRslintCLI(args.slice(1));
     return;
   }
 
