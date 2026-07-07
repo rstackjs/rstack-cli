@@ -3,6 +3,8 @@ import path from 'node:path';
 
 const RSTACK_BIN_PATH = path.join(import.meta.dirname, '../../bin/rs.js');
 
+export type ExecCli = (args: string[], options?: ExecFileSyncOptions) => string;
+
 export const execCli = (args: string[], options: ExecFileSyncOptions = {}): string => {
   const output = execFileSync(process.execPath, [RSTACK_BIN_PATH, ...args], {
     ...options,

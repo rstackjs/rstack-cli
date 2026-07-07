@@ -1,14 +1,11 @@
 import { rm } from 'node:fs/promises';
 import path from 'node:path';
-import { expect, test } from 'rstack/test';
-import { execCli, getDistFiles, getFileContent } from '#test-helpers';
+import { getDistFiles, getFileContent, test } from '#test-helpers';
 
-const cwd = import.meta.dirname;
-
-test('should build with rstack --config', async () => {
+test('should build with rstack --config', async ({ cwd, execCli, expect }) => {
   await rm(path.join(cwd, 'dist'), { recursive: true, force: true });
 
-  execCli(['--config', './custom.config.ts', 'build'], { cwd });
+  execCli(['--config', './custom.config.ts', 'build']);
 
   const files = await getDistFiles(path.join(cwd, 'dist'));
   const output = getFileContent(files, 'static/js/index.js');
