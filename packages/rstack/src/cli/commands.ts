@@ -13,14 +13,14 @@ Usage:
   $ rs [command] [...options]
 
 Commands:
-  dev      Start the app dev server
+  dev      Run the app dev server
   build    Build the app for production
-  preview  Preview the app production build locally
-  lib      Build library outputs
-  doc      Develop and build docs
-  lint     Run lint checks
+  preview  Preview the app production build
+  lib      Build library 
+  doc      Serve or build docs
+  lint     Lint code
   test     Run tests
-  staged   Run configured tasks on staged Git files
+  staged   Run tasks on staged Git files
 
 For command-specific options, run:
   $ rs <command> -h
