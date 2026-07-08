@@ -17,6 +17,7 @@ Commands:
   build    Build the app for production
   preview  Preview the app production build locally
   lib      Build library outputs
+  doc      Develop and build docs
   lint     Run lint checks
   test     Run tests
   staged   Run configured tasks on staged Git files
@@ -62,6 +63,36 @@ async function runRslibCLI(args: string[]): Promise<void> {
   runCLI({ argv });
 }
 
+const isMissingRspressCoreError = (error: unknown): boolean => {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const code = 'code' in error ? error.code : undefined;
+  return code === 'ERR_MODULE_NOT_FOUND' && error.message.includes('@rspress/core');
+};
+
+async function runRspressCLI(args: string[]): Promise<void> {
+  const argv = [
+    process.execPath,
+    'rspress',
+    ...insertConfigArg(args, '--config', join(import.meta.dirname, 'rspressConfig.js')),
+  ];
+
+  try {
+    const { runCLI } = await import('@rspress/core');
+    runCLI({ argv });
+  } catch (error) {
+    if (isMissingRspressCoreError(error)) {
+      throw new Error(
+        'The "rs doc" command requires "@rspress/core" dependency. Please install it.',
+        { cause: error },
+      );
+    }
+    throw error;
+  }
+}
+
 async function runRslintCLI(args: string[]): Promise<void> {
   const argv = [
     process.execPath,
@@ -91,6 +122,11 @@ export async function setupCommands(): Promise<void> {
 
   if (command === 'lib') {
     await runRslibCLI(args.slice(1));
+    return;
+  }
+
+  if (command === 'doc') {
+    await runRspressCLI(args.slice(1));
     return;
   }
 

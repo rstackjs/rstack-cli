@@ -9,6 +9,7 @@ export default defineConfig({
       rsbuildConfig: './src/rsbuildConfig.ts',
       rslibConfig: './src/rslibConfig.ts',
       rslintConfig: './src/rslintConfig.ts',
+      rspressConfig: './src/rspressConfig.ts',
       rstestConfig: './src/rstestConfig.ts',
       lint: './src/lint.ts',
       test: './src/test.ts',

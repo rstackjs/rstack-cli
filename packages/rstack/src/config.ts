@@ -1,6 +1,7 @@
 import { loadConfig, type RsbuildConfigDefinition } from '@rsbuild/core';
 import type { RslibConfigDefinition } from '@rslib/core';
 import type { RslintConfig } from '@rslint/core';
+import type { UserConfig, UserConfigAsyncFn } from '@rspress/core';
 import type { RstestConfigExport } from '@rstest/core';
 
 export type StagedTask = string | string[];
@@ -8,10 +9,12 @@ export type StagedTask = string | string[];
 export type StagedConfig = Record<string, StagedTask>;
 
 export type RslintConfigDefinition = RslintConfig | (() => Promise<RslintConfig>);
+export type RspressConfigDefinition = UserConfig | UserConfigAsyncFn;
 
 export type Configs = {
   app?: RsbuildConfigDefinition;
   lib?: RslibConfigDefinition;
+  doc?: RspressConfigDefinition;
   test?: RstestConfigExport;
   lint?: RslintConfigDefinition;
   staged?: StagedConfig;
@@ -54,6 +57,12 @@ type Define = {
    */
   lib: (config: RslibConfigDefinition) => void;
   /**
+   * Defines the Rspress config for documentation.
+   *
+   * This config is used by the `rs doc` command.
+   */
+  doc: (config: RspressConfigDefinition) => void;
+  /**
    * Defines the Rstest config for tests.
    *
    * This config is used by the `rs test` command.
@@ -88,6 +97,7 @@ const setConfig = <T extends keyof Configs>(type: T, config: Configs[T]): void =
 export const define: Define = {
   app: (config) => setConfig('app', config),
   lib: (config) => setConfig('lib', config),
+  doc: (config) => setConfig('doc', config),
   test: (config) => setConfig('test', config),
   lint: (config) => setConfig('lint', config),
   staged: (config) => setConfig('staged', config),

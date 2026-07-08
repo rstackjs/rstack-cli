@@ -54,11 +54,20 @@
     "@rstest/core": "catalog:"
   },
   "devDependencies": {
+    "@rspress/core": "catalog:",
     "@rstest/adapter-rsbuild": "catalog:",
     "@rstest/adapter-rslib": "catalog:",
     "@types/node": "catalog:",
     "lint-staged": "catalog:",
     "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "@rspress/core": "^2.0.17"
+  },
+  "peerDependenciesMeta": {
+    "@rspress/core": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=22.12.0"
