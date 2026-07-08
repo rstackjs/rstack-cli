@@ -6,5 +6,6 @@ export async function runCLI(): Promise<void> {
     await setupCommands();
   } catch (error) {
     logger.error(error);
+    process.exitCode = 1;
   }
 }
