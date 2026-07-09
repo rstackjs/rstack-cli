@@ -7,6 +7,7 @@
 node_modules
 dist/
 test-results
+doc_build
 
 # Temp files
 test-temp-*
