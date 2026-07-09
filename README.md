@@ -33,34 +33,47 @@ Rstack CLI is currently experimental and mainly used for internal validation. It
 
 Welcome to try it out and share feedback through issues and discussions!
 
-## Features
-
-- **Unified local CLI**: run Rstack tools through a single `rs` command
-- **Single configuration**: configure all tools from one configuration file
-
 ## Usage
 
-Install `rstack` in your project and call it from package scripts:
+1. Install `rstack` in your project:
 
 ```bash
-# npm
-npm add -D rstack
 # pnpm
 pnpm add -D rstack
 # yarn
 yarn add -D rstack
+# npm
+npm add -D rstack
 # bun
 bun add -d rstack
 ```
 
-Then run the scripts with your preferred package manager:
+2. Add scripts to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "dev": "rs dev",
+    "build": "rs build",
+    "preview": "rs preview",
+    "test": "rs test",
+    "lint": "rs lint",
+    "lib": "rs lib",
+    "doc": "rs doc"
+  }
+}
+```
+
+Run the scripts with your preferred package manager:
 
 ```bash
 pnpm dev
 pnpm build
 pnpm preview
-pnpm lib
 pnpm test
+pnpm lint
+pnpm lib
+pnpm doc
 ```
 
 ## Credits
