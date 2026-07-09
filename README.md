@@ -33,6 +33,16 @@ Rstack CLI is currently experimental and mainly used for internal validation. It
 
 Welcome to try it out and share feedback through issues and discussions!
 
+## Skills
+
+Rstack CLI is still new and does not have complete documentation yet.
+
+Installing the Rstack CLI skill so the agent can understand how to use it:
+
+```bash
+npx skills add rstackjs/rstack-cli --skill rstack-cli-best-practices
+```
+
 ## Usage
 
 1. Install `rstack` in your project:
