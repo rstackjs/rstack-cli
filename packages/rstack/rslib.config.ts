@@ -18,4 +18,7 @@ export default defineConfig({
       RSTACK_VERSION: JSON.stringify(pkgJson.version),
     },
   },
+  output: {
+    externals: ['jiti'],
+  },
 });
