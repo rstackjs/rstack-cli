@@ -7,7 +7,7 @@ define.doc({
 });
 
 define.lint(async () => {
-  const { js, ts, reactPlugin, reactHooksPlugin } = await import('@rslint/core');
+  const { js, ts, reactPlugin, reactHooksPlugin } = await import('rstack/lint');
   return [
     js.configs.recommended,
     ts.configs.recommended,
