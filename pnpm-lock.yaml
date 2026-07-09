@@ -22,6 +22,9 @@ catalogs:
     '@rspress/core':
       specifier: ^2.0.17
       version: 2.0.17
+    '@rstackjs/load-config':
+      specifier: ^0.1.1
+      version: 0.1.1
     '@rstest/adapter-rsbuild':
       specifier: ~0.11.0
       version: 0.11.0
@@ -78,6 +81,9 @@ importers:
 
   .:
     devDependencies:
+      '@rstackjs/load-config':
+        specifier: 'catalog:'
+        version: 0.1.1
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.2
@@ -735,6 +741,14 @@ packages:
 
   '@rspress/shared@2.0.17':
     resolution: {integrity: sha512-ZzpZ4hm5svgwU0w5CpTLZy4vFD3uPo8+gXtWMOREYMzwfzJeHqwOyXwxHf6byGpx85mVK5DQqMDi61meAS7ZUw==}
+
+  '@rstackjs/load-config@0.1.1':
+    resolution: {integrity: sha512-YYtqGoM5DrrmZLGaYSUAC66qhhfjAfwXVvBScGJIfPXGa878rK0SJeO6b44W2pYfikm8yefzyV0OeedWO/PKkw==}
+    peerDependencies:
+      jiti: ^2.0.0
+    peerDependenciesMeta:
+      jiti:
+        optional: true
 
   '@rstest/adapter-rsbuild@0.11.0':
     resolution: {integrity: sha512-otrR3yqQ5Uyskm0hu8c0fjP1eFk6bMJALnYhUl6V1CKp/monoowFMa6XEqdY2d4aHv6oa8XWGLfU4LWne1Vg9A==}
@@ -2195,6 +2209,8 @@ snapshots:
     transitivePeerDependencies:
       - '@module-federation/runtime-tools'
       - core-js
+
+  '@rstackjs/load-config@0.1.1': {}
 
   '@rstest/adapter-rsbuild@0.11.0(@rsbuild/core@2.1.4)(@rstest/core@0.11.0)':
     dependencies:

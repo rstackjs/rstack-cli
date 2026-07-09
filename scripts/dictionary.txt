@@ -6,5 +6,6 @@ rslint
 rspack
 rspress
 rstack
+rstackjs
 rstest
 turborepo

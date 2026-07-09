@@ -1,4 +1,5 @@
-import { loadConfig, type RsbuildConfigDefinition } from '@rsbuild/core';
+import { loadConfig } from '@rstackjs/load-config';
+import type { RsbuildConfigDefinition } from '@rsbuild/core';
 import type { RslibConfigDefinition } from '@rslib/core';
 import type { RslintConfig } from '@rslint/core';
 import type { UserConfig, UserConfigAsyncFn } from '@rspress/core';
