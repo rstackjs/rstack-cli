@@ -2,7 +2,7 @@
   "name": "rstack",
   "version": "0.0.3",
   "license": "MIT",
-  "repository": "https://github.com/rstackjs/rstack",
+  "repository": "https://github.com/rstackjs/rstack-cli",
   "bin": {
     "rs": "./bin/rs.js",
     "rstack": "./bin/rs.js"

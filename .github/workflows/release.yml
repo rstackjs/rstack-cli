@@ -34,7 +34,7 @@ permissions: {}
 jobs:
   validate_inputs:
     name: Validate Inputs
-    if: github.repository == 'rstackjs/rstack' && github.event_name == 'workflow_dispatch'
+    if: github.repository == 'rstackjs/rstack-cli' && github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Validate npm tag confirmation
@@ -52,7 +52,7 @@ jobs:
 
   release:
     name: Release
-    if: github.repository == 'rstackjs/rstack' && github.event_name == 'workflow_dispatch'
+    if: github.repository == 'rstackjs/rstack-cli' && github.event_name == 'workflow_dispatch'
     needs: validate_inputs
     runs-on: ubuntu-latest
     environment: npm
