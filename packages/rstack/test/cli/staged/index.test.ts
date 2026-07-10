@@ -25,6 +25,8 @@ define.staged({ '*.txt': 'node revert.mjs' });
 for (const file of process.argv.slice(2)) {
   writeFileSync(file, 'initial\\n');
 }
+
+console.log('staged task output');
 `,
     ),
     writeFile(path.join(cwd, 'file.txt'), 'initial\n'),
@@ -66,6 +68,7 @@ test('should display the staged help message', ({ execCli, expect }) => {
   expect(output).toContain('Usage:\n  $ rs staged [options]');
   expect(output).toContain('Runs lint-staged with tasks from define.staged in rstack.config.');
   expect(output).toContain('--allow-empty');
+  expect(output).toContain('-v, --verbose');
   expect(output).toContain('-h, --help');
 });
 
@@ -85,14 +88,19 @@ test('should allow an empty commit with --allow-empty', async ({ execCli }) => {
   });
 });
 
-test('should run staged tasks with --concurrent false', async ({ execCli }) => {
-  await withGitFixture((cwd) => {
-    execCli(`staged --allow-empty --concurrent false`, { cwd });
+for (const option of ['--concurrent false', '-p 1']) {
+  test(`should run staged tasks with ${option}`, async ({ execCli }) => {
+    await withGitFixture((cwd) => {
+      execCli(`staged --allow-empty ${option}`, { cwd });
+    });
   });
-});
+}
 
-test('should run staged tasks with -p 1', async ({ execCli }) => {
-  await withGitFixture((cwd) => {
-    execCli(`staged --allow-empty -p 1`, { cwd });
+for (const option of ['--verbose', '-v']) {
+  test(`should show successful task output with ${option}`, async ({ execCli, expect }) => {
+    await withGitFixture((cwd) => {
+      const output = execCli(`staged --allow-empty ${option}`, { cwd });
+      expect(output).toContain('staged task output');
+    });
   });
-});
+}
