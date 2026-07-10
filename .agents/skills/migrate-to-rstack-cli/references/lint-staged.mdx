@@ -1,0 +1,25 @@
+# lint-staged Migration
+
+Read this reference when the project uses the `lint-staged` binary, a lint-staged dotfile config, `lint-staged.config.*`, or a `lint-staged` key in `package.json`.
+
+## Steps
+
+1. Replace direct `lint-staged` script invocations with `rs staged`.
+2. Move a plain task map into `define.staged` in `rstack.config.*`.
+3. Remove the old manifest key or config file.
+4. Remove the direct `lint-staged` dependency only when no script, config, or programmatic API still uses it.
+
+## Config Pattern
+
+```ts
+import { define } from 'rstack';
+
+define.staged({
+  '*.{ts,tsx,js,jsx}': ['rs lint --fix', 'prettier -w'],
+  '*.{json,md}': 'prettier -w',
+});
+```
+
+## Unsupported Cases
+
+Do not carry lint-staged CLI flags to `rs staged`; they are not forwarded. Keep standalone lint-staged when the workflow requires function-based configs, CLI options, or behavior outside a plain task map.
