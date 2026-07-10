@@ -69,6 +69,7 @@ test('should display the staged help message', ({ execCli, expect }) => {
   expect(output).toContain('Runs lint-staged with tasks from define.staged in rstack.config.');
   expect(output).toContain('--allow-empty');
   expect(output).toContain('--no-stash');
+  expect(output).toContain('-q, --quiet');
   expect(output).toContain('-v, --verbose');
   expect(output).toContain('-h, --help');
 });
@@ -112,3 +113,12 @@ test('should run staged tasks without a backup stash', async ({ execCli, expect 
     expect(output).toContain('Skipping backup because `--no-stash` was used');
   });
 });
+
+for (const option of ['--quiet', '-q']) {
+  test(`should suppress lint-staged output with ${option}`, async ({ execCli, expect }) => {
+    await withGitFixture((cwd) => {
+      const output = execCli(`staged --allow-empty ${option}`, { cwd });
+      expect(output).toBe('');
+    });
+  });
+}
