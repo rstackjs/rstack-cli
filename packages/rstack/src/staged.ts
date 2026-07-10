@@ -11,6 +11,7 @@ Runs lint-staged with tasks from define.staged in rstack.config.
 Options:
   --allow-empty                      allow empty commits when tasks revert all staged changes
   -p, --concurrent <number|boolean>  the number of tasks to run concurrently, or false for serial
+  -v, --verbose                      show task output even when tasks succeed; by default only failed output is shown
   -h, --help                         Display this help message`;
 
 export async function runStagedCLI(args: string[]): Promise<void> {
@@ -21,6 +22,7 @@ export async function runStagedCLI(args: string[]): Promise<void> {
       allowEmpty: { type: 'boolean' },
       concurrent: { type: 'string', short: 'p' },
       help: { type: 'boolean', short: 'h' },
+      verbose: { type: 'boolean', short: 'v' },
     },
     allowPositionals: false,
     strict: true,
@@ -47,6 +49,7 @@ export async function runStagedCLI(args: string[]): Promise<void> {
     allowEmpty: values['allow-empty'] ?? values.allowEmpty ?? false,
     concurrent: values.concurrent === undefined ? true : JSON.parse(values.concurrent),
     config: stagedConfig,
+    verbose: values.verbose ?? false,
   });
   if (!success) {
     process.exitCode = 1;
