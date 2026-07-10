@@ -59,6 +59,7 @@
     "@rstest/adapter-rslib": "catalog:",
     "@types/node": "catalog:",
     "lint-staged": "catalog:",
+    "rslog": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {

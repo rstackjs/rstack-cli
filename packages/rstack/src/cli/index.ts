@@ -1,5 +1,5 @@
 import { setupCommands } from './commands.js';
-import { logger } from '@rsbuild/core';
+import { logger } from 'rslog';
 
 export async function runCLI(): Promise<void> {
   try {

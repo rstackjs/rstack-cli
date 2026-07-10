@@ -3,6 +3,7 @@ oxfmt
 rsbuild
 rslib
 rslint
+rslog
 rspack
 rspress
 rstack
