@@ -1,17 +1,30 @@
+import { parseArgs } from 'node:util';
 import { loadRstackConfig } from './config.js';
 
 const stagedHelpMessage = `Rstack v${RSTACK_VERSION}
 
 Usage:
-  $ rs staged
+  $ rs staged [options]
 
 Runs lint-staged with tasks from define.staged in rstack.config.
 
 Options:
-  -h, --help  Display this help message`;
+  --allow-empty  Allow empty commits when tasks revert all staged changes
+  -h, --help     Display this help message`;
 
 export async function runStagedCLI(args: string[]): Promise<void> {
-  if (args.length === 1 && (args[0] === '-h' || args[0] === '--help')) {
+  const { values } = parseArgs({
+    args,
+    options: {
+      'allow-empty': { type: 'boolean' },
+      allowEmpty: { type: 'boolean' },
+      help: { type: 'boolean', short: 'h' },
+    },
+    allowPositionals: false,
+    strict: true,
+  });
+
+  if (values.help) {
     console.log(stagedHelpMessage);
     return;
   }
@@ -29,6 +42,7 @@ export async function runStagedCLI(args: string[]): Promise<void> {
     'lint-staged'
   );
   const success = await lintStaged({
+    allowEmpty: values['allow-empty'] ?? values.allowEmpty ?? false,
     config: stagedConfig,
   });
   if (!success) {
