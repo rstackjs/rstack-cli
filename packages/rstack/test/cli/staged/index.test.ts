@@ -70,6 +70,7 @@ test('should display the staged help message', ({ execCli, expect }) => {
   expect(output).toContain('Runs lint-staged with tasks from define.staged in rstack.config.');
   expect(output).toContain('--allow-empty');
   expect(output).toContain('--cwd <path>');
+  expect(output).toContain('-d, --debug');
   expect(output).toContain('--no-stash');
   expect(output).toContain('-q, --quiet');
   expect(output).toContain('-r, --relative');
@@ -97,6 +98,15 @@ for (const option of ['--concurrent false', '-p 1']) {
   test(`should run staged tasks with ${option}`, async ({ execCli }) => {
     await withGitFixture((cwd) => {
       execCli(`staged --allow-empty ${option}`, { cwd });
+    });
+  });
+}
+
+for (const option of ['--debug', '-d']) {
+  test(`should print debug output with ${option}`, async ({ execCli, expect }) => {
+    await withGitFixture((cwd) => {
+      const output = execCli(`staged --allow-empty ${option} 2>&1`, { cwd });
+      expect(output).toContain('lint-staged:');
     });
   });
 }

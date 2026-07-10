@@ -12,6 +12,7 @@ Options:
   --allow-empty                      Allow empty commits when tasks revert all staged changes
   -p, --concurrent <number|boolean>  The number of tasks to run concurrently, or false for serial
   --cwd <path>                       Working directory to run all tasks in
+  -d, --debug                        Print additional debug information
   --no-stash                         Disable the backup stash. Implies "--no-revert".
   -q, --quiet                        Disable lint-staged's own console output
   -r, --relative                     Pass relative filepaths to tasks
@@ -26,6 +27,7 @@ export async function runStagedCLI(args: string[]): Promise<void> {
       allowEmpty: { type: 'boolean' },
       concurrent: { type: 'string', short: 'p' },
       cwd: { type: 'string' },
+      debug: { type: 'boolean', short: 'd' },
       help: { type: 'boolean', short: 'h' },
       'no-stash': { type: 'boolean' },
       quiet: { type: 'boolean', short: 'q' },
@@ -58,6 +60,7 @@ export async function runStagedCLI(args: string[]): Promise<void> {
     concurrent: values.concurrent === undefined ? true : JSON.parse(values.concurrent),
     config: stagedConfig,
     cwd: values.cwd,
+    debug: values.debug ?? false,
     quiet: values.quiet ?? false,
     relative: values.relative ?? false,
     stash: !values['no-stash'],
