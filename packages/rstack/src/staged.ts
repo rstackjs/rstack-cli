@@ -9,8 +9,9 @@ Usage:
 Runs lint-staged with tasks from define.staged in rstack.config.
 
 Options:
-  --allow-empty  Allow empty commits when tasks revert all staged changes
-  -h, --help     Display this help message`;
+  --allow-empty                      allow empty commits when tasks revert all staged changes
+  -p, --concurrent <number|boolean>  the number of tasks to run concurrently, or false for serial
+  -h, --help                         Display this help message`;
 
 export async function runStagedCLI(args: string[]): Promise<void> {
   const { values } = parseArgs({
@@ -18,6 +19,7 @@ export async function runStagedCLI(args: string[]): Promise<void> {
     options: {
       'allow-empty': { type: 'boolean' },
       allowEmpty: { type: 'boolean' },
+      concurrent: { type: 'string', short: 'p' },
       help: { type: 'boolean', short: 'h' },
     },
     allowPositionals: false,
@@ -43,6 +45,7 @@ export async function runStagedCLI(args: string[]): Promise<void> {
   );
   const success = await lintStaged({
     allowEmpty: values['allow-empty'] ?? values.allowEmpty ?? false,
+    concurrent: values.concurrent === undefined ? true : JSON.parse(values.concurrent),
     config: stagedConfig,
   });
   if (!success) {
