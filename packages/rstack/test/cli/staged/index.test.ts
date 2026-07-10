@@ -79,8 +79,20 @@ test('should prevent an empty commit by default', async ({ execCli, expect }) =>
   });
 });
 
-test(`should allow an empty commit with --allow-empty`, async ({ execCli }) => {
+test('should allow an empty commit with --allow-empty', async ({ execCli }) => {
   await withGitFixture((cwd) => {
     execCli(`staged --allow-empty`, { cwd });
+  });
+});
+
+test('should run staged tasks with --concurrent false', async ({ execCli }) => {
+  await withGitFixture((cwd) => {
+    execCli(`staged --allow-empty --concurrent false`, { cwd });
+  });
+});
+
+test('should run staged tasks with -p 1', async ({ execCli }) => {
+  await withGitFixture((cwd) => {
+    execCli(`staged --allow-empty -p 1`, { cwd });
   });
 });
