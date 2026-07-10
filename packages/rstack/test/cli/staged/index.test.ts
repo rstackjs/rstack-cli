@@ -27,6 +27,7 @@ for (const file of process.argv.slice(2)) {
 }
 
 console.log('staged task output');
+console.log('staged file:', process.argv[2]);
 `,
     ),
     writeFile(path.join(cwd, 'file.txt'), 'initial\n'),
@@ -70,6 +71,7 @@ test('should display the staged help message', ({ execCli, expect }) => {
   expect(output).toContain('--allow-empty');
   expect(output).toContain('--no-stash');
   expect(output).toContain('-q, --quiet');
+  expect(output).toContain('-r, --relative');
   expect(output).toContain('-v, --verbose');
   expect(output).toContain('-h, --help');
 });
@@ -119,6 +121,15 @@ for (const option of ['--quiet', '-q']) {
     await withGitFixture((cwd) => {
       const output = execCli(`staged --allow-empty ${option}`, { cwd });
       expect(output).toBe('');
+    });
+  });
+}
+
+for (const option of ['--relative', '-r']) {
+  test(`should pass relative filepaths with ${option}`, async ({ execCli, expect }) => {
+    await withGitFixture((cwd) => {
+      const output = execCli(`staged --allow-empty --verbose ${option}`, { cwd });
+      expect(output).toContain('staged file: file.txt');
     });
   });
 }
