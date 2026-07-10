@@ -78,6 +78,18 @@ test('should display the staged help message', ({ execCli, expect }) => {
   expect(output).toContain('-h, --help');
 });
 
+test('should display the colorized staged help message', ({ execCli, expect }) => {
+  const output = execCli('staged -h', {
+    env: {
+      FORCE_COLOR: '1',
+    },
+  });
+
+  expect(output).toContain('\x1b[36mUsage\x1b[39m:');
+  expect(output).toContain('\x1b[33m  $ rs staged [options]\x1b[39m');
+  expect(output).toContain('\x1b[36mOptions\x1b[39m:');
+});
+
 test('should reject unknown staged options', ({ execCli, expect }) => {
   expect(() => execCli('staged --unknown')).toThrow();
 });
