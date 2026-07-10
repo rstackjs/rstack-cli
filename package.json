@@ -2,7 +2,7 @@
   "name": "rstack-monorepo",
   "private": true,
   "license": "MIT",
-  "repository": "https://github.com/rstackjs/rstack",
+  "repository": "https://github.com/rstackjs/rstack-cli",
   "type": "module",
   "scripts": {
     "build": "pnpm --filter './packages/**' build",
