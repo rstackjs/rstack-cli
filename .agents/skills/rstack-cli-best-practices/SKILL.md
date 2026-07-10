@@ -26,7 +26,7 @@ Use `rs -h` for top-level help, and `rs <command> -h` for command help where sup
 
 Key behavior:
 
-- `rs test` extends `define.app` through `@rstest/adapter-rsbuild` and `define.lib` through `@rstest/adapter-rslib` unless `define.test` already sets `extends`.
+- Unless `define.test` already sets `extends`, `rs test` extends `define.app` through `@rstest/adapter-rsbuild` or falls back to `define.lib` through `@rstest/adapter-rslib`. The app config takes precedence when both are defined.
 - `rs doc` requires the optional `@rspress/core` dependency.
 
 ## rstack.config.ts

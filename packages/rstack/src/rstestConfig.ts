@@ -7,6 +7,8 @@ const extendsConfig = async (configs: Configs, testConfig: RstestConfig, params:
     return testConfig;
   }
 
+  // Prefer the app when both app and lib are defined. Merging both adapters can
+  // introduce conflicting runtime, resolve, and source transform settings.
   const appConfig = configs.app;
   if (appConfig) {
     const { withRsbuildConfig } = await import(
@@ -15,9 +17,12 @@ const extendsConfig = async (configs: Configs, testConfig: RstestConfig, params:
     );
     const config = typeof appConfig === 'function' ? await appConfig(params) : appConfig;
 
-    testConfig.extends = withRsbuildConfig({
-      config,
-    });
+    return {
+      ...testConfig,
+      extends: withRsbuildConfig({
+        config,
+      }),
+    };
   }
 
   const libConfig = configs.lib;
@@ -28,9 +33,12 @@ const extendsConfig = async (configs: Configs, testConfig: RstestConfig, params:
     );
     const config = typeof libConfig === 'function' ? await libConfig(params) : libConfig;
 
-    testConfig.extends = withRslibConfig({
-      config,
-    });
+    return {
+      ...testConfig,
+      extends: withRslibConfig({
+        config,
+      }),
+    };
   }
 
   return testConfig;
