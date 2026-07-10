@@ -13,6 +13,7 @@ Options:
   -p, --concurrent <number|boolean>  The number of tasks to run concurrently, or false for serial
   --no-stash                         Disable the backup stash. Implies "--no-revert".
   -q, --quiet                        Disable lint-staged's own console output
+  -r, --relative                     Pass relative filepaths to tasks
   -v, --verbose                      Show task output even when tasks succeed; by default only failed output is shown
   -h, --help                         Display this help message`;
 
@@ -26,6 +27,7 @@ export async function runStagedCLI(args: string[]): Promise<void> {
       help: { type: 'boolean', short: 'h' },
       'no-stash': { type: 'boolean' },
       quiet: { type: 'boolean', short: 'q' },
+      relative: { type: 'boolean', short: 'r' },
       verbose: { type: 'boolean', short: 'v' },
     },
     allowPositionals: false,
@@ -54,6 +56,7 @@ export async function runStagedCLI(args: string[]): Promise<void> {
     concurrent: values.concurrent === undefined ? true : JSON.parse(values.concurrent),
     config: stagedConfig,
     quiet: values.quiet ?? false,
+    relative: values.relative ?? false,
     stash: !values['no-stash'],
     verbose: values.verbose ?? false,
   });
