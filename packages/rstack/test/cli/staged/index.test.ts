@@ -69,6 +69,7 @@ test('should display the staged help message', ({ execCli, expect }) => {
   expect(output).toContain('Usage:\n  $ rs staged [options]');
   expect(output).toContain('Runs lint-staged with tasks from define.staged in rstack.config.');
   expect(output).toContain('--allow-empty');
+  expect(output).toContain('--cwd <path>');
   expect(output).toContain('--no-stash');
   expect(output).toContain('-q, --quiet');
   expect(output).toContain('-r, --relative');
@@ -133,3 +134,14 @@ for (const option of ['--relative', '-r']) {
     });
   });
 }
+
+test('should run staged tasks in the specified cwd', async ({ execCli, expect }) => {
+  await withGitFixture((cwd) => {
+    const configPath = path.join(cwd, 'rstack.config.ts');
+    const output = execCli(
+      `--config ${JSON.stringify(configPath)} staged --allow-empty --cwd ${JSON.stringify(cwd)} --relative --verbose`,
+      { cwd: path.dirname(cwd) },
+    );
+    expect(output).toContain('staged file: file.txt');
+  });
+});
