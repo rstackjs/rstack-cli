@@ -56,15 +56,15 @@ export async function runStagedCLI(args: string[]): Promise<void> {
     'lint-staged'
   );
   const success = await lintStaged({
-    allowEmpty: values['allow-empty'] ?? values.allowEmpty ?? false,
-    concurrent: values.concurrent === undefined ? true : JSON.parse(values.concurrent),
+    allowEmpty: values['allow-empty'] ?? values.allowEmpty,
+    concurrent: values.concurrent === undefined ? undefined : JSON.parse(values.concurrent),
     config: stagedConfig,
     cwd: values.cwd,
-    debug: values.debug ?? false,
-    quiet: values.quiet ?? false,
-    relative: values.relative ?? false,
-    stash: !values['no-stash'],
-    verbose: values.verbose ?? false,
+    debug: values.debug,
+    quiet: values.quiet,
+    relative: values.relative,
+    stash: values['no-stash'] ? false : undefined,
+    verbose: values.verbose,
   });
   if (!success) {
     process.exitCode = 1;
