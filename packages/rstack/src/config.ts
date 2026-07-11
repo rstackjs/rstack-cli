@@ -1,4 +1,4 @@
-import { loadConfig } from '@rstackjs/load-config';
+import { loadConfig, type LoadConfigResult } from '@rstackjs/load-config';
 import type { RsbuildConfigDefinition } from '@rsbuild/core';
 import type { RslibConfigDefinition } from '@rslib/core';
 import type { RslintConfig } from '@rslint/core';
@@ -16,6 +16,10 @@ export type Configs = {
   test?: RstestConfigExport;
   lint?: RslintConfigDefinition;
   staged?: StagedConfig;
+};
+
+type LoadedRstackConfig = Pick<LoadConfigResult, 'filePath' | 'dependencies'> & {
+  configs: Configs;
 };
 
 type ConfigState = {
@@ -101,12 +105,12 @@ export const define: Define = {
   staged: (config) => setConfig('staged', config),
 };
 
-export const loadRstackConfig = async (): Promise<Configs> => {
+export const loadRstackConfigWithMeta = async (): Promise<LoadedRstackConfig> => {
   const state = getConfigState();
   state.configs = {};
 
   try {
-    await loadConfig({
+    const { filePath, dependencies } = await loadConfig({
       loader: 'native',
       exportName: false,
       fresh: true,
@@ -122,8 +126,17 @@ export const loadRstackConfig = async (): Promise<Configs> => {
           }),
     });
 
-    return state.configs;
+    return {
+      configs: state.configs,
+      filePath,
+      dependencies,
+    };
   } finally {
     state.configs = {};
   }
+};
+
+export const loadRstackConfig = async (): Promise<Configs> => {
+  const { configs } = await loadRstackConfigWithMeta();
+  return configs;
 };

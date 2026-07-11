@@ -1,5 +1,5 @@
-import type { RsbuildConfigDefinition, ConfigParams } from '@rsbuild/core';
-import { loadRstackConfig, type Configs } from './config.js';
+import { mergeRsbuildConfig, type RsbuildConfigDefinition, type ConfigParams } from '@rsbuild/core';
+import { loadRstackConfigWithMeta, type Configs } from './config.js';
 
 const resolveRsbuildConfig = async (configs: Configs, params: ConfigParams) => {
   const appConfig = configs.app;
@@ -13,8 +13,21 @@ const resolveRsbuildConfig = async (configs: Configs, params: ConfigParams) => {
 };
 
 const loadRsbuildConfig: RsbuildConfigDefinition = async (params) => {
-  const configs = await loadRstackConfig();
-  return resolveRsbuildConfig(configs, params);
+  const { configs, filePath, dependencies } = await loadRstackConfigWithMeta();
+  const config = await resolveRsbuildConfig(configs, params);
+
+  if (!filePath) {
+    return config;
+  }
+
+  return mergeRsbuildConfig(config, {
+    dev: {
+      watchFiles: {
+        paths: [filePath, ...dependencies],
+        type: 'reload-server',
+      },
+    },
+  });
 };
 
 export default loadRsbuildConfig;
