@@ -1,7 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { stripVTControlCharacters } from 'node:util';
 import { test } from '#test-helpers';
 
 const git = (cwd: string, args: string[]): void => {
@@ -64,7 +63,7 @@ const withGitFixture = async (callback: (cwd: string) => Promise<void> | void): 
 };
 
 test('should display the staged help message', ({ execCli, expect }) => {
-  const output = stripVTControlCharacters(execCli('staged --help'));
+  const output = execCli('staged --help');
 
   expect(output).toContain('Rstack v');
   expect(output).toContain('Usage:\n  $ rs staged [options]');
@@ -77,18 +76,6 @@ test('should display the staged help message', ({ execCli, expect }) => {
   expect(output).toContain('-r, --relative');
   expect(output).toContain('-v, --verbose');
   expect(output).toContain('-h, --help');
-});
-
-test('should display the colorized staged help message', ({ execCli, expect }) => {
-  const output = execCli('staged -h', {
-    env: {
-      FORCE_COLOR: '1',
-    },
-  });
-
-  expect(output).toContain('\x1b[36mUsage\x1b[39m:');
-  expect(output).toContain('\x1b[33m  $ rs staged [options]\x1b[39m');
-  expect(output).toContain('\x1b[36mOptions\x1b[39m:');
 });
 
 test('should reject unknown staged options', ({ execCli, expect }) => {
