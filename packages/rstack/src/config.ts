@@ -4,10 +4,7 @@ import type { RslibConfigDefinition } from '@rslib/core';
 import type { RslintConfig } from '@rslint/core';
 import type { UserConfig, UserConfigAsyncFn } from '@rspress/core';
 import type { RstestConfigExport } from '@rstest/core';
-
-export type StagedTask = string | string[];
-
-export type StagedConfig = Record<string, StagedTask>;
+import type { StagedConfig } from './staged.js';
 
 export type RslintConfigDefinition = RslintConfig | (() => Promise<RslintConfig>);
 export type RspressConfigDefinition = UserConfig | UserConfigAsyncFn;

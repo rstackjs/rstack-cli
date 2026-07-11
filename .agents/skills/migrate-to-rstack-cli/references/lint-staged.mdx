@@ -5,7 +5,7 @@ Read this reference when the project uses the `lint-staged` binary, a lint-stage
 ## Steps
 
 1. Replace direct `lint-staged` script invocations with `rs staged`.
-2. Move a plain task map into `define.staged` in `rstack.config.*`.
+2. Move the lint-staged config into `define.staged` in `rstack.config.*`.
 3. Remove the old manifest key or config file.
 4. Remove the direct `lint-staged` dependency only when no script, config, or programmatic API still uses it.
 
