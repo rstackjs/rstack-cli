@@ -6,7 +6,7 @@ Read this reference when the project uses `@rstest/core`, `@rstest/adapter-rsbui
 
 1. Replace the `rstest` executable prefix with `rs test`. Preserve supported arguments, such as `-w`, after `rs test`.
 2. Move test options into `define.test`.
-3. When `define.app` or `define.lib` exists, remove standard `withRsbuildConfig()` or `withRslibConfig()` wiring and its adapter dependency. Rstack derives that extension unless `define.test` sets `extends`.
+3. Remove standard `withRsbuildConfig()` or `withRslibConfig()` wiring only when `define.app` or `define.lib` is registered by the same `rstack.config.*` loaded by `rs test`. Rstack derives that extension unless `define.test` sets `extends`.
 4. Preserve explicit custom `extends` values. Keep any adapter or package still imported by that custom extension.
 5. Replace imports and TypeScript `types` entries:
    - `@rstest/core` to `rstack/test`
@@ -28,4 +28,4 @@ define.test({
 
 ## Validate
 
-Run the migrated test script.
+Run the migrated test script. Follow repository requirements such as building before tests.

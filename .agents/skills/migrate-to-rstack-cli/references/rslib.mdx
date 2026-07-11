@@ -5,7 +5,7 @@ Read this reference when the project uses `@rslib/core`, `rslib.config.*`, `rsli
 ## Steps
 
 1. Replace the `rslib` executable prefix with `rs lib`. Preserve supported arguments after `rs lib`.
-2. Move the old config export into `define.lib`. Preserve async functions, config parameters, plugins, and all options.
+2. Rename or replace the `rslib.config.*` with `rstack.config.*`, then move its export into `define.lib`. Preserve async functions, config parameters, plugins, and all options.
 3. Keep build plugins, but verify that Rsbuild plugin peer ranges support the core version installed through `rstack`. Upgrade incompatible plugins before migrating.
 4. Replace `@rslib/core/types` references with `rstack/types` where applicable.
 5. Replace custom `--config` paths with the migrated `rstack.config.*` path.
@@ -26,4 +26,4 @@ If tests also use Rstest, read [rstest.mdx](rstest.mdx). `rs test` derives an Rs
 
 ## Validate
 
-Run the migrated library build script and compare its outputs.
+Run every migrated library build from its directory and compare its outputs.
