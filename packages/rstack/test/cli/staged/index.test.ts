@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { stripVTControlCharacters } from 'node:util';
 import { test } from '#test-helpers';
 
 const git = (cwd: string, args: string[]): void => {
@@ -63,7 +64,7 @@ const withGitFixture = async (callback: (cwd: string) => Promise<void> | void): 
 };
 
 test('should display the staged help message', ({ execCli, expect }) => {
-  const output = execCli('staged --help');
+  const output = stripVTControlCharacters(execCli('staged --help'));
 
   expect(output).toContain('Rstack v');
   expect(output).toContain('Usage:\n  $ rs staged [options]');
