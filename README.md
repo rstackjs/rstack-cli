@@ -90,11 +90,12 @@ pnpm doc
 
 Rstack re-exports the APIs of its underlying tools through dedicated entry points:
 
-| Tool   | Import path   |
-| ------ | ------------- |
-| Rslib  | `rstack/lib`  |
-| Rslint | `rstack/lint` |
-| Rstest | `rstack/test` |
+| Tool    | Import path   |
+| ------- | ------------- |
+| Rsbuild | `rstack/app`  |
+| Rslib   | `rstack/lib`  |
+| Rslint  | `rstack/lint` |
+| Rstest  | `rstack/test` |
 
 For example, import Rstest APIs without adding `@rstest/core` as a direct dependency:
 
