@@ -86,6 +86,22 @@ pnpm lib
 pnpm doc
 ```
 
+## API imports
+
+Rstack re-exports the APIs of its underlying tools through dedicated entry points:
+
+| Tool   | Import path   |
+| ------ | ------------- |
+| Rslib  | `rstack/lib`  |
+| Rslint | `rstack/lint` |
+| Rstest | `rstack/test` |
+
+For example, import Rstest APIs without adding `@rstest/core` as a direct dependency:
+
+```ts
+import { expect, test } from 'rstack/test';
+```
+
 ## Credits
 
 Rstack CLI is inspired by:

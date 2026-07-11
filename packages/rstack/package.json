@@ -23,6 +23,10 @@
       "types": "./dist/test.d.ts",
       "default": "./dist/test.js"
     },
+    "./lib": {
+      "types": "./dist/lib.d.ts",
+      "default": "./dist/lib.js"
+    },
     "./lint": {
       "types": "./dist/lint.d.ts",
       "default": "./dist/lint.js"
