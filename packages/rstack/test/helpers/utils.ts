@@ -9,15 +9,16 @@ function isPortAvailable(port: number) {
     const server = net.createServer().listen(port);
     return new Promise((resolve) => {
       server.on('listening', () => {
-        server.close();
-        resolve(true);
+        server.close(() => {
+          resolve(true);
+        });
       });
       server.on('error', () => {
         resolve(false);
       });
     });
   } catch {
-    return false;
+    return Promise.resolve(false);
   }
 }
 
@@ -33,13 +34,14 @@ export async function getRandomPort(
   defaultPort: number = Math.ceil(Math.random() * 30000) + 15000,
 ): Promise<number> {
   let port = defaultPort;
-  while (true) {
+  while (port <= 65535) {
     if (!portMap.get(port) && (await isPortAvailable(port))) {
       portMap.set(port, 1);
       return port;
     }
     port++;
   }
+  throw new Error('No available ports found in the valid range.');
 }
 
 /**
