@@ -1,11 +1,21 @@
+import { type ChildProcess, type SpawnOptions, spawn as nodeSpawn } from 'node:child_process';
 import path from 'node:path';
 import { test as baseTest } from 'rstack/test';
-import { execCli as baseExecCli, type ExecCli } from './cli.ts';
+import { execCli as baseExecCli, type ExecCli, RSTACK_BIN_PATH } from './cli.ts';
 import { type ExtendedLogHelper, proxyConsole } from './logs.ts';
+
+type Exec = (
+  command: string,
+  options?: SpawnOptions,
+) => {
+  childProcess: ChildProcess;
+};
 
 export type CliTestFixtures = {
   cwd: string;
+  exec: Exec;
   execCli: ExecCli;
+  execCliAsync: Exec;
   logHelper: ExtendedLogHelper;
 };
 
@@ -19,6 +29,15 @@ function makeBox(title: string) {
     footer: `${footer}\n`,
   };
 }
+
+const setupExecOptions = <T extends SpawnOptions>(options: T, cwd: string): T => {
+  // inherit process.env from current process
+  const { NODE_ENV: _, ...restEnv } = process.env;
+  options.env ||= {};
+  options.env = { ...restEnv, ...options.env };
+  options.cwd ||= cwd;
+  return options;
+};
 
 export const test: CliTest = baseTest.extend<CliTestFixtures>({
   cwd: async ({ expect }, use) => {
@@ -54,5 +73,41 @@ export const test: CliTest = baseTest.extend<CliTestFixtures>({
       baseExecCli(command, { ...options, cwd: options.cwd ?? cwd, logHelper });
 
     await use(execCli);
+  },
+  exec: async ({ cwd, logHelper }, use) => {
+    const closes: Array<() => void> = [];
+
+    const exec: Exec = (command, options = {}) => {
+      const childProcess = nodeSpawn(command, setupExecOptions({ shell: true, ...options }, cwd));
+
+      const onData = (data: Buffer) => {
+        logHelper.addLog(data.toString());
+      };
+
+      childProcess.stdout?.on('data', onData);
+      childProcess.stderr?.on('data', onData);
+
+      closes.push(() => {
+        childProcess.stdout?.off('data', onData);
+        childProcess.stderr?.off('data', onData);
+        childProcess.kill();
+      });
+
+      return { childProcess };
+    };
+
+    try {
+      await use(exec);
+    } finally {
+      for (const close of closes) {
+        close();
+      }
+    }
+  },
+  execCliAsync: async ({ exec }, use) => {
+    const execCliAsync: Exec = (command, options = {}) => {
+      return exec(`node "${RSTACK_BIN_PATH}" ${command}`, options);
+    };
+    await use(execCliAsync);
   },
 });
