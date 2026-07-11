@@ -105,7 +105,7 @@ export const define: Define = {
   staged: (config) => setConfig('staged', config),
 };
 
-export const loadRstackConfigWithMeta = async (): Promise<LoadedRstackConfig> => {
+export const loadRstackConfig = async (): Promise<LoadedRstackConfig> => {
   const state = getConfigState();
   state.configs = {};
 
@@ -134,9 +134,4 @@ export const loadRstackConfigWithMeta = async (): Promise<LoadedRstackConfig> =>
   } finally {
     state.configs = {};
   }
-};
-
-export const loadRstackConfig = async (): Promise<Configs> => {
-  const { configs } = await loadRstackConfigWithMeta();
-  return configs;
 };

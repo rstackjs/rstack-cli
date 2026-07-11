@@ -1,7 +1,7 @@
 import { loadRstackConfig } from './config.js';
 import type { RslintConfig } from '@rslint/core';
 
-const configs = await loadRstackConfig();
+const { configs } = await loadRstackConfig();
 const lintExports = configs.lint ?? [];
 
 let lintConfig: RslintConfig;
