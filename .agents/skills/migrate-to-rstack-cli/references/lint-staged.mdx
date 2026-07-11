@@ -1,13 +1,15 @@
-# lint-staged Migration
+# Staged-File Migration
 
-Read this reference when the project uses the `lint-staged` binary, a lint-staged dotfile config, `lint-staged.config.*`, or a `lint-staged` key in `package.json`.
+`rs staged` is powered by lint-staged and configured through `define.staged`, which supports lint-staged configuration options.
+
+Read this reference when the project uses `lint-staged`, `nano-staged`, a staged-file config, or a staged-file Git hook.
 
 ## Steps
 
-1. Replace direct `lint-staged` script invocations with `rs staged`.
-2. Move the lint-staged config into `define.staged` in `rstack.config.*`.
+1. Replace staged-file script invocations with `rs staged`.
+2. Move the staged-file config into `define.staged` in `rstack.config.*`.
 3. Remove the old manifest key or config file.
-4. Remove the direct `lint-staged` dependency only when no script, config, or programmatic API still uses it.
+4. Remove the direct staged-file dependency only when no script, config, or programmatic API still uses it.
 
 ## Config Pattern
 
