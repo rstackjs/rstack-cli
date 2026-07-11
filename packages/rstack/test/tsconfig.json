@@ -7,6 +7,7 @@
     "types": ["node"],
     "paths": {
       "rstack": ["../src/index.ts"],
+      "rstack/lib": ["../src/lib.ts"],
       "rstack/lint": ["../src/lint.ts"],
       "rstack/test": ["../src/test.ts"],
       "#test-helpers": ["./helpers/index.ts"]
