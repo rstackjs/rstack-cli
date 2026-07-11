@@ -5,7 +5,7 @@ Read this reference when the project uses `@rsbuild/core`, `rsbuild.config.*`, `
 ## Steps
 
 1. Replace `rsbuild dev`, `rsbuild build`, and `rsbuild preview` with `rs dev`, `rs build`, and `rs preview`. Preserve supported arguments after the new command.
-2. Move the old config export into `define.app`. Preserve async functions, config parameters, plugins, and all options.
+2. Move the old config export into `define.app`, replacing Rsbuild's `defineConfig()` wrapper and import. Preserve async functions, config parameters, plugins, and all options.
 3. Replace custom `--config` paths with the migrated `rstack.config.*` path.
 4. Replace Rsbuild client and type references:
    - `/// <reference types="@rsbuild/core/types" />` to `/// <reference types="rstack/types" />`
