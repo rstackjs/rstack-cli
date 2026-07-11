@@ -16,7 +16,7 @@ Read every matching reference before editing. Load only the tools present in the
 - `@rstest/core`, `@rstest/adapter-*`, `rstest.config.*`, `rstest` commands, or test imports: [rstest.mdx](references/rstest.mdx)
 - `@rslint/core`, `rslint.config.*`, `rslint` commands, or lint imports: [rslint.mdx](references/rslint.mdx)
 - `@rspress/core`, `rspress.config.*`, `rspress` commands, themes, or plugins: [rspress.mdx](references/rspress.mdx)
-- `lint-staged`, its dotfile configs, `lint-staged.config.*`, or a `lint-staged` manifest key: [lint-staged.mdx](references/lint-staged.mdx)
+- `lint-staged`, `nano-staged`, their configs: [lint-staged.mdx](references/lint-staged.mdx)
 
 ## Workflow
 
@@ -34,7 +34,9 @@ Underlying Rsbuild, Rslib, Rstest, and Rslint packages remain transitive depende
 
 ## Configuration Rules
 
-Use one of the default names: `rstack.config.ts`, `.js`, `.mts`, or `.mjs`. Use `rs -c <path>` or `rs --config <path>` for a custom path.
+Use one of the default names: `rstack.config.ts`, `.js`, `.mts`, or `.mjs`.
+
+Use `rs -c <path>` or `rs --config <path>` only for a custom path.
 
 ```ts
 import { define } from 'rstack';
@@ -56,3 +58,5 @@ define.lint(async () => {
   return [js.configs.recommended, ts.configs.recommended];
 });
 ```
+
+Rstack loads TypeScript configs as native ESM. Preserve runtime-resolvable file extensions, replace CommonJS globals such as `__dirname`.
