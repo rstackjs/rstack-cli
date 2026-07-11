@@ -103,23 +103,26 @@ export const define: Define = {
 
 export const loadRstackConfig = async (): Promise<Configs> => {
   const state = getConfigState();
-
-  await loadConfig({
-    loader: 'native',
-    exportName: false,
-    ...(state.configPath !== undefined
-      ? { path: state.configPath }
-      : {
-          configFileNames: [
-            'rstack.config.ts',
-            'rstack.config.js',
-            'rstack.config.mts',
-            'rstack.config.mjs',
-          ],
-        }),
-  });
-
-  const result = state.configs;
   state.configs = {};
-  return result;
+
+  try {
+    await loadConfig({
+      loader: 'native',
+      exportName: false,
+      ...(state.configPath !== undefined
+        ? { path: state.configPath }
+        : {
+            configFileNames: [
+              'rstack.config.ts',
+              'rstack.config.js',
+              'rstack.config.mts',
+              'rstack.config.mjs',
+            ],
+          }),
+    });
+
+    return state.configs;
+  } finally {
+    state.configs = {};
+  }
 };
