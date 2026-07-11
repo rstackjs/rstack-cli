@@ -1,14 +1,15 @@
 import { parseArgs } from 'node:util';
+import { color } from 'rslog';
 import { loadRstackConfig } from './config.js';
 
 const stagedHelpMessage = `Rstack v${RSTACK_VERSION}
 
-Usage:
-  $ rs staged [options]
+${color.cyan('Usage')}:
+${color.yellow('  $ rs staged [options]')}
 
 Runs lint-staged with tasks from define.staged in rstack.config.
 
-Options:
+${color.cyan('Options')}:
   --allow-empty                      Allow empty commits when tasks revert all staged changes
   -p, --concurrent <number|boolean>  The number of tasks to run concurrently, or false for serial
   --cwd <path>                       Working directory to run all tasks in

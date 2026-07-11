@@ -1,7 +1,12 @@
 import { define } from 'rstack';
 
-define.test({
-  source: {
-    tsconfigPath: './test/tsconfig.json',
-  },
+define.test(() => {
+  // Disable color in test
+  process.env.NO_COLOR = '1';
+
+  return {
+    source: {
+      tsconfigPath: './test/tsconfig.json',
+    },
+  };
 });

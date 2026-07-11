@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import { color } from 'rslog';
 import { getConfigState } from '../config.js';
 import { runStagedCLI } from '../staged.js';
 import { insertConfigArg, parseCliArgs } from './args.js';
@@ -9,10 +10,10 @@ declare global {
 
 const helpMessage = `Rstack v${RSTACK_VERSION}
 
-Usage:
-  $ rs [command] [...options]
+${color.cyan('Usage')}:
+${color.yellow('  $ rs [command] [...options]')}
 
-Commands:
+${color.cyan('Commands')}:
   dev      Run the app dev server
   build    Build the app for production
   preview  Preview the app production build
@@ -22,10 +23,10 @@ Commands:
   test     Run tests
   staged   Run tasks on staged Git files
 
-For command-specific options, run:
-  $ rs <command> -h
+${color.dim(`For command-specific options, run:
+  $ rs <command> -h`)}
 
-Options:
+${color.cyan('Options')}:
   -c, --config <path>       Specify Rstack config file path
   -h, --help                Display this help message
   -v, --version             Display version number`;
