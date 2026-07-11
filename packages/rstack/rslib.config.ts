@@ -11,6 +11,7 @@ export default defineConfig({
       rslintConfig: './src/rslintConfig.ts',
       rspressConfig: './src/rspressConfig.ts',
       rstestConfig: './src/rstestConfig.ts',
+      app: './src/app.ts',
       lib: './src/lib.ts',
       lint: './src/lint.ts',
       test: './src/test.ts',

@@ -75,6 +75,7 @@ Prefer Rstack-exported paths:
 
 | Instead of                | Prefer                   |
 | ------------------------- | ------------------------ |
+| `@rsbuild/core`           | `rstack/app`             |
 | `@rslib/core`             | `rstack/lib`             |
 | `@rstest/core`            | `rstack/test`            |
 | `@rslint/core`            | `rstack/lint`            |
