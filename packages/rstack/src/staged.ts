@@ -2,6 +2,27 @@ import { parseArgs } from 'node:util';
 import { color } from 'rslog';
 import { loadRstackConfig } from './config.js';
 
+export type StagedSyncTaskGenerator = (stagedFileNames: readonly string[]) => string | string[];
+
+export type StagedAsyncTaskGenerator = (
+  stagedFileNames: readonly string[],
+) => Promise<string | string[]>;
+
+export type StagedTaskGenerator = StagedSyncTaskGenerator | StagedAsyncTaskGenerator;
+
+export type StagedFunctionTask = {
+  title: string;
+  task: (stagedFileNames: readonly string[]) => void | Promise<void>;
+};
+
+export type StagedTask =
+  | string
+  | StagedFunctionTask
+  | StagedTaskGenerator
+  | (string | StagedTaskGenerator)[];
+
+export type StagedConfig = Record<string, StagedTask> | StagedTaskGenerator;
+
 const stagedHelpMessage = `Rstack v${RSTACK_VERSION}
 
 ${color.cyan('Usage')}:
