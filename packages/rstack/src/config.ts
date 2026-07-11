@@ -109,6 +109,7 @@ export const loadRstackConfig = async (): Promise<Configs> => {
     await loadConfig({
       loader: 'native',
       exportName: false,
+      fresh: true,
       ...(state.configPath !== undefined
         ? { path: state.configPath }
         : {
