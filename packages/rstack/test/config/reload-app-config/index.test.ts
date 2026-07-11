@@ -7,7 +7,7 @@ test('should restart dev server and reload config when Rstack config changes', a
 }) => {
   const dist1 = path.join(import.meta.dirname, 'dist');
   const dist2 = path.join(import.meta.dirname, 'dist-2');
-  const configFile = path.join(import.meta.dirname, 'rstack.config.ts');
+  const configFile = path.join(import.meta.dirname, 'test-temp-rstack.config.ts');
 
   await rm(dist1, { recursive: true, force: true });
   await rm(dist2, { recursive: true, force: true });
@@ -26,7 +26,7 @@ define.app({
 `,
   );
 
-  execCliAsync('dev');
+  execCliAsync('dev --config test-temp-rstack.config.ts');
 
   await expectFile(dist1);
 
