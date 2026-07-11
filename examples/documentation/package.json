@@ -12,6 +12,7 @@
     "rstack": "workspace:*"
   },
   "devDependencies": {
+    "@rspress/core": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
