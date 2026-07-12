@@ -56,7 +56,7 @@ const resolveRstestConfig = async (configs: Configs) => {
 };
 
 const loadRstestConfig = (async (params: ConfigParams) => {
-  const configs = await loadRstackConfig();
+  const { configs } = await loadRstackConfig();
   const testConfig = await resolveRstestConfig(configs);
   return extendsConfig(configs, testConfig, params);
 }) as RstestConfigExport;

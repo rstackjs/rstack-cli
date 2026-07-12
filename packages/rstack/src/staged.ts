@@ -65,7 +65,7 @@ export async function runStagedCLI(args: string[]): Promise<void> {
     return;
   }
 
-  const configs = await loadRstackConfig();
+  const { configs } = await loadRstackConfig();
   const stagedConfig = configs.staged;
   if (!stagedConfig) {
     throw new Error(

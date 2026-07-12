@@ -14,7 +14,7 @@ const resolveRslibConfig = async (configs: Configs, params: ConfigParams): Promi
 };
 
 const loadRslibConfig = (async (params: ConfigParams) => {
-  const configs = await loadRstackConfig();
+  const { configs } = await loadRstackConfig();
   return resolveRslibConfig(configs, params);
 }) as RslibConfigDefinition;
 
