@@ -48,3 +48,28 @@ define.app({
 
   await expectFile(dist2);
 }, 30_000);
+
+test('should reload config when an imported file changes', async ({ execCliAsync, logHelper }) => {
+  const configFile = path.join(import.meta.dirname, 'test-temp-import.config.ts');
+  const importedFile = path.join(import.meta.dirname, 'test-temp-imported.ts');
+
+  await writeFile(importedFile, '');
+  await writeFile(
+    configFile,
+    `import { define } from 'rstack';
+import './test-temp-imported.ts';
+
+define.app({
+  server: { port: ${await getRandomPort()} },
+});
+`,
+  );
+
+  execCliAsync('dev --config test-temp-import.config.ts');
+  await logHelper.expectBuildEnd();
+  logHelper.clearLogs();
+
+  await writeFile(importedFile, '// changed\n');
+
+  await logHelper.expectLog('restarting server as test-temp-imported.ts changed');
+}, 30_000);
