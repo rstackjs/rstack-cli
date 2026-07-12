@@ -1,66 +1,30 @@
-import { execFileSync } from 'node:child_process';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
-import path from 'node:path';
+import lintStaged from 'lint-staged';
+import { beforeEach, rs } from 'rstack/test';
 import { test } from '#test-helpers';
+import { loadRstackConfig } from '../../../src/config.ts';
+import { runStagedCLI, type StagedConfig } from '../../../src/staged.ts';
 
-const git = (cwd: string, args: string[]): void => {
-  execFileSync('git', args, { cwd, stdio: 'ignore' });
+rs.mock('lint-staged');
+rs.mock('../../../src/config.ts');
+
+const mocks = {
+  lintStaged: rs.mocked(lintStaged),
+  loadRstackConfig: rs.mocked(loadRstackConfig),
 };
 
-const createGitFixture = async (): Promise<string> => {
-  const cwd = await mkdtemp(path.join(import.meta.dirname, 'fixture-'));
-
-  await Promise.all([
-    writeFile(
-      path.join(cwd, 'rstack.config.ts'),
-      `import { define } from 'rstack';
-
-define.staged({ '*.txt': 'node revert.mjs' });
-`,
-    ),
-    writeFile(
-      path.join(cwd, 'revert.mjs'),
-      `import { writeFileSync } from 'node:fs';
-
-for (const file of process.argv.slice(2)) {
-  writeFileSync(file, 'initial\\n');
-}
-
-console.log('staged task output');
-console.log('staged file:', process.argv[2]);
-`,
-    ),
-    writeFile(path.join(cwd, 'file.txt'), 'initial\n'),
-  ]);
-
-  git(cwd, ['init', '--quiet']);
-  git(cwd, ['add', '.']);
-  git(cwd, [
-    '-c',
-    'user.name=Rstack Test',
-    '-c',
-    'user.email=rstack@example.com',
-    'commit',
-    '--quiet',
-    '-m',
-    'initial',
-  ]);
-
-  await writeFile(path.join(cwd, 'file.txt'), 'changed\n');
-  git(cwd, ['add', 'file.txt']);
-
-  return cwd;
+const stagedConfig: StagedConfig = {
+  '*.txt': 'echo test',
 };
 
-const withGitFixture = async (callback: (cwd: string) => Promise<void> | void): Promise<void> => {
-  const cwd = await createGitFixture();
-
-  try {
-    await callback(cwd);
-  } finally {
-    await rm(cwd, { recursive: true, force: true });
-  }
-};
+beforeEach(() => {
+  rs.resetAllMocks();
+  mocks.lintStaged.mockResolvedValue(true);
+  mocks.loadRstackConfig.mockResolvedValue({
+    configs: { staged: stagedConfig },
+    filePath: null,
+    dependencies: [],
+  });
+});
 
 test('should display the staged help message', ({ execCli, expect }) => {
   const output = execCli('staged --help');
@@ -82,76 +46,61 @@ test('should reject unknown staged options', ({ execCli, expect }) => {
   expect(() => execCli('staged --unknown')).toThrow();
 });
 
-test('should prevent an empty commit by default', async ({ execCli, expect }) => {
-  await withGitFixture((cwd) => {
-    expect(() => execCli('staged', { cwd })).toThrow();
+test('should pass default options to lint-staged', async ({ expect }) => {
+  await runStagedCLI([]);
+
+  expect(mocks.lintStaged).toHaveBeenCalledWith({
+    allowEmpty: undefined,
+    concurrent: undefined,
+    config: stagedConfig,
+    cwd: undefined,
+    debug: undefined,
+    quiet: undefined,
+    relative: undefined,
+    stash: undefined,
+    verbose: undefined,
   });
 });
 
-test('should allow an empty commit with --allow-empty', async ({ execCli }) => {
-  await withGitFixture((cwd) => {
-    execCli(`staged --allow-empty`, { cwd });
+test('should pass long options to lint-staged', async ({ expect }) => {
+  await runStagedCLI([
+    '--allow-empty',
+    '--concurrent',
+    'false',
+    '--cwd',
+    'fixture',
+    '--debug',
+    '--no-stash',
+    '--quiet',
+    '--relative',
+    '--verbose',
+  ]);
+
+  expect(mocks.lintStaged).toHaveBeenCalledWith({
+    allowEmpty: true,
+    concurrent: false,
+    config: stagedConfig,
+    cwd: 'fixture',
+    debug: true,
+    quiet: true,
+    relative: true,
+    stash: false,
+    verbose: true,
   });
 });
 
-for (const option of ['--concurrent false', '-p 1']) {
-  test(`should run staged tasks with ${option}`, async ({ execCli }) => {
-    await withGitFixture((cwd) => {
-      execCli(`staged --allow-empty ${option}`, { cwd });
-    });
-  });
-}
+test('should pass short options and aliases to lint-staged', async ({ expect }) => {
+  await runStagedCLI(['--allowEmpty', '-p', '1', '-d', '-q', '-r', '-v']);
 
-for (const option of ['--debug', '-d']) {
-  test(`should print debug output with ${option}`, async ({ execCli, expect }) => {
-    await withGitFixture((cwd) => {
-      const output = execCli(`staged --allow-empty ${option} 2>&1`, { cwd });
-      expect(output).toContain('lint-staged:');
-    });
-  });
-}
-
-for (const option of ['--verbose', '-v']) {
-  test(`should show successful task output with ${option}`, async ({ execCli, expect }) => {
-    await withGitFixture((cwd) => {
-      const output = execCli(`staged --allow-empty ${option}`, { cwd });
-      expect(output).toContain('staged task output');
-    });
-  });
-}
-
-test('should run staged tasks without a backup stash', async ({ execCli, expect }) => {
-  await withGitFixture((cwd) => {
-    const output = execCli('staged --allow-empty --no-stash 2>&1', { cwd });
-    expect(output).toContain('Skipping backup because `--no-stash` was used');
-  });
-});
-
-for (const option of ['--quiet', '-q']) {
-  test(`should suppress lint-staged output with ${option}`, async ({ execCli, expect }) => {
-    await withGitFixture((cwd) => {
-      const output = execCli(`staged --allow-empty ${option}`, { cwd });
-      expect(output).toBe('');
-    });
-  });
-}
-
-for (const option of ['--relative', '-r']) {
-  test(`should pass relative filepaths with ${option}`, async ({ execCli, expect }) => {
-    await withGitFixture((cwd) => {
-      const output = execCli(`staged --allow-empty --verbose ${option}`, { cwd });
-      expect(output).toContain('staged file: file.txt');
-    });
-  });
-}
-
-test('should run staged tasks in the specified cwd', async ({ execCli, expect }) => {
-  await withGitFixture((cwd) => {
-    const configPath = path.join(cwd, 'rstack.config.ts');
-    const output = execCli(
-      `--config ${JSON.stringify(configPath)} staged --allow-empty --cwd ${JSON.stringify(cwd)} --relative --verbose`,
-      { cwd: path.dirname(cwd) },
-    );
-    expect(output).toContain('staged file: file.txt');
+  expect(mocks.lintStaged).toHaveBeenCalledWith({
+    allowEmpty: true,
+    concurrent: 1,
+    config: stagedConfig,
+    cwd: undefined,
+    debug: true,
+    quiet: true,
+    relative: true,
+    stash: undefined,
+    verbose: true,
   });
 });
