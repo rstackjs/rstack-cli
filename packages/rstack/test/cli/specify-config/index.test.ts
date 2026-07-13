@@ -1,13 +1,12 @@
-import { rm } from 'node:fs/promises';
-import path from 'node:path';
-import { getDistFiles, getFileContent, test } from '#test-helpers';
+import { getDistFiles, getFileContent } from '@rstackjs/test-utils';
+import { test } from '#test-helpers';
 
-test('should build with rstack --config', async ({ cwd, execCli, expect }) => {
-  await rm(path.join(cwd, 'dist'), { recursive: true, force: true });
+test('should build with rstack --config', async ({ prepareDist, execCli, expect }) => {
+  const distPath = await prepareDist();
 
   execCli('build --config ./custom.config.ts');
 
-  const files = await getDistFiles(path.join(cwd, 'dist'));
+  const files = await getDistFiles(distPath);
   const output = getFileContent(files, 'static/js/index.js');
 
   expect(output).toContain('specify config works');

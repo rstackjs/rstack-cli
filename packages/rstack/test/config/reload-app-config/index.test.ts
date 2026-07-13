@@ -1,16 +1,16 @@
 import { rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { expectFile, getRandomPort, test } from '#test-helpers';
+import { getRandomPort, waitForFile } from '@rstackjs/test-utils';
+import { test } from '#test-helpers';
 
 test('should restart dev server and reload config when Rstack config changes', async ({
+  prepareDist,
   execCliAsync,
 }) => {
-  const dist1 = path.join(import.meta.dirname, 'dist');
-  const dist2 = path.join(import.meta.dirname, 'dist-2');
+  const dist1 = await prepareDist();
+  const dist2 = await prepareDist('dist-2');
   const configFile = path.join(import.meta.dirname, 'test-temp-rstack.config.ts');
 
-  await rm(dist1, { recursive: true, force: true });
-  await rm(dist2, { recursive: true, force: true });
   await rm(configFile, { force: true });
 
   await writeFile(
@@ -28,7 +28,7 @@ define.app({
 
   execCliAsync('dev --config test-temp-rstack.config.ts');
 
-  await expectFile(dist1);
+  await waitForFile(dist1, { interval: 50 });
 
   await writeFile(
     configFile,
@@ -46,7 +46,7 @@ define.app({
 `,
   );
 
-  await expectFile(dist2);
+  await waitForFile(dist2, { interval: 50 });
 }, 30_000);
 
 test('should reload config when an imported file changes', async ({ execCliAsync, logHelper }) => {
@@ -66,7 +66,7 @@ define.app({
   );
 
   execCliAsync('dev --config test-temp-import.config.ts');
-  await logHelper.expectBuildEnd();
+  await logHelper.expectLog('built in');
   logHelper.clearLogs();
 
   await writeFile(importedFile, '// changed\n');

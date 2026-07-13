@@ -1,6 +1,6 @@
 import { type ExecSyncOptions, execSync } from 'node:child_process';
 import path from 'node:path';
-import type { LogHelper } from './logs.ts';
+import type { LogHelper } from '@rstackjs/test-utils';
 
 export const RSTACK_BIN_PATH: string = path.join(import.meta.dirname, '../../bin/rs.js');
 
