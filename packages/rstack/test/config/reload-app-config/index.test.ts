@@ -28,7 +28,7 @@ define.app({
 
   execCliAsync('dev --config test-temp-rstack.config.ts');
 
-  await waitForFile(dist1, { interval: 50 });
+  await waitForFile(dist1);
 
   await writeFile(
     configFile,
@@ -46,7 +46,7 @@ define.app({
 `,
   );
 
-  await waitForFile(dist2, { interval: 50 });
+  await waitForFile(dist2);
 }, 30_000);
 
 test('should reload config when an imported file changes', async ({ execCliAsync, logHelper }) => {
