@@ -63,6 +63,7 @@
   },
   "devDependencies": {
     "@rspress/core": "catalog:",
+    "@rstackjs/test-utils": "catalog:",
     "@rstest/adapter-rsbuild": "catalog:",
     "@rstest/adapter-rslib": "catalog:",
     "@types/node": "catalog:",

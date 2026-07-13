@@ -25,6 +25,9 @@ catalogs:
     '@rstackjs/load-config':
       specifier: ^0.1.2
       version: 0.1.2
+    '@rstackjs/test-utils':
+      specifier: ^0.2.0
+      version: 0.2.0
     '@rstest/adapter-rsbuild':
       specifier: ~0.11.0
       version: 0.11.0
@@ -255,6 +258,9 @@ importers:
       '@rspress/core':
         specifier: 'catalog:'
         version: 2.0.17(@types/mdast@4.0.4)(@types/react@19.2.17)(micromark-util-types@2.0.2)(micromark@4.0.2)
+      '@rstackjs/test-utils':
+        specifier: 'catalog:'
+        version: 0.2.0
       '@rstest/adapter-rsbuild':
         specifier: 'catalog:'
         version: 0.11.0(@rsbuild/core@2.1.4)(@rstest/core@0.11.0)
@@ -777,6 +783,9 @@ packages:
     peerDependenciesMeta:
       jiti:
         optional: true
+
+  '@rstackjs/test-utils@0.2.0':
+    resolution: {integrity: sha512-P+LOo1WE3xYeGkHmEthyq2cIpN69k4LhiB/4UBSceD+nW9hDlhWv8MC0LTLWokZXccWl4ntcfOBjQFllkcBlPA==}
 
   '@rstest/adapter-rsbuild@0.11.0':
     resolution: {integrity: sha512-otrR3yqQ5Uyskm0hu8c0fjP1eFk6bMJALnYhUl6V1CKp/monoowFMa6XEqdY2d4aHv6oa8XWGLfU4LWne1Vg9A==}
@@ -2243,6 +2252,8 @@ snapshots:
       - core-js
 
   '@rstackjs/load-config@0.1.2': {}
+
+  '@rstackjs/test-utils@0.2.0': {}
 
   '@rstest/adapter-rsbuild@0.11.0(@rsbuild/core@2.1.4)(@rstest/core@0.11.0)':
     dependencies:

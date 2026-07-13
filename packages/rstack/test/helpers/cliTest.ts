@@ -1,5 +1,6 @@
 import { type ChildProcess, type SpawnOptions, spawn as nodeSpawn } from 'node:child_process';
 import path from 'node:path';
+import { prepareDist as basePrepareDist } from '@rstackjs/test-utils';
 import { test as baseTest } from 'rstack/test';
 import { execCli as baseExecCli, type ExecCli, RSTACK_BIN_PATH } from './cli.ts';
 import { type ExtendedLogHelper, proxyConsole } from './logs.ts';
@@ -11,12 +12,15 @@ type Exec = (
   childProcess: ChildProcess;
 };
 
+type PrepareDist = (distFolderName?: string) => Promise<string>;
+
 export type CliTestFixtures = {
   cwd: string;
   exec: Exec;
   execCli: ExecCli;
   execCliAsync: Exec;
   logHelper: ExtendedLogHelper;
+  prepareDist: PrepareDist;
 };
 
 type CliTest = ReturnType<typeof baseTest.extend<CliTestFixtures>>;
@@ -48,6 +52,11 @@ export const test: CliTest = baseTest.extend<CliTestFixtures>({
     }
 
     await use(path.dirname(testPath));
+  },
+  prepareDist: async ({ cwd }, use) => {
+    const prepareDist: PrepareDist = (distFolderName = 'dist') =>
+      basePrepareDist(path.join(cwd, distFolderName));
+    await use(prepareDist);
   },
   logHelper: [
     async ({ onTestFailed, task }, use) => {

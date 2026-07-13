@@ -1,12 +1,10 @@
-import { rm } from 'node:fs/promises';
-import path from 'node:path';
-import { getDistFiles, getFileContent, test } from '#test-helpers';
+import { getDistFiles, getFileContent } from '@rstackjs/test-utils';
+import { test } from '#test-helpers';
 
 const expectedText = 'define.doc works';
 
-test('should build docs with define.doc config', async ({ cwd, execCli, expect }) => {
-  const distPath = path.join(cwd, 'doc_build');
-  await rm(distPath, { recursive: true, force: true });
+test('should build docs with define.doc config', async ({ prepareDist, execCli, expect }) => {
+  const distPath = await prepareDist('doc_build');
 
   execCli('doc build');
 
