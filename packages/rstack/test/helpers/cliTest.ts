@@ -1,12 +1,9 @@
 import { type ChildProcess, type SpawnOptions, spawn as nodeSpawn } from 'node:child_process';
 import path from 'node:path';
-import {
-  type ExtendedLogHelper,
-  prepareDist as basePrepareDist,
-  proxyConsole,
-} from '@rstackjs/test-utils';
+import { prepareDist as basePrepareDist } from '@rstackjs/test-utils';
 import { test as baseTest } from 'rstack/test';
 import { execCli as baseExecCli, type ExecCli, RSTACK_BIN_PATH } from './cli.ts';
+import { type ExtendedLogHelper, proxyConsole } from './logs.ts';
 
 type Exec = (
   command: string,

@@ -66,7 +66,7 @@ define.app({
   );
 
   execCliAsync('dev --config test-temp-import.config.ts');
-  await logHelper.expectLog('built in');
+  await logHelper.expectBuildEnd();
   logHelper.clearLogs();
 
   await writeFile(importedFile, '// changed\n');
