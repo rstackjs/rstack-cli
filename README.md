@@ -35,9 +35,9 @@ Welcome to try it out and share feedback through issues and discussions!
 
 ## Skills
 
-Rstack CLI is still new and does not have complete documentation yet.
-
 ### Best practice
+
+Rstack CLI is still new and does not have complete documentation yet.
 
 Installing the Rstack CLI skill so the agent can understand how to use it:
 
