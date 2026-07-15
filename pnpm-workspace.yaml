@@ -30,7 +30,7 @@ catalog:
   'cspell-ban-words': '^0.0.4'
   'happy-dom': '^20.10.6'
   husky: ^9.1.7
-  'lint-staged': '^16.4.0'
+  'lint-staged': '^17.0.8'
   'oxfmt': '^0.59.0'
   'react': '^19.2.7'
   'react-dom': '^19.2.7'
