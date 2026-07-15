@@ -35,12 +35,22 @@ Welcome to try it out and share feedback through issues and discussions!
 
 ## Skills
 
+### Best practice
+
 Rstack CLI is still new and does not have complete documentation yet.
 
 Installing the Rstack CLI skill so the agent can understand how to use it:
 
 ```bash
 npx skills add rstackjs/rstack-cli --skill rstack-cli-best-practices
+```
+
+### Migration
+
+Installing the migration skill so the agent can migrate existing projects to Rstack CLI:
+
+```bash
+npx skills add rstackjs/rstack-cli --skill migrate-to-rstack-cli
 ```
 
 ## Usage
