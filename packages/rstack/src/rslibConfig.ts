@@ -4,8 +4,7 @@ import { loadRstackConfig, type Configs } from './config.js';
 const resolveRslibConfig = async (configs: Configs, params: ConfigParams): Promise<RslibConfig> => {
   const libConfig = configs.lib;
   if (!libConfig) {
-    // TODO: should allow empty object to be returned
-    return { lib: [{}] };
+    return {};
   }
   if (typeof libConfig === 'function') {
     return libConfig(params);
