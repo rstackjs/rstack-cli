@@ -1,4 +1,4 @@
-import { mergeRsbuildConfig, type RsbuildConfigDefinition, type ConfigParams } from '@rsbuild/core';
+import type { ConfigParams, RsbuildConfigDefinition, WatchFiles } from '@rsbuild/core';
 import { loadRstackConfig, type Configs } from './config.js';
 
 const resolveRsbuildConfig = async (configs: Configs, params: ConfigParams) => {
@@ -20,14 +20,22 @@ const loadRsbuildConfig: RsbuildConfigDefinition = async (params) => {
     return config;
   }
 
-  return mergeRsbuildConfig(config, {
+  const watchFiles = config.dev?.watchFiles;
+  const watchConfig: WatchFiles = {
+    paths: [filePath, ...dependencies],
+    type: 'reload-server',
+  };
+
+  return {
+    ...config,
     dev: {
-      watchFiles: {
-        paths: [filePath, ...dependencies],
-        type: 'reload-server',
-      },
+      ...config.dev,
+      watchFiles: [
+        ...(watchFiles ? (Array.isArray(watchFiles) ? watchFiles : [watchFiles]) : []),
+        watchConfig,
+      ],
     },
-  });
+  };
 };
 
 export default loadRsbuildConfig;
