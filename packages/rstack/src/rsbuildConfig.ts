@@ -20,22 +20,22 @@ const loadRsbuildConfig: RsbuildConfigDefinition = async (params) => {
     return config;
   }
 
-  config.dev ||= {};
-  const { dev } = config;
+  const watchFiles = config.dev?.watchFiles;
   const watchConfig: WatchFiles = {
     paths: [filePath, ...dependencies],
     type: 'reload-server',
   };
 
-  if (!dev.watchFiles) {
-    dev.watchFiles = watchConfig;
-  } else if (Array.isArray(dev.watchFiles)) {
-    dev.watchFiles.push(watchConfig);
-  } else {
-    dev.watchFiles = [dev.watchFiles, watchConfig];
-  }
-
-  return config;
+  return {
+    ...config,
+    dev: {
+      ...config.dev,
+      watchFiles: [
+        ...(watchFiles ? (Array.isArray(watchFiles) ? watchFiles : [watchFiles]) : []),
+        watchConfig,
+      ],
+    },
+  };
 };
 
 export default loadRsbuildConfig;
