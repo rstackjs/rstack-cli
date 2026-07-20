@@ -1,7 +1,60 @@
 # lib
 
-TODO.
+The `rs lib` command uses [Rslib](https://rslib.rs/guide/basic/cli#rslib) to build library outputs.
+
+## Usage
+
+```bash
+rs lib [command] [options]
+```
+
+The command loads the library configuration registered with [`define.lib()`](../configuration#define-lib). When no subcommand is provided, it builds the library.
+
+## Options
+
+`rs lib` supports the same library build options as Rslib. See the [Rslib CLI documentation](https://rslib.rs/guide/basic/cli#rslib) for details.
+
+Examples:
+
+```bash
+# Build and generate declaration files
+rs lib --dts
+
+# Rebuild when files change
+rs lib --watch
+```
+
+## Subcommands
+
+### inspect
+
+[`rs lib inspect`](https://rslib.rs/guide/basic/cli#rslib-inspect) generates the normalized Rslib configuration and the corresponding Rsbuild and Rspack configurations for inspection.
+
+```bash
+rs lib inspect
+```
+
+### mf-dev
+
+[`rs lib mf-dev`](https://rslib.rs/guide/basic/cli#rslib-mf-dev) starts an Rsbuild development server for a library output that uses the Module Federation (`mf`) format. Use it to develop and debug the module in a host application.
+
+```bash
+rs lib mf-dev
+```
 
 ## Configuration
 
-See [`define.lib()`](../configuration#define-lib).
+Configure library builds through [`define.lib()`](../configuration#define-lib) in the [Rstack configuration file](/guide/configuration#configuration-file). It accepts the standard [Rslib configuration](https://rslib.rs/config/):
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.lib({
+  lib: [
+    {
+      dts: true,
+      format: 'esm',
+    },
+  ],
+});
+```
