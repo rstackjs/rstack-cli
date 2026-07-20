@@ -159,7 +159,7 @@ Rstack applies the shared app or library adapter to every inline project without
 
 Run all projects with `rs test`, or select one with `rs test --project dom`.
 
-See [`examples/app-react-ssr`](./examples/app-react-ssr) for a complete React SSR example.
+See [`examples/rstest-inline-projects`](./examples/rstest-inline-projects) for a complete React SSR example.
 
 ## Credits
 

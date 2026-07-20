@@ -1,5 +1,5 @@
 {
-  "name": "@examples/app-react-ssr",
+  "name": "@examples/rstest-inline-projects",
   "private": true,
   "type": "module",
   "scripts": {
