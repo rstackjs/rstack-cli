@@ -17,11 +17,8 @@ The command loads the library configuration registered with [`define.lib()`](../
 Examples:
 
 ```bash
-# Build ESM output and generate declaration files
-rs lib --format esm --dts
-
-# Build CommonJS output without bundling modules
-rs lib --format cjs --no-bundle
+# Build and generate declaration files
+rs lib --dts
 
 # Rebuild when files change
 rs lib --watch

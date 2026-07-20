@@ -17,11 +17,8 @@ rs lib [command] [options]
 示例：
 
 ```bash
-# 构建 ESM 产物并生成声明文件
-rs lib --format esm --dts
-
-# 构建不打包模块的 CommonJS 产物
-rs lib --format cjs --no-bundle
+# 构建产物并生成声明文件
+rs lib --dts
 
 # 在文件变化时重新构建
 rs lib --watch
