@@ -1,7 +1,45 @@
 # build
 
-TODO.
+The `rs build` command uses [Rsbuild](https://rsbuild.rs/guide/basic/cli#rsbuild-build) to build an application for production.
+
+## Usage
+
+```bash
+rs build [options]
+```
+
+The command loads the application configuration registered with [`define.app()`](../configuration#define-app).
+
+## Options
+
+`rs build` supports the same build options as Rsbuild. See the [Rsbuild CLI documentation](https://rsbuild.rs/guide/basic/cli#rsbuild-build) for details.
+
+Examples:
+
+```bash
+# Write output files to the output directory
+rs build --dist-path output
+
+# Generate source maps for the output files
+rs build --source-map
+
+# Rebuild when files change
+rs build --watch
+```
 
 ## Configuration
 
-See [`define.app()`](../configuration#define-app).
+Configure the production build through [`define.app()`](../configuration#define-app) in the [Rstack configuration file](/guide/configuration#configuration-file). It accepts the standard [Rsbuild configuration](https://rsbuild.rs/config/):
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.app({
+  output: {
+    distPath: {
+      root: 'output',
+    },
+    sourceMap: true,
+  },
+});
+```

@@ -1,7 +1,45 @@
 # build
 
-TODO.
+`rs build` 命令使用 [Rsbuild](https://rsbuild.rs/zh/guide/basic/cli#rsbuild-build) 构建应用的生产版本。
+
+## 用法 \{#usage}
+
+```bash
+rs build [options]
+```
+
+该命令会加载通过 [`define.app()`](../configuration#define-app) 注册的应用配置。
+
+## 选项 \{#options}
+
+`rs build` 支持与 Rsbuild 相同的构建选项，具体说明请参见 [Rsbuild CLI 文档](https://rsbuild.rs/zh/guide/basic/cli#rsbuild-build)。
+
+示例：
+
+```bash
+# 将构建产物写入 output 目录
+rs build --dist-path output
+
+# 为构建产物生成 source map
+rs build --source-map
+
+# 在文件变化时重新构建
+rs build --watch
+```
 
 ## 配置 \{#configuration}
 
-参见 [`define.app()`](../configuration#define-app)。
+在 [Rstack 配置文件](/guide/configuration#configuration-file)中通过 [`define.app()`](../configuration#define-app) 配置生产构建。该 API 支持标准的 [Rsbuild 配置](https://rsbuild.rs/zh/config/)：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.app({
+  output: {
+    distPath: {
+      root: 'output',
+    },
+    sourceMap: true,
+  },
+});
+```
