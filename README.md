@@ -113,6 +113,54 @@ For example, import Rstest APIs without adding `@rstest/core` as a direct depend
 import { expect, test } from 'rstack/test';
 ```
 
+## Test projects
+
+`define.test()` accepts an Rstest configuration. For a single project, Rstack automatically applies the `define.app()` configuration, or falls back to `define.lib()`:
+
+```ts
+import { define } from 'rstack';
+
+define.app({
+  // Rsbuild configuration
+});
+
+define.test({
+  testEnvironment: 'happy-dom',
+});
+```
+
+For multiple test environments in the same app or library, use inline projects:
+
+```ts
+import { define } from 'rstack';
+import { defineInlineProject } from 'rstack/test';
+
+define.app({
+  // Shared by all inline projects
+});
+
+define.test({
+  projects: [
+    defineInlineProject({
+      name: 'node',
+      include: ['./tests/node/**/*.test.ts'],
+      testEnvironment: 'node',
+    }),
+    defineInlineProject({
+      name: 'dom',
+      include: ['./tests/dom/**/*.test.tsx'],
+      testEnvironment: 'happy-dom',
+    }),
+  ],
+});
+```
+
+Rstack applies the shared app or library adapter to every inline project without an explicit `extends`. String project entries are passed to Rstest unchanged and load their own configuration.
+
+Run all projects with `rs test`, or select one with `rs test --project dom`.
+
+See [`examples/rstest-inline-projects`](./examples/rstest-inline-projects) for a complete React SSR example.
+
 ## Credits
 
 Rstack CLI is inspired by:

@@ -70,7 +70,8 @@ type Define = {
    * This config is used by the `rs test` command.
    *
    * Unless `extends` is set explicitly, Rstest automatically extends `define.app` or
-   * falls back to `define.lib`. The app config takes precedence when both are defined.
+   * falls back to `define.lib`. For multi-project configs, this applies to every inline
+   * project without an explicit `extends`. The app config takes precedence when both are defined.
    */
   test: (config: RstestConfigExport) => void;
   /**
