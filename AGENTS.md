@@ -31,6 +31,11 @@ pnpm --filter rstack test
 
 - Run `pnpm build` once before `pnpm test` command
 
+## Documentation
+
+- Keep corresponding content in `website/docs/en` and `website/docs/zh` aligned in structure, meaning, links, and examples.
+- Keep corresponding heading anchors identical between `website/docs/en` and `website/docs/zh`. When a translated heading would generate a different anchor, add an explicit anchor matching the English heading, for example `## 配置 \{#configuration}`.
+
 ## Project structure
 
 ```text

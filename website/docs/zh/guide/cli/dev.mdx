@@ -1,7 +1,43 @@
 # dev
 
-TODO.
+`rs dev` 命令用于启动应用的 [Rsbuild 开发服务器](https://rsbuild.rs/guide/basic/server)。它会以开发模式编译源码、监听文件变化，并按需进行模块热更新（HMR）或刷新页面。
 
-## 配置
+## 用法 \{#usage}
 
-参见 [`define.app()`](../configuration#define-app)。
+```bash
+rs dev [options]
+```
+
+该命令会加载通过 [`define.app()`](../configuration#define-app) 注册的应用配置。当 Rstack 配置文件或其导入的任一依赖发生变化时，Rstack 会自动重启开发服务器并应用更新后的配置。
+
+## 选项 \{#options}
+
+`rs dev` 支持与 Rsbuild 相同的开发服务器选项，具体说明请参见 [Rsbuild CLI 文档](https://rsbuild.rs/zh/guide/basic/cli#rsbuild)。
+
+示例：
+
+```bash
+# 启动服务器并在浏览器中打开页面
+rs dev --open
+
+# 使用 8080 端口，并在端口已被占用时退出
+rs dev --port 8080 --strict-port
+
+# 允许通过局域网访问开发服务器
+rs dev --host
+```
+
+## 配置 \{#configuration}
+
+在 [Rstack 配置文件](/guide/configuration#configuration-file)中通过 [`define.app()`](../configuration#define-app) 配置开发服务器。该 API 支持标准的 [Rsbuild 配置](https://rsbuild.rs/zh/config/)：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.app({
+  server: {
+    open: true,
+    port: 8080,
+  },
+});
+```
