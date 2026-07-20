@@ -1,8 +1,8 @@
-# 配置
+# 配置 \{#configuration}
 
 Rstack 将项目所用工具的配置集中到一份文件中。通过 `define.*()` API 定义项目实际需要的配置即可。
 
-## 配置文件
+## 配置文件 \{#configuration-file}
 
 在项目根目录创建 `rstack.config.ts`，并调用对应的 `define.*()` API：
 
@@ -33,7 +33,7 @@ Rstack 默认会查找使用以下任一文件名的配置文件：
 rs build --config ./configs/rstack.config.ts
 ```
 
-## 按需加载依赖
+## 按需加载依赖 \{#loading-dependencies-on-demand}
 
 每次执行 `rs` 命令时，Rstack 都会加载并执行配置文件，然后只解析当前命令需要的配置函数。
 
@@ -51,7 +51,7 @@ define.app(async () => {
 });
 ```
 
-## 配置 API
+## 配置 API \{#configuration-apis}
 
 各 API 沿用底层工具的配置格式。使用 Rstack 已重导出的 API 和辅助函数时，推荐从 `rstack/app`、`rstack/lib`、`rstack/test` 和 `rstack/lint` 入口导入。
 
