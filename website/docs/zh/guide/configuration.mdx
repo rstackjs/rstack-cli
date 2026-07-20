@@ -1,43 +1,169 @@
 # 配置
 
-TODO.
+Rstack 将项目所用工具的配置集中到一份文件中。通过 `define.*()` API 定义项目实际需要的配置即可。
 
-## `define.app()` \{#define-app}
+## 配置文件
 
-TODO.
+在项目根目录创建 `rstack.config.ts`，并调用对应的 `define.*()` API：
 
-对应命令：
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
 
-- [`rs dev`](./cli/dev)
-- [`rs build`](./cli/build)
-- [`rs preview`](./cli/preview)
+define.app({
+  // Rsbuild 配置
+});
 
-## `define.lib()` \{#define-lib}
+define.test({
+  // Rstest 配置
+});
+```
 
-TODO.
+配置文件无需默认导出。每个 `define.*()` API 最多调用一次；重复定义同一类型的配置会抛出错误。
 
-对应命令：[`rs lib`](./cli/lib)。
+Rstack 默认会查找使用以下任一文件名的配置文件：
 
-## `define.doc()` \{#define-doc}
+- `rstack.config.ts`
+- `rstack.config.js`
+- `rstack.config.mts`
+- `rstack.config.mjs`
 
-TODO.
+所有 `rs` 命令都支持全局的 `-c, --config` 选项，用于加载其他名称或位置的配置文件：
 
-对应命令：[`rs doc`](./cli/doc)。
+```bash
+rs build --config ./configs/rstack.config.ts
+```
 
-## `define.test()` \{#define-test}
+## 按需加载依赖
 
-TODO.
+每次执行 `rs` 命令时，Rstack 都会加载并执行配置文件，然后只解析当前命令需要的配置函数。
 
-对应命令：[`rs test`](./cli/test)。
+如果配置需要导入插件或其他工具专属依赖，请使用异步配置函数，并在函数内通过动态 `import()` 加载这些依赖。这样只有解析该配置时才会加载相关依赖。
 
-## `define.lint()` \{#define-lint}
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
 
-TODO.
+define.app(async () => {
+  const { pluginReact } = await import('@rsbuild/plugin-react');
 
-对应命令：[`rs lint`](./cli/lint)。
+  return {
+    plugins: [pluginReact()],
+  };
+});
+```
 
-## `define.staged()` \{#define-staged}
+## 配置 API
 
-TODO.
+各 API 沿用底层工具的配置格式。使用 Rstack 已重导出的 API 和辅助函数时，推荐从 `rstack/app`、`rstack/lib`、`rstack/test` 和 `rstack/lint` 入口导入。
 
-对应命令：[`rs staged`](./cli/staged)。
+| API                                 | 底层工具                                                                | 对应命令                                                                        |
+| ----------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [`define.app()`](#define-app)       | [Rsbuild](https://rsbuild.rs/zh/config/)                                | [`rs dev`](./cli/dev)、[`rs build`](./cli/build)、[`rs preview`](./cli/preview) |
+| [`define.lib()`](#define-lib)       | [Rslib](https://rslib.rs/zh/config/)                                    | [`rs lib`](./cli/lib)                                                           |
+| [`define.doc()`](#define-doc)       | [Rspress](https://rspress.rs/zh/api/config/config-basic)                | [`rs doc`](./cli/doc)                                                           |
+| [`define.test()`](#define-test)     | [Rstest](https://rstest.rs/zh/config/)                                  | [`rs test`](./cli/test)                                                         |
+| [`define.lint()`](#define-lint)     | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
+| [`define.staged()`](#define-staged) | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
+
+### `define.app()` \{#define-app}
+
+定义应用的 [Rsbuild 配置](https://rsbuild.rs/zh/config/)，支持传入配置对象或配置函数。配置函数接收 Rsbuild 的标准配置参数。
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.app({
+  html: {
+    title: 'My App',
+  },
+  output: {
+    distPath: {
+      root: 'dist',
+    },
+  },
+});
+```
+
+### `define.lib()` \{#define-lib}
+
+定义库的 [Rslib 配置](https://rslib.rs/zh/config/)，支持传入配置对象或配置函数。配置函数接收 Rslib 的标准配置参数。
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.lib({
+  lib: [
+    {
+      dts: true,
+      format: 'esm',
+    },
+  ],
+});
+```
+
+### `define.doc()` \{#define-doc}
+
+定义文档站点的 [Rspress 配置](https://rspress.rs/zh/api/config/config-basic)，支持传入配置对象或异步配置函数。
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.doc({
+  root: 'docs',
+  title: 'My Site',
+});
+```
+
+`@rspress/core` 是 Rstack 的可选依赖。每个使用 `rs doc` 命令的项目都需要安装该依赖：
+
+```bash
+pnpm add -D @rspress/core
+```
+
+### `define.test()` \{#define-test}
+
+定义 [Rstest 配置](https://rstest.rs/zh/config/)，支持传入配置对象或配置函数。
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.app({
+  // 共享的应用配置
+});
+
+define.test({
+  setupFiles: ['./tests/rstest.setup.ts'],
+  testEnvironment: 'happy-dom',
+});
+```
+
+未设置 `extends` 时，Rstack 会通过 Rsbuild 适配器让测试配置自动继承 `define.app()`；如果未定义应用配置，则通过 Rslib 适配器回退到 `define.lib()`。二者同时存在时，应用配置的优先级更高。显式设置 `extends` 可关闭自动继承。
+
+如果测试根配置未定义 `extends` 且包含 `projects`，Rstack 会为每个未自行设置 `extends` 的内联项目应用自动继承。函数形式的应用或库配置只会解析一次，并由这些项目共享。字符串形式的项目会原样传给 Rstest；它们会独立加载外部配置，不继承当前应用或库的配置。
+
+### `define.lint()` \{#define-lint}
+
+定义 [Rslint 配置](https://rslint.rs/config/)。可以直接传入配置，也可以使用异步函数，按需从 `rstack/lint` 加载预设和插件。
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.lint(async () => {
+  const { js, ts } = await import('rstack/lint');
+
+  return [js.configs.recommended, ts.configs.recommended];
+});
+```
+
+### `define.staged()` \{#define-staged}
+
+定义用于处理 Git 暂存文件的 [lint-staged 配置](https://github.com/lint-staged/lint-staged#configuration)。支持传入从 glob 匹配模式映射到任务的配置对象，也支持传入任务生成函数。任务可以是 lint-staged 支持的命令、命令数组或函数。
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.staged({
+  '*.{js,jsx,ts,tsx}': 'rs lint',
+});
+```
+
+与其他命令不同，`rs staged` 必须配置 `define.staged()`；缺少配置时会报错。
