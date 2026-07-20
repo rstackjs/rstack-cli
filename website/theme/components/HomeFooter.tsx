@@ -13,16 +13,12 @@ function useFooterData() {
       title: t('guide'),
       items: [
         {
-          title: t('introduction'),
-          link: getLink('/guide/introduction'),
-        },
-        {
           title: t('quickStart'),
           link: getLink('/guide/quick-start'),
         },
         {
           title: t('configuration'),
-          link: getLink('/config/index'),
+          link: getLink('/guide/configuration'),
         },
       ],
     },
@@ -30,20 +26,16 @@ function useFooterData() {
       title: t('commands'),
       items: [
         {
-          title: t('commands'),
-          link: getLink('/commands/index'),
+          title: 'rs dev',
+          link: getLink('/guide/cli/dev'),
         },
         {
-          title: 'rs dev / rs build',
-          link: getLink('/commands/index'),
+          title: 'rs build',
+          link: getLink('/guide/cli/build'),
         },
         {
-          title: 'rs test / rs lint',
-          link: getLink('/commands/index'),
-        },
-        {
-          title: 'rs lib / rs doc',
-          link: getLink('/commands/index'),
+          title: 'rs test',
+          link: getLink('/guide/cli/test'),
         },
       ],
     },
