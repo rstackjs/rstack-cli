@@ -1,18 +1,8 @@
 [
   {
     "text": "Guide",
-    "link": "/guide/introduction",
+    "link": "/guide/quick-start",
     "activeMatch": "/guide/"
-  },
-  {
-    "text": "Commands",
-    "link": "/commands/",
-    "activeMatch": "/commands/"
-  },
-  {
-    "text": "Configuration",
-    "link": "/config/",
-    "activeMatch": "/config/"
   },
   {
     "text": "Changelog",

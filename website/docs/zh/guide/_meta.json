@@ -1,12 +1,21 @@
 [
   {
-    "type": "file",
-    "name": "introduction",
-    "label": "介绍"
+    "type": "section-header",
+    "label": "基础"
   },
   {
     "type": "file",
     "name": "quick-start",
     "label": "快速上手"
+  },
+  {
+    "type": "file",
+    "name": "configuration",
+    "label": "配置"
+  },
+  {
+    "type": "dir-section-header",
+    "name": "cli",
+    "label": "CLI"
   }
 ]

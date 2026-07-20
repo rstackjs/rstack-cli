@@ -1,12 +1,21 @@
 [
   {
-    "type": "file",
-    "name": "introduction",
-    "label": "Introduction"
+    "type": "section-header",
+    "label": "Essentials"
   },
   {
     "type": "file",
     "name": "quick-start",
     "label": "Quick start"
+  },
+  {
+    "type": "file",
+    "name": "configuration",
+    "label": "Configuration"
+  },
+  {
+    "type": "dir-section-header",
+    "name": "cli",
+    "label": "CLI"
   }
 ]
