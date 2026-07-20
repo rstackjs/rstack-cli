@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "lib": ["DOM", "ES2023"],
+    "jsx": "react-jsx",
+    "target": "ES2023",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["rstack/types", "node"],
+    "useDefineForClassFields": true,
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "paths": {
+      "i18n": ["./i18n.json"]
+    }
+  },
+  "include": ["docs", "rstack.config.ts", "theme", "env.d.ts"],
+  "mdx": {
+    "checkMdx": true
+  }
+}

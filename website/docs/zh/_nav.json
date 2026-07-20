@@ -1,0 +1,21 @@
+[
+  {
+    "text": "指南",
+    "link": "/guide/introduction",
+    "activeMatch": "/guide/"
+  },
+  {
+    "text": "命令",
+    "link": "/commands/",
+    "activeMatch": "/commands/"
+  },
+  {
+    "text": "配置",
+    "link": "/config/",
+    "activeMatch": "/config/"
+  },
+  {
+    "text": "更新日志",
+    "link": "https://github.com/rstackjs/rstack-cli/releases"
+  }
+]

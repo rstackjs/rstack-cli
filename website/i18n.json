@@ -1,0 +1,86 @@
+{
+  "introduction": {
+    "en": "Introduction",
+    "zh": "介绍"
+  },
+  "quickStart": {
+    "en": "Quick start",
+    "zh": "快速上手"
+  },
+  "subtitle": {
+    "en": "The Unified Rstack Toolchain",
+    "zh": "统一的 Rstack 工具链"
+  },
+  "slogan": {
+    "en": "One CLI, one configuration, one consistent workflow",
+    "zh": "一个命令行、一份配置、一致的研发体验"
+  },
+  "unifiedCli": {
+    "en": "One CLI",
+    "zh": "统一命令行"
+  },
+  "unifiedCliDesc": {
+    "en": "Develop, build, test, lint, publish libraries, and serve docs with the rs command.",
+    "zh": "通过 rs 命令完成开发、构建、测试、检查、库构建和文档开发。"
+  },
+  "oneConfig": {
+    "en": "One Configuration",
+    "zh": "统一配置"
+  },
+  "oneConfigDesc": {
+    "en": "Configure the whole toolchain from a single rstack.config.ts file.",
+    "zh": "在一份 rstack.config.ts 中配置完整工具链。"
+  },
+  "fullWorkflow": {
+    "en": "Full Workflow",
+    "zh": "完整工作流"
+  },
+  "fullWorkflowDesc": {
+    "en": "Cover applications, libraries, tests, linting, docs, and staged files.",
+    "zh": "覆盖应用、库、测试、代码检查、文档和暂存文件。"
+  },
+  "ecosystemPowered": {
+    "en": "Rstack Powered",
+    "zh": "Rstack 驱动"
+  },
+  "ecosystemPoweredDesc": {
+    "en": "Built on Rsbuild, Rslib, Rstest, Rslint, Rspress, and Oxfmt.",
+    "zh": "基于 Rsbuild、Rslib、Rstest、Rslint、Rspress 和 Oxfmt。"
+  },
+  "workflowFriendly": {
+    "en": "Workflow Friendly",
+    "zh": "融入现有工作流"
+  },
+  "workflowFriendlyDesc": {
+    "en": "Keep using your preferred runtime, package manager, and task runner.",
+    "zh": "继续使用你熟悉的运行时、包管理器和任务编排工具。"
+  },
+  "composable": {
+    "en": "Composable",
+    "zh": "灵活组合"
+  },
+  "composableDesc": {
+    "en": "Adopt the commands you need while retaining access to the underlying tools.",
+    "zh": "按需采用不同命令，同时保留底层工具的完整能力。"
+  },
+  "guide": {
+    "en": "Guide",
+    "zh": "指南"
+  },
+  "commands": {
+    "en": "Commands",
+    "zh": "命令"
+  },
+  "configuration": {
+    "en": "Configuration",
+    "zh": "配置"
+  },
+  "ecosystem": {
+    "en": "Ecosystem",
+    "zh": "生态"
+  },
+  "community": {
+    "en": "Community",
+    "zh": "社区"
+  }
+}

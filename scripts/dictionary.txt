@@ -1,4 +1,5 @@
 # Custom Dictionary Words
+llms
 oxfmt
 rsbuild
 rslib
@@ -9,4 +10,6 @@ rspress
 rstack
 rstackjs
 rstest
+shiki
+shikijs
 turborepo
