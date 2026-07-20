@@ -12,6 +12,7 @@ define.lint(async () => {
             './packages/*/tsconfig.json',
             './packages/*/test/tsconfig.json',
             './examples/*/tsconfig.json',
+            './website/tsconfig.json',
           ],
         },
       },

@@ -1,0 +1,27 @@
+{
+  "name": "rstack-website",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "rs doc build",
+    "dev": "rs doc",
+    "preview": "rs doc preview"
+  },
+  "devDependencies": {
+    "@rsbuild/plugin-sass": "catalog:",
+    "@rspress/core": "catalog:",
+    "@rspress/plugin-sitemap": "catalog:",
+    "@rstack-dev/doc-ui": "catalog:",
+    "@shikijs/transformers": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "rsbuild-plugin-open-graph": "catalog:",
+    "rspress-plugin-font-open-sans": "catalog:",
+    "rstack": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
