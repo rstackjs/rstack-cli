@@ -1,7 +1,50 @@
 # preview
 
-TODO.
+`rs preview` 命令使用 [Rsbuild](https://rsbuild.rs/zh/guide/basic/cli#rsbuild-preview) 在本地预览应用的生产构建。
+
+## 用法 \{#usage}
+
+```bash
+rs preview [options]
+```
+
+该命令会加载通过 [`define.app()`](../configuration#define-app) 注册的应用配置。启动预览服务器前，请先运行 [`rs build`](./build) 生成生产构建：
+
+```bash
+rs build
+rs preview
+```
+
+`rs preview` 仅用于本地预览，请勿将其用作生产服务器。
+
+## 选项 \{#options}
+
+`rs preview` 支持与 Rsbuild 相同的预览服务器选项，具体说明请参见 [Rsbuild CLI 文档](https://rsbuild.rs/zh/guide/basic/cli#rsbuild-preview)。
+
+示例：
+
+```bash
+# 启动预览服务器并在浏览器中打开页面
+rs preview --open
+
+# 使用 8080 端口，并在端口已被占用时退出
+rs preview --port 8080 --strict-port
+
+# 允许通过局域网访问预览服务器
+rs preview --host
+```
 
 ## 配置 \{#configuration}
 
-参见 [`define.app()`](../configuration#define-app)。
+在 [Rstack 配置文件](/guide/configuration#configuration-file)中通过 [`define.app()`](../configuration#define-app) 配置预览服务器。该 API 支持标准的 [Rsbuild 配置](https://rsbuild.rs/zh/config/)：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.app({
+  server: {
+    open: true,
+    port: 8080,
+  },
+});
+```
