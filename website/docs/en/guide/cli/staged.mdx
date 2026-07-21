@@ -1,7 +1,99 @@
 # staged
 
-TODO.
+The `rs staged` command uses [lint-staged](https://github.com/lint-staged/lint-staged) to run tasks against files staged in Git.
+
+A common use case is to run linters, formatters, or other checks on staged files before committing code.
+
+## Usage
+
+```bash
+rs staged [options]
+```
+
+The command loads the staged-file tasks registered with [`define.staged()`](../configuration#define-staged).
+
+## Options
+
+### `--allow-empty`
+
+`--allow-empty` allows an empty commit when tasks revert all staged changes.
+
+```bash
+rs staged --allow-empty
+```
+
+### `--concurrent`
+
+`--concurrent` (or `-p`) sets how many tasks run concurrently; use `false` to run them serially.
+
+```bash
+rs staged --concurrent false
+```
+
+### `--cwd`
+
+`--cwd` sets the working directory used to run all tasks.
+
+```bash
+rs staged --cwd packages/app
+```
+
+### `--debug`
+
+`--debug` (or `-d`) prints additional debug information.
+
+```bash
+rs staged --debug
+```
+
+### `--no-stash`
+
+`--no-stash` disables the backup stash and keeps changes made by tasks when an error occurs.
+
+```bash
+rs staged --no-stash
+```
+
+### `--quiet`
+
+`--quiet` (or `-q`) disables lint-staged's own console output.
+
+```bash
+rs staged --quiet
+```
+
+### `--relative`
+
+`--relative` (or `-r`) passes file paths relative to the working directory to tasks.
+
+```bash
+rs staged --relative
+```
+
+### `--verbose`
+
+`--verbose` (or `-v`) shows task output even when tasks succeed; by default, only output from failed tasks is displayed.
+
+```bash
+rs staged --verbose
+```
+
+### `--help`
+
+`--help` (or `-h`) displays the command's usage and options.
+
+```bash
+rs staged --help
+```
 
 ## Configuration
 
-See [`define.staged()`](../configuration#define-staged).
+Configure staged-file tasks through [`define.staged()`](../configuration#define-staged) in the [Rstack configuration file](/guide/configuration#configuration-file). It accepts the standard [lint-staged configuration](https://github.com/lint-staged/lint-staged#configuration):
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.staged({
+  '*.{js,jsx,ts,tsx}': 'rs lint',
+});
+```
