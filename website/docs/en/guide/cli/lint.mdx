@@ -1,7 +1,42 @@
 # lint
 
-TODO.
+The `rs lint` command uses [Rslint](https://rslint.rs/guide/) to lint source code.
+
+## Usage
+
+```bash
+rs lint [options] [files...]
+```
+
+The command loads the lint configuration registered with [`define.lint()`](../configuration#define-lint).
+
+## Options
+
+`rs lint` supports the same command-line options as Rslint. See the [Rslint CLI documentation](https://rslint.rs/guide/cli) for details.
+
+Examples:
+
+```bash
+# Lint a specific directory
+rs lint src
+
+# Automatically fix problems
+rs lint --fix
+
+# Lint and run TypeScript type checking
+rs lint --type-check
+```
 
 ## Configuration
 
-See [`define.lint()`](../configuration#define-lint).
+Configure linting through [`define.lint()`](../configuration#define-lint) in the [Rstack configuration file](/guide/configuration#configuration-file). It accepts the standard [Rslint configuration](https://rslint.rs/config/). Presets and plugins can be imported from `rstack/lint` on demand:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.lint(async () => {
+  const { js, ts } = await import('rstack/lint');
+
+  return [js.configs.recommended, ts.configs.recommended];
+});
+```
