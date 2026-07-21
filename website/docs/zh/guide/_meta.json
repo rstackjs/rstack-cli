@@ -14,6 +14,11 @@
     "label": "配置"
   },
   {
+    "type": "file",
+    "name": "api-reference",
+    "label": "API 参考"
+  },
+  {
     "type": "dir-section-header",
     "name": "cli",
     "label": "CLI"
