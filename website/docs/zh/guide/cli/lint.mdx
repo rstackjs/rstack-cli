@@ -1,7 +1,42 @@
 # lint
 
-TODO.
+`rs lint` 命令使用 [Rslint](https://rslint.rs/guide/) 检查源代码。
+
+## 用法 \{#usage}
+
+```bash
+rs lint [options] [files...]
+```
+
+该命令会加载通过 [`define.lint()`](../configuration#define-lint) 注册的代码检查配置。
+
+## 选项 \{#options}
+
+`rs lint` 支持与 Rslint 相同的命令行选项，具体说明请参见 [Rslint CLI 文档](https://rslint.rs/guide/cli)。
+
+示例：
+
+```bash
+# 检查指定目录
+rs lint src
+
+# 自动修复问题
+rs lint --fix
+
+# 检查代码并运行 TypeScript 类型检查
+rs lint --type-check
+```
 
 ## 配置 \{#configuration}
 
-参见 [`define.lint()`](../configuration#define-lint)。
+在 [Rstack 配置文件](/guide/configuration#configuration-file)中通过 [`define.lint()`](../configuration#define-lint) 配置代码检查。该 API 支持标准的 [Rslint 配置](https://rslint.rs/config/)。预设和插件可以从 `rstack/lint` 按需导入：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.lint(async () => {
+  const { js, ts } = await import('rstack/lint');
+
+  return [js.configs.recommended, ts.configs.recommended];
+});
+```
