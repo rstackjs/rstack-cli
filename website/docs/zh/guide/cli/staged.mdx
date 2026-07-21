@@ -1,7 +1,99 @@
 # staged
 
-TODO.
+`rs staged` 命令使用 [lint-staged](https://github.com/lint-staged/lint-staged) 对 Git 暂存文件运行任务。
+
+常见的使用场景是在提交代码前，对暂存文件运行 linter、格式化工具或其他检查。
+
+## 用法 \{#usage}
+
+```bash
+rs staged [options]
+```
+
+该命令会加载通过 [`define.staged()`](../configuration#define-staged) 注册的暂存文件任务。
+
+## 选项 \{#options}
+
+### `--allow-empty`
+
+`--allow-empty` 允许在任务撤销全部暂存变更时创建空提交。
+
+```bash
+rs staged --allow-empty
+```
+
+### `--concurrent`
+
+`--concurrent`（或 `-p`）用于设置并发运行的任务数量；设为 `false` 时串行运行。
+
+```bash
+rs staged --concurrent false
+```
+
+### `--cwd`
+
+`--cwd` 用于设置运行所有任务时使用的工作目录。
+
+```bash
+rs staged --cwd packages/app
+```
+
+### `--debug`
+
+`--debug`（或 `-d`）用于输出额外的调试信息。
+
+```bash
+rs staged --debug
+```
+
+### `--no-stash`
+
+`--no-stash` 会禁用备份 stash，并在出错时保留任务产生的变更。
+
+```bash
+rs staged --no-stash
+```
+
+### `--quiet`
+
+`--quiet`（或 `-q`）用于禁用 lint-staged 自身的控制台输出。
+
+```bash
+rs staged --quiet
+```
+
+### `--relative`
+
+`--relative`（或 `-r`）会将相对于工作目录的文件路径传递给任务。
+
+```bash
+rs staged --relative
+```
+
+### `--verbose`
+
+`--verbose`（或 `-v`）会在任务成功时也显示其输出；默认仅显示失败任务的输出。
+
+```bash
+rs staged --verbose
+```
+
+### `--help`
+
+`--help`（或 `-h`）用于显示命令的用法和选项。
+
+```bash
+rs staged --help
+```
 
 ## 配置 \{#configuration}
 
-参见 [`define.staged()`](../configuration#define-staged)。
+在 [Rstack 配置文件](/guide/configuration#configuration-file)中通过 [`define.staged()`](../configuration#define-staged) 配置暂存文件任务。该 API 支持标准的 [lint-staged 配置](https://github.com/lint-staged/lint-staged#configuration)：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.staged({
+  '*.{js,jsx,ts,tsx}': 'rs lint',
+});
+```
