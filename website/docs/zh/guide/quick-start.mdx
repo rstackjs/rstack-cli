@@ -1,14 +1,85 @@
 # 快速上手 \{#quick-start}
 
-TODO.
+import { PackageManagerTabs } from '@rspress/core/theme';
+
+Rstack CLI 通过统一的命令行和配置文件整合 Rstack 工具链。本指南将介绍如何在现有项目中添加 Rstack，以及可以使用的工作流。
+
+## 环境准备 \{#environment-preparation}
+
+Rstack 支持使用 [Node.js](https://nodejs.org/)、[Deno](https://deno.com/) 或 [Bun](https://bun.sh/) 作为 JavaScript 运行时。
+
+参考以下安装指南，选择一种运行时：
+
+- [安装 Node.js](https://nodejs.org/zh-cn/download)
+- [安装 Bun](https://bun.com/docs/installation)
+- [安装 Deno](https://docs.deno.com/runtime/getting_started/installation/)
+
+:::tip 版本要求
+
+使用 Node.js 作为运行时时，Rstack 要求 Node.js 版本为 22.12.0 或更高版本。
+
+:::
+
+## 安装 Rstack \{#install-rstack}
+
+在已有 `package.json` 的项目中，将 [`rstack`](https://www.npmjs.com/package/rstack) 安装为开发依赖：
+
+<PackageManagerTabs
+  command={{
+    npm: 'npm install -D rstack',
+    yarn: 'yarn add -D rstack',
+    pnpm: 'pnpm add -D rstack',
+    bun: 'bun add -d rstack',
+  }}
+/>
 
 ## CLI 命令 \{#cli-commands}
 
-- [`rs dev`](./cli/dev)：TODO。
-- [`rs build`](./cli/build)：TODO。
-- [`rs preview`](./cli/preview)：TODO。
-- [`rs lib`](./cli/lib)：TODO。
-- [`rs doc`](./cli/doc)：TODO。
-- [`rs test`](./cli/test)：TODO。
-- [`rs lint`](./cli/lint)：TODO。
-- [`rs staged`](./cli/staged)：TODO。
+在 `package.json` 的 `scripts` 字段中添加项目所需的命令，例如：
+
+```json title="package.json"
+{
+  "scripts": {
+    "dev": "rs dev",
+    "build": "rs build",
+    "preview": "rs preview",
+    "test": "rs test",
+    "lint": "rs lint"
+  }
+}
+```
+
+package scripts 会使用项目本地安装的 `rs` 命令，因此无需全局安装 Rstack。
+
+Rstack 提供以下命令：
+
+- [`rs dev`](./cli/dev)：启动应用开发服务器。
+- [`rs build`](./cli/build)：构建应用的生产版本。
+- [`rs preview`](./cli/preview)：在本地预览应用的生产构建产物。
+- [`rs lib`](./cli/lib)：使用 Rslib 构建库。
+- [`rs doc`](./cli/doc)：使用 Rspress 开发、构建或预览文档站点。
+- [`rs test`](./cli/test)：使用 Rstest 运行测试。
+- [`rs lint`](./cli/lint)：使用 Rslint 检查源代码。
+- [`rs staged`](./cli/staged)：使用 lint-staged 对 Git 暂存区中的文件运行任务。
+
+## 配置 Rstack \{#configure-rstack}
+
+在项目根目录创建 `rstack.config.ts`，并注册项目所需的配置。以下是一个包含应用、测试和代码检查的最小示例：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.app({
+  // Rsbuild 配置
+});
+
+define.test({
+  // Rstest 配置
+});
+
+define.lint({
+  // Rslint 配置
+});
+```
+
+所有可用的配置 API 请参见[配置](./configuration)。

@@ -1,14 +1,85 @@
 # Quick start
 
-TODO.
+import { PackageManagerTabs } from '@rspress/core/theme';
+
+Rstack CLI brings the Rstack toolchain together with one CLI and one configuration file. This guide adds Rstack to an existing project and introduces the available workflows.
+
+## Environment preparation
+
+Rstack supports using [Node.js](https://nodejs.org/), [Deno](https://deno.com/), or [Bun](https://bun.sh/) as the JavaScript runtime.
+
+Use one of the following installation guides to set up a runtime:
+
+- [Install Node.js](https://nodejs.org/en/download)
+- [Install Bun](https://bun.com/docs/installation)
+- [Install Deno](https://docs.deno.com/runtime/getting_started/installation/)
+
+:::tip Version requirements
+
+Rstack requires Node.js 22.12.0 or higher when using Node.js as the runtime.
+
+:::
+
+## Install Rstack
+
+Install [`rstack`](https://www.npmjs.com/package/rstack) as a development dependency in a project that has a `package.json`:
+
+<PackageManagerTabs
+  command={{
+    npm: 'npm install -D rstack',
+    yarn: 'yarn add -D rstack',
+    pnpm: 'pnpm add -D rstack',
+    bun: 'bun add -d rstack',
+  }}
+/>
 
 ## CLI commands
 
-- [`rs dev`](./cli/dev): TODO.
-- [`rs build`](./cli/build): TODO.
-- [`rs preview`](./cli/preview): TODO.
-- [`rs lib`](./cli/lib): TODO.
-- [`rs doc`](./cli/doc): TODO.
-- [`rs test`](./cli/test): TODO.
-- [`rs lint`](./cli/lint): TODO.
-- [`rs staged`](./cli/staged): TODO.
+Add the commands your project needs to the `scripts` field in `package.json`. For example:
+
+```json title="package.json"
+{
+  "scripts": {
+    "dev": "rs dev",
+    "build": "rs build",
+    "preview": "rs preview",
+    "test": "rs test",
+    "lint": "rs lint"
+  }
+}
+```
+
+Package scripts use the project-local `rs` binary, so Rstack does not need to be installed globally.
+
+The following commands are available:
+
+- [`rs dev`](./cli/dev): Start the application development server.
+- [`rs build`](./cli/build): Build the application for production.
+- [`rs preview`](./cli/preview): Preview the application's production build locally.
+- [`rs lib`](./cli/lib): Build a library with Rslib.
+- [`rs doc`](./cli/doc): Develop, build, or preview a documentation site with Rspress.
+- [`rs test`](./cli/test): Run tests with Rstest.
+- [`rs lint`](./cli/lint): Lint source code with Rslint.
+- [`rs staged`](./cli/staged): Run tasks against files staged in Git with lint-staged.
+
+## Configure Rstack
+
+Create `rstack.config.ts` in the project root and register the configurations your project needs. The following is a minimal example for an application with testing and linting:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.app({
+  // Rsbuild configuration
+});
+
+define.test({
+  // Rstest configuration
+});
+
+define.lint({
+  // Rslint configuration
+});
+```
+
+See [Configuration](./configuration) for all available configuration APIs.
