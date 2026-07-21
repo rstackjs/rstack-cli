@@ -19,6 +19,15 @@
     "label": "API reference"
   },
   {
+    "type": "section-header",
+    "label": "Practices"
+  },
+  {
+    "type": "file",
+    "name": "testing",
+    "label": "Testing"
+  },
+  {
     "type": "dir-section-header",
     "name": "cli",
     "label": "CLI"

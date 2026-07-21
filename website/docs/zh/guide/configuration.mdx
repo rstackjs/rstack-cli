@@ -144,6 +144,8 @@ define.test({
 
 如果测试根配置未定义 `extends` 且包含 `projects`，Rstack 会为每个未自行设置 `extends` 的内联项目应用自动继承。函数形式的应用或库配置只会解析一次，并由这些项目共享。字符串形式的项目会原样传给 Rstest；它们会独立加载外部配置，不继承当前应用或库的配置。
 
+> 如需了解更多测试相关用法，请参阅[测试](./testing)。
+
 ### `define.lint()` \{#define-lint}
 
 定义 [Rslint 配置](https://rslint.rs/config/)。可以直接传入配置，也可以使用异步函数，按需从 `rstack/lint` 加载预设和插件。

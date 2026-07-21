@@ -19,6 +19,15 @@
     "label": "API 参考"
   },
   {
+    "type": "section-header",
+    "label": "实践"
+  },
+  {
+    "type": "file",
+    "name": "testing",
+    "label": "测试"
+  },
+  {
     "type": "dir-section-header",
     "name": "cli",
     "label": "CLI"
