@@ -1,7 +1,87 @@
 # test
 
-TODO.
+`rs test` 命令使用 [Rstest](https://rstest.rs/zh/guide/basic/cli) 运行测试。
+
+## 用法 \{#usage}
+
+```bash
+rs test [command] [...filters] [options]
+```
+
+该命令会加载通过 [`define.test()`](../configuration#define-test) 注册的测试配置。
+
+## 选项 \{#options}
+
+`rs test` 支持与 Rstest 相同的测试运行选项和过滤方式，具体说明请参见 [Rstest CLI 文档](https://rstest.rs/zh/guide/basic/cli#cli-选项)和[过滤测试](https://rstest.rs/zh/guide/basic/test-filter)。
+
+示例：
+
+```bash
+# 运行指定的测试文件
+rs test tests/foo.test.ts
+
+# 运行名称中包含 "login" 的测试
+rs test -t login
+
+# 收集代码覆盖率
+rs test --coverage
+```
+
+## 子命令 \{#subcommands}
+
+### run
+
+[`rs test run`](https://rstest.rs/zh/guide/basic/cli#rstest-run) 用于在非监听模式下单次运行匹配的测试，适合 CI 环境。
+
+```bash
+rs test run
+```
+
+### watch
+
+[`rs test watch`](https://rstest.rs/zh/guide/basic/cli#rstest-watch) 会在测试文件或其依赖发生变化时重新运行相关测试。
+
+```bash
+rs test watch
+```
+
+### list
+
+[`rs test list`](https://rstest.rs/zh/guide/basic/cli#rstest-list) 用于列出匹配的测试，但不运行测试。
+
+```bash
+rs test list
+```
+
+### merge-reports
+
+[`rs test merge-reports`](https://rstest.rs/zh/guide/basic/cli#rstest-merge-reports) 用于合并多个测试分片生成的 blob 报告。
+
+```bash
+rs test merge-reports
+```
+
+### init
+
+[`rs test init`](https://rstest.rs/zh/guide/basic/cli#rstest-init) 用于为 Rstest 支持的项目类型创建初始文件。
+
+```bash
+rs test init browser
+```
 
 ## 配置 \{#configuration}
 
-参见 [`define.test()`](../configuration#define-test)。
+在 [Rstack 配置文件](/guide/configuration#configuration-file)中通过 [`define.test()`](../configuration#define-test) 配置测试。该 API 支持标准的 [Rstest 配置](https://rstest.rs/zh/config/)：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.app({
+  // 共享的应用配置
+});
+
+define.test({
+  setupFiles: ['./tests/rstest.setup.ts'],
+  testEnvironment: 'happy-dom',
+});
+```
