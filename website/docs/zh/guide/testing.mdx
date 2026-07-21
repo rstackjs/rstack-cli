@@ -1,0 +1,125 @@
+# 测试 \{#testing}
+
+Rstack 使用 [Rstest](https://rstest.rs/zh/) 运行测试。
+
+```bash
+rs test
+```
+
+命令行选项和子命令请参阅 [`rs test`](./cli/test)。
+
+## 配置测试 \{#configure-tests}
+
+通过 [`define.test()`](./configuration#define-test) 注册 Rstest 配置，其用法与将配置传给 Rstest 的 `defineConfig()` 一致：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.test({
+  testEnvironment: 'node',
+});
+```
+
+## 测试 API \{#test-apis}
+
+测试 API 和配置辅助函数可从 [`rstack/test`](./api-reference#rstacktest) 导入：
+
+```ts
+import { defineInlineProject, expect, test } from 'rstack/test';
+```
+
+## 单项目 \{#single-project}
+
+对于单个测试项目，直接将 Rstest 选项传给 `define.test()`：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.app({
+  // 共享的应用配置
+});
+
+define.test({
+  testEnvironment: 'happy-dom',
+});
+```
+
+未设置 `extends` 时，Rstack 会通过 Rsbuild 适配器让测试配置继承 `define.app()`。如果没有应用配置，则通过 Rslib 适配器回退到 `define.lib()`。同时定义两者时，`define.app()` 的优先级更高。
+
+## 多项目 \{#multiple-projects}
+
+通过 Rstest 的 [`projects`](https://rstest.rs/zh/config/test/projects) 选项可以同时运行多套测试配置。每一项既可以是内联项目，也可以是由 Rstest 解析为外部项目的字符串。
+
+### 内联项目 \{#inline-projects}
+
+不同测试环境需要共享当前应用或库配置时，请使用内联项目：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+import { defineInlineProject } from 'rstack/test';
+
+define.app({
+  // 由两个内联项目共享
+});
+
+define.test({
+  projects: [
+    defineInlineProject({
+      name: 'node',
+      include: ['./tests/node/**/*.test.ts'],
+      testEnvironment: 'node',
+    }),
+    defineInlineProject({
+      name: 'dom',
+      include: ['./tests/dom/**/*.test.tsx'],
+      testEnvironment: 'happy-dom',
+    }),
+  ],
+});
+```
+
+Rstack 会将对应的适配器应用到每个未设置 `extends` 的内联项目。函数形式的 `define.app()` 或 `define.lib()` 配置只会解析一次，再由这些内联项目共享。
+
+按项目名称运行单个项目：
+
+```bash
+rs test --project dom
+```
+
+完整的 React SSR 示例请参阅 [`examples/rstest-inline-projects`](https://github.com/rstackjs/rstack-cli/tree/main/examples/rstest-inline-projects)，该示例使用 Node.js 和 happy-dom 两种测试环境。
+
+### 外部项目 \{#external-projects}
+
+使用字符串形式的配置项加载外部项目：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.test({
+  projects: ['./legacy/rstest.config.ts'],
+});
+```
+
+Rstack 会将字符串形式的项目原样传给 Rstest。外部项目会加载自己的配置，不会继承当前的 `define.app()` 或 `define.lib()` 配置。每个项目需要独立管理配置时，请使用外部项目。
+
+## 自定义继承 \{#customize-inheritance}
+
+项目不应继承当前应用或库配置时，请显式设置 Rstest 的 [`extends`](https://rstest.rs/zh/config/test/extends) 选项：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+import { defineInlineProject } from 'rstack/test';
+
+define.test({
+  projects: [
+    defineInlineProject({
+      name: 'standalone',
+      extends: {
+        testEnvironment: 'node',
+      },
+    }),
+  ],
+});
+```
+
+在内联项目中设置 `extends`，只会关闭当前项目的自动继承。在 `define.test()` 的根配置中设置该选项，则会关闭整个测试配置的自动继承。

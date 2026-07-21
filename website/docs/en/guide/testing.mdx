@@ -1,0 +1,125 @@
+# Testing
+
+Rstack uses [Rstest](https://rstest.rs/) to run tests.
+
+```bash
+rs test
+```
+
+For command-line options and subcommands, see [`rs test`](./cli/test).
+
+## Configure tests
+
+Register an Rstest configuration with [`define.test()`](./configuration#define-test). It accepts the same configuration as Rstest's `defineConfig()`:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.test({
+  testEnvironment: 'node',
+});
+```
+
+## Test APIs
+
+Import test APIs and configuration helpers from [`rstack/test`](./api-reference#rstacktest):
+
+```ts
+import { defineInlineProject, expect, test } from 'rstack/test';
+```
+
+## Single project
+
+For a single test project, pass the Rstest options directly to `define.test()`:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.app({
+  // Shared application configuration
+});
+
+define.test({
+  testEnvironment: 'happy-dom',
+});
+```
+
+When `extends` is omitted, Rstack uses the Rsbuild adapter to extend the test configuration from `define.app()`. If no application configuration is defined, it uses the Rslib adapter with `define.lib()` instead. `define.app()` takes precedence when both are defined.
+
+## Multiple projects
+
+Set Rstest's [`projects`](https://rstest.rs/config/test/projects) option to run multiple test configurations together. Entries can be inline projects or strings that Rstest resolves as external projects.
+
+### Inline projects
+
+Use inline projects when different test environments should share the current application or library configuration:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+import { defineInlineProject } from 'rstack/test';
+
+define.app({
+  // Shared by both inline projects
+});
+
+define.test({
+  projects: [
+    defineInlineProject({
+      name: 'node',
+      include: ['./tests/node/**/*.test.ts'],
+      testEnvironment: 'node',
+    }),
+    defineInlineProject({
+      name: 'dom',
+      include: ['./tests/dom/**/*.test.tsx'],
+      testEnvironment: 'happy-dom',
+    }),
+  ],
+});
+```
+
+Rstack applies the corresponding adapter to each inline project that omits `extends`. A function-based `define.app()` or `define.lib()` configuration is resolved once, then shared by those inline projects.
+
+Run one project by name:
+
+```bash
+rs test --project dom
+```
+
+See [`examples/rstest-inline-projects`](https://github.com/rstackjs/rstack-cli/tree/main/examples/rstest-inline-projects) for a complete React SSR example using Node.js and happy-dom.
+
+### External projects
+
+Use a string entry for an externally configured project:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.test({
+  projects: ['./legacy/rstest.config.ts'],
+});
+```
+
+Rstack passes string entries to Rstest unchanged. External projects load their own configuration and do not inherit the current `define.app()` or `define.lib()` configuration. Use external projects when each project manages its configuration independently.
+
+## Customize inheritance
+
+Set Rstest's [`extends`](https://rstest.rs/config/test/extends) option explicitly when a project should not inherit the current application or library configuration:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+import { defineInlineProject } from 'rstack/test';
+
+define.test({
+  projects: [
+    defineInlineProject({
+      name: 'standalone',
+      extends: {
+        testEnvironment: 'node',
+      },
+    }),
+  ],
+});
+```
+
+Setting `extends` on an inline project disables automatic inheritance only for that project. Setting it on the root `define.test()` configuration disables automatic inheritance for the entire test configuration.
