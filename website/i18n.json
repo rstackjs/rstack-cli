@@ -4,12 +4,12 @@
     "zh": "快速上手"
   },
   "subtitle": {
-    "en": "The Unified Rstack Toolchain",
-    "zh": "统一的 Rstack 工具链"
+    "en": "The Unified JavaScript Toolchain",
+    "zh": "统一的 JavaScript 工具链"
   },
   "slogan": {
     "en": "One CLI, one configuration, one consistent workflow",
-    "zh": "一个命令行、一份配置、一致的研发体验"
+    "zh": "一个命令行、一份配置、一致的工作流"
   },
   "unifiedCli": {
     "en": "One CLI",
