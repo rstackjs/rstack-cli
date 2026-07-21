@@ -21,6 +21,8 @@ export default defineConfig({
     },
   },
   output: {
-    externals: ['jiti'],
+    // Rstack always passes an explicit config object to lint-staged, so its
+    // optional YAML config loader is not used.
+    externals: ['jiti', 'yaml'],
   },
 });
