@@ -27,21 +27,13 @@
     "en": "Configure the whole toolchain from a single rstack.config.ts file.",
     "zh": "在一份 rstack.config.ts 中配置完整工具链。"
   },
-  "fullWorkflow": {
-    "en": "Full Workflow",
-    "zh": "完整工作流"
-  },
-  "fullWorkflowDesc": {
-    "en": "Cover applications, libraries, tests, linting, docs, and staged files.",
-    "zh": "覆盖应用、库、测试、代码检查、文档和暂存文件。"
-  },
   "ecosystemPowered": {
     "en": "Rstack Powered",
     "zh": "Rstack 驱动"
   },
   "ecosystemPoweredDesc": {
-    "en": "Built on Rsbuild, Rslib, Rstest, Rslint, Rspress, and Oxfmt.",
-    "zh": "基于 Rsbuild、Rslib、Rstest、Rslint、Rspress 和 Oxfmt。"
+    "en": "Built on Rsbuild, Rslib, Rstest, Rslint, and Rspress.",
+    "zh": "基于 Rsbuild、Rslib、Rstest、Rslint 和 Rspress。"
   },
   "workflowFriendly": {
     "en": "Workflow Friendly",
@@ -50,14 +42,6 @@
   "workflowFriendlyDesc": {
     "en": "Keep using your preferred runtime, package manager, and task runner.",
     "zh": "继续使用你熟悉的运行时、包管理器和任务编排工具。"
-  },
-  "composable": {
-    "en": "Composable",
-    "zh": "灵活组合"
-  },
-  "composableDesc": {
-    "en": "Adopt the commands you need while retaining access to the underlying tools.",
-    "zh": "按需采用不同命令，同时保留底层工具的完整能力。"
   },
   "guide": {
     "en": "Guide",
