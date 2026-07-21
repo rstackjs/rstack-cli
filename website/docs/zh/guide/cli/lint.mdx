@@ -12,7 +12,7 @@ rs lint [options] [files...]
 
 ## 选项 \{#options}
 
-`rs lint` 支持与 Rslint 相同的命令行选项，具体说明请参见 [Rslint CLI 文档](https://rslint.rs/guide/cli)。
+`rs lint` 支持与 Rslint 相同的命令行选项，详情请参阅 [Rslint CLI 文档](https://rslint.rs/guide/cli)。
 
 示例：
 
@@ -29,7 +29,7 @@ rs lint --type-check
 
 ## 配置 \{#configuration}
 
-在 [Rstack 配置文件](/guide/configuration#configuration-file)中通过 [`define.lint()`](../configuration#define-lint) 配置代码检查。该 API 支持标准的 [Rslint 配置](https://rslint.rs/config/)。预设和插件可以从 `rstack/lint` 按需导入：
+在 `rstack.config.ts` 中通过 [`define.lint()`](../configuration#define-lint) 配置代码检查。该 API 接受标准的 [Rslint 配置](https://rslint.rs/config/)。预设和插件可以从 `rstack/lint` 按需导入：
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';

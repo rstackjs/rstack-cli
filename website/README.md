@@ -2,25 +2,26 @@
 
 This website is built with [Rspress](https://rspress.rs/) through Rstack CLI.
 
-Documentation can be written with Markdown or MDX.
+The documentation source lives in `docs` and is written in Markdown or MDX.
 
 ## Development
 
-Run the development server from the repository root:
+Start the development server from the repository root:
 
 ```bash
 pnpm doc
 ```
 
-Build or preview the website from this directory:
+Alternatively, run the website scripts from this directory:
 
 ```bash
+pnpm dev
 pnpm build
 pnpm preview
 ```
 
 ## Contributing
 
-The website provides English and Chinese documentation. Keep both versions in
-sync when possible. Placeholder pages marked with `TODO` are ready for future
-documentation.
+Keep corresponding English and Chinese pages aligned in structure, meaning,
+links, and examples. When a translated heading would generate a different
+anchor, add an explicit anchor that matches the English heading.

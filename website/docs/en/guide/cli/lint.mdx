@@ -1,6 +1,6 @@
 # lint
 
-The `rs lint` command uses [Rslint](https://rslint.rs/guide/) to lint source code.
+The `rs lint` command uses [Rslint](https://rslint.rs/guide/) to lint source files.
 
 ## Usage
 
@@ -29,7 +29,7 @@ rs lint --type-check
 
 ## Configuration
 
-Configure linting through [`define.lint()`](../configuration#define-lint) in the [Rstack configuration file](/guide/configuration#configuration-file). It accepts the standard [Rslint configuration](https://rslint.rs/config/). Presets and plugins can be imported from `rstack/lint` on demand:
+Configure linting with [`define.lint()`](../configuration#define-lint) in `rstack.config.ts`. The API accepts the standard [Rslint configuration](https://rslint.rs/config/). Presets and plugins can be imported from `rstack/lint` on demand:
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';

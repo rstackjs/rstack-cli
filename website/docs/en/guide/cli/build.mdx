@@ -20,7 +20,7 @@ Examples:
 # Write output files to the output directory
 rs build --dist-path output
 
-# Generate source maps for the output files
+# Generate source maps for output files
 rs build --source-map
 
 # Rebuild when files change
@@ -29,7 +29,7 @@ rs build --watch
 
 ## Configuration
 
-Configure the production build through [`define.app()`](../configuration#define-app) in the [Rstack configuration file](/guide/configuration#configuration-file). It accepts the standard [Rsbuild configuration](https://rsbuild.rs/config/):
+Configure production builds with [`define.app()`](../configuration#define-app) in `rstack.config.ts`. The API accepts the standard [Rsbuild configuration](https://rsbuild.rs/config/):
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';

@@ -1,6 +1,6 @@
 # API 参考 \{#api-reference}
 
-Rstack 提供统一的配置 API，并通过专用子路径重导出 Rsbuild、Rslib、Rstest 和 Rslint 的公开 API。建议优先从这些子路径导入，以统一依赖入口，并确保 API 与 Rstack 集成的工具版本保持一致。
+Rstack 提供统一的配置 API，以及用于访问 Rsbuild、Rslib、Rstest 和 Rslint 公开 API 的专用入口。请优先使用这些入口，而不是直接从各工具的 core 包导入，以确保导入路径和工具版本与 Rstack 保持一致。
 
 ## 导入路径 \{#import-paths}
 
@@ -19,11 +19,11 @@ Rstack 提供统一的配置 API，并通过专用子路径重导出 Rsbuild、R
 
 ### `define`
 
-从 `rstack` 导入 `define`，用于在 `rstack.config.ts` 中注册各项工具配置；详细用法请参阅[配置 API](./configuration#configuration-apis)。
+从 `rstack` 导入 `define`，用于在 `rstack.config.ts` 中注册各项工具配置。详细用法请参阅[配置 API](./configuration#configuration-apis)。
 
 ## 重导出 \{#re-exports}
 
-以下工具子路径均会重导出对应 core 包的公开 API。通过这些 Rstack 入口导入，可以让依赖入口和工具版本与 Rstack 集成的工具链保持一致。
+以下每个工具子路径都会重导出对应 core 包的公开 API。
 
 ### `rstack/app`
 
@@ -53,7 +53,7 @@ import { createRslib, mergeRslibConfig } from 'rstack/lib';
 import { describe, expect, test } from 'rstack/test';
 ```
 
-测试 API 请参阅 [Rstest 运行时 API](https://rstest.rs/zh/api/runtime-api/)，配置辅助 API 请参阅 [Rstest 核心 API](https://rstest.rs/zh/api/javascript-api/rstest-core)。
+测试 API 请参阅 [Rstest 运行时 API](https://rstest.rs/zh/api/runtime-api/)。配置辅助函数请参阅 [Rstest 核心 API](https://rstest.rs/zh/api/javascript-api/rstest-core)。
 
 > 如需了解更多测试相关用法，请参阅[测试](./testing)。
 
@@ -69,7 +69,7 @@ import { js, reactPlugin, ts } from 'rstack/lint';
 
 ## TypeScript 类型 \{#typescript-types}
 
-以下纯类型入口用于为 TypeScript 项目补充环境类型声明。请仅将项目需要的入口添加到 `tsconfig.json` 的 [`compilerOptions.types`](https://www.typescriptlang.org/tsconfig/#types) 中。
+以下纯类型入口用于为 TypeScript 项目补充环境类型声明。请仅将项目所需的入口添加到 `tsconfig.json` 的 [`compilerOptions.types`](https://www.typescriptlang.org/tsconfig/#types) 中。
 
 ### `rstack/types`
 
@@ -85,7 +85,7 @@ import { js, reactPlugin, ts } from 'rstack/lint';
 
 ### `rstack/test/globals`
 
-`rstack/test/globals` 提供 `test`、`expect` 和生命周期钩子等 Rstest API 的全局声明。测试代码无需显式导入这些 API 时，请添加该入口。
+`rstack/test/globals` 提供 `test`、`expect` 和生命周期钩子等 Rstest API 的全局声明。启用 Rstest 的 [`globals`](https://rstest.rs/zh/config/test/globals) 选项且测试代码不显式导入这些 API 时，请添加该入口。
 
 ```json title="tsconfig.json"
 {
@@ -97,7 +97,7 @@ import { js, reactPlugin, ts } from 'rstack/lint';
 
 ### `rstack/test/importMeta`
 
-`rstack/test/importMeta` 为 `ImportMeta` 增加可选的 `rstest` 属性，使源码内测试可以使用 `import.meta.rstest`。
+`rstack/test/importMeta` 为 `ImportMeta` 增加可选的 `rstest` 属性，为源码内测试中的 `import.meta.rstest` 提供类型支持。
 
 ```json title="tsconfig.json"
 {

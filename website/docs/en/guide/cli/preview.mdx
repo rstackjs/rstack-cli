@@ -1,6 +1,6 @@
 # preview
 
-The `rs preview` command uses [Rsbuild](https://rsbuild.rs/guide/basic/cli#rsbuild-preview) to preview an application's production build locally.
+The `rs preview` command uses [Rsbuild](https://rsbuild.rs/guide/basic/cli#rsbuild-preview) to preview an application's production output locally.
 
 ## Usage
 
@@ -8,7 +8,7 @@ The `rs preview` command uses [Rsbuild](https://rsbuild.rs/guide/basic/cli#rsbui
 rs preview [options]
 ```
 
-The command loads the application configuration registered with [`define.app()`](../configuration#define-app). Run [`rs build`](./build) before starting the preview server to generate the production output:
+The command loads the application configuration registered with [`define.app()`](../configuration#define-app). Before starting the preview server, run [`rs build`](./build) to generate the production output:
 
 ```bash
 rs build
@@ -27,7 +27,7 @@ Examples:
 # Start the preview server and open the page in the browser
 rs preview --open
 
-# Use port 8080 and fail if it is already in use
+# Use port 8080 and exit if it is already in use
 rs preview --port 8080 --strict-port
 
 # Make the preview server available on the local network
@@ -36,7 +36,7 @@ rs preview --host
 
 ## Configuration
 
-Configure the preview server through [`define.app()`](../configuration#define-app) in the [Rstack configuration file](/guide/configuration#configuration-file). It accepts the standard [Rsbuild configuration](https://rsbuild.rs/config/):
+Configure the preview server with [`define.app()`](../configuration#define-app) in `rstack.config.ts`. The API accepts the standard [Rsbuild configuration](https://rsbuild.rs/config/):
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';

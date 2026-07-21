@@ -20,7 +20,7 @@ Examples:
 # Start the server and open the page in the browser
 rs dev --open
 
-# Use port 8080 and fail if it is already in use
+# Use port 8080 and exit if it is already in use
 rs dev --port 8080 --strict-port
 
 # Make the server available on the local network
@@ -29,7 +29,7 @@ rs dev --host
 
 ## Configuration
 
-Configure the development server through [`define.app()`](../configuration#define-app) in the [Rstack configuration file](/guide/configuration#configuration-file). It accepts the standard [Rsbuild configuration](https://rsbuild.rs/config/):
+Configure the development server with [`define.app()`](../configuration#define-app) in `rstack.config.ts`. The API accepts the standard [Rsbuild configuration](https://rsbuild.rs/config/):
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';

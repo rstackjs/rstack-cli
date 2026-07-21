@@ -1,6 +1,6 @@
 # dev
 
-`rs dev` 命令用于启动应用的 [Rsbuild 开发服务器](https://rsbuild.rs/guide/basic/server)。它会以开发模式编译源码、监听文件变化，并按需进行模块热更新（HMR）或刷新页面。
+`rs dev` 命令用于启动应用的 [Rsbuild 开发服务器](https://rsbuild.rs/zh/guide/basic/server)。它会以开发模式编译源码、监听文件变化，并按需进行模块热更新（HMR）或刷新页面。
 
 ## 用法 \{#usage}
 
@@ -12,7 +12,7 @@ rs dev [options]
 
 ## 选项 \{#options}
 
-`rs dev` 支持与 Rsbuild 相同的开发服务器选项，具体说明请参见 [Rsbuild CLI 文档](https://rsbuild.rs/zh/guide/basic/cli#rsbuild)。
+`rs dev` 支持与 Rsbuild 相同的开发服务器选项，详情请参阅 [Rsbuild CLI 文档](https://rsbuild.rs/zh/guide/basic/cli#rsbuild)。
 
 示例：
 
@@ -29,7 +29,7 @@ rs dev --host
 
 ## 配置 \{#configuration}
 
-在 [Rstack 配置文件](/guide/configuration#configuration-file)中通过 [`define.app()`](../configuration#define-app) 配置开发服务器。该 API 支持标准的 [Rsbuild 配置](https://rsbuild.rs/zh/config/)：
+在 `rstack.config.ts` 中通过 [`define.app()`](../configuration#define-app) 配置开发服务器。该 API 接受标准的 [Rsbuild 配置](https://rsbuild.rs/zh/config/)：
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';

@@ -1,8 +1,8 @@
 # staged
 
-The `rs staged` command uses [lint-staged](https://github.com/lint-staged/lint-staged) to run tasks against files staged in Git.
+The `rs staged` command uses [lint-staged](https://github.com/lint-staged/lint-staged) to run tasks against files staged for commit.
 
-A common use case is to run linters, formatters, or other checks on staged files before committing code.
+It is typically used in a Git hook to lint, format, or otherwise check files before a commit.
 
 ## Usage
 
@@ -16,7 +16,7 @@ The command loads the staged-file tasks registered with [`define.staged()`](../c
 
 ### `--allow-empty`
 
-`--allow-empty` allows an empty commit when tasks revert all staged changes.
+`--allow-empty` allows the commit to proceed if tasks revert all staged changes.
 
 ```bash
 rs staged --allow-empty
@@ -48,7 +48,7 @@ rs staged --debug
 
 ### `--no-stash`
 
-`--no-stash` disables the backup stash and keeps changes made by tasks when an error occurs.
+`--no-stash` disables the backup stash and automatic reversion when a task fails.
 
 ```bash
 rs staged --no-stash
@@ -88,7 +88,7 @@ rs staged --help
 
 ## Configuration
 
-Configure staged-file tasks through [`define.staged()`](../configuration#define-staged) in the [Rstack configuration file](/guide/configuration#configuration-file). It accepts the standard [lint-staged configuration](https://github.com/lint-staged/lint-staged#configuration):
+Configure staged-file tasks with [`define.staged()`](../configuration#define-staged) in `rstack.config.ts`. The API accepts the standard [lint-staged configuration](https://github.com/lint-staged/lint-staged#configuration):
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';

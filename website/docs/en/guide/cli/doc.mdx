@@ -2,9 +2,9 @@
 
 import { PackageManagerTabs } from '@rspress/core/theme';
 
-The `rs doc` command uses [Rspress](https://rspress.rs/guide/start/introduction) to develop, build, and preview a documentation site.
+The `rs doc` command uses [Rspress](https://rspress.rs/guide/start/introduction) to develop, build, and locally preview a documentation site.
 
-Install [`@rspress/core`](https://www.npmjs.com/package/@rspress/core) before using the command:
+[`@rspress/core`](https://www.npmjs.com/package/@rspress/core) is an optional dependency. Install it before using `rs doc`:
 
 <PackageManagerTabs command="install -D @rspress/core" />
 
@@ -54,7 +54,7 @@ rs doc preview
 
 ### eject
 
-[`rs doc eject`](https://rspress.rs/api/commands#rspress-eject) copies a built-in Rspress theme component into the project for customization. Run it without a component name to list all ejectable components.
+[`rs doc eject`](https://rspress.rs/api/commands#rspress-eject) copies a built-in Rspress theme component into the project for customization. Run it without a component name to list the available components.
 
 ```bash
 rs doc eject
@@ -62,7 +62,7 @@ rs doc eject
 
 ## Configuration
 
-Configure the documentation site through [`define.doc()`](../configuration#define-doc) in the [Rstack configuration file](/guide/configuration#configuration-file). It accepts the standard [Rspress configuration](https://rspress.rs/api/config/config-basic):
+Configure the documentation site with [`define.doc()`](../configuration#define-doc) in `rstack.config.ts`. The API accepts the standard [Rspress configuration](https://rspress.rs/api/config/config-basic):
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';

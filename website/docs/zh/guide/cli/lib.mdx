@@ -12,7 +12,7 @@ rs lib [command] [options]
 
 ## 选项 \{#options}
 
-`rs lib` 支持与 Rslib 相同的库构建选项，具体说明请参见 [Rslib CLI 文档](https://rslib.rs/zh/guide/basic/cli#rslib)。
+`rs lib` 支持与 Rslib 相同的库构建选项，详情请参阅 [Rslib CLI 文档](https://rslib.rs/zh/guide/basic/cli#rslib)。
 
 示例：
 
@@ -44,7 +44,7 @@ rs lib mf-dev
 
 ## 配置 \{#configuration}
 
-在 [Rstack 配置文件](/guide/configuration#configuration-file)中通过 [`define.lib()`](../configuration#define-lib) 配置库构建。该 API 支持标准的 [Rslib 配置](https://rslib.rs/zh/config/)：
+在 `rstack.config.ts` 中通过 [`define.lib()`](../configuration#define-lib) 配置库构建。该 API 接受标准的 [Rslib 配置](https://rslib.rs/zh/config/)：
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';

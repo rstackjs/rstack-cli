@@ -2,7 +2,7 @@
 
 The `rs test` command uses [Rstest](https://rstest.rs/guide/basic/cli) to run tests.
 
-For more guidance on testing, see [Testing](../testing).
+> For more guidance on testing, see [Testing](../testing).
 
 ## Usage
 
@@ -65,7 +65,7 @@ rs test merge-reports
 
 ### init
 
-[`rs test init`](https://rstest.rs/guide/basic/cli#rstest-init) creates starter files for a supported Rstest project type.
+[`rs test init`](https://rstest.rs/guide/basic/cli#rstest-init) initializes an Rstest configuration for a supported project type.
 
 ```bash
 rs test init browser
@@ -73,7 +73,7 @@ rs test init browser
 
 ## Configuration
 
-Configure tests through [`define.test()`](../configuration#define-test) in the [Rstack configuration file](/guide/configuration#configuration-file). It accepts the standard [Rstest configuration](https://rstest.rs/config/):
+Configure tests with [`define.test()`](../configuration#define-test) in `rstack.config.ts`. The API accepts the standard [Rstest configuration](https://rstest.rs/config/):
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
