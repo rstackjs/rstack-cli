@@ -33,26 +33,6 @@ Rstack CLI is currently experimental and mainly used for internal validation. It
 
 Welcome to try it out and share feedback through issues and discussions!
 
-## Skills
-
-### Best practice
-
-Rstack CLI is still new and does not have complete documentation yet.
-
-Installing the Rstack CLI skill so the agent can understand how to use it:
-
-```bash
-npx skills add rstackjs/rstack-cli --skill rstack-cli-best-practices
-```
-
-### Migration
-
-Installing the migration skill so the agent can migrate existing projects to Rstack CLI:
-
-```bash
-npx skills add rstackjs/rstack-cli --skill migrate-to-rstack-cli
-```
-
 ## Usage
 
 1. Install `rstack` in your project:
@@ -94,23 +74,6 @@ pnpm test
 pnpm lint
 pnpm lib
 pnpm doc
-```
-
-## API imports
-
-Rstack re-exports the APIs of its underlying tools through dedicated entry points:
-
-| Tool    | Import path   |
-| ------- | ------------- |
-| Rsbuild | `rstack/app`  |
-| Rslib   | `rstack/lib`  |
-| Rslint  | `rstack/lint` |
-| Rstest  | `rstack/test` |
-
-For example, import Rstest APIs without adding `@rstest/core` as a direct dependency:
-
-```ts
-import { expect, test } from 'rstack/test';
 ```
 
 ## Credits
