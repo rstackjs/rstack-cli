@@ -54,7 +54,7 @@ rs doc preview
 
 ### eject
 
-[`rs doc eject`](https://rspress.rs/zh/api/commands#rspress-eject) 会将 Rspress 内置主题组件复制到项目中，以便自定义。不指定组件名称时，会列出所有可用组件。
+[`rs doc eject`](https://rspress.rs/zh/api/commands#rspress-eject) 会将 Rspress 内置主题组件复制到项目中，以便自定义。不指定组件名称时，会列出所有可导出的组件。
 
 ```bash
 rs doc eject
@@ -62,7 +62,7 @@ rs doc eject
 
 ## 配置 \{#configuration}
 
-在 `rstack.config.ts` 中通过 [`define.doc()`](../configuration#define-doc) 配置文档站点。该 API 接受标准的 [Rspress 配置](https://rspress.rs/zh/api/config/config-basic)：
+在 [Rstack 配置文件](/guide/configuration#configuration-file)中通过 [`define.doc()`](../configuration#define-doc) 配置文档站点。该 API 支持标准的 [Rspress 配置](https://rspress.rs/zh/api/config/config-basic)：
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
