@@ -22,5 +22,4 @@ pnpm preview
 ## Contributing
 
 The website provides English and Chinese documentation. Keep both versions in
-sync when possible. Placeholder pages marked with `TODO` are ready for future
-documentation.
+sync when possible.

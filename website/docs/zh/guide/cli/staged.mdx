@@ -48,7 +48,7 @@ rs staged --debug
 
 ### `--no-stash`
 
-`--no-stash` 会禁用备份 stash，并在出错时保留任务产生的变更。
+`--no-stash` 会禁用备份 stash，并在任务失败时跳过自动还原。
 
 ```bash
 rs staged --no-stash

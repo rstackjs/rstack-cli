@@ -85,7 +85,7 @@ These type-only entry points add ambient declarations to a TypeScript project. A
 
 ### `rstack/test/globals`
 
-`rstack/test/globals` declares Rstest APIs such as `test`, `expect`, and lifecycle hooks as globals. Add it when tests use these APIs without explicit imports.
+`rstack/test/globals` declares Rstest APIs such as `test`, `expect`, and lifecycle hooks as globals. Add it when Rstest's [`globals`](https://rstest.rs/config/test/globals) option is enabled and tests use these APIs without explicit imports.
 
 ```json title="tsconfig.json"
 {
@@ -97,7 +97,7 @@ These type-only entry points add ambient declarations to a TypeScript project. A
 
 ### `rstack/test/importMeta`
 
-`rstack/test/importMeta` augments `ImportMeta` with the optional `rstest` property, enabling `import.meta.rstest` in in-source tests.
+`rstack/test/importMeta` augments `ImportMeta` with the optional `rstest` property, providing type support for `import.meta.rstest` in in-source tests.
 
 ```json title="tsconfig.json"
 {

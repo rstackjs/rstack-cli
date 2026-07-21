@@ -85,7 +85,7 @@ import { js, reactPlugin, ts } from 'rstack/lint';
 
 ### `rstack/test/globals`
 
-`rstack/test/globals` 提供 `test`、`expect` 和生命周期钩子等 Rstest API 的全局声明。测试代码无需显式导入这些 API 时，请添加该入口。
+`rstack/test/globals` 提供 `test`、`expect` 和生命周期钩子等 Rstest API 的全局声明。启用 Rstest 的 [`globals`](https://rstest.rs/zh/config/test/globals) 选项且测试代码不显式导入这些 API 时，请添加该入口。
 
 ```json title="tsconfig.json"
 {
@@ -97,7 +97,7 @@ import { js, reactPlugin, ts } from 'rstack/lint';
 
 ### `rstack/test/importMeta`
 
-`rstack/test/importMeta` 为 `ImportMeta` 增加可选的 `rstest` 属性，使源码内测试可以使用 `import.meta.rstest`。
+`rstack/test/importMeta` 为 `ImportMeta` 增加可选的 `rstest` 属性，为源码内测试中的 `import.meta.rstest` 提供类型支持。
 
 ```json title="tsconfig.json"
 {
