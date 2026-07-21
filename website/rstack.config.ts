@@ -18,6 +18,7 @@ define.doc(async () => {
   return {
     root: path.join(import.meta.dirname, 'docs'),
     title,
+    icon: 'https://assets.rspack.rs/rspack/favicon-128x128.png',
     logoText: title,
     description,
     lang: 'en',

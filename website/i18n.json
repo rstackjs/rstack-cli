@@ -32,8 +32,8 @@
     "zh": "Rstack 驱动"
   },
   "ecosystemPoweredDesc": {
-    "en": "Built on Rsbuild, Rslib, Rstest, Rslint, and Rspress.",
-    "zh": "基于 Rsbuild、Rslib、Rstest、Rslint 和 Rspress。"
+    "en": "Built on Rspack, Rsbuild, Rslib, Rstest, Rslint, and Rspress.",
+    "zh": "基于 Rspack、Rsbuild、Rslib、Rstest、Rslint 和 Rspress。"
   },
   "workflowFriendly": {
     "en": "Workflow Friendly",
