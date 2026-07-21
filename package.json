@@ -9,6 +9,7 @@
     "check:format": "oxfmt . --check",
     "check:spell": "pnpm dlx cspell",
     "doc": "pnpm --dir website dev",
+    "doc:build": "node --run build && pnpm --dir website build",
     "format": "oxfmt .",
     "lint": "rs lint --type-check",
     "prepare": "husky",
