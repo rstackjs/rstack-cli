@@ -1,7 +1,74 @@
 # doc
 
-TODO.
+import { PackageManagerTabs } from '@rspress/core/theme';
+
+`rs doc` 命令使用 [Rspress](https://rspress.rs/zh/guide/start/introduction) 开发、构建和预览文档站点。
+
+使用该命令前，请安装 [`@rspress/core`](https://www.npmjs.com/package/@rspress/core)：
+
+<PackageManagerTabs command="install -D @rspress/core" />
+
+## 用法 \{#usage}
+
+```bash
+rs doc [command] [root] [options]
+```
+
+该命令会加载通过 [`define.doc()`](../configuration#define-doc) 注册的文档配置。未指定子命令时，默认启动 [Rspress 开发服务器](https://rspress.rs/zh/api/commands#rspress-dev)。可选的 `root` 参数用于覆盖配置中的文档根目录。
+
+## 选项 \{#options}
+
+`rs doc` 支持与对应 Rspress 命令相同的选项，具体说明请参见 [Rspress CLI 文档](https://rspress.rs/zh/api/commands)。
+
+示例：
+
+```bash
+# 启动开发服务器
+rs doc
+
+# 使用自定义文档根目录
+rs doc ./documentation
+
+# 使用 8080 端口启动开发服务器
+rs doc --port 8080
+```
+
+## 子命令 \{#subcommands}
+
+### build
+
+[`rs doc build`](https://rspress.rs/zh/api/commands#rspress-build) 用于构建生产环境的文档站点。
+
+```bash
+rs doc build
+```
+
+### preview
+
+[`rs doc preview`](https://rspress.rs/zh/api/commands#rspress-preview) 用于在本地预览 `rs doc build` 生成的产物。
+
+```bash
+rs doc build
+rs doc preview
+```
+
+### eject
+
+[`rs doc eject`](https://rspress.rs/zh/api/commands#rspress-eject) 用于将 Rspress 内置主题组件复制到项目中进行自定义。不指定组件名称时，会列出所有可导出的组件。
+
+```bash
+rs doc eject
+```
 
 ## 配置 \{#configuration}
 
-参见 [`define.doc()`](../configuration#define-doc)。
+在 [Rstack 配置文件](/guide/configuration#configuration-file)中通过 [`define.doc()`](../configuration#define-doc) 配置文档站点。该 API 支持标准的 [Rspress 配置](https://rspress.rs/zh/api/config/config-basic)：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.doc({
+  root: 'docs',
+  title: 'My Site',
+});
+```
