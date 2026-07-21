@@ -1,8 +1,8 @@
 # staged
 
-`rs staged` 命令使用 [lint-staged](https://github.com/lint-staged/lint-staged) 对 Git 暂存区中待提交的文件运行任务。
+`rs staged` 命令使用 [lint-staged](https://github.com/lint-staged/lint-staged) 对 Git 暂存文件运行任务。
 
-通常会在 Git hook 中使用该命令，以便在提交前检查或格式化文件。
+常见的使用场景是在提交代码前，对暂存文件运行 linter、格式化工具或其他检查。
 
 ## 用法 \{#usage}
 
@@ -16,7 +16,7 @@ rs staged [options]
 
 ### `--allow-empty`
 
-`--allow-empty` 允许在任务撤销全部暂存变更后继续提交。
+`--allow-empty` 允许在任务撤销全部暂存变更时创建空提交。
 
 ```bash
 rs staged --allow-empty

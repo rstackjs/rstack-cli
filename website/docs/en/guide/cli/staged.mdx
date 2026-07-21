@@ -1,8 +1,8 @@
 # staged
 
-The `rs staged` command uses [lint-staged](https://github.com/lint-staged/lint-staged) to run tasks against files staged for commit.
+The `rs staged` command uses [lint-staged](https://github.com/lint-staged/lint-staged) to run tasks against files staged in Git.
 
-It is typically used in a Git hook to lint, format, or otherwise check files before a commit.
+A common use case is to run linters, formatters, or other checks on staged files before committing code.
 
 ## Usage
 
@@ -16,7 +16,7 @@ The command loads the staged-file tasks registered with [`define.staged()`](../c
 
 ### `--allow-empty`
 
-`--allow-empty` allows the commit to proceed if tasks revert all staged changes.
+`--allow-empty` allows an empty commit when tasks revert all staged changes.
 
 ```bash
 rs staged --allow-empty

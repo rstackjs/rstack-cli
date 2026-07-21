@@ -2,9 +2,9 @@
 
 import { PackageManagerTabs } from '@rspress/core/theme';
 
-`rs doc` 命令使用 [Rspress](https://rspress.rs/zh/guide/start/introduction) 开发、构建和本地预览文档站点。
+`rs doc` 命令使用 [Rspress](https://rspress.rs/zh/guide/start/introduction) 开发、构建和预览文档站点。
 
-[`@rspress/core`](https://www.npmjs.com/package/@rspress/core) 是可选依赖。使用 `rs doc` 前，请先安装该依赖：
+使用该命令前，请安装 [`@rspress/core`](https://www.npmjs.com/package/@rspress/core)：
 
 <PackageManagerTabs command="install -D @rspress/core" />
 
@@ -18,7 +18,7 @@ rs doc [command] [root] [options]
 
 ## 选项 \{#options}
 
-`rs doc` 支持与对应 Rspress 命令相同的选项，详情请参阅 [Rspress CLI 文档](https://rspress.rs/zh/api/commands)。
+`rs doc` 支持与对应 Rspress 命令相同的选项，具体说明请参见 [Rspress CLI 文档](https://rspress.rs/zh/api/commands)。
 
 示例：
 
@@ -54,7 +54,7 @@ rs doc preview
 
 ### eject
 
-[`rs doc eject`](https://rspress.rs/zh/api/commands#rspress-eject) 会将 Rspress 内置主题组件复制到项目中，以便自定义。不指定组件名称时，会列出所有可导出的组件。
+[`rs doc eject`](https://rspress.rs/zh/api/commands#rspress-eject) 用于将 Rspress 内置主题组件复制到项目中进行自定义。不指定组件名称时，会列出所有可导出的组件。
 
 ```bash
 rs doc eject

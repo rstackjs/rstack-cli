@@ -1,6 +1,6 @@
 # API reference
 
-Rstack exposes a unified configuration API and dedicated entry points for the public APIs of Rsbuild, Rslib, Rstest, and Rslint. Prefer these entry points over direct imports from each tool's core package so that import paths and tool versions stay aligned with Rstack.
+Rstack provides a unified configuration API and re-exports the public APIs of Rsbuild, Rslib, Rstest, and Rslint through dedicated subpaths. Prefer these subpaths to direct imports from each tool's core package so that dependency entry points and tool versions remain aligned with Rstack.
 
 ## Import paths
 
@@ -19,11 +19,11 @@ Rstack exposes a unified configuration API and dedicated entry points for the pu
 
 ### `define`
 
-Import `define` from `rstack` to register tool configurations in `rstack.config.ts`. For details, see [Configuration APIs](./configuration#configuration-apis).
+Import `define` from `rstack` to register tool configurations in `rstack.config.ts`; see [Configuration APIs](./configuration#configuration-apis) for details.
 
 ## Re-exports
 
-Each tool-specific subpath re-exports the public APIs of its corresponding core package.
+The tool-specific subpaths below re-export the public APIs from their corresponding core packages. Using these Rstack entry points keeps dependency entry points and tool versions aligned with the toolchain integrated by Rstack.
 
 ### `rstack/app`
 
@@ -53,7 +53,7 @@ For details, see the [Rslib core APIs](https://rslib.rs/api/javascript-api/core)
 import { describe, expect, test } from 'rstack/test';
 ```
 
-For test APIs, see the [Rstest runtime API](https://rstest.rs/api/runtime-api/). For configuration helpers, see the [Rstest core APIs](https://rstest.rs/api/javascript-api/rstest-core).
+See the [Rstest runtime API](https://rstest.rs/api/runtime-api/) for test APIs and the [Rstest core APIs](https://rstest.rs/api/javascript-api/rstest-core) for configuration helpers.
 
 > For more guidance on testing, see [Testing](./testing).
 
@@ -69,7 +69,7 @@ For details about the available presets and plugins, see [Rslint rules and prese
 
 ## TypeScript types
 
-The following type-only entry points add ambient declarations to a TypeScript project. Add only the entries your project needs to [`compilerOptions.types`](https://www.typescriptlang.org/tsconfig/#types) in `tsconfig.json`.
+These type-only entry points add ambient declarations to a TypeScript project. Add only the entries your project needs to [`compilerOptions.types`](https://www.typescriptlang.org/tsconfig/#types) in `tsconfig.json`.
 
 ### `rstack/types`
 
