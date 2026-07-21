@@ -26,16 +26,24 @@ function useFooterData() {
       title: t('commands'),
       items: [
         {
-          title: 'rs dev',
-          link: getLink('/guide/cli/dev'),
-        },
-        {
           title: 'rs build',
           link: getLink('/guide/cli/build'),
         },
         {
+          title: 'rs lib',
+          link: getLink('/guide/cli/lib'),
+        },
+        {
           title: 'rs test',
           link: getLink('/guide/cli/test'),
+        },
+        {
+          title: 'rs lint',
+          link: getLink('/guide/cli/lint'),
+        },
+        {
+          title: 'rs doc',
+          link: getLink('/guide/cli/doc'),
         },
       ],
     },
