@@ -83,3 +83,21 @@ define.lint({
 ```
 
 See [Configuration](./configuration) for all available configuration APIs.
+
+## Skills
+
+### Best practice
+
+Install the Rstack CLI skill so the agent can understand how to use it:
+
+```bash
+npx skills add rstackjs/rstack-cli --skill rstack-cli-best-practices
+```
+
+### Migration
+
+Install the migration skill so the agent can migrate existing projects to Rstack CLI:
+
+```bash
+npx skills add rstackjs/rstack-cli --skill migrate-to-rstack-cli
+```
