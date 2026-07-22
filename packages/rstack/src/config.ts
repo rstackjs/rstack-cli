@@ -1,4 +1,4 @@
-import { loadConfig, type LoadConfigResult } from '@rstackjs/load-config';
+import { loadConfig } from '@rstackjs/load-config';
 import type { RsbuildConfigDefinition } from '@rsbuild/core';
 import type { RslibConfigDefinition } from '@rslib/core';
 import type { RslintConfig } from '@rslint/core';
@@ -18,8 +18,10 @@ export type Configs = {
   staged?: StagedConfig;
 };
 
-type LoadedRstackConfig = Pick<LoadConfigResult, 'filePath' | 'dependencies'> & {
+type LoadedRstackConfig = {
   configs: Configs;
+  filePath: string | null;
+  dependencies: string[];
 };
 
 type ConfigState = {
