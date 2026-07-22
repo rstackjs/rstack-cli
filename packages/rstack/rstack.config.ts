@@ -9,7 +9,7 @@ define.test(async () => {
   return {
     extends: withRslibConfig(),
     source: {
-      tsconfigPath: './test/tsconfig.json',
+      tsconfigPath: './tests/tsconfig.json',
     },
   };
 });

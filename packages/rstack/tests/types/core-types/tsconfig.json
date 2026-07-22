@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "skipLibCheck": false,
+    "types": ["rstack/types", "node"]
+  },
+  "include": ["index.ts"]
+}

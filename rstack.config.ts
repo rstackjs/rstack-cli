@@ -10,7 +10,8 @@ define.lint(async () => {
         parserOptions: {
           project: [
             './packages/*/tsconfig.json',
-            './packages/*/test/tsconfig.json',
+            './packages/*/tests/tsconfig.json',
+            './packages/rstack/tests/types/*/tsconfig.json',
             './examples/*/tsconfig.json',
             './website/tsconfig.json',
           ],
