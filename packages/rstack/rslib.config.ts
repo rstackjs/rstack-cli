@@ -1,6 +1,8 @@
 import { defineConfig } from '@rslib/core';
 import pkgJson from './package.json' with { type: 'json' };
 
+const fullyMinifiedChunks = /lintStaged\.js$/;
+
 export default defineConfig({
   lib: [{ syntax: 'es2023', dts: true }],
   source: {
@@ -24,5 +26,26 @@ export default defineConfig({
     // Rstack always passes an explicit config object to lint-staged, so its
     // optional YAML config loader is not used.
     externals: ['jiti', 'yaml'],
+    minify: {
+      js: true,
+      css: false,
+      jsOptions: [
+        {
+          // Fully minify the bundled lint-staged code to reduce package size.
+          include: fullyMinifiedChunks,
+        },
+        {
+          exclude: fullyMinifiedChunks,
+          minimizerOptions: {
+            // Preserve variable names and disable minification for easier debugging.
+            mangle: false,
+            minify: false,
+            compress: {
+              keep_fnames: true,
+            },
+          },
+        },
+      ],
+    },
   },
 });
