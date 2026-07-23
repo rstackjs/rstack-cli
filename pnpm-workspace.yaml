@@ -15,7 +15,7 @@ catalog:
   '@rsbuild/core': '~2.1.7'
   '@rsbuild/plugin-react': '^2.1.0'
   '@rsbuild/plugin-sass': '^2.0.1'
-  '@rslib/core': '~1.0.0-beta.0'
+  '@rslib/core': '~1.0.0-beta.1'
   '@rslint/core': '~0.7.0'
   '@rspress/core': '^2.0.18'
   '@rspress/plugin-sitemap': '^2.0.18'
