@@ -28,14 +28,10 @@ type LoadedRstackConfig = {
 type LoadRstackConfigOptions = {
   /**
    * The path to the Rstack config file, can be a relative or absolute path.
-   * If `configFilePath` is not provided, the function will search for the config file in the current working directory.
+   * If `configFilePath` is not provided, the config path set by the CLI is used.
+   * If neither path is provided, the function will search for the config file in the current working directory.
    */
   configFilePath?: string;
-  /**
-   * Whether to bypass module cache when loading the config.
-   * @default true
-   */
-  fresh?: boolean;
 };
 
 type ConfigState = {
@@ -124,7 +120,6 @@ export const define: Define = {
 
 export const loadRstackConfig = async ({
   configFilePath,
-  fresh = true,
 }: LoadRstackConfigOptions = {}): Promise<LoadedRstackConfig> => {
   const state = getConfigState();
   const configPath = configFilePath ?? state.configPath;
@@ -134,7 +129,7 @@ export const loadRstackConfig = async ({
     const { filePath, dependencies } = await loadConfig({
       loader: 'native',
       exportName: false,
-      fresh,
+      fresh: true,
       ...(configPath !== undefined
         ? { path: resolve(configPath) }
         : {

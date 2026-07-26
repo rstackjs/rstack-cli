@@ -7,7 +7,6 @@ const state = getConfigState();
 afterEach(() => {
   state.configs = {};
   delete state.configPath;
-  delete globalThis.__rstackLoadConfigFreshCount;
 });
 
 test('should reset config state before and after loading', async () => {
@@ -46,32 +45,4 @@ test('should report the resolved path when an explicit config is missing', async
     `Cannot find config file: ${configFilePath}`,
   );
   expect(state.configs).toEqual({});
-});
-
-test('should forward the fresh option to the config loader', async () => {
-  const configFilePath = path.join(import.meta.dirname, 'fresh.config.ts');
-
-  const cached = await loadRstackConfig({
-    configFilePath,
-    fresh: false,
-  });
-  const fresh = await loadRstackConfig({
-    configFilePath,
-    fresh: true,
-  });
-
-  expect(cached.configs.app).toEqual({
-    source: {
-      define: {
-        RSTACK_LOAD_COUNT: '1',
-      },
-    },
-  });
-  expect(fresh.configs.app).toEqual({
-    source: {
-      define: {
-        RSTACK_LOAD_COUNT: '2',
-      },
-    },
-  });
 });
