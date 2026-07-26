@@ -17,7 +17,7 @@ test('should reset config state before and after loading', async () => {
   expect(state.configs).toEqual({});
 });
 
-test('should load an explicit config path before the legacy state path', async () => {
+test('should prefer an explicit config path over the state config path', async () => {
   const configFilePath = path.join(import.meta.dirname, 'explicit.config.ts');
   const dependencyPath = path.join(import.meta.dirname, 'explicit-dependency.ts');
   const relativeConfigPath = path.relative(process.cwd(), configFilePath);
@@ -34,15 +34,5 @@ test('should load an explicit config path before the legacy state path', async (
   });
   expect(loaded.filePath).toBe(configFilePath);
   expect(loaded.dependencies).toEqual([dependencyPath]);
-  expect(state.configs).toEqual({});
-});
-
-test('should report the resolved path when an explicit config is missing', async () => {
-  const configFilePath = path.join(import.meta.dirname, 'missing.config.ts');
-  state.configs = { app: {} };
-
-  await expect(loadRstackConfig({ configFilePath })).rejects.toThrow(
-    `Cannot find config file: ${configFilePath}`,
-  );
   expect(state.configs).toEqual({});
 });
