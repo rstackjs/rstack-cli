@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { loadConfig } from '@rstackjs/load-config';
 import type { RsbuildConfigDefinition } from '@rsbuild/core';
 import type { RslibConfigDefinition } from '@rslib/core';
@@ -22,6 +23,19 @@ type LoadedRstackConfig = {
   configs: Configs;
   filePath: string | null;
   dependencies: string[];
+};
+
+type LoadRstackConfigOptions = {
+  /**
+   * The path to the Rstack config file, can be a relative or absolute path.
+   * If `configFilePath` is not provided, the function will search for the config file in the current working directory.
+   */
+  configFilePath?: string;
+  /**
+   * Whether to bypass module cache when loading the config.
+   * @default true
+   */
+  fresh?: boolean;
 };
 
 type ConfigState = {
@@ -108,17 +122,21 @@ export const define: Define = {
   staged: (config) => setConfig('staged', config),
 };
 
-export const loadRstackConfig = async (): Promise<LoadedRstackConfig> => {
+export const loadRstackConfig = async ({
+  configFilePath,
+  fresh = true,
+}: LoadRstackConfigOptions = {}): Promise<LoadedRstackConfig> => {
   const state = getConfigState();
+  const configPath = configFilePath ?? state.configPath;
   state.configs = {};
 
   try {
     const { filePath, dependencies } = await loadConfig({
       loader: 'native',
       exportName: false,
-      fresh: true,
-      ...(state.configPath !== undefined
-        ? { path: state.configPath }
+      fresh,
+      ...(configPath !== undefined
+        ? { path: resolve(configPath) }
         : {
             configFileNames: [
               'rstack.config.ts',
