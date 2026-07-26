@@ -1,4 +1,3 @@
-import { resolve } from 'node:path';
 import { loadConfig } from '@rstackjs/load-config';
 import type { RsbuildConfigDefinition } from '@rsbuild/core';
 import type { RslibConfigDefinition } from '@rslib/core';
@@ -131,7 +130,7 @@ export const loadRstackConfig = async ({
       exportName: false,
       fresh: true,
       ...(configPath !== undefined
-        ? { path: resolve(configPath) }
+        ? { path: configPath }
         : {
             configFileNames: [
               'rstack.config.ts',
