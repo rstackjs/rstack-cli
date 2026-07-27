@@ -1,0 +1,172 @@
+# Monorepo
+
+本指南介绍如何在 Monorepo 中使用 Rstack CLI，以及如何让它与 [Turborepo](https://turborepo.com/docs)、[Nx](https://nx.dev/docs/getting-started/intro) 等任务编排工具协同工作。
+
+主要内容包括管理 Rstack 依赖、在根目录统一配置代码检查和暂存文件任务，以及为 Web 应用和库项目定义独立配置。
+
+## 目录结构 \{#project-structure}
+
+推荐使用两层配置：
+
+- 根目录统一管理 Rstack 版本、lint 规则和暂存文件任务。
+- 每个应用或库使用自己的 [Rstack 配置](./configuration)，定义构建、测试或文档配置。
+
+```text
+.
+├── package.json
+├── rstack.config.ts
+├── apps/
+│   └── web/
+│       ├── package.json
+│       └── rstack.config.ts
+└── packages/
+    └── utils/
+        ├── package.json
+        └── rstack.config.ts
+```
+
+这种结构既能统一 Rstack 版本，也能让构建和测试配置靠近实际使用它们的项目。
+
+## Rstack 依赖管理 \{#rstack-dependency-management}
+
+在根目录的 `package.json` 中声明 Rstack，让各个项目默认使用同一个版本。安装方法请参考[快速上手](./quick-start#install-rstack)。
+
+如果子项目需要使用与根目录不同版本的 `rstack`，可以在该项目中单独声明对应版本的 `rstack` 依赖。
+
+Rsbuild 插件、测试库等项目专属依赖，建议定义在实际使用它们的子项目中。
+
+## 根配置 \{#root-configuration}
+
+在根目录的 `rstack.config.ts` 中使用 [`define.lint()`](./configuration#define-lint) 和 [`define.staged()`](./configuration#define-staged) 配置适用于整个仓库的检查：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.lint(async () => {
+  const { js, ts } = await import('rstack/lint');
+
+  return [js.configs.recommended, ts.configs.recommended];
+});
+
+define.staged({
+  '*.{js,jsx,ts,tsx,mjs,cjs}': 'rs lint',
+});
+```
+
+在根目录的 `package.json` 中提供对应脚本：
+
+```json title="package.json"
+{
+  "private": true,
+  "scripts": {
+    "lint": "rs lint",
+    "staged": "rs staged"
+  }
+}
+```
+
+除非根目录本身也是一个需要构建的项目，否则不需要在根配置中添加应用或库的构建配置。
+
+### 项目级 lint 规则 \{#project-specific-lint-rules}
+
+如果部分项目需要不同的 lint 规则，可以通过 [`files`](https://rslint.rs/config/#files) 匹配对应文件。这里的路径从仓库根目录开始计算：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.lint(async () => {
+  const { js, ts } = await import('rstack/lint');
+
+  return [
+    js.configs.recommended,
+    ts.configs.recommended,
+    {
+      files: ['apps/web/**/*.{ts,tsx}'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'off',
+      },
+    },
+  ];
+});
+```
+
+## 子项目配置 \{#project-configuration}
+
+为每个使用 [Rstack 命令](./quick-start#cli-commands)的子项目创建 [`rstack.config.ts`](./configuration#configuration-file)，并且只配置该项目需要的功能。
+
+Rstack 会加载当前工作目录中的配置，不会将子项目配置与根配置自动合并。
+
+### Web 应用 \{#web-application}
+
+Web 应用通常需要应用构建配置和可选的测试配置：
+
+```ts title="apps/web/rstack.config.ts"
+import { define } from 'rstack';
+
+define.app(async () => {
+  const { pluginReact } = await import('@rsbuild/plugin-react');
+
+  return {
+    plugins: [pluginReact()],
+  };
+});
+
+define.test({
+  globals: true,
+});
+```
+
+在应用的 `package.json` 中添加脚本，例如：
+
+```json title="apps/web/package.json"
+{
+  "name": "@example/web",
+  "scripts": {
+    "dev": "rs dev",
+    "build": "rs build",
+    "preview": "rs preview",
+    "test": "rs test"
+  }
+}
+```
+
+### 库项目 \{#library-project}
+
+库可以在一份配置中定义构建、测试和文档：
+
+```ts title="packages/utils/rstack.config.ts"
+import { define } from 'rstack';
+
+define.lib({
+  lib: [
+    {
+      format: 'esm',
+      dts: true,
+    },
+  ],
+});
+
+define.test({
+  testEnvironment: 'node',
+});
+
+// 仅当库需要文档站点时配置。
+define.doc({
+  root: 'docs',
+  title: 'Utils',
+});
+```
+
+在库的 `package.json` 中添加脚本，例如：
+
+```json title="packages/utils/package.json"
+{
+  "name": "@example/utils",
+  "scripts": {
+    "build": "rs lib",
+    "dev": "rs lib -w",
+    "test": "rs test",
+    "doc": "rs doc"
+  }
+}
+```

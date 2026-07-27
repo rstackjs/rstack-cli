@@ -24,6 +24,11 @@
   },
   {
     "type": "file",
+    "name": "monorepo",
+    "label": "Monorepo"
+  },
+  {
+    "type": "file",
     "name": "testing",
     "label": "测试"
   },
