@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { loadConfig } from '@rstackjs/load-config';
 import type { RsbuildConfigDefinition } from '@rsbuild/core';
 import type { RslibConfigDefinition } from '@rslib/core';
@@ -33,27 +34,41 @@ type LoadRstackConfigOptions = {
   configFilePath?: string;
 };
 
-type ConfigState = {
+type ConfigSession = {
   configs: Configs;
+  active: boolean;
+};
+
+type ConfigState = {
   configPath?: string;
 };
 
 declare global {
   // rslint-disable-next-line no-var
-  var __rstackConfigState: ConfigState | undefined;
+  var __rstackConfigSessionStorage: AsyncLocalStorage<ConfigSession> | undefined;
+  // rslint-disable-next-line no-var
+  var __rstackCliState: ConfigState | undefined;
 }
 
-export const getConfigState = (): ConfigState => {
+const getConfigSessionStorage = (): AsyncLocalStorage<ConfigSession> => {
   // Rsbuild's fresh import loader can load this module more than once when it
-  // imports the internal rstack config. Keep CLI state on globalThis so the
-  // `--config` path set by the CLI is visible to the fresh-imported instance.
-  if (!globalThis.__rstackConfigState) {
-    globalThis.__rstackConfigState = {
-      configs: {},
-    };
+  // imports the internal Rstack config. Keep the storage on globalThis so
+  // every module instance reads and writes the same active session.
+  if (!globalThis.__rstackConfigSessionStorage) {
+    globalThis.__rstackConfigSessionStorage = new AsyncLocalStorage<ConfigSession>();
   }
 
-  return globalThis.__rstackConfigState;
+  return globalThis.__rstackConfigSessionStorage;
+};
+
+export const getConfigState = (): ConfigState => {
+  // The CLI and its internal tool config can also be loaded as separate module
+  // instances. Keep only the CLI config path in its own global state.
+  if (!globalThis.__rstackCliState) {
+    globalThis.__rstackCliState = {};
+  }
+
+  return globalThis.__rstackCliState;
 };
 
 type Define = {
@@ -100,12 +115,16 @@ type Define = {
 };
 
 const setConfig = <T extends keyof Configs>(type: T, config: Configs[T]): void => {
-  const state = getConfigState();
+  const session = getConfigSessionStorage().getStore();
 
-  if (state.configs[type]) {
+  if (!session?.active) {
+    throw new Error(`The "${type}" config must be defined while loading an Rstack config.`);
+  }
+
+  if (type in session.configs) {
     throw new Error(`The "${type}" config has already been defined.`);
   }
-  state.configs[type] = config;
+  session.configs[type] = config;
 };
 
 export const define: Define = {
@@ -122,31 +141,37 @@ export const loadRstackConfig = async ({
 }: LoadRstackConfigOptions = {}): Promise<LoadedRstackConfig> => {
   const state = getConfigState();
   const configPath = configFilePath ?? state.configPath;
-  state.configs = {};
+  const session: ConfigSession = {
+    configs: {},
+    active: true,
+  };
 
-  try {
-    const { filePath, dependencies } = await loadConfig({
-      loader: 'native',
-      exportName: false,
-      fresh: true,
-      ...(configPath !== undefined
-        ? { path: configPath }
-        : {
-            configFileNames: [
-              'rstack.config.ts',
-              'rstack.config.js',
-              'rstack.config.mts',
-              'rstack.config.mjs',
-            ],
-          }),
-    });
+  return getConfigSessionStorage().run(session, async () => {
+    try {
+      const { filePath, dependencies } = await loadConfig({
+        loader: 'native',
+        exportName: false,
+        fresh: true,
+        ...(configPath !== undefined
+          ? { path: configPath }
+          : {
+              configFileNames: [
+                'rstack.config.ts',
+                'rstack.config.js',
+                'rstack.config.mts',
+                'rstack.config.mjs',
+              ],
+            }),
+      });
 
-    return {
-      configs: state.configs,
-      filePath,
-      dependencies,
-    };
-  } finally {
-    state.configs = {};
-  }
+      return {
+        configs: session.configs,
+        filePath,
+        dependencies,
+      };
+    } finally {
+      session.active = false;
+      session.configs = {};
+    }
+  });
 };
