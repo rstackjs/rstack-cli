@@ -1,0 +1,172 @@
+# Monorepo
+
+This guide explains how to use Rstack CLI in a monorepo, including how it works with task orchestrators such as [Turborepo](https://turborepo.com/docs) and [Nx](https://nx.dev/docs/getting-started/intro).
+
+It covers managing Rstack dependencies, configuring lint and staged-file tasks at the root, and defining separate configurations for web applications and libraries.
+
+## Project structure
+
+The recommended setup has two levels:
+
+- The root manages the shared Rstack version, lint rules, and staged-file tasks.
+- Each application or library has its own `rstack.config.ts` for build, test, or documentation configuration.
+
+```text
+.
+├── package.json
+├── rstack.config.ts
+├── apps/
+│   └── web/
+│       ├── package.json
+│       └── rstack.config.ts
+└── packages/
+    └── utils/
+        ├── package.json
+        └── rstack.config.ts
+```
+
+This structure keeps the Rstack version in one place while keeping build and test configuration close to the project that uses it.
+
+## Rstack dependency management
+
+Declare Rstack in the root `package.json` so projects use one version by default. See [Quick start](./quick-start#install-rstack) for installation instructions.
+
+If a project needs a different Rstack version from the root, declare that version as a dependency of the project.
+
+Project-specific dependencies, such as Rsbuild plugins and testing libraries, should be declared in the projects that use them.
+
+## Root configuration
+
+Use [`define.lint()`](./configuration#define-lint) and [`define.staged()`](./configuration#define-staged) in the root `rstack.config.ts` for checks that apply to the entire repository:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.lint(async () => {
+  const { js, ts } = await import('rstack/lint');
+
+  return [js.configs.recommended, ts.configs.recommended];
+});
+
+define.staged({
+  '*.{js,jsx,ts,tsx,mjs,cjs}': 'rs lint',
+});
+```
+
+Expose these tasks through scripts in the root `package.json`:
+
+```json title="package.json"
+{
+  "private": true,
+  "scripts": {
+    "lint": "rs lint",
+    "staged": "rs staged"
+  }
+}
+```
+
+Unless the root is itself a buildable project, you do not need to add application or library build configuration to the root config.
+
+### Project-specific lint rules
+
+If some projects need different lint rules, use [`files`](https://rslint.rs/config/#files) patterns to match the relevant files. These paths are resolved from the repository root:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.lint(async () => {
+  const { js, ts } = await import('rstack/lint');
+
+  return [
+    js.configs.recommended,
+    ts.configs.recommended,
+    {
+      files: ['apps/web/**/*.{ts,tsx}'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'off',
+      },
+    },
+  ];
+});
+```
+
+## Project configuration
+
+For each project that uses [Rstack commands](./quick-start#cli-commands), create a [`rstack.config.ts`](./configuration#configuration-file) and register only the configuration that project needs.
+
+Rstack loads the configuration from the current working directory. It does not merge a project's configuration with the root configuration.
+
+### Web application
+
+A web application usually needs application build configuration and optional test configuration:
+
+```ts title="apps/web/rstack.config.ts"
+import { define } from 'rstack';
+
+define.app(async () => {
+  const { pluginReact } = await import('@rsbuild/plugin-react');
+
+  return {
+    plugins: [pluginReact()],
+  };
+});
+
+define.test({
+  globals: true,
+});
+```
+
+Add scripts to the application's `package.json`, for example:
+
+```json title="apps/web/package.json"
+{
+  "name": "@example/web",
+  "scripts": {
+    "dev": "rs dev",
+    "build": "rs build",
+    "preview": "rs preview",
+    "test": "rs test"
+  }
+}
+```
+
+### Library project
+
+A library can define its build, test, and documentation configuration in one file:
+
+```ts title="packages/utils/rstack.config.ts"
+import { define } from 'rstack';
+
+define.lib({
+  lib: [
+    {
+      format: 'esm',
+      dts: true,
+    },
+  ],
+});
+
+define.test({
+  testEnvironment: 'node',
+});
+
+// Configure this only when the library needs a documentation site.
+define.doc({
+  root: 'docs',
+  title: 'Utils',
+});
+```
+
+Add scripts to the library's `package.json`, for example:
+
+```json title="packages/utils/package.json"
+{
+  "name": "@example/utils",
+  "scripts": {
+    "build": "rs lib",
+    "dev": "rs lib -w",
+    "test": "rs test",
+    "doc": "rs doc"
+  }
+}
+```
