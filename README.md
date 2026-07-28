@@ -83,6 +83,7 @@ Rstack CLI is inspired by:
 - [Cargo](https://github.com/rust-lang/cargo)
 - [Deno](https://github.com/denoland/deno)
 - [Bun](https://github.com/oven-sh/bun)
+- [Husky](https://github.com/typicode/husky)
 - [Vite Plus](https://github.com/voidzero-dev/vite-plus)
 
 ## License

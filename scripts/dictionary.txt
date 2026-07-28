@@ -1,4 +1,6 @@
 # Custom Dictionary Words
+applypatch
+errexit
 fnames
 llms
 oxfmt
