@@ -15,9 +15,7 @@ const hookNames = [
   'post-merge',
   'pre-push',
   'pre-auto-gc',
-] as const;
-
-type HookFileName = (typeof hookNames)[number] | 'runner';
+];
 
 // Generated shims live in `<hooks-directory>/_`. When a shim sources this
 // dispatcher, `$0` still points to the shim, so the user hook is one level up.
@@ -29,9 +27,7 @@ hook="$dir/$name"
 
 [ -f "$hook" ] || exit 0
 
-sh -e "$hook" "$@"
-status=$?
-exit "$status"
+exec sh -e "$hook" "$@"
 `;
 
 // Every generated Git hook sources the same dispatcher to keep runtime behavior
@@ -40,14 +36,12 @@ const shim = `#!/usr/bin/env sh
 . "$(dirname "$0")/runner"
 `;
 
-export const createHookFiles = (): Record<HookFileName, string> => {
-  const files: Record<string, string> = {
-    runner: dispatcher,
-  };
+export const createHookFiles = (): Record<string, string> => {
+  const files: Record<string, string> = { runner: dispatcher };
 
   for (const name of hookNames) {
     files[name] = shim;
   }
 
-  return files as Record<HookFileName, string>;
+  return files;
 };

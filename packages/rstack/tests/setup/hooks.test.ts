@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
-import { createHookFiles } from '../../src/hooks.ts';
+import { createHookFiles } from '../../src/setup/hooks.ts';
 
 test('generates the dispatcher and all client-side Git hook shims', () => {
   const { runner, ...shims } = createHookFiles();
