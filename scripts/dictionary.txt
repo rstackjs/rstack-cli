@@ -3,6 +3,7 @@ applypatch
 errexit
 fnames
 llms
+nosystem
 oxfmt
 rsbuild
 rslib
