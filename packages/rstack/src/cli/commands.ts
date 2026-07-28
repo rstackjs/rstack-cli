@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import { color } from 'rslog';
 import { getConfigState } from '../config.js';
+import { runSetupCLI } from '../setup/index.js';
 import { runStagedCLI } from '../staged.js';
 import { insertConfigArg, parseCliArgs } from './args.js';
 
@@ -22,6 +23,7 @@ ${color.cyan('Commands')}:
   lint     Lint code
   test     Run tests
   staged   Run tasks on staged Git files
+  setup    Install Git hooks
 
 ${color.dim(`For command-specific options, run:
   $ rs <command> -h`)}
@@ -143,6 +145,11 @@ export async function setupCommands(): Promise<void> {
 
   if (command === 'staged') {
     await runStagedCLI(args.slice(1));
+    return;
+  }
+
+  if (command === 'setup') {
+    runSetupCLI(args.slice(1));
     return;
   }
 
