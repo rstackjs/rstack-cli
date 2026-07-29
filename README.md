@@ -22,7 +22,7 @@ It also covers local development needs outside Rstack's scope, with Oxfmt format
 | `rs lib`     | Build library                    | [Rslib](https://github.com/web-infra-dev/rslib)           |
 | `rs doc`     | Serve or build docs              | [Rspress](https://github.com/web-infra-dev/rspress)       |
 | `rs fmt`     | Format code (TODO)               | [Oxfmt](https://github.com/oxc-project/oxc)               |
-| `rs setup`   | Set up Git hooks (TODO)          | -                                                         |
+| `rs setup`   | Install Git hooks                | -                                                         |
 | `rs staged`  | Run tasks on staged Git files    | [lint-staged](https://github.com/lint-staged/lint-staged) |
 
 Rstack CLI fits into your existing project workflow. It does not replace your runtime, package manager, or task runner, such as [pnpm](https://github.com/pnpm/pnpm), [Bun](https://github.com/oven-sh/bun), [Turborepo](https://github.com/vercel/turborepo), [Nx](https://github.com/nrwl/nx), and [Nub](https://github.com/nubjs/nub).
