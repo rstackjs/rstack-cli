@@ -1,4 +1,4 @@
-import { setupCommands } from './commands.js';
+import { setupCommands } from './commands.ts';
 import { logger } from 'rslog';
 
 export async function runCLI(): Promise<void> {

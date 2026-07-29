@@ -1,5 +1,5 @@
 import type { UserConfig } from '@rspress/core';
-import { loadRstackConfig, type Configs } from './config.js';
+import { loadRstackConfig, type Configs } from './config.ts';
 
 const resolveRspressConfig = async (configs: Configs): Promise<UserConfig> => {
   const docConfig = configs.doc;

@@ -1,5 +1,5 @@
 import type { ConfigParams, RsbuildConfigDefinition, WatchFiles } from '@rsbuild/core';
-import { loadRstackConfig, type Configs } from './config.js';
+import { loadRstackConfig, type Configs } from './config.ts';
 
 const resolveRsbuildConfig = async (configs: Configs, params: ConfigParams) => {
   const appConfig = configs.app;

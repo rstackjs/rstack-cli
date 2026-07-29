@@ -9,7 +9,8 @@
     "isolatedDeclarations": true,
     "skipLibCheck": true,
     "module": "nodenext",
-    "moduleResolution": "nodenext"
+    "moduleResolution": "nodenext",
+    "rewriteRelativeImportExtensions": true
   },
   "include": ["src"]
 }
