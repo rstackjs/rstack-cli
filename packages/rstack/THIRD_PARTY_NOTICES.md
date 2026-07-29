@@ -32,7 +32,7 @@ SOFTWARE.
 
 ## fresh-import
 
-This package includes bundled code from [fresh-import](https://github.com/sapphi-red/fresh-import), version 0.2.1.
+This package includes bundled code from [fresh-import](https://github.com/sapphi-red/fresh-import).
 
 License: MIT
 
@@ -60,7 +60,7 @@ SOFTWARE.
 
 ## lint-staged
 
-This package includes bundled code from [lint-staged](https://github.com/lint-staged/lint-staged), version 17.2.0.
+This package includes bundled code from [lint-staged](https://github.com/lint-staged/lint-staged).
 
 License: MIT
 
@@ -88,7 +88,7 @@ SOFTWARE.
 
 ## picomatch
 
-This package includes bundled code from [picomatch](https://github.com/micromatch/picomatch), version 4.0.5.
+This package includes bundled code from [picomatch](https://github.com/micromatch/picomatch).
 
 License: MIT
 
@@ -116,7 +116,7 @@ THE SOFTWARE.
 
 ## tinyexec
 
-This package includes bundled code from [tinyexec](https://github.com/tinylibs/tinyexec), version 1.2.4.
+This package includes bundled code from [tinyexec](https://github.com/tinylibs/tinyexec).
 
 License: MIT
 
