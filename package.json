@@ -12,14 +12,13 @@
     "doc:build": "node --run build && pnpm --dir website build",
     "format": "oxfmt .",
     "lint": "rs lint --type-check",
-    "prepare": "husky",
+    "prepare": "pnpm --filter rstack build && rs setup",
     "test": "pnpm --filter './packages/**' test"
   },
   "devDependencies": {
     "@rstackjs/load-config": "catalog:",
     "@types/node": "catalog:",
     "cspell-ban-words": "catalog:",
-    "husky": "catalog:",
     "oxfmt": "catalog:",
     "rstack": "workspace:*",
     "typescript": "catalog:"
