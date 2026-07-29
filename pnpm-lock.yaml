@@ -102,9 +102,6 @@ importers:
 
   .:
     devDependencies:
-      '@rstackjs/load-config':
-        specifier: 'catalog:'
-        version: 0.1.2
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.3
@@ -307,6 +304,9 @@ importers:
       '@rspress/core':
         specifier: 'catalog:'
         version: 2.0.18(@types/mdast@4.0.4)(@types/react@19.2.17)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
+      '@rstackjs/load-config':
+        specifier: 'catalog:'
+        version: 0.1.2
       '@rstackjs/test-utils':
         specifier: 'catalog:'
         version: 0.2.0

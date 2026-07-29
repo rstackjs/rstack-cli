@@ -16,7 +16,6 @@
     "test": "pnpm --filter './packages/**' test"
   },
   "devDependencies": {
-    "@rstackjs/load-config": "catalog:",
     "@types/node": "catalog:",
     "cspell-ban-words": "catalog:",
     "oxfmt": "catalog:",
