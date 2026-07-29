@@ -5,6 +5,7 @@ define.lint(async () => {
   return [
     js.configs.recommended,
     ts.configs.recommended,
+    // Source imports use .ts for Node.js native TypeScript execution; builds rewrite them to .js.
     {
       files: ['packages/rstack/src/**/*.ts'],
       rules: {
