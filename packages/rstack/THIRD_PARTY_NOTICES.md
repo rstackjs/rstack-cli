@@ -2,15 +2,15 @@
 
 This package includes software developed by third parties.
 
-## Husky
+## fresh-import
 
-Portions of the Git hook installer and runtime are derived from [Husky](https://github.com/typicode/husky).
+This package includes bundled code from [fresh-import](https://github.com/sapphi-red/fresh-import).
 
 License: MIT
 
 MIT License
 
-Copyright (c) 2021 typicode
+Copyright (c) 2026 sapphi-red
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,15 +30,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## fresh-import
+## Husky
 
-This package includes bundled code from [fresh-import](https://github.com/sapphi-red/fresh-import).
+Portions of the Git hook installer and runtime are derived from [Husky](https://github.com/typicode/husky).
 
 License: MIT
 
 MIT License
 
-Copyright (c) 2026 sapphi-red
+Copyright (c) 2021 typicode
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
