@@ -7,7 +7,7 @@ description: Guidance on using Rstack CLI, including `rs` commands, the `rstack.
 
 Rstack CLI is the `rstack` package, exposed through the `rs` binaries. It provides one CLI, one config file, and a consistent workflow for the Rstack JavaScript toolchain.
 
-It covers web app, library, docs, test, lint, and staged-file workflows.
+It covers web app, library, docs, test, lint, Git hook, and staged-file workflows.
 
 ## Commands
 
@@ -22,6 +22,7 @@ Use `rs -h` for top-level help, and `rs <command> -h` for command help where sup
 | `rs doc`     | Serve or build docs              | Rspress         | `define.doc`    |
 | `rs test`    | Run tests                        | Rstest          | `define.test`   |
 | `rs lint`    | Lint code                        | Rslint          | `define.lint`   |
+| `rs setup`   | Install project-local Git hooks  | None            | None            |
 | `rs staged`  | Run tasks on staged Git files    | lint-staged     | `define.staged` |
 
 Key behavior:
@@ -83,3 +84,7 @@ Prefer Rstack-exported paths:
 | `@rslib/core/types`       | `rstack/types`           |
 | `@rstest/core/globals`    | `rstack/test/globals`    |
 | `@rstest/core/importMeta` | `rstack/test/importMeta` |
+
+## Git Hooks
+
+Use [`rs setup`](https://rstack.rs/guide/cli/setup) for project-local Git hooks, commonly with `rs staged` in a `pre-commit` hook.
