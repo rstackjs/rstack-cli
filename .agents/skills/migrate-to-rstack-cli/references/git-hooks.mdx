@@ -17,7 +17,7 @@ Migrate [Husky](https://typicode.github.io/husky/) or [simple-git-hooks](https:/
    - Husky v4: `package.json#husky.hooks` or `.huskyrc*` configuration.
 2. Move each hook body to the corresponding file in the selected hooks directory. Remove lines that source `.husky/_/husky.sh`; keep the reusable POSIX shell commands.
 3. Replace Husky lifecycle invocations such as `husky`, `husky install`, or a custom Husky directory command with `rs setup` or `rs setup --hooks-dir <path>`.
-4. Replace `HUSKY=0`, `HUSKY_SKIP_HOOKS`, and `HUSKY_SKIP_INSTALL` usage with `RSTACK_HOOKS=0`. Replace `HUSKY_GIT_PARAMS` with Git's positional hook arguments such as `$1`.
+4. Replace `HUSKY=0`, `HUSKY_SKIP_HOOKS`, and `HUSKY_SKIP_INSTALL` usage with `RSTACK_HOOKS=0`. Replace `HUSKY_GIT_PARAMS` with the positional arguments expected by each hook. For example, change `commitlint -E HUSKY_GIT_PARAMS` to `commitlint --edit "$1"`.
 5. Tell users who rely on `$XDG_CONFIG_HOME/husky/init.sh`, `~/.config/husky/init.sh`, or the deprecated `~/.huskyrc` to move the required shell setup to `$XDG_CONFIG_HOME/rstack/hooks-init.sh` or `~/.config/rstack/hooks-init.sh`. Do not edit user-level files without permission.
 6. After validation, remove the Husky dependency and old hook directory.
 
