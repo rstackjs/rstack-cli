@@ -84,26 +84,34 @@ export const installHooks = ({
   }
 
   // Check Git before touching the filesystem so non-repositories have no side effects.
-  const repository = runGit(cwd, ['rev-parse', '--is-inside-work-tree']);
+  const repository = runGit(cwd, ['rev-parse', '--is-inside-work-tree', '--show-prefix']);
   if (repository.error || repository.status === null) {
     return gitFailure(repository.error, repository.stderr);
   }
-  if (repository.status !== 0 || repository.stdout.trim() !== 'true') {
+
+  const firstLineEnd = repository.stdout.indexOf('\n');
+  const insideWorkTree = (
+    firstLineEnd === -1 ? repository.stdout : repository.stdout.slice(0, firstLineEnd)
+  ).trim();
+
+  if (repository.status !== 0) {
+    if (insideWorkTree === 'true') {
+      return fail(
+        'git-command-failed',
+        `Failed to resolve the Git repository prefix: ${repository.stderr.trim()}`,
+      );
+    }
     return { status: 'skipped', reason: 'not-git-repository' };
   }
 
-  const prefixResult = runGit(cwd, ['rev-parse', '--show-prefix']);
-  if (prefixResult.error || prefixResult.status === null) {
-    return gitFailure(prefixResult.error, prefixResult.stderr);
-  }
-  if (prefixResult.status !== 0) {
-    return fail(
-      'git-command-failed',
-      `Failed to resolve the Git repository prefix: ${prefixResult.stderr.trim()}`,
-    );
+  if (insideWorkTree !== 'true') {
+    return { status: 'skipped', reason: 'not-git-repository' };
   }
 
-  const prefix = removeLineEnding(prefixResult.stdout).replaceAll('\\', '/');
+  const prefix =
+    firstLineEnd === -1
+      ? ''
+      : removeLineEnding(repository.stdout.slice(firstLineEnd + 1)).replaceAll('\\', '/');
   const hooksPath = `${prefix}${resolvedDir}/_`;
 
   const config = runGit(cwd, ['config', '--local', '--get', 'core.hooksPath']);
