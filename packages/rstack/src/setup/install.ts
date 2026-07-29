@@ -84,49 +84,47 @@ export const installHooks = ({
   }
 
   // Check Git before touching the filesystem so non-repositories have no side effects.
-  const repository = runGit(cwd, ['rev-parse', '--is-inside-work-tree', '--show-prefix']);
+  const repository = runGit(cwd, [
+    'rev-parse',
+    '--is-inside-work-tree',
+    '--show-prefix',
+    '--git-path',
+    'hooks',
+  ]);
   if (repository.error || repository.status === null) {
     return gitFailure(repository.error, repository.stderr);
   }
 
-  const firstLineEnd = repository.stdout.indexOf('\n');
-  const insideWorkTree = (
-    firstLineEnd === -1 ? repository.stdout : repository.stdout.slice(0, firstLineEnd)
-  ).trim();
+  const [insideWorkTree = '', repositoryPrefix, configuredHooksPath] = removeLineEnding(
+    repository.stdout,
+  ).split(/\r?\n/u);
 
   if (repository.status !== 0) {
-    if (insideWorkTree === 'true') {
+    if (insideWorkTree.trim() === 'true') {
       return fail(
         'git-command-failed',
-        `Failed to resolve the Git repository prefix: ${repository.stderr.trim()}`,
+        `Failed to resolve the Git repository paths: ${repository.stderr.trim()}`,
       );
     }
     return { status: 'skipped', reason: 'not-git-repository' };
   }
 
-  if (insideWorkTree !== 'true') {
+  if (insideWorkTree.trim() !== 'true') {
     return { status: 'skipped', reason: 'not-git-repository' };
   }
 
-  const prefix =
-    firstLineEnd === -1
-      ? ''
-      : removeLineEnding(repository.stdout.slice(firstLineEnd + 1)).replaceAll('\\', '/');
-  const hooksPath = `${prefix}${resolvedDir}/_`;
+  if (repositoryPrefix === undefined || configuredHooksPath === undefined) {
+    return fail('git-command-failed', 'Failed to resolve the Git repository paths.');
+  }
 
-  const config = runGit(cwd, ['config', '--local', '--get', 'core.hooksPath']);
-  if (config.error || config.status === null) {
-    return gitFailure(config.error, config.stderr);
-  }
-  if (config.status !== 0 && config.status !== 1) {
-    return fail('git-config-failed', `Failed to read core.hooksPath: ${config.stderr.trim()}`);
-  }
+  const prefix = repositoryPrefix.replaceAll('\\', '/');
+  const hooksPath = `${prefix}${resolvedDir}/_`;
 
   const directory = path.join(cwd, resolvedDir, '_');
   const files = Object.entries(createHookFiles());
   // Skip all writes only when the config, generated content, and executable modes match.
   const unchanged =
-    removeLineEnding(config.stdout) === hooksPath &&
+    path.resolve(cwd, configuredHooksPath) === directory &&
     isCurrentFile(path.join(directory, '.gitignore'), gitignore) &&
     files.every(([name, content]) => isCurrentFile(path.join(directory, name), content, true));
 
