@@ -6,6 +6,22 @@ define.lint(async () => {
     js.configs.recommended,
     ts.configs.recommended,
     {
+      files: ['packages/rstack/src/**/*.ts'],
+      rules: {
+        '@typescript-eslint/no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              {
+                regex: String.raw`^\.{1,2}/.*\.js$`,
+                message: 'Use the .ts extension for relative imports.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
       languageOptions: {
         parserOptions: {
           project: [
