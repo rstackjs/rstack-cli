@@ -11,17 +11,40 @@ type InstallHooksOptions = {
   hooksDir?: string;
 };
 
+type FailedInstallResult = {
+  status: 'failed';
+  reason: string;
+  message: string;
+};
+
 type InstallResult =
   | { status: 'installed'; hooksPath: string }
   | { status: 'unchanged'; hooksPath: string }
   | { status: 'skipped'; reason: string }
-  | { status: 'failed'; reason: string; message: string };
+  | FailedInstallResult;
 
-const fail = (reason: string, message: string): InstallResult => ({
+const fail = (reason: string, message: string): FailedInstallResult => ({
   status: 'failed',
   reason,
   message,
 });
+
+const resolveHooksDir = (hooksDir: string): string | FailedInstallResult => {
+  const resolvedDir = hooksDir.replaceAll('\\', '/');
+
+  if (resolvedDir.length === 0) {
+    return fail('invalid-hooks-directory', 'Git hooks directory must not be empty.');
+  }
+
+  if (path.isAbsolute(resolvedDir)) {
+    return fail(
+      'invalid-hooks-directory',
+      'Git hooks directory must be relative to the current directory.',
+    );
+  }
+
+  return resolvedDir;
+};
 
 const runGit = (cwd: string, args: string[]) => spawnSync('git', args, { cwd, encoding: 'utf8' });
 
@@ -55,6 +78,11 @@ export const installHooks = ({
     return { status: 'skipped', reason: 'disabled' };
   }
 
+  const resolvedDir = resolveHooksDir(hooksDir);
+  if (typeof resolvedDir !== 'string') {
+    return resolvedDir;
+  }
+
   // Check Git before touching the filesystem so non-repositories have no side effects.
   const repository = runGit(cwd, ['rev-parse', '--is-inside-work-tree']);
   if (repository.error || repository.status === null) {
@@ -76,8 +104,7 @@ export const installHooks = ({
   }
 
   const prefix = removeLineEnding(prefixResult.stdout).replaceAll('\\', '/');
-  const resolvedHooksDir = hooksDir.replaceAll('\\', '/');
-  const hooksPath = `${prefix}${resolvedHooksDir}/_`;
+  const hooksPath = `${prefix}${resolvedDir}/_`;
 
   const config = runGit(cwd, ['config', '--local', '--get', 'core.hooksPath']);
   if (config.error || config.status === null) {
@@ -87,7 +114,7 @@ export const installHooks = ({
     return fail('git-config-failed', `Failed to read core.hooksPath: ${config.stderr.trim()}`);
   }
 
-  const directory = path.join(cwd, resolvedHooksDir, '_');
+  const directory = path.join(cwd, resolvedDir, '_');
   const files = Object.entries(createHookFiles());
   // Skip all writes only when the config, generated content, and executable modes match.
   const unchanged =
