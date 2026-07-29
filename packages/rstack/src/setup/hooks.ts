@@ -27,7 +27,20 @@ hook="$dir/$name"
 
 [ -f "$hook" ] || exit 0
 
-exec sh -e "$hook" "$@"
+init="\${XDG_CONFIG_HOME:-$HOME/.config}/rstack/hooks-init.sh"
+[ -f "$init" ] && . "$init"
+
+[ "\${RSTACK_HOOKS-}" = "0" ] && exit 0
+[ "\${RSTACK_HOOKS-}" = "2" ] && set -x
+
+export PATH="node_modules/.bin:$PATH"
+
+code=0
+sh -e "$hook" "$@" || code=$?
+
+[ "$code" = "0" ] || echo "Rstack - $name hook failed (code $code)"
+[ "$code" = "127" ] && echo "Rstack - command not found in PATH=$PATH"
+exit "$code"
 `;
 
 // Every generated Git hook sources the same dispatcher to keep runtime behavior

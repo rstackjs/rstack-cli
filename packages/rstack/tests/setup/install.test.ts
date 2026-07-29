@@ -17,7 +17,8 @@ import { installHooks } from '../../src/setup/install.ts';
 
 const hooksPath = '.rstack/hooks/_';
 
-const git = (cwd: string, args: string[]) => spawnSync('git', args, { cwd, encoding: 'utf8' });
+const git = (cwd: string, args: string[], env: NodeJS.ProcessEnv = process.env) =>
+  spawnSync('git', args, { cwd, encoding: 'utf8', env });
 
 const runGit = (cwd: string, args: string[]): string => {
   const result = git(cwd, args);
@@ -43,6 +44,39 @@ const restoreEnv = (name: string, value: string | undefined): void => {
     process.env[name] = value;
   }
 };
+
+const hookEnv = (cwd: string, value?: string): NodeJS.ProcessEnv => {
+  const env: NodeJS.ProcessEnv = {
+    ...process.env,
+    XDG_CONFIG_HOME: path.join(cwd, '.git', 'xdg'),
+  };
+
+  if (value !== undefined) {
+    env.RSTACK_HOOKS = value;
+  }
+
+  return env;
+};
+
+const writeHook = (cwd: string, content: string): void => {
+  const filePath = path.join(cwd, '.rstack', 'hooks', 'pre-commit');
+  mkdirSync(path.dirname(filePath), { recursive: true });
+  writeFileSync(filePath, content);
+};
+
+const writeInit = (cwd: string, content: string): void => {
+  const filePath = path.join(cwd, '.git', 'xdg', 'rstack', 'hooks-init.sh');
+  mkdirSync(path.dirname(filePath), { recursive: true });
+  writeFileSync(filePath, content);
+};
+
+const stage = (cwd: string, name: string): void => {
+  writeFileSync(path.join(cwd, name), 'content\n');
+  runGit(cwd, ['add', name]);
+};
+
+const commit = (cwd: string, value?: string) =>
+  git(cwd, ['commit', '--quiet', '-m', 'test'], hookEnv(cwd, value));
 
 const withRepository = (callback: (cwd: string) => void): void =>
   withDirectory((cwd) => {
@@ -158,23 +192,78 @@ test('reports Git configuration failures without changing hooksPath', () => {
   });
 });
 
-test('blocks commits when a user hook fails', () => {
+test('loads user init and project binaries', () => {
   withRepository((cwd) => {
-    const userDirectory = path.join(cwd, '.rstack', 'hooks');
-    mkdirSync(userDirectory, { recursive: true });
+    const binDirectory = path.join(cwd, 'node_modules', '.bin');
+    mkdirSync(binDirectory, { recursive: true });
+    writeInit(cwd, 'set -u\nexport RSTACK_INIT=loaded\n');
+
+    const command = path.join(binDirectory, 'rstack-hook-command');
     writeFileSync(
-      path.join(userDirectory, 'pre-commit'),
-      `printf 'ran\\n' > hook-ran
-exit 1
+      command,
+      `#!/usr/bin/env sh
+printf 'ran\\n' > project-bin-ran
+`,
+    );
+    chmodSync(command, 0o755);
+
+    writeHook(
+      cwd,
+      `printf '%s\\n' "$RSTACK_INIT" > init-ran
+rstack-hook-command
 `,
     );
 
     expect(installHooks(cwd).status).toBe('installed');
-    writeFileSync(path.join(cwd, 'file.txt'), 'content\n');
-    runGit(cwd, ['add', 'file.txt']);
+    stage(cwd, 'file.txt');
 
-    expect(git(cwd, ['commit', '--quiet', '-m', 'test']).status).not.toBe(0);
-    expect(readFileSync(path.join(cwd, 'hook-ran'), 'utf8')).toBe('ran\n');
+    expect(commit(cwd).status).toBe(0);
+    expect(readFileSync(path.join(cwd, 'init-ran'), 'utf8')).toBe('loaded\n');
+    expect(readFileSync(path.join(cwd, 'project-bin-ran'), 'utf8')).toBe('ran\n');
+  });
+});
+
+test('skips user hooks when disabled by the environment or init', () => {
+  withRepository((cwd) => {
+    writeHook(cwd, 'echo ran >> hook-ran\n');
+    expect(installHooks(cwd).status).toBe('installed');
+
+    stage(cwd, 'first.txt');
+    expect(commit(cwd, '0').status).toBe(0);
+    expect(existsSync(path.join(cwd, 'hook-ran'))).toBe(false);
+
+    writeInit(cwd, 'set -u\nexport RSTACK_HOOKS=0\n');
+
+    stage(cwd, 'second.txt');
+    expect(commit(cwd).status).toBe(0);
+    expect(existsSync(path.join(cwd, 'hook-ran'))).toBe(false);
+  });
+});
+
+test('traces and reports hook failures and command lookup errors', () => {
+  withRepository((cwd) => {
+    writeHook(cwd, 'exit 23\n');
+    expect(installHooks(cwd).status).toBe('installed');
+    stage(cwd, 'file.txt');
+
+    const failed = commit(cwd, '2');
+    expect(failed.stderr).toContain('+ sh -e');
+    expect(`${failed.stdout}${failed.stderr}`).toContain(
+      'Rstack - pre-commit hook failed (code 23)',
+    );
+
+    writeHook(
+      cwd,
+      `printf '%s\\n' "$PATH" > hook-path
+missing-command
+`,
+    );
+    const missing = commit(cwd);
+    const actualPath = readFileSync(path.join(cwd, 'hook-path'), 'utf8').trim();
+    const output = `${missing.stdout}${missing.stderr}`;
+
+    expect(output).toContain('Rstack - pre-commit hook failed (code 127)');
+    expect(output).toContain(`Rstack - command not found in PATH=${actualPath}`);
     expect(git(cwd, ['rev-parse', '--verify', 'HEAD']).status).not.toBe(0);
   });
 });

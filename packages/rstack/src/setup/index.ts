@@ -40,7 +40,9 @@ export const runSetupCLI = (args: string[]): void => {
   }
 
   if (result.status === 'skipped') {
-    console.log('Git hooks setup skipped: not a Git repository.');
+    const reason =
+      result.reason === 'disabled' ? 'disabled by RSTACK_HOOKS' : 'not a Git repository';
+    console.log(`Git hooks setup skipped: ${reason}.`);
     return;
   }
 

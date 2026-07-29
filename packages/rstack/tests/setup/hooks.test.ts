@@ -35,27 +35,31 @@ test.runIf(process.platform !== 'win32')('runs generated hooks', () => {
   const generatedHook = path.join(generatedDirectory, 'pre-commit');
   const userHook = path.join(hooksDirectory, 'pre-commit');
   const files = createHookFiles();
+  const env: NodeJS.ProcessEnv = {
+    ...process.env,
+    XDG_CONFIG_HOME: path.join(directory, 'config'),
+  };
 
   try {
     mkdirSync(generatedDirectory, { recursive: true });
     writeFileSync(path.join(generatedDirectory, 'runner'), files.runner);
     writeFileSync(generatedHook, files['pre-commit']);
 
-    expect(spawnSync('sh', [generatedHook]).status).toBe(0);
+    expect(spawnSync('sh', [generatedHook], { env }).status).toBe(0);
 
     writeFileSync(
       userHook,
       `read -r input
 printf '%s\\n' "$1|$input"
-exit 23
 `,
     );
     const result = spawnSync('sh', [generatedHook, 'argument with spaces'], {
       encoding: 'utf8',
+      env,
       input: 'standard input\n',
     });
 
-    expect(result.status).toBe(23);
+    expect(result.status).toBe(0);
     expect(result.stdout).toBe('argument with spaces|standard input\n');
 
     writeFileSync(
@@ -64,10 +68,10 @@ exit 23
 printf 'unreachable\\n'
 `,
     );
-    const errexitResult = spawnSync('sh', [generatedHook], { encoding: 'utf8' });
+    const errexitResult = spawnSync('sh', [generatedHook], { encoding: 'utf8', env });
 
     expect(errexitResult.status).toBe(1);
-    expect(errexitResult.stdout).toBe('');
+    expect(errexitResult.stdout).toBe('Rstack - pre-commit hook failed (code 1)\n');
   } finally {
     rmSync(directory, { force: true, recursive: true });
   }
