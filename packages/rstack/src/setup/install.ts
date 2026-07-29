@@ -124,7 +124,7 @@ export const installHooks = ({
   const files = Object.entries(createHookFiles());
   // Skip all writes only when the config, generated content, and executable modes match.
   const unchanged =
-    path.resolve(cwd, configuredHooksPath) === path.resolve(directory) &&
+    path.resolve(cwd, configuredHooksPath) === directory &&
     isCurrentFile(path.join(directory, '.gitignore'), gitignore) &&
     files.every(([name, content]) => isCurrentFile(path.join(directory, name), content, true));
 
