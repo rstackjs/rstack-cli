@@ -13,7 +13,15 @@ export default {
     // ignore release note author mentions such as "by @chenjiahan"
     'by\\s+@[A-Za-z0-9_-]+',
   ],
-  ignorePaths: ['dist', 'dist-*', 'coverage', 'doc_build', 'node_modules', 'pnpm-lock.yaml'],
+  ignorePaths: [
+    'dist',
+    'dist-*',
+    'coverage',
+    'doc_build',
+    'node_modules',
+    'packages/rstack/THIRD_PARTY_NOTICES.md',
+    'pnpm-lock.yaml',
+  ],
   flagWords: banWords,
   dictionaries: ['dictionary'],
   dictionaryDefinitions: [
