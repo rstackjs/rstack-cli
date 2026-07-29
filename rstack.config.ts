@@ -5,6 +5,23 @@ define.lint(async () => {
   return [
     js.configs.recommended,
     ts.configs.recommended,
+    // Source imports use .ts for Node.js native TypeScript execution; builds rewrite them to .js.
+    {
+      files: ['packages/rstack/src/**/*.ts'],
+      rules: {
+        '@typescript-eslint/no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              {
+                regex: String.raw`^\.{1,2}/.*\.js$`,
+                message: 'Use the .ts extension for relative imports.',
+              },
+            ],
+          },
+        ],
+      },
+    },
     {
       languageOptions: {
         parserOptions: {
