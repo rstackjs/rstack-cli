@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
 import { color } from 'rslog';
-import { installHooks } from './install.js';
+import { installHooks } from './install.ts';
 
 const helpMessage = `Rstack v${RSTACK_VERSION}
 

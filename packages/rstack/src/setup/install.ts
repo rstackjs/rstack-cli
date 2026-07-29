@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { chmodSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { createHookFiles } from './hooks.js';
+import { createHookFiles } from './hooks.ts';
 
 const hooksPath = '.rstack/hooks/_';
 const gitignore = '*\n';

@@ -1,5 +1,5 @@
 import type { ConfigParams, RslibConfig, RslibConfigDefinition } from '@rslib/core';
-import { loadRstackConfig, type Configs } from './config.js';
+import { loadRstackConfig, type Configs } from './config.ts';
 
 const resolveRslibConfig = async (configs: Configs, params: ConfigParams): Promise<RslibConfig> => {
   const libConfig = configs.lib;

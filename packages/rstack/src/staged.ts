@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
 import { color } from 'rslog';
-import { loadRstackConfig } from './config.js';
+import { loadRstackConfig } from './config.ts';
 
 export type StagedSyncTaskGenerator = (stagedFileNames: readonly string[]) => string | string[];
 

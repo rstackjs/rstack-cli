@@ -1,6 +1,6 @@
 import type { ConfigParams } from '@rsbuild/core';
 import type { RstestConfig, RstestConfigExport } from '@rstest/core';
-import { loadRstackConfig, type Configs } from './config.js';
+import { loadRstackConfig, type Configs } from './config.ts';
 
 const resolveAutomaticExtends = async (
   configs: Configs,

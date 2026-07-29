@@ -1,9 +1,9 @@
 import { join } from 'node:path';
 import { color } from 'rslog';
-import { getConfigState } from '../config.js';
-import { runSetupCLI } from '../setup/index.js';
-import { runStagedCLI } from '../staged.js';
-import { insertConfigArg, parseCliArgs } from './args.js';
+import { getConfigState } from '../config.ts';
+import { runSetupCLI } from '../setup/index.ts';
+import { runStagedCLI } from '../staged.ts';
+import { insertConfigArg, parseCliArgs } from './args.ts';
 
 declare global {
   const RSTACK_VERSION: string;

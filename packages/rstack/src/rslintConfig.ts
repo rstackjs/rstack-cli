@@ -1,4 +1,4 @@
-import { loadRstackConfig } from './config.js';
+import { loadRstackConfig } from './config.ts';
 import type { RslintConfig } from '@rslint/core';
 
 const { configs } = await loadRstackConfig();
