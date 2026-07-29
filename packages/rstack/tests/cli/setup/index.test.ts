@@ -68,6 +68,13 @@ test('skips non-Git directories without creating files', ({ execCli, expect }) =
   expect(existsSync(path.join(cwd, '.rstack'))).toBe(false);
 });
 
+test('skips setup when hooks are disabled', ({ execCli, expect }) => {
+  const output = execCli('setup', { cwd, env: { ...env, RSTACK_HOOKS: '0' } });
+
+  expect(output).toContain('Git hooks setup skipped: disabled by RSTACK_HOOKS.');
+  expect(existsSync(path.join(cwd, '.rstack'))).toBe(false);
+});
+
 test('exits with an error when Git is unavailable', ({ expect }) => {
   const result = spawnSync(process.execPath, [RSTACK_BIN_PATH, 'setup'], {
     cwd,

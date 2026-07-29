@@ -9,7 +9,7 @@ const gitignore = '*\n';
 type InstallResult =
   | { status: 'installed'; hooksPath: string }
   | { status: 'unchanged'; hooksPath: string }
-  | { status: 'skipped'; reason: 'not-git-repository' }
+  | { status: 'skipped'; reason: string }
   | { status: 'failed'; reason: string; message: string };
 
 const fail = (reason: string, message: string): InstallResult => ({
@@ -41,6 +41,10 @@ const isCurrentFile = (filePath: string, content: string, executable = false): b
 };
 
 export const installHooks = (cwd: string = process.cwd()): InstallResult => {
+  if (process.env.RSTACK_HOOKS === '0') {
+    return { status: 'skipped', reason: 'disabled' };
+  }
+
   // Check Git before touching the filesystem so non-repositories have no side effects.
   const repository = runGit(cwd, ['rev-parse', '--is-inside-work-tree']);
   if (repository.error || repository.status === null) {
