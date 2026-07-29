@@ -1,12 +1,10 @@
 # Custom Dictionary Words
-andrey
 applypatch
 errexit
 fnames
 huskyrc
 llms
 nosystem
-okonetchnikov
 oxfmt
 rsbuild
 rslib
@@ -17,11 +15,7 @@ rspress
 rstack
 rstackjs
 rstest
-sapphi
-schlinkert
 shiki
 shikijs
-tinyexec
-tinylibs
 turborepo
 typicode
