@@ -2,6 +2,7 @@
 applypatch
 errexit
 fnames
+huskyrc
 llms
 nosystem
 oxfmt
