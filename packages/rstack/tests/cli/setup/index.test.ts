@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach } from 'rstack/test';
@@ -24,6 +24,13 @@ const initRepository = (): void => {
   git(['config', '--local', 'user.email', 'test@rstack.dev']);
 };
 
+const runSetup = (args: string[], runCwd: string = cwd) =>
+  spawnSync(process.execPath, [RSTACK_BIN_PATH, 'setup', ...args], {
+    cwd: runCwd,
+    encoding: 'utf8',
+    env,
+  });
+
 beforeEach(() => {
   cwd = mkdtempSync(path.join(tmpdir(), 'rstack setup '));
   env = {
@@ -44,11 +51,22 @@ test('displays setup help', ({ execCli, expect }) => {
 
   expect(execCli('setup -h', { cwd })).toBe(output);
   expect(output).toContain('Usage:\n  $ rs setup [options]');
+  expect(output).toContain('--hooks-dir <path>');
   expect(output).toContain('-h, --help');
 });
 
 test('rejects unknown setup options', ({ execCli, expect }) => {
   expect(() => execCli('setup --unknown', { cwd })).toThrow();
+});
+
+test('reports missing and repeated hooks directory options', ({ expect }) => {
+  const missing = runSetup(['--hooks-dir']);
+  expect(missing.status).toBe(1);
+  expect(missing.stderr).toContain('--hooks-dir');
+
+  const repeated = runSetup(['--hooks-dir', 'first', '--hooks-dir', 'second']);
+  expect(repeated.status).toBe(1);
+  expect(repeated.stderr).toContain('The --hooks-dir option cannot be specified more than once.');
 });
 
 test('installs hooks silently without loading Rstack config', ({ execCli, expect }) => {
@@ -61,6 +79,16 @@ test('installs hooks silently without loading Rstack config', ({ execCli, expect
   expect(existsSync(path.join(cwd, '.rstack', 'hooks', 'pre-commit'))).toBe(false);
 
   expect(execCli('setup', { cwd, env })).toBe('');
+});
+
+test('installs a custom hooks directory from a nested project', ({ execCli, expect }) => {
+  initRepository();
+  const projectDirectory = path.join(cwd, 'frontend');
+  mkdirSync(projectDirectory);
+
+  expect(execCli('setup --hooks-dir "custom hooks"', { cwd: projectDirectory, env })).toBe('');
+  expect(git(['config', '--local', '--get', 'core.hooksPath'])).toBe('frontend/custom hooks/_');
+  expect(existsSync(path.join(projectDirectory, 'custom hooks', '_', 'runner'))).toBe(true);
 });
 
 test('skips non-Git directories without creating files', ({ execCli, expect }) => {

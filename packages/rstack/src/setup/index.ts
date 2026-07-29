@@ -10,24 +10,33 @@ ${color.yellow('  $ rs setup [options]')}
 Install Git hooks in the current repository.
 
 ${color.cyan('Options')}:
-  -h, --help  Display this help message`;
+  --hooks-dir <path>  Specify hooks directory relative to the current directory
+  -h, --help          Display this help message`;
 
 export const runSetupCLI = (args: string[]): void => {
   const { values } = parseArgs({
     args,
     options: {
       help: { type: 'boolean', short: 'h' },
+      'hooks-dir': { type: 'string', multiple: true },
     },
     allowPositionals: false,
     strict: true,
   });
+
+  const hooksDirs = values['hooks-dir'];
+  if (hooksDirs && hooksDirs.length > 1) {
+    throw new Error('The --hooks-dir option cannot be specified more than once.');
+  }
+
+  const hooksDir = hooksDirs?.[0];
 
   if (values.help) {
     console.log(helpMessage);
     return;
   }
 
-  const result = installHooks();
+  const result = installHooks({ hooksDir });
 
   if (result.status === 'installed' || result.status === 'unchanged') {
     return;

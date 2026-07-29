@@ -3,8 +3,13 @@ import { chmodSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'nod
 import path from 'node:path';
 import { createHookFiles } from './hooks.ts';
 
-const hooksPath = '.rstack/hooks/_';
+const defaultHooksDir = '.rstack/hooks';
 const gitignore = '*\n';
+
+type InstallHooksOptions = {
+  cwd?: string;
+  hooksDir?: string;
+};
 
 type InstallResult =
   | { status: 'installed'; hooksPath: string }
@@ -19,6 +24,8 @@ const fail = (reason: string, message: string): InstallResult => ({
 });
 
 const runGit = (cwd: string, args: string[]) => spawnSync('git', args, { cwd, encoding: 'utf8' });
+
+const removeLineEnding = (value: string): string => value.replace(/\r?\n$/u, '');
 
 const gitFailure = (error: NodeJS.ErrnoException | undefined, stderr: string): InstallResult => {
   if (error?.code === 'ENOENT') {
@@ -40,7 +47,10 @@ const isCurrentFile = (filePath: string, content: string, executable = false): b
   }
 };
 
-export const installHooks = (cwd: string = process.cwd()): InstallResult => {
+export const installHooks = ({
+  cwd = process.cwd(),
+  hooksDir = defaultHooksDir,
+}: InstallHooksOptions = {}): InstallResult => {
   if (process.env.RSTACK_HOOKS === '0') {
     return { status: 'skipped', reason: 'disabled' };
   }
@@ -54,6 +64,21 @@ export const installHooks = (cwd: string = process.cwd()): InstallResult => {
     return { status: 'skipped', reason: 'not-git-repository' };
   }
 
+  const prefixResult = runGit(cwd, ['rev-parse', '--show-prefix']);
+  if (prefixResult.error || prefixResult.status === null) {
+    return gitFailure(prefixResult.error, prefixResult.stderr);
+  }
+  if (prefixResult.status !== 0) {
+    return fail(
+      'git-command-failed',
+      `Failed to resolve the Git repository prefix: ${prefixResult.stderr.trim()}`,
+    );
+  }
+
+  const prefix = removeLineEnding(prefixResult.stdout).replaceAll('\\', '/');
+  const resolvedHooksDir = hooksDir.replaceAll('\\', '/');
+  const hooksPath = `${prefix}${resolvedHooksDir}/_`;
+
   const config = runGit(cwd, ['config', '--local', '--get', 'core.hooksPath']);
   if (config.error || config.status === null) {
     return gitFailure(config.error, config.stderr);
@@ -62,11 +87,11 @@ export const installHooks = (cwd: string = process.cwd()): InstallResult => {
     return fail('git-config-failed', `Failed to read core.hooksPath: ${config.stderr.trim()}`);
   }
 
-  const directory = path.join(cwd, hooksPath);
+  const directory = path.join(cwd, resolvedHooksDir, '_');
   const files = Object.entries(createHookFiles());
   // Skip all writes only when the config, generated content, and executable modes match.
   const unchanged =
-    config.stdout.trim() === hooksPath &&
+    removeLineEnding(config.stdout) === hooksPath &&
     isCurrentFile(path.join(directory, '.gitignore'), gitignore) &&
     files.every(([name, content]) => isCurrentFile(path.join(directory, name), content, true));
 
