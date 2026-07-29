@@ -20,8 +20,6 @@ const git = (args: string[]): string => {
 
 const initRepository = (): void => {
   git(['init', '--quiet']);
-  git(['config', '--local', 'user.name', 'Rstack Test']);
-  git(['config', '--local', 'user.email', 'test@rstack.dev']);
 };
 
 const runSetup = (args: string[], runCwd: string = cwd) =>

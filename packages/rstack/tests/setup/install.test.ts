@@ -71,13 +71,8 @@ const writeInit = (cwd: string, content: string): void => {
   writeFileSync(filePath, content);
 };
 
-const stage = (cwd: string, name: string): void => {
-  writeFileSync(path.join(cwd, name), 'content\n');
-  runGit(cwd, ['add', name]);
-};
-
-const commit = (cwd: string, value?: string) =>
-  git(cwd, ['commit', '--quiet', '-m', 'test'], hookEnv(cwd, value));
+const runHook = (cwd: string, value?: string) =>
+  git(cwd, ['hook', 'run', 'pre-commit'], hookEnv(cwd, value));
 
 const withRepository = (callback: (cwd: string) => void): void =>
   withDirectory((cwd) => {
@@ -88,8 +83,6 @@ const withRepository = (callback: (cwd: string) => void): void =>
 
     try {
       runGit(cwd, ['init', '--quiet']);
-      runGit(cwd, ['config', '--local', 'user.name', 'Rstack Test']);
-      runGit(cwd, ['config', '--local', 'user.email', 'test@rstack.dev']);
       callback(cwd);
     } finally {
       restoreEnv('GIT_CONFIG_GLOBAL', globalConfig);
@@ -129,8 +122,7 @@ test('installs a custom hooks directory from the Git root and runs its hook', ()
     expect(runGit(cwd, ['config', '--local', '--get', 'core.hooksPath'])).toBe(customHooksPath);
     expect(existsSync(path.join(cwd, customHooksPath, 'runner'))).toBe(true);
 
-    stage(cwd, 'file.txt');
-    expect(commit(cwd).status).toBe(0);
+    expect(runHook(cwd).status).toBe(0);
     expect(readFileSync(path.join(cwd, 'custom-hook-ran'), 'utf8')).toBe('ran\n');
   });
 });
@@ -155,8 +147,7 @@ printf 'nested\\n' > nested-hook-ran
     expect(runGit(cwd, ['config', '--local', '--get', 'core.hooksPath'])).toBe(nestedHooksPath);
     expect(existsSync(path.join(projectDirectory, hooksPath, 'runner'))).toBe(true);
 
-    stage(cwd, 'file.txt');
-    expect(commit(cwd).status).toBe(0);
+    expect(runHook(cwd).status).toBe(0);
     expect(readFileSync(path.join(cwd, 'nested-hook-cwd'), 'utf8')).toBe('root\n');
     expect(readFileSync(path.join(projectDirectory, 'nested-hook-ran'), 'utf8')).toBe('nested\n');
   });
@@ -278,9 +269,8 @@ rstack-hook-command
     );
 
     expect(installHooks({ cwd }).status).toBe('installed');
-    stage(cwd, 'file.txt');
 
-    expect(commit(cwd).status).toBe(0);
+    expect(runHook(cwd).status).toBe(0);
     expect(readFileSync(path.join(cwd, 'init-ran'), 'utf8')).toBe('loaded\n');
     expect(readFileSync(path.join(cwd, 'project-bin-ran'), 'utf8')).toBe('ran\n');
   });
@@ -291,14 +281,12 @@ test('skips user hooks when disabled by the environment or init', () => {
     writeHook(cwd, 'echo ran >> hook-ran\n');
     expect(installHooks({ cwd }).status).toBe('installed');
 
-    stage(cwd, 'first.txt');
-    expect(commit(cwd, '0').status).toBe(0);
+    expect(runHook(cwd, '0').status).toBe(0);
     expect(existsSync(path.join(cwd, 'hook-ran'))).toBe(false);
 
     writeInit(cwd, 'set -u\nexport RSTACK_HOOKS=0\n');
 
-    stage(cwd, 'second.txt');
-    expect(commit(cwd).status).toBe(0);
+    expect(runHook(cwd).status).toBe(0);
     expect(existsSync(path.join(cwd, 'hook-ran'))).toBe(false);
   });
 });
@@ -307,9 +295,9 @@ test('traces and reports hook failures and command lookup errors', () => {
   withRepository((cwd) => {
     writeHook(cwd, 'exit 23\n');
     expect(installHooks({ cwd }).status).toBe('installed');
-    stage(cwd, 'file.txt');
 
-    const failed = commit(cwd, '2');
+    const failed = runHook(cwd, '2');
+    expect(failed.status).toBe(23);
     expect(failed.stderr).toContain('+ sh -e');
     expect(`${failed.stdout}${failed.stderr}`).toContain(
       'Rstack - pre-commit hook failed (code 23)',
@@ -321,12 +309,12 @@ test('traces and reports hook failures and command lookup errors', () => {
 missing-command
 `,
     );
-    const missing = commit(cwd);
+    const missing = runHook(cwd);
     const actualPath = readFileSync(path.join(cwd, 'hook-path'), 'utf8').trim();
     const output = `${missing.stdout}${missing.stderr}`;
 
+    expect(missing.status).toBe(127);
     expect(output).toContain('Rstack - pre-commit hook failed (code 127)');
     expect(output).toContain(`Rstack - command not found in PATH=${actualPath}`);
-    expect(git(cwd, ['rev-parse', '--verify', 'HEAD']).status).not.toBe(0);
   });
 });
