@@ -1,3 +1,3 @@
-# Define Doc
+# Define doc
 
 define.doc works
