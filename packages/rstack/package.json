@@ -10,7 +10,8 @@
   "files": [
     "bin",
     "dist",
-    "types"
+    "types",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "type": "module",
   "types": "./dist/index.d.ts",
