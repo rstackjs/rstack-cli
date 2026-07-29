@@ -39,6 +39,10 @@ printf 'nested\\n' > nested-hook-ran
       status: 'installed',
       hooksPath: nestedHooksPath,
     });
+    expect(installHooks({ cwd: projectDirectory })).toEqual({
+      status: 'unchanged',
+      hooksPath: nestedHooksPath,
+    });
     expect(runGit(cwd, ['config', '--local', '--get', 'core.hooksPath'])).toBe(nestedHooksPath);
     expect(existsSync(path.join(projectDirectory, hooksPath, 'runner'))).toBe(true);
 
@@ -55,6 +59,10 @@ test('installs a custom hooks directory from a nested project', () => {
 
     expect(installHooks({ cwd: projectDirectory, hooksDir: 'config\\hooks' })).toEqual({
       status: 'installed',
+      hooksPath: 'frontend app/config/hooks/_',
+    });
+    expect(installHooks({ cwd: projectDirectory, hooksDir: 'config\\hooks' })).toEqual({
+      status: 'unchanged',
       hooksPath: 'frontend app/config/hooks/_',
     });
     expect(runGit(cwd, ['config', '--local', '--get', 'core.hooksPath'])).toBe(
