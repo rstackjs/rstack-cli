@@ -29,13 +29,7 @@ export const runSetupCLI = (args: string[]): void => {
 
   const result = installHooks();
 
-  if (result.status === 'installed') {
-    console.log('Git hooks installed.');
-    return;
-  }
-
-  if (result.status === 'unchanged') {
-    console.log('Git hooks are already installed.');
+  if (result.status === 'installed' || result.status === 'unchanged') {
     return;
   }
 
