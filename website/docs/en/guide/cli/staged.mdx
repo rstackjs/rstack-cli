@@ -2,7 +2,9 @@
 
 The `rs staged` command uses [lint-staged](https://github.com/lint-staged/lint-staged) to run tasks against files staged in Git.
 
-A common use case is to run linters, formatters, or other checks on staged files before committing code.
+`rs staged` can run linters, formatters, or other checks on staged files before committing code.
+
+A common pattern is to pair `rs staged` with [`rs setup`](./setup) and run staged-file tasks from a `pre-commit` hook.
 
 ## Usage
 
