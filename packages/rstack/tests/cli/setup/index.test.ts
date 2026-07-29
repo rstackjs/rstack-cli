@@ -51,16 +51,16 @@ test('rejects unknown setup options', ({ execCli, expect }) => {
   expect(() => execCli('setup --unknown', { cwd })).toThrow();
 });
 
-test('installs hooks without loading Rstack config', ({ execCli, expect }) => {
+test('installs hooks silently without loading Rstack config', ({ execCli, expect }) => {
   initRepository();
   writeFileSync(path.join(cwd, 'rstack.config.ts'), 'throw new Error("must not load");\n');
 
-  expect(execCli('setup', { cwd, env })).toContain('Git hooks installed.');
+  expect(execCli('setup', { cwd, env })).toBe('');
   expect(git(['config', '--local', '--get', 'core.hooksPath'])).toBe(hooksPath);
   expect(existsSync(path.join(cwd, hooksPath, 'runner'))).toBe(true);
   expect(existsSync(path.join(cwd, '.rstack', 'hooks', 'pre-commit'))).toBe(false);
 
-  expect(execCli('setup', { cwd, env })).toContain('Git hooks are already installed.');
+  expect(execCli('setup', { cwd, env })).toBe('');
 });
 
 test('skips non-Git directories without creating files', ({ execCli, expect }) => {
