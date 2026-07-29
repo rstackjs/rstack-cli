@@ -12,7 +12,7 @@
     "doc:build": "node --run build && pnpm --dir website build",
     "format": "oxfmt .",
     "lint": "rs lint --type-check",
-    "prepare": "pnpm --filter rstack build && rs setup",
+    "prepare": "node scripts/rs.js setup",
     "test": "pnpm --filter './packages/**' test"
   },
   "devDependencies": {
