@@ -68,6 +68,8 @@ rs setup --hooks-dir "config/git hooks"
 }
 ```
 
+> 为避免通过父目录路径在当前项目之外创建或覆盖 Git hook 文件，路径中不能包含 `..`。
+
 ### `--help`
 
 `--help`（或 `-h`）用于显示命令的用法和选项。
