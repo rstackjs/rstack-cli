@@ -19,4 +19,32 @@ interface ResolvedFmtConfig {
   ignorePatterns: string[];
 }
 
-export type { FmtConfig, FmtConfigDefinition, ResolvedFmtConfig };
+interface FormatTextOptions {
+  /** File path used to resolve per-file options and infer the parser. */
+  filePath: string;
+  /** Cursor offset in the source to preserve across formatting. */
+  cursorOffset?: number;
+  /** Resolved project config used to derive per-file options. */
+  config: ResolvedFmtConfig;
+}
+
+interface FormattedTextResult {
+  status: 'formatted';
+  formatted: string;
+  cursorOffset?: number;
+}
+
+interface SkippedTextResult {
+  status: 'skipped';
+  reason: 'unsupported';
+}
+
+type FormatTextResult = FormattedTextResult | SkippedTextResult;
+
+export type {
+  FmtConfig,
+  FmtConfigDefinition,
+  FormatTextOptions,
+  FormatTextResult,
+  ResolvedFmtConfig,
+};
