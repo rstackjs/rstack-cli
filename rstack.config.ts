@@ -39,6 +39,10 @@ define.lint(async () => {
 });
 
 define.staged({
-  '*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}': ['rs lint --fix', 'oxfmt --no-error-on-unmatched-pattern'],
-  '*.{json,jsonc,md,mdx,css,html,yml,yaml}': 'oxfmt --no-error-on-unmatched-pattern',
+  '*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}': [
+    'rs lint --fix',
+    'prettier --write --experimental-cli --no-error-on-unmatched-pattern',
+  ],
+  '*.{json,jsonc,md,mdx,css,html,yml,yaml}':
+    'prettier --write --experimental-cli --no-error-on-unmatched-pattern',
 });

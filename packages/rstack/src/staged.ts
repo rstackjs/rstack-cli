@@ -16,10 +16,7 @@ export type StagedFunctionTask = {
 };
 
 export type StagedTask =
-  | string
-  | StagedFunctionTask
-  | StagedTaskGenerator
-  | (string | StagedTaskGenerator)[];
+  string | StagedFunctionTask | StagedTaskGenerator | (string | StagedTaskGenerator)[];
 
 export type StagedConfig = Record<string, StagedTask> | StagedTaskGenerator;
 

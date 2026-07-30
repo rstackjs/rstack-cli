@@ -5,7 +5,6 @@ fnames
 huskyrc
 llms
 nosystem
-oxfmt
 rsbuild
 rslib
 rslint
