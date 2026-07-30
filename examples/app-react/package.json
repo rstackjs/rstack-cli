@@ -6,8 +6,8 @@
     "build": "rs build",
     "dev": "rs dev",
     "lint": "rs lint",
-    "test": "rs test",
-    "preview": "rs preview"
+    "preview": "rs preview",
+    "test": "rs test"
   },
   "dependencies": {
     "react": "catalog:",

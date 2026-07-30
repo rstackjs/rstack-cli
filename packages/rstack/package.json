@@ -1,20 +1,9 @@
 {
   "name": "rstack",
   "version": "0.2.0",
-  "license": "MIT",
   "repository": "https://github.com/rstackjs/rstack-cli",
-  "bin": {
-    "rs": "./bin/rs.js",
-    "rstack": "./bin/rs.js"
-  },
-  "files": [
-    "bin",
-    "dist",
-    "types",
-    "THIRD_PARTY_NOTICES.md"
-  ],
+  "license": "MIT",
   "type": "module",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -47,10 +36,17 @@
     },
     "./package.json": "./package.json"
   },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "rs": "./bin/rs.js",
+    "rstack": "./bin/rs.js"
   },
+  "files": [
+    "bin",
+    "dist",
+    "types",
+    "THIRD_PARTY_NOTICES.md"
+  ],
   "scripts": {
     "build": "rslib",
     "dev": "rslib -w",
@@ -86,5 +82,9 @@
   },
   "engines": {
     "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

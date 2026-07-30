@@ -1,16 +1,16 @@
 {
   "name": "rstack-monorepo",
   "private": true,
-  "license": "MIT",
   "repository": "https://github.com/rstackjs/rstack-cli",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "pnpm --filter './packages/**' build",
-    "check:format": "oxfmt . --check",
+    "check:format": "prettier . --check --experimental-cli",
     "check:spell": "pnpm dlx cspell && heading-case",
     "doc": "pnpm --dir website dev",
     "doc:build": "node --run build && pnpm --dir website build",
-    "format": "oxfmt . && heading-case --write",
+    "format": "prettier . --write --experimental-cli && heading-case --write",
     "lint": "rs lint --type-check",
     "prepare": "node scripts/rs.js setup",
     "test": "pnpm --filter './packages/**' test"
@@ -19,7 +19,8 @@
     "@types/node": "catalog:",
     "cspell-ban-words": "catalog:",
     "heading-case": "catalog:",
-    "oxfmt": "catalog:",
+    "prettier": "catalog:",
+    "prettier-plugin-packagejson": "catalog:",
     "rstack": "workspace:*",
     "typescript": "catalog:"
   },
