@@ -65,8 +65,10 @@
     "@rstackjs/test-utils": "catalog:",
     "@rstest/adapter-rsbuild": "catalog:",
     "@rstest/adapter-rslib": "catalog:",
+    "@types/micromatch": "catalog:",
     "@types/node": "catalog:",
     "lint-staged": "catalog:",
+    "micromatch": "catalog:",
     "rslog": "catalog:",
     "typescript": "catalog:"
   },
