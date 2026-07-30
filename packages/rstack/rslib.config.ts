@@ -17,6 +17,7 @@ export default defineConfig({
       lib: './src/lib.ts',
       lint: './src/lint.ts',
       test: './src/test.ts',
+      fmtWorker: './src/fmt/worker.ts',
     },
     define: {
       RSTACK_VERSION: JSON.stringify(pkgJson.version),
