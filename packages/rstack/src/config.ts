@@ -5,6 +5,7 @@ import type { RslibConfigDefinition } from '@rslib/core';
 import type { RslintConfig } from '@rslint/core';
 import type { UserConfig, UserConfigAsyncFn } from '@rspress/core';
 import type { RstestConfigExport } from '@rstest/core';
+import type { FmtConfigDefinition } from './fmt/types.ts';
 import type { StagedConfig } from './staged.ts';
 
 export type RslintConfigDefinition = RslintConfig | (() => Promise<RslintConfig>);
@@ -16,6 +17,7 @@ export type Configs = {
   doc?: RspressConfigDefinition;
   test?: RstestConfigExport;
   lint?: RslintConfigDefinition;
+  fmt?: FmtConfigDefinition;
   staged?: StagedConfig;
 };
 
@@ -107,6 +109,12 @@ type Define = {
    */
   lint: (config: RslintConfig | (() => Promise<RslintConfig>)) => void;
   /**
+   * Defines the Prettier config for formatting.
+   *
+   * This config will be used by the `rs fmt` command.
+   */
+  fmt: (config: FmtConfigDefinition) => void;
+  /**
    * Defines the lint-staged config for staged files.
    *
    * This config is used by the `rs staged` command.
@@ -133,6 +141,7 @@ export const define: Define = {
   doc: (config) => setConfig('doc', config),
   test: (config) => setConfig('test', config),
   lint: (config) => setConfig('lint', config),
+  fmt: (config) => setConfig('fmt', config),
   staged: (config) => setConfig('staged', config),
 };
 
