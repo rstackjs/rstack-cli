@@ -4,7 +4,7 @@
 
 - Use repo Node.js/pnpm versions (`package.json`)
 - `pnpm` workspace; shared deps in `pnpm-workspace.yaml` catalogs
-- TypeScript, Rsbuild/Rslib/Rstest/Rslint, Oxfmt
+- TypeScript, Rsbuild/Rslib/Rstest/Rslint, Prettier
 
 ## Commands
 
