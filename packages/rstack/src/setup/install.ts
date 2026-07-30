@@ -43,6 +43,10 @@ const resolveHooksDir = (hooksDir: string): string | FailedInstallResult => {
     );
   }
 
+  if (resolvedDir.includes('..')) {
+    return fail('invalid-hooks-directory', 'Git hooks directory must not contain "..".');
+  }
+
   return resolvedDir;
 };
 

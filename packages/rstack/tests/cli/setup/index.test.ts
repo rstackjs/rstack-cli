@@ -67,7 +67,7 @@ test('reports missing and repeated hooks directory options', ({ expect }) => {
   expect(repeated.stderr).toContain('The --hooks-dir option cannot be specified more than once.');
 });
 
-test('rejects empty and absolute hooks directory options', ({ expect }) => {
+test('rejects invalid hooks directory options', ({ expect }) => {
   const empty = runSetup(['--hooks-dir', '']);
   expect(empty.status).toBe(1);
   expect(empty.stderr).toContain('Git hooks directory must not be empty.');
@@ -77,6 +77,10 @@ test('rejects empty and absolute hooks directory options', ({ expect }) => {
   expect(absolute.stderr).toContain(
     'Git hooks directory must be relative to the current directory.',
   );
+
+  const parent = runSetup(['--hooks-dir', '../hooks']);
+  expect(parent.status).toBe(1);
+  expect(parent.stderr).toContain('Git hooks directory must not contain "..".');
 });
 
 test('installs hooks silently without loading Rstack config', ({ execCli, expect }) => {

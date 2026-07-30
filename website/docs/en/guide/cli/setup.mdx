@@ -68,6 +68,8 @@ When using a custom directory, add the full command to the `prepare` script in t
 }
 ```
 
+> To prevent Git hook files from being created or overwritten outside the current project through parent directory paths, the path must not contain `..`.
+
 ### `--help`
 
 `--help` (or `-h`) displays the command's usage and options.
