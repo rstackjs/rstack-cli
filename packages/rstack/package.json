@@ -68,9 +68,11 @@
     "@types/micromatch": "catalog:",
     "@types/node": "catalog:",
     "fast-ignore": "catalog:",
+    "is-binary-path": "catalog:",
     "lint-staged": "catalog:",
     "micromatch": "catalog:",
     "rslog": "catalog:",
+    "tiny-readdir": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {

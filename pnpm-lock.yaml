@@ -82,6 +82,9 @@ catalogs:
     heading-case:
       specifier: ^1.1.4
       version: 1.1.4
+    is-binary-path:
+      specifier: 3.0.0
+      version: 3.0.0
     lint-staged:
       specifier: ^17.2.0
       version: 17.2.0
@@ -109,6 +112,9 @@ catalogs:
     rspress-plugin-font-open-sans:
       specifier: ^1.0.4
       version: 1.0.4
+    tiny-readdir:
+      specifier: 2.7.4
+      version: 2.7.4
     typescript:
       specifier: ^7.0.2
       version: 7.0.2
@@ -349,6 +355,9 @@ importers:
       fast-ignore:
         specifier: 'catalog:'
         version: 2.0.0
+      is-binary-path:
+        specifier: 'catalog:'
+        version: 3.0.0
       lint-staged:
         specifier: 'catalog:'
         version: 17.2.0
@@ -358,6 +367,9 @@ importers:
       rslog:
         specifier: 'catalog:'
         version: 2.3.0
+      tiny-readdir:
+        specifier: 'catalog:'
+        version: 2.7.4
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -1160,6 +1172,10 @@ packages:
   big.js@5.2.2:
     resolution: {integrity: sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==}
 
+  binary-extensions@3.1.0:
+    resolution: {integrity: sha512-Jvvd9hy1w+xUad8+ckQsWA/V1AoyubOvqn0aygjMOVM4BfIaRav1NFS3LsTSDaV4n4FtcCtQXvzep1E6MboqwQ==}
+    engines: {node: '>=18.20'}
+
   body-scroll-lock@4.0.0-beta.0:
     resolution: {integrity: sha512-a7tP5+0Mw3YlUJcGAKUqIBkYYGlYxk2fnCasq/FUph1hadxlTRjF+gAcZksxANnaMnALjxEddmSi/H3OR8ugcQ==}
 
@@ -1411,6 +1427,10 @@ packages:
 
   is-alphanumerical@2.0.1:
     resolution: {integrity: sha512-hmbYhX/9MUMF5uh7tOXyK/n0ZvWpad5caBA17GsC6vyuCqaWliRG5K1qS9inmUhEMaOBIW7/whAnSwveW/LtZw==}
+
+  is-binary-path@3.0.0:
+    resolution: {integrity: sha512-eSkpSYbqKip82Uw4z0iBK/5KmVzL2pf36kNKRtu6+mKvrow9sqF4w5hocQ9yV5v+9+wzHt620x3B7Wws/8lsGg==}
+    engines: {node: '>=18.20'}
 
   is-decimal@2.0.1:
     resolution: {integrity: sha512-AAB9hiomQs5DXWcRB1rqsxGUstbRroFOPPVAomNk/3XHR5JyEZChOyTWe2oayKnsSsr/kcGqF+z6yuH6HHpN0A==}
@@ -1737,6 +1757,12 @@ packages:
   pretty-format@27.5.1:
     resolution: {integrity: sha512-Qb1gy5OrP5+zDf2Bvnzdl3jsTf1qXVMazbvCoKhtKqVs4/YK4ozX4gKQJJVyNe+cajNPn0KoC0MC3FUmaHWEmQ==}
     engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+
+  promise-make-counter@1.0.2:
+    resolution: {integrity: sha512-FJAxTBWQuQoAs4ZOYuKX1FHXxEgKLEzBxUvwr4RoOglkTpOjWuM+RXsK3M9q5lMa8kjqctUrhwYeZFT4ygsnag==}
+
+  promise-make-naked@3.0.2:
+    resolution: {integrity: sha512-B+b+kQ1YrYS7zO7P7bQcoqqMUizP06BOyNSBEnB5VJKDSWo8fsVuDkfSmwdjF0JsRtaNh83so5MMFJ95soH5jg==}
 
   property-information@7.2.0:
     resolution: {integrity: sha512-IAtzIB6sUiWaJYrX9smp3V46pBGbBeLFRGdh25kg1334VcBlD8HzhPeNIWQH9zhGmo2itIe25EHt9dQP7G5hmg==}
@@ -2089,6 +2115,9 @@ packages:
   sync-message-port@1.2.0:
     resolution: {integrity: sha512-gAQ9qrUN/UCypHtGFbbe7Rc/f9bzO88IwrG8TDo/aMKAApKyD6E3W4Cm0EfhfBb6Z6SKt59tTCTfD+n1xmAvMg==}
     engines: {node: '>=16.0.0'}
+
+  tiny-readdir@2.7.4:
+    resolution: {integrity: sha512-721U+zsYwDirjr8IM6jqpesD/McpZooeFi3Zc6mcjy1pse2C+v19eHPFRqz4chGXZFw7C3KITDjAtHETc2wj7Q==}
 
   tinyexec@1.2.4:
     resolution: {integrity: sha512-SHf/r48b7vOrjve9PxJo3MN5v5yuyjHvdUcrQffT3WXMUfnGmHDVbC4k3sHJaJTgZCwpUplIaAo5ANtMyp3YHg==}
@@ -2866,6 +2895,8 @@ snapshots:
 
   big.js@5.2.2: {}
 
+  binary-extensions@3.1.0: {}
+
   body-scroll-lock@4.0.0-beta.0: {}
 
   braces@3.0.3:
@@ -3175,6 +3206,10 @@ snapshots:
     dependencies:
       is-alphabetical: 2.0.1
       is-decimal: 2.0.1
+
+  is-binary-path@3.0.0:
+    dependencies:
+      binary-extensions: 3.1.0
 
   is-decimal@2.0.1: {}
 
@@ -3767,6 +3802,12 @@ snapshots:
       ansi-styles: 5.2.0
       react-is: 17.0.2
 
+  promise-make-counter@1.0.2:
+    dependencies:
+      promise-make-naked: 3.0.2
+
+  promise-make-naked@3.0.2: {}
+
   property-information@7.2.0: {}
 
   react-dom@19.2.8(react@19.2.8):
@@ -4128,6 +4169,10 @@ snapshots:
       sync-message-port: 1.2.0
 
   sync-message-port@1.2.0: {}
+
+  tiny-readdir@2.7.4:
+    dependencies:
+      promise-make-counter: 1.0.2
 
   tinyexec@1.2.4: {}
 
