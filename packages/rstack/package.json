@@ -67,6 +67,7 @@
     "@rstest/adapter-rslib": "catalog:",
     "@types/micromatch": "catalog:",
     "@types/node": "catalog:",
+    "atomically": "catalog:",
     "fast-ignore": "catalog:",
     "ignore": "catalog:",
     "is-binary-path": "catalog:",
