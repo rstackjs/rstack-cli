@@ -1,6 +1,11 @@
+import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { color } from 'rslog';
-import type { FmtMode } from './types.ts';
+import { color, logger } from 'rslog';
+import { loadRstackConfig } from '../config.ts';
+import { resolveFmtConfig } from './config.ts';
+import { discoverFmtFiles } from './discovery.ts';
+import { runFmtFiles } from './runner.ts';
+import type { FmtMode, FmtRunResult } from './types.ts';
 
 interface ParsedFmtCLIArgs {
   mode: FmtMode;
@@ -50,5 +55,79 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   };
 };
 
-export { fmtHelpMessage, parseFmtCLIArgs };
+const getDisplayPath = (cwd: string, filePath: string): string => {
+  const relativePath = path.relative(cwd, filePath);
+  return path.sep === '\\' ? relativePath.replaceAll('\\', '/') : relativePath;
+};
+
+const logFmtResult = (result: FmtRunResult, mode: FmtMode, cwd: string): void => {
+  let differentCount = 0;
+  let errorCount = 0;
+
+  for (const file of result.files) {
+    const displayPath = getDisplayPath(cwd, file.path);
+
+    if (file.status === 'written') {
+      logger.log(displayPath);
+    } else if (file.status === 'different') {
+      differentCount++;
+      logger[mode === 'check' ? 'warn' : 'log'](displayPath);
+    } else if (file.status === 'error') {
+      errorCount++;
+      logger.error(`${displayPath}: ${String(file.error)}`);
+    }
+  }
+
+  if (mode !== 'check') {
+    return;
+  }
+
+  if (differentCount > 0) {
+    const files = differentCount === 1 ? 'file' : 'files';
+    logger.warn(
+      `Code style issues found in ${differentCount} ${files}. Run rs fmt --write to fix.`,
+    );
+  } else if (errorCount === 0) {
+    logger.log('All matched files use Prettier code style!');
+  }
+};
+
+const runFmtCLI = async (args: string[]): Promise<void> => {
+  const { help, mode, patterns } = parseFmtCLIArgs(args);
+  if (help) {
+    console.log(fmtHelpMessage);
+    return;
+  }
+
+  const cwd = process.cwd();
+
+  try {
+    const { configs, filePath } = await loadRstackConfig();
+    const config = await resolveFmtConfig({
+      definition: configs.fmt,
+      configFilePath: filePath,
+      cwd,
+    });
+    const files = await discoverFmtFiles({ cwd, patterns, config });
+
+    if (mode === 'check') {
+      logger.log('Checking formatting...');
+    }
+
+    const result = await runFmtFiles({
+      files,
+      mode,
+      cache: false,
+      parallel: false,
+    });
+
+    logFmtResult(result, mode, cwd);
+    process.exitCode = result.exitCode;
+  } catch (error) {
+    logger.error(error);
+    process.exitCode = 2;
+  }
+};
+
+export { fmtHelpMessage, parseFmtCLIArgs, runFmtCLI };
 export type { ParsedFmtCLIArgs };

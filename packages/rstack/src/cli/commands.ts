@@ -20,6 +20,7 @@ ${color.cyan('Commands')}:
   preview  Preview the app production build
   lib      Build library 
   doc      Serve or build docs
+  fmt      Format code
   lint     Lint code
   test     Run tests
   staged   Run tasks on staged Git files
@@ -140,6 +141,15 @@ export async function setupCommands(): Promise<void> {
 
   if (command === 'lint') {
     await runRslintCLI(args.slice(1));
+    return;
+  }
+
+  if (command === 'fmt') {
+    const { runFmtCLI } = await import(
+      /* rspackChunkName: 'fmt' */
+      '../fmt/cli.ts'
+    );
+    await runFmtCLI(args.slice(1));
     return;
   }
 
