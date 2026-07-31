@@ -22,7 +22,7 @@ define.lib({
 });
 ```
 
-If tests also use Rstest, read [rstest.mdx](rstest.mdx). `rs test` derives an Rslib test extension from `define.lib` unless `define.test` sets `extends`.
+If tests also use Rstest, read [rstest.md](rstest.md). `rs test` derives an Rslib test extension from `define.lib` unless `define.test` sets `extends`.
 
 ## Validate
 

@@ -28,7 +28,7 @@ define.app(async () => {
 });
 ```
 
-If tests also use Rstest, read [rstest.mdx](rstest.mdx). `rs test` derives an Rsbuild test extension from `define.app` unless `define.test` sets `extends`.
+If tests also use Rstest, read [rstest.md](rstest.md). `rs test` derives an Rsbuild test extension from `define.app` unless `define.test` sets `extends`.
 
 ## Validate
 
