@@ -37,6 +37,7 @@ catalog:
   'fast-ignore': '2.0.0'
   'happy-dom': '^20.11.1'
   'heading-case': '^1.1.4'
+  ignore: 7.0.5
   is-binary-path: 3.0.0
   'lint-staged': '^17.2.0'
   'micromatch': '4.0.8'

@@ -68,6 +68,7 @@
     "@types/micromatch": "catalog:",
     "@types/node": "catalog:",
     "fast-ignore": "catalog:",
+    "ignore": "catalog:",
     "is-binary-path": "catalog:",
     "lint-staged": "catalog:",
     "micromatch": "catalog:",

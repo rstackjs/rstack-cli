@@ -89,6 +89,48 @@ test('combines files, directories, and globs without duplicates', async () => {
   });
 });
 
+test('applies nested gitignore rules with child negation', async () => {
+  await withProject(async (rootPath) => {
+    mkdirSync(path.join(rootPath, '.git'));
+    writeProjectFile(rootPath, '.gitignore', '*.js\ndist/\n');
+    writeProjectFile(rootPath, 'src/.gitignore', '!keep.js\n');
+    writeProjectFile(rootPath, 'dist/.gitignore', '!keep.js\n');
+    writeProjectFile(rootPath, 'dist/nested/.gitignore', '!keep.js\n');
+    writeProjectFile(rootPath, 'src/keep.js');
+    writeProjectFile(rootPath, 'src/drop.js');
+    writeProjectFile(rootPath, 'dist/keep.js');
+    writeProjectFile(rootPath, 'dist/nested/keep.js');
+    writeProjectFile(rootPath, 'visible.ts');
+
+    const files = await discoverFmtPaths({ cwd: rootPath, patterns: ['**/*.{js,ts}'] });
+    const ignoredNestedDirectory = await discoverFmtPaths({
+      cwd: rootPath,
+      patterns: ['dist/nested'],
+    });
+
+    expect(relativePaths(rootPath, files)).toEqual([path.join('src', 'keep.js'), 'visible.ts']);
+    expect(ignoredNestedDirectory).toEqual([]);
+  });
+});
+
+test('lets explicit files bypass gitignore', async () => {
+  await withProject(async (rootPath) => {
+    mkdirSync(path.join(rootPath, '.git'));
+    writeProjectFile(rootPath, '.gitignore', '/generated/\n');
+    const keepPath = writeProjectFile(rootPath, 'generated/keep.ts');
+    writeProjectFile(rootPath, 'src/index.ts');
+
+    const discoveredFiles = await discoverFmtPaths({
+      cwd: rootPath,
+      patterns: ['**/*.ts'],
+    });
+    const explicitFiles = await discoverFmtPaths({ cwd: rootPath, patterns: [keepPath] });
+
+    expect(relativePaths(rootPath, discoveredFiles)).toEqual([path.join('src', 'index.ts')]);
+    expect(relativePaths(rootPath, explicitFiles)).toEqual([path.join('generated', 'keep.ts')]);
+  });
+});
+
 test.runIf(process.platform !== 'win32')('does not follow file or directory symlinks', async () => {
   await withProject(async (rootPath) => {
     const targetPath = writeProjectFile(rootPath, 'target/index.ts');

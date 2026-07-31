@@ -82,6 +82,9 @@ catalogs:
     heading-case:
       specifier: ^1.1.4
       version: 1.1.4
+    ignore:
+      specifier: 7.0.5
+      version: 7.0.5
     is-binary-path:
       specifier: 3.0.0
       version: 3.0.0
@@ -355,6 +358,9 @@ importers:
       fast-ignore:
         specifier: 'catalog:'
         version: 2.0.0
+      ignore:
+        specifier: 'catalog:'
+        version: 7.0.5
       is-binary-path:
         specifier: 'catalog:'
         version: 3.0.0
@@ -1407,6 +1413,10 @@ packages:
 
   html-void-elements@3.0.0:
     resolution: {integrity: sha512-bEqo66MRXsUGxWHV5IP0PUiAWwoEjba4VCzg0LjFJBpchPaTfyfCKTG6bc5F8ucKec3q5y6qOdGyYTSBEvhCrg==}
+
+  ignore@7.0.5:
+    resolution: {integrity: sha512-Hs59xBNfUIunMFgWAbGX5cq6893IbWg4KnrjbYwX3tx0ztorVgTDA6B2sxf8ejHJ4wz8BqGUMYlnzNBer5NvGg==}
+    engines: {node: '>= 4'}
 
   immutable@5.1.9:
     resolution: {integrity: sha512-m8nVez3rwrgmWxtLMt1ZYXB2Lv7OKYn/disyxAlSDYAlKSlFoPPfIAmAM/M5xqL4m4C/wAPw7S2/CNaUii1Hxg==}
@@ -3191,6 +3201,8 @@ snapshots:
   hookable@6.1.1: {}
 
   html-void-elements@3.0.0: {}
+
+  ignore@7.0.5: {}
 
   immutable@5.1.9: {}
 
