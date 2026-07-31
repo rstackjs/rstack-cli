@@ -45,10 +45,21 @@ test('displays fmt help without loading config', () => {
   const fmt = runFmt(['--help']);
 
   expect(topLevel.status).toBe(0);
-  expect(topLevel.stdout).toContain('fmt      Format code');
+  expect(topLevel.stdout).toContain('fmt, format  Format code');
   expect(fmt.status).toBe(0);
   expect(fmt.stdout).toContain('Usage:\n  $ rs fmt [options] [files/globs...]');
   expect(fmt.stderr).toBe('');
+});
+
+test('supports format as an alias for fmt', () => {
+  writeProjectFile('index.ts', 'const message="hello"');
+
+  const result = runCLI(['format', 'index.ts']);
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe('index.ts\n');
+  expect(result.stderr).toBe('');
+  expect(readProjectFile('index.ts')).toBe('const message = "hello";\n');
 });
 
 test('returns exit code 1 for invalid arguments', () => {
