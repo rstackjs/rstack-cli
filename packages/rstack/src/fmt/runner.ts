@@ -1,5 +1,5 @@
 import type { FmtExitCode, FmtFileResult, FmtRunResult, RunFmtFilesOptions } from './types.ts';
-import { formatFileSerial } from './vendor/prettier-cli/serial.ts';
+import { formatFileSerial } from './serial.ts';
 
 const runFmtFiles = async ({ files, mode }: RunFmtFilesOptions): Promise<FmtRunResult> => {
   const startTime = performance.now();

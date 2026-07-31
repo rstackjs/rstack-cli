@@ -6,7 +6,7 @@
 
 import { readFile, writeFile } from 'atomically';
 import { format } from 'prettier';
-import type { FmtFileRequest } from '../../types.ts';
+import type { FmtFileRequest } from './types.ts';
 
 const formatFileSerial = async (
   { path, options }: FmtFileRequest,
