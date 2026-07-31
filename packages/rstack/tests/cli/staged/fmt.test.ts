@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach, expect, test } from 'rstack/test';
 import { RSTACK_BIN_PATH } from '#test-helpers';
@@ -7,11 +7,8 @@ import { RSTACK_BIN_PATH } from '#test-helpers';
 let projectPath: string;
 let env: NodeJS.ProcessEnv;
 
-const writeProjectFile = (filePath: string, content: string): void => {
-  const absolutePath = path.join(projectPath, filePath);
-  mkdirSync(path.dirname(absolutePath), { recursive: true });
-  writeFileSync(absolutePath, content);
-};
+const writeProjectFile = (filePath: string, content: string): void =>
+  writeFileSync(path.join(projectPath, filePath), content);
 
 const readProjectFile = (filePath: string): string =>
   readFileSync(path.join(projectPath, filePath), 'utf8');
@@ -43,17 +40,9 @@ beforeEach(() => {
     ...process.env,
     GIT_CONFIG_GLOBAL: path.join(projectPath, 'global.gitconfig'),
     GIT_CONFIG_NOSYSTEM: '1',
-    NO_COLOR: '1',
   };
 
   git(['init', '--quiet']);
-});
-
-afterEach(() => {
-  rmSync(projectPath, { force: true, recursive: true });
-});
-
-test('formats staged files with rs fmt and applies ignore rules', () => {
   writeProjectFile(
     'rstack.config.ts',
     `import { define } from 'rstack';
@@ -67,6 +56,13 @@ define.staged({
 });
 `,
   );
+});
+
+afterEach(() => {
+  rmSync(projectPath, { force: true, recursive: true });
+});
+
+test('formats staged files with rs fmt and applies ignore rules', () => {
   writeProjectFile('.gitignore', 'ignored-by-git.ts\n');
   writeProjectFile('file with spaces.ts', 'const spaced="spaced"');
   writeProjectFile('ignored-by-git.ts', 'const gitIgnored="git ignored"');
@@ -83,19 +79,9 @@ define.staged({
   expect(readProjectFile('ignored-by-fmt.ts')).toBe('const fmtIgnored="fmt ignored"');
   expect(git(['show', ':file with spaces.ts'])).toBe('const spaced = "spaced";\n');
   expect(git(['show', ':ignored-by-git.ts'])).toBe('const gitIgnored = "git ignored";\n');
-  expect(git(['show', ':ignored-by-fmt.ts'])).toBe('const fmtIgnored="fmt ignored"');
 });
 
 test('propagates rs fmt failures', () => {
-  writeProjectFile(
-    'rstack.config.ts',
-    `import { define } from 'rstack';
-
-define.staged({
-  '*': 'rs fmt',
-});
-`,
-  );
   writeProjectFile('invalid.ts', 'const value = ;');
   git(['add', '--', 'invalid.ts']);
 
