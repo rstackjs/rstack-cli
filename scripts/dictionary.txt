@@ -1,6 +1,8 @@
 # Custom Dictionary Words
 applypatch
+dirents
 errexit
+extglob
 fnames
 huskyrc
 llms
