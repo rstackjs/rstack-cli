@@ -44,6 +44,42 @@ interface FmtFileRequest {
   options: PrettierOptions & Required<Pick<PrettierOptions, 'filepath' | 'parser'>>;
 }
 
+type FmtMode = 'write' | 'check' | 'list-different';
+type FmtExitCode = 0 | 1 | 2;
+
+interface RunFmtFilesOptions {
+  /** Files with their final per-file Prettier options. */
+  files: FmtFileRequest[];
+  /** Whether to write changes or only report them. */
+  mode: FmtMode;
+  /** Persistent cache support is added in a later implementation step. */
+  cache: false;
+  /** Parallel execution support is added in a later implementation step. */
+  parallel: false;
+}
+
+interface SuccessfulFmtFileResult {
+  path: string;
+  status: 'unchanged' | 'written' | 'different';
+  durationMs: number;
+}
+
+interface FailedFmtFileResult {
+  path: string;
+  status: 'error';
+  error: unknown;
+  durationMs: number;
+}
+
+type FmtFileResult = SuccessfulFmtFileResult | FailedFmtFileResult;
+
+interface FmtRunResult {
+  files: FmtFileResult[];
+  /** Recommended CLI exit code. */
+  exitCode: FmtExitCode;
+  durationMs: number;
+}
+
 interface FormattedTextResult {
   status: 'formatted';
   formatted: string;
@@ -61,8 +97,13 @@ export type {
   DiscoverFmtFilesOptions,
   FmtConfig,
   FmtConfigDefinition,
+  FmtExitCode,
+  FmtFileResult,
   FmtFileRequest,
+  FmtMode,
+  FmtRunResult,
   FormatTextOptions,
   FormatTextResult,
   ResolvedFmtConfig,
+  RunFmtFilesOptions,
 };

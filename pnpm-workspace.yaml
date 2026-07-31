@@ -33,6 +33,7 @@ catalog:
   '@types/react': '^19.2.17'
   '@types/react-dom': '^19.2.3'
   '@shikijs/transformers': '^4.3.1'
+  atomically: '2.1.1'
   'cspell-ban-words': '^0.0.4'
   'fast-ignore': '2.0.0'
   'happy-dom': '^20.11.1'
