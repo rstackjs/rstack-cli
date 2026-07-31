@@ -43,7 +43,7 @@ afterEach(() => {
 });
 
 test('displays setup help', ({ execCli, expect }) => {
-  expect(execCli('--help', { cwd })).toContain('setup    Install Git hooks');
+  expect(execCli('--help', { cwd })).toMatch(/setup\s+Install Git hooks/);
 
   const output = execCli('setup --help', { cwd });
 
