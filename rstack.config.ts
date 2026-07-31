@@ -38,11 +38,15 @@ define.lint(async () => {
   ];
 });
 
+define.fmt({
+  ignorePatterns: ['**/dist/**', 'pnpm-lock.yaml'],
+  // TODO: Enable after rs fmt supports resolving Prettier plugins from the project root.
+  // plugins: ['prettier-plugin-packagejson'],
+  printWidth: 100,
+  singleQuote: true,
+});
+
 define.staged({
-  '*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}': [
-    'rs lint --fix',
-    'prettier --write --experimental-cli --no-error-on-unmatched-pattern',
-  ],
-  '*.{json,jsonc,md,mdx,css,html,yml,yaml}':
-    'prettier --write --experimental-cli --no-error-on-unmatched-pattern',
+  '*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}': ['rs lint --fix', 'rs fmt'],
+  '*.{json,jsonc,md,mdx,css,html,yml,yaml}': 'rs fmt',
 });
