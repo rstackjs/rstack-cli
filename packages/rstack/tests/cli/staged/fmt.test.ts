@@ -45,7 +45,6 @@ beforeEach(() => {
     GIT_CONFIG_NOSYSTEM: '1',
     NO_COLOR: '1',
   };
-  delete env.FORCE_COLOR;
 
   git(['init', '--quiet']);
 });
