@@ -1,6 +1,6 @@
 # Git Hook Migration
 
-Migrate [Husky](https://typicode.github.io/husky/) or [simple-git-hooks](https://github.com/toplenboren/simple-git-hooks#readme) to [`rs setup`](https://rstack.rs/guide/cli/setup). If a hook calls lint-staged or nano-staged, also read [lint-staged.mdx](lint-staged.mdx).
+Migrate [Husky](https://typicode.github.io/husky/) or [simple-git-hooks](https://github.com/toplenboren/simple-git-hooks#readme) to [`rs setup`](https://rstack.rs/guide/cli/setup). If a hook calls lint-staged or nano-staged, also read [lint-staged.md](lint-staged.md).
 
 ## Shared Steps
 

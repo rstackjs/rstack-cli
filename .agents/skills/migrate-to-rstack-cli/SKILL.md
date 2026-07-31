@@ -11,13 +11,13 @@ Rstack CLI is the `rstack` package, exposed through the `rs` binaries. It provid
 
 Read every matching reference before editing. Load only the tools present in the project.
 
-- `@rsbuild/core`, `rsbuild.config.*`, `rsbuild` commands, or Rsbuild types: [rsbuild.mdx](references/rsbuild.mdx)
-- `@rslib/core`, `rslib.config.*`, `rslib` commands, or Rslib types: [rslib.mdx](references/rslib.mdx)
-- `@rstest/core`, `@rstest/adapter-*`, `rstest.config.*`, `rstest` commands, or test imports: [rstest.mdx](references/rstest.mdx)
-- `@rslint/core`, `rslint.config.*`, `rslint` commands, or lint imports: [rslint.mdx](references/rslint.mdx)
-- `@rspress/core`, `rspress.config.*`, `rspress` commands, themes, or plugins: [rspress.mdx](references/rspress.mdx)
-- `lint-staged`, `nano-staged`, their configs: [lint-staged.mdx](references/lint-staged.mdx)
-- `husky`, `.husky/`, `package.json#husky`, `simple-git-hooks`, `.simple-git-hooks.*`, or Git hook installer scripts: [git-hooks.mdx](references/git-hooks.mdx)
+- `@rsbuild/core`, `rsbuild.config.*`, `rsbuild` commands, or Rsbuild types: [rsbuild.md](references/rsbuild.md)
+- `@rslib/core`, `rslib.config.*`, `rslib` commands, or Rslib types: [rslib.md](references/rslib.md)
+- `@rstest/core`, `@rstest/adapter-*`, `rstest.config.*`, `rstest` commands, or test imports: [rstest.md](references/rstest.md)
+- `@rslint/core`, `rslint.config.*`, `rslint` commands, or lint imports: [rslint.md](references/rslint.md)
+- `@rspress/core`, `rspress.config.*`, `rspress` commands, themes, or plugins: [rspress.md](references/rspress.md)
+- `lint-staged`, `nano-staged`, their configs: [lint-staged.md](references/lint-staged.md)
+- `husky`, `.husky/`, `package.json#husky`, `simple-git-hooks`, `.simple-git-hooks.*`, or Git hook installer scripts: [git-hooks.md](references/git-hooks.md)
 
 ## Workflow
 
