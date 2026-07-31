@@ -28,6 +28,22 @@ interface FormatTextOptions {
   config: ResolvedFmtConfig;
 }
 
+interface DiscoverFmtFilesOptions {
+  /** Absolute directory used to resolve input paths. */
+  cwd: string;
+  /** Files, directories, and positive or negative globs. Defaults to the current directory. */
+  patterns?: string[];
+  /** Resolved project config applied to discovered files. */
+  config: ResolvedFmtConfig;
+}
+
+interface FmtFileRequest {
+  /** Absolute path to the file. */
+  path: string;
+  /** Final Prettier options with the parser and file path resolved. */
+  options: PrettierOptions & Required<Pick<PrettierOptions, 'filepath' | 'parser'>>;
+}
+
 interface FormattedTextResult {
   status: 'formatted';
   formatted: string;
@@ -42,8 +58,10 @@ interface SkippedTextResult {
 type FormatTextResult = FormattedTextResult | SkippedTextResult;
 
 export type {
+  DiscoverFmtFilesOptions,
   FmtConfig,
   FmtConfigDefinition,
+  FmtFileRequest,
   FormatTextOptions,
   FormatTextResult,
   ResolvedFmtConfig,
