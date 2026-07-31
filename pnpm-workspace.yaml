@@ -12,33 +12,33 @@ catalogMode: prefer
 cleanupUnusedCatalogs: true
 
 catalog:
-  '@rsbuild/core': '~2.1.8'
+  '@rsbuild/core': '~2.1.9'
   '@rsbuild/plugin-react': '^2.1.0'
   '@rsbuild/plugin-sass': '^2.0.1'
   '@rslib/core': '~1.0.0-beta.1'
   '@rslint/core': '~0.7.2'
-  '@rspress/core': '^2.0.18'
-  '@rspress/plugin-sitemap': '^2.0.18'
+  '@rspress/core': '^2.0.19'
+  '@rspress/plugin-sitemap': '^2.0.19'
   '@rstack-dev/doc-ui': '1.14.7'
   '@rstackjs/load-config': ^0.1.2
   '@rstackjs/test-utils': ^0.2.0
-  '@rstest/adapter-rsbuild': '~0.11.4'
-  '@rstest/adapter-rslib': '~0.11.4'
-  '@rstest/core': '~0.11.4'
+  '@rstest/adapter-rsbuild': '~0.11.5'
+  '@rstest/adapter-rslib': '~0.11.5'
+  '@rstest/core': '~0.11.5'
   '@testing-library/dom': '^10.4.1'
   '@testing-library/jest-dom': '^7.0.0'
   '@testing-library/react': '^16.3.2'
   '@types/micromatch': '^4.0.10'
   '@types/node': '^24.13.3'
-  '@types/react': '^19.2.17'
-  '@types/react-dom': '^19.2.3'
+  '@types/react': '^19.2.18'
+  '@types/react-dom': '^19.2.4'
   '@shikijs/transformers': '^4.3.1'
   atomically: '2.1.1'
   'cspell-ban-words': '^0.0.4'
   'fast-ignore': '2.0.0'
   'happy-dom': '^20.11.1'
   'heading-case': '^1.1.4'
-  ignore: 7.0.5
+  ignore: 7.0.6
   is-binary-path: 3.0.0
   'lint-staged': '^17.2.0'
   'micromatch': '4.0.8'
