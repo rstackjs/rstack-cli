@@ -21,7 +21,7 @@ It also covers local development needs outside Rstack's scope, with Prettier for
 | `rs lint`    | Lint code                        | [Rslint](https://github.com/web-infra-dev/rslint)         |
 | `rs lib`     | Build library                    | [Rslib](https://github.com/web-infra-dev/rslib)           |
 | `rs doc`     | Serve or build docs              | [Rspress](https://github.com/web-infra-dev/rspress)       |
-| `rs fmt`     | Format code (TODO)               | [Prettier](https://github.com/prettier/prettier)          |
+| `rs fmt`     | Format code                      | [Prettier](https://github.com/prettier/prettier)          |
 | `rs setup`   | Install Git hooks                | -                                                         |
 | `rs staged`  | Run tasks on staged Git files    | [lint-staged](https://github.com/lint-staged/lint-staged) |
 
