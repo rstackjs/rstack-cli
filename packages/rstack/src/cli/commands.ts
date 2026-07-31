@@ -15,16 +15,16 @@ ${color.cyan('Usage')}:
 ${color.yellow('  $ rs [command] [...options]')}
 
 ${color.cyan('Commands')}:
-  dev      Run the app dev server
-  build    Build the app for production
-  preview  Preview the app production build
-  lib      Build library 
-  doc      Serve or build docs
-  fmt      Format code
-  lint     Lint code
-  test     Run tests
-  staged   Run tasks on staged Git files
-  setup    Install Git hooks
+  dev          Run the app dev server
+  build        Build the app for production
+  preview      Preview the app production build
+  lib          Build library
+  doc          Serve or build docs
+  fmt, format  Format code
+  lint         Lint code
+  test         Run tests
+  staged       Run tasks on staged Git files
+  setup        Install Git hooks
 
 ${color.dim(`For command-specific options, run:
   $ rs <command> -h`)}
@@ -144,7 +144,7 @@ export async function setupCommands(): Promise<void> {
     return;
   }
 
-  if (command === 'fmt') {
+  if (command === 'fmt' || command === 'format') {
     const { runFmtCLI } = await import(
       /* rspackChunkName: 'fmt' */
       '../fmt/cli.ts'
