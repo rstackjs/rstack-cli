@@ -7,6 +7,5 @@ test('should expose test APIs from `rstack/test`', async () => {
 
   for (const method of commonTestMethods) {
     expect(test).toHaveProperty(method);
-    expect(typeof test[method]).toBeTruthy();
   }
 });

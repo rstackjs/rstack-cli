@@ -1,4 +1,4 @@
-import { rm, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { getRandomPort, waitForFile } from '@rstackjs/test-utils';
 import { test } from '#test-helpers';
@@ -10,8 +10,6 @@ test('should restart dev server and reload config when Rstack config changes', a
   const dist1 = await prepareDist();
   const dist2 = await prepareDist('dist-2');
   const configFile = path.join(import.meta.dirname, 'test-temp-rstack.config.ts');
-
-  await rm(configFile, { force: true });
 
   await writeFile(
     configFile,

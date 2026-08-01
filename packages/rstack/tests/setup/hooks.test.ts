@@ -1,9 +1,9 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { createHookFiles } from '../../src/setup/hooks.ts';
+import { withDirectory } from './helpers.ts';
 
 test('generates the dispatcher and all client-side Git hook shims', () => {
   const { runner, ...shims } = createHookFiles();
@@ -29,18 +29,17 @@ test('generates the dispatcher and all client-side Git hook shims', () => {
 });
 
 test.runIf(process.platform !== 'win32')('runs generated hooks', () => {
-  const directory = mkdtempSync(path.join(tmpdir(), 'rstack hooks '));
-  const hooksDirectory = path.join(directory, 'hooks with spaces');
-  const generatedDirectory = path.join(hooksDirectory, '_');
-  const generatedHook = path.join(generatedDirectory, 'pre-commit');
-  const userHook = path.join(hooksDirectory, 'pre-commit');
-  const files = createHookFiles();
-  const env: NodeJS.ProcessEnv = {
-    ...process.env,
-    XDG_CONFIG_HOME: path.join(directory, 'config'),
-  };
+  withDirectory((directory) => {
+    const hooksDirectory = path.join(directory, 'hooks with spaces');
+    const generatedDirectory = path.join(hooksDirectory, '_');
+    const generatedHook = path.join(generatedDirectory, 'pre-commit');
+    const userHook = path.join(hooksDirectory, 'pre-commit');
+    const files = createHookFiles();
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
+      XDG_CONFIG_HOME: path.join(directory, 'config'),
+    };
 
-  try {
     mkdirSync(generatedDirectory, { recursive: true });
     writeFileSync(path.join(generatedDirectory, 'runner'), files.runner);
     writeFileSync(generatedHook, files['pre-commit']);
@@ -72,7 +71,5 @@ printf 'unreachable\\n'
 
     expect(errexitResult.status).toBe(1);
     expect(errexitResult.stdout).toBe('Rstack - pre-commit hook failed (code 1)\n');
-  } finally {
-    rmSync(directory, { force: true, recursive: true });
-  }
+  });
 });

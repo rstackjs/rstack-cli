@@ -1,27 +1,10 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { normalizeFmtConfig } from '../../src/fmt/config.ts';
 import { discoverFmtFiles } from '../../src/fmt/discovery.ts';
 import type { FmtConfig } from '../../src/fmt/types.ts';
-
-const withProject = async (callback: (rootPath: string) => Promise<void>): Promise<void> => {
-  const rootPath = mkdtempSync(path.join(tmpdir(), 'rstack fmt '));
-
-  try {
-    await callback(rootPath);
-  } finally {
-    rmSync(rootPath, { force: true, recursive: true });
-  }
-};
-
-const writeProjectFile = (rootPath: string, filePath: string, content = ''): string => {
-  const absolutePath = path.join(rootPath, filePath);
-  mkdirSync(path.dirname(absolutePath), { recursive: true });
-  writeFileSync(absolutePath, content);
-  return absolutePath;
-};
+import { withTempProject, writeProjectFile } from './helpers.ts';
 
 const discover = async (cwd: string, patterns?: string[], config?: FmtConfig, configRoot = cwd) =>
   discoverFmtFiles({
@@ -34,7 +17,7 @@ const relativePaths = (rootPath: string, files: Awaited<ReturnType<typeof discov
   files.map((file) => path.relative(rootPath, file.path));
 
 test('applies config ignore patterns to discovered and explicit files', async () => {
-  await withProject(async (rootPath) => {
+  await withTempProject(async (rootPath) => {
     const keepPath = writeProjectFile(rootPath, 'generated/keep.ts');
     const blockedPath = writeProjectFile(rootPath, 'generated/blocked.ts');
     writeProjectFile(rootPath, 'src/index.ts');
@@ -52,7 +35,7 @@ test('applies config ignore patterns to discovered and explicit files', async ()
 });
 
 test('applies config ignore patterns outside the config root', async () => {
-  await withProject(async (rootPath) => {
+  await withTempProject(async (rootPath) => {
     const configRoot = path.join(rootPath, 'project');
     const filePath = writeProjectFile(rootPath, 'shared/index.ts');
     mkdirSync(configRoot);
@@ -64,7 +47,7 @@ test('applies config ignore patterns outside the config root', async () => {
 });
 
 test('resolves parsers and accepts unknown extensions with an explicit parser', async () => {
-  await withProject(async (rootPath) => {
+  await withTempProject(async (rootPath) => {
     writeProjectFile(rootPath, 'index.ts');
     writeProjectFile(rootPath, 'source.custom');
     writeProjectFile(rootPath, 'unknown.extension');

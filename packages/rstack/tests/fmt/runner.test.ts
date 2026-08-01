@@ -1,27 +1,9 @@
-import {
-  chmodSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  statSync,
-  utimesSync,
-  writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
+import { chmodSync, readFileSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { runFmtFiles } from '../../src/fmt/runner.ts';
 import type { FmtFileRequest, FmtMode } from '../../src/fmt/types.ts';
-
-const withProject = async (callback: (rootPath: string) => Promise<void>): Promise<void> => {
-  const rootPath = mkdtempSync(path.join(tmpdir(), 'rstack fmt runner '));
-
-  try {
-    await callback(rootPath);
-  } finally {
-    rmSync(rootPath, { force: true, recursive: true });
-  }
-};
+import { withTempProject } from './helpers.ts';
 
 const createRequest = (filePath: string): FmtFileRequest => ({
   path: filePath,
@@ -40,7 +22,7 @@ const run = (files: FmtFileRequest[], mode: FmtMode = 'write') =>
   });
 
 test('does not rewrite unchanged files', async () => {
-  await withProject(async (rootPath) => {
+  await withTempProject(async (rootPath) => {
     const filePath = path.join(rootPath, 'unchanged.ts');
     const timestamp = new Date('2020-01-01T00:00:00.000Z');
     writeFileSync(filePath, 'const value = 1;\n');
@@ -60,7 +42,7 @@ test('does not rewrite unchanged files', async () => {
 });
 
 test('writes changed files', async () => {
-  await withProject(async (rootPath) => {
+  await withTempProject(async (rootPath) => {
     const filePath = path.join(rootPath, 'changed.ts');
     writeFileSync(filePath, 'const value=1');
 
@@ -75,7 +57,7 @@ test('writes changed files', async () => {
 });
 
 test.runIf(process.platform !== 'win32')('preserves file mode when writing', async () => {
-  await withProject(async (rootPath) => {
+  await withTempProject(async (rootPath) => {
     const filePath = path.join(rootPath, 'executable.ts');
     writeFileSync(filePath, 'const value=1');
     chmodSync(filePath, 0o744);
@@ -88,7 +70,7 @@ test.runIf(process.platform !== 'win32')('preserves file mode when writing', asy
 
 for (const mode of ['check', 'list-different'] as const) {
   test(`${mode} reports differences without writing`, async () => {
-    await withProject(async (rootPath) => {
+    await withTempProject(async (rootPath) => {
       const filePath = path.join(rootPath, 'different.ts');
       const source = 'const value=1';
       writeFileSync(filePath, source);
@@ -105,7 +87,7 @@ for (const mode of ['check', 'list-different'] as const) {
 }
 
 test('continues after a file fails and gives errors exit-code precedence', async () => {
-  await withProject(async (rootPath) => {
+  await withTempProject(async (rootPath) => {
     const invalidPath = path.join(rootPath, 'invalid.ts');
     const validPath = path.join(rootPath, 'valid.ts');
     writeFileSync(invalidPath, 'const value = ;');
