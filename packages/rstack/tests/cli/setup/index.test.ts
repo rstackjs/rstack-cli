@@ -1,6 +1,5 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach } from 'rstack/test';
 import { RSTACK_BIN_PATH, test } from '#test-helpers';
@@ -30,9 +29,11 @@ const runSetup = (args: string[], runCwd: string = cwd) =>
   });
 
 beforeEach(() => {
-  cwd = mkdtempSync(path.join(tmpdir(), 'rstack setup '));
+  cwd = mkdtempSync(path.join(import.meta.dirname, 'test-temp-rstack setup '));
   env = {
     ...process.env,
+    // Keep Git from treating the fixture as part of this repository.
+    GIT_CEILING_DIRECTORIES: import.meta.dirname,
     GIT_CONFIG_GLOBAL: path.join(cwd, 'global.gitconfig'),
     GIT_CONFIG_NOSYSTEM: '1',
   };
@@ -106,7 +107,9 @@ test('installs a custom hooks directory from a nested project', ({ execCli, expe
 });
 
 test('skips non-Git directories without creating files', ({ execCli, expect }) => {
-  expect(execCli('setup', { cwd })).toContain('Git hooks setup skipped: not a Git repository.');
+  expect(execCli('setup', { cwd, env })).toContain(
+    'Git hooks setup skipped: not a Git repository.',
+  );
   expect(existsSync(path.join(cwd, '.rstack'))).toBe(false);
 });
 

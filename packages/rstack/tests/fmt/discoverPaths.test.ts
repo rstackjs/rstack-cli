@@ -1,31 +1,14 @@
-import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { symlinkSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { discoverFmtPaths } from '../../src/fmt/discoverPaths.ts';
-
-const withProject = async (callback: (rootPath: string) => Promise<void>): Promise<void> => {
-  const rootPath = mkdtempSync(path.join(tmpdir(), 'rstack fmt '));
-
-  try {
-    await callback(rootPath);
-  } finally {
-    rmSync(rootPath, { force: true, recursive: true });
-  }
-};
-
-const writeProjectFile = (rootPath: string, filePath: string, content = ''): string => {
-  const absolutePath = path.join(rootPath, filePath);
-  mkdirSync(path.dirname(absolutePath), { recursive: true });
-  writeFileSync(absolutePath, content);
-  return absolutePath;
-};
+import { withTempProject, writeProjectFile } from './helpers.ts';
 
 const relativePaths = (rootPath: string, files: string[]): string[] =>
   files.map((filePath) => path.relative(rootPath, filePath));
 
 test('discovers non-binary files in stable order and skips hard-ignored paths', async () => {
-  await withProject(async (rootPath) => {
+  await withTempProject(async (rootPath) => {
     writeProjectFile(rootPath, 'b.ts');
     writeProjectFile(rootPath, 'a.js');
     writeProjectFile(rootPath, 'folder with spaces/c.ts');
@@ -50,7 +33,7 @@ test('discovers non-binary files in stable order and skips hard-ignored paths', 
 });
 
 test('combines files, directories, and globs without duplicates', async () => {
-  await withProject(async (rootPath) => {
+  await withTempProject(async (rootPath) => {
     const firstFilePath = writeProjectFile(rootPath, 'src/a.ts');
     writeProjectFile(rootPath, 'src/b.js');
     writeProjectFile(rootPath, 'test/c.ts');
@@ -90,8 +73,7 @@ test('combines files, directories, and globs without duplicates', async () => {
 });
 
 test('applies nested gitignore rules with child negation', async () => {
-  await withProject(async (rootPath) => {
-    mkdirSync(path.join(rootPath, '.git'));
+  await withTempProject(async (rootPath) => {
     writeProjectFile(rootPath, '.gitignore', '*.js\ndist/\n');
     writeProjectFile(rootPath, 'src/.gitignore', '!keep.js\n');
     writeProjectFile(rootPath, 'dist/.gitignore', '!keep.js\n');
@@ -114,8 +96,7 @@ test('applies nested gitignore rules with child negation', async () => {
 });
 
 test('lets explicit files bypass gitignore', async () => {
-  await withProject(async (rootPath) => {
-    mkdirSync(path.join(rootPath, '.git'));
+  await withTempProject(async (rootPath) => {
     writeProjectFile(rootPath, '.gitignore', '/generated/\n');
     const keepPath = writeProjectFile(rootPath, 'generated/keep.ts');
     writeProjectFile(rootPath, 'src/index.ts');
@@ -132,7 +113,7 @@ test('lets explicit files bypass gitignore', async () => {
 });
 
 test.runIf(process.platform !== 'win32')('does not follow file or directory symlinks', async () => {
-  await withProject(async (rootPath) => {
+  await withTempProject(async (rootPath) => {
     const targetPath = writeProjectFile(rootPath, 'target/index.ts');
     symlinkSync(path.join(rootPath, 'target'), path.join(rootPath, 'linked-directory'));
     symlinkSync(targetPath, path.join(rootPath, 'linked-file.ts'));

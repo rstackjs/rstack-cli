@@ -1,6 +1,5 @@
 import { type SpawnSyncReturns, spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 const hooksDir = '.rstack/hooks';
@@ -22,10 +21,15 @@ export const runGit = (cwd: string, args: string[]): string => {
 };
 
 export const withDirectory = (callback: (cwd: string) => void): void => {
-  const cwd = mkdtempSync(path.join(tmpdir(), 'rstack hooks '));
+  const cwd = mkdtempSync(path.join(import.meta.dirname, 'test-temp-rstack hooks '));
+  const gitCeilingDirectories = process.env.GIT_CEILING_DIRECTORIES;
+  // Keep Git from treating the temporary directory as part of this repository.
+  process.env.GIT_CEILING_DIRECTORIES = import.meta.dirname;
+
   try {
     callback(cwd);
   } finally {
+    restoreEnv('GIT_CEILING_DIRECTORIES', gitCeilingDirectories);
     rmSync(cwd, { force: true, recursive: true });
   }
 };

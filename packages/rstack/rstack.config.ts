@@ -7,6 +7,8 @@ define.test(async () => {
   process.env.NO_COLOR = '1';
 
   return {
+    // Temporary projects may contain files that match Rstest's test glob.
+    exclude: ['**/test-temp-*/**'],
     extends: withRslibConfig(),
     source: {
       tsconfigPath: './tests/tsconfig.json',

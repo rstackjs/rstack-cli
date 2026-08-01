@@ -35,7 +35,7 @@ const runStaged = () =>
   });
 
 beforeEach(() => {
-  projectPath = mkdtempSync(path.join(import.meta.dirname, 'staged-fmt-project-'));
+  projectPath = mkdtempSync(path.join(import.meta.dirname, 'test-temp-staged-fmt-'));
   env = {
     ...process.env,
     GIT_CONFIG_GLOBAL: path.join(projectPath, 'global.gitconfig'),

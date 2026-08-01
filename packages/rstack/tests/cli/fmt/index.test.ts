@@ -6,11 +6,10 @@ import { RSTACK_BIN_PATH } from '#test-helpers';
 
 let projectPath: string;
 
-const writeProjectFile = (filePath: string, content: string): string => {
+const writeProjectFile = (filePath: string, content: string): void => {
   const absolutePath = path.join(projectPath, filePath);
   mkdirSync(path.dirname(absolutePath), { recursive: true });
   writeFileSync(absolutePath, content);
-  return absolutePath;
 };
 
 const readProjectFile = (filePath: string): string =>
@@ -30,7 +29,9 @@ const runCLI = (args: string[]) => {
 const runFmt = (args: string[] = []) => runCLI(['fmt', ...args]);
 
 beforeEach(() => {
-  projectPath = mkdtempSync(path.join(import.meta.dirname, 'fmt-project-'));
+  projectPath = mkdtempSync(path.join(import.meta.dirname, 'test-temp-fmt-'));
+  // Prevent repository-level ignore rules from affecting the fixture.
+  mkdirSync(path.join(projectPath, '.git'));
   writeProjectFile('rstack.config.ts', 'export {};\n');
 });
 

@@ -7,6 +7,5 @@ test('should expose lint APIs from `rstack/lint`', async () => {
 
   for (const method of commonLintMethods) {
     expect(lint).toHaveProperty(method);
-    expect(typeof lint[method]).toBeTruthy();
   }
 });

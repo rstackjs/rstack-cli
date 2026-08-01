@@ -26,11 +26,10 @@ export type CliTestFixtures = {
 type CliTest = ReturnType<typeof baseTest.extend<CliTestFixtures>>;
 
 function makeBox(title: string) {
-  const header = `-------- Logs from: "${title}" --------`;
-  const footer = `-------- Logs from: "${title}" --------`;
+  const border = `-------- Logs from: "${title}" --------`;
   return {
-    header: `\n${header}\n`,
-    footer: `${footer}\n`,
+    header: `\n${border}\n`,
+    footer: `${border}\n`,
   };
 }
 
@@ -114,9 +113,8 @@ export const test: CliTest = baseTest.extend<CliTestFixtures>({
     }
   },
   execCliAsync: async ({ exec }, use) => {
-    const execCliAsync: Exec = (command, options = {}) => {
-      return exec(`node "${RSTACK_BIN_PATH}" ${command}`, options);
-    };
+    const execCliAsync: Exec = (command, options = {}) =>
+      exec(`node "${RSTACK_BIN_PATH}" ${command}`, options);
     await use(execCliAsync);
   },
 });
