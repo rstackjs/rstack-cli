@@ -75,7 +75,8 @@
     "micromatch": "catalog:",
     "rslog": "catalog:",
     "tiny-readdir": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "worktank": "catalog:"
   },
   "peerDependencies": {
     "@rspress/core": "^2.0.17"

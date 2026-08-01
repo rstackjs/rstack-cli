@@ -5,6 +5,7 @@ test('uses write mode by default', () => {
   expect(parseFmtCLIArgs([])).toEqual({
     mode: 'write',
     patterns: [],
+    parallel: true,
     help: false,
   });
 });
@@ -18,6 +19,16 @@ test.each([
   expect(parseFmtCLIArgs([option])).toEqual({
     mode,
     patterns: [],
+    parallel: true,
+    help: false,
+  });
+});
+
+test.each(['--no-parallel', '--noParallel'])('disables parallel execution with %s', (option) => {
+  expect(parseFmtCLIArgs([option])).toEqual({
+    mode: 'write',
+    patterns: [],
+    parallel: false,
     help: false,
   });
 });
@@ -28,6 +39,7 @@ test('preserves file paths and globs', () => {
   expect(parseFmtCLIArgs([patterns[0], '--check', ...patterns.slice(1)])).toEqual({
     mode: 'check',
     patterns,
+    parallel: true,
     help: false,
   });
 });
@@ -36,6 +48,7 @@ test('treats arguments after the terminator as paths', () => {
   expect(parseFmtCLIArgs(['--check', '--', '--write', '--help'])).toEqual({
     mode: 'check',
     patterns: ['--write', '--help'],
+    parallel: true,
     help: false,
   });
 });
@@ -49,6 +62,7 @@ test('provides command help', () => {
   expect(fmtHelpMessage).toContain('--write');
   expect(fmtHelpMessage).toContain('--check');
   expect(fmtHelpMessage).toContain('--list-different');
+  expect(fmtHelpMessage).toContain('--no-parallel');
   expect(fmtHelpMessage).toContain('-h, --help');
 });
 
@@ -64,7 +78,7 @@ test.each([
   );
 });
 
-test.each(['--unknown', '--no-cache', '--no-parallel', '--parallel-workers'])(
+test.each(['--unknown', '--no-cache', '--parallel-workers'])(
   'rejects unsupported option %s',
   (option) => {
     expect(() => parseFmtCLIArgs([option])).toThrow();

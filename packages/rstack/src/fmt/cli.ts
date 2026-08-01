@@ -10,6 +10,7 @@ import type { FmtMode, FmtRunResult } from './types.ts';
 interface ParsedFmtCLIArgs {
   mode: FmtMode;
   patterns: string[];
+  parallel: boolean;
   help: boolean;
 }
 
@@ -24,6 +25,7 @@ ${color.cyan('Options')}:
   --write             Write formatted files in place (default)
   --check             Check whether files are formatted
   --list-different    Print paths of unformatted files
+  --no-parallel       Disable worker parallelism
   -h, --help          Display this help message`;
 
 const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
@@ -34,6 +36,8 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       check: { type: 'boolean' },
       'list-different': { type: 'boolean' },
       listDifferent: { type: 'boolean' },
+      'no-parallel': { type: 'boolean' },
+      noParallel: { type: 'boolean' },
       help: { type: 'boolean', short: 'h' },
     },
     allowPositionals: true,
@@ -51,6 +55,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   return {
     mode,
     patterns: positionals,
+    parallel: !(values['no-parallel'] || values.noParallel),
     help: values.help ?? false,
   };
 };
@@ -93,7 +98,7 @@ const logFmtResult = (result: FmtRunResult, mode: FmtMode, cwd: string): void =>
 };
 
 const runFmtCLI = async (args: string[]): Promise<void> => {
-  const { help, mode, patterns } = parseFmtCLIArgs(args);
+  const { help, mode, parallel, patterns } = parseFmtCLIArgs(args);
   if (help) {
     console.log(fmtHelpMessage);
     return;
@@ -118,7 +123,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       files,
       mode,
       cache: false,
-      parallel: false,
+      parallel,
     });
 
     logFmtResult(result, mode, cwd);

@@ -84,6 +84,19 @@ test('formats the current directory with Prettier defaults', () => {
   expect(readProjectFile('index.ts')).toBe('const message = "hello";\n');
 });
 
+test('supports disabling parallel execution', () => {
+  writeProjectFile('first.ts', 'const first="first"');
+  writeProjectFile('second.ts', 'const second="second"');
+
+  const result = runFmt(['--no-parallel', 'first.ts', 'second.ts']);
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe('first.ts\nsecond.ts\n');
+  expect(result.stderr).toBe('');
+  expect(readProjectFile('first.ts')).toBe('const first = "first";\n');
+  expect(readProjectFile('second.ts')).toBe('const second = "second";\n');
+});
+
 test('does not load Prettier config or ignore files', () => {
   writeProjectFile('.prettierrc.json', '{ "singleQuote": true, "semi": false }\n');
   writeProjectFile('.prettierignore', 'index.ts\n');
