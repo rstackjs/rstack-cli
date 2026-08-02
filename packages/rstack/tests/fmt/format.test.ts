@@ -2,6 +2,7 @@ import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { normalizeFmtConfig } from '../../src/fmt/config.ts';
 import { formatText } from '../../src/fmt/format.ts';
+import { withTempProject, writeProjectFile } from './helpers.ts';
 
 const rootPath = import.meta.dirname;
 
@@ -59,6 +60,40 @@ test('uses an explicit parser for unknown file extensions', async () => {
   expect(result).toEqual({
     status: 'formatted',
     formatted: 'const value = { nested: true };\n',
+  });
+});
+
+test('supports a plugin path from matching overrides', async () => {
+  await withTempProject(async (projectPath) => {
+    writeProjectFile(
+      projectPath,
+      'plugins/fixture.mjs',
+      `export default {
+  languages: [{ name: 'Fixture JSON', parsers: ['json'], extensions: ['.fixture'] }],
+};
+`,
+    );
+    const config = normalizeFmtConfig(
+      {
+        overrides: [
+          {
+            files: '*.fixture',
+            options: { plugins: ['./plugins/fixture.mjs'] },
+          },
+        ],
+      },
+      projectPath,
+    );
+
+    const result = await formatText('{"value":true}', {
+      config,
+      filePath: path.join(projectPath, 'example.fixture'),
+    });
+
+    expect(result).toEqual({
+      status: 'formatted',
+      formatted: '{ "value": true }\n',
+    });
   });
 });
 

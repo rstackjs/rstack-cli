@@ -1,5 +1,7 @@
-import { format, formatWithCursor, getFileInfo } from 'prettier';
+import { format, formatWithCursor } from 'prettier';
 import { resolveFmtOptions } from './config.ts';
+import { resolveFmtParser } from './parser.ts';
+import { createFmtPluginResolver } from './plugins.ts';
 import type { FormatTextOptions, FormatTextResult } from './types.ts';
 
 /** Formats source text without reading formatter config or ignore files. */
@@ -7,21 +9,8 @@ const formatText = async (
   source: string,
   { filePath, cursorOffset, config }: FormatTextOptions,
 ): Promise<FormatTextResult> => {
-  const options = resolveFmtOptions(filePath, config);
-
-  if (options.plugins?.length) {
-    throw new Error('Prettier plugins are not supported yet.');
-  }
-
-  const parser =
-    options.parser ??
-    (
-      await getFileInfo(filePath, {
-        ignorePath: [],
-        resolveConfig: false,
-        withNodeModules: true,
-      })
-    ).inferredParser;
+  const options = createFmtPluginResolver(config.rootPath)(resolveFmtOptions(filePath, config));
+  const parser = await resolveFmtParser(filePath, options);
 
   if (!parser) {
     return {

@@ -1,6 +1,21 @@
 import type { Config as PrettierConfig, Options as PrettierOptions } from 'prettier';
 
-interface FmtConfig extends PrettierConfig {
+/** Plugin objects cannot cross worker boundaries and are not planned for support. */
+type FmtPluginSpecifier = string | URL;
+
+type FmtOptions = Omit<PrettierOptions, 'plugins'> & {
+  plugins?: FmtPluginSpecifier[];
+};
+
+type PrettierOverride = NonNullable<PrettierConfig['overrides']>[number];
+
+type FmtOverride = Omit<PrettierOverride, 'options'> & {
+  options?: FmtOptions;
+};
+
+interface FmtConfig extends Omit<PrettierConfig, 'plugins' | 'overrides'> {
+  plugins?: FmtPluginSpecifier[];
+  overrides?: FmtOverride[];
   /** Gitignore-compatible patterns relative to the Rstack config root. */
   ignorePatterns?: string[];
 }
@@ -103,6 +118,7 @@ export type {
   FmtFileResult,
   FmtFileRequest,
   FmtMode,
+  FmtPluginSpecifier,
   FmtRunResult,
   FormatTextOptions,
   FormatTextResult,
