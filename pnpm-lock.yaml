@@ -88,6 +88,9 @@ catalogs:
     ignore:
       specifier: 7.0.6
       version: 7.0.6
+    import-meta-resolve:
+      specifier: 4.2.0
+      version: 4.2.0
     is-binary-path:
       specifier: 3.0.0
       version: 3.0.0
@@ -370,6 +373,9 @@ importers:
       ignore:
         specifier: 'catalog:'
         version: 7.0.6
+      import-meta-resolve:
+        specifier: 'catalog:'
+        version: 4.2.0
       is-binary-path:
         specifier: 'catalog:'
         version: 3.0.0
@@ -1511,6 +1517,9 @@ packages:
 
   immutable@5.1.9:
     resolution: {integrity: sha512-m8nVez3rwrgmWxtLMt1ZYXB2Lv7OKYn/disyxAlSDYAlKSlFoPPfIAmAM/M5xqL4m4C/wAPw7S2/CNaUii1Hxg==}
+
+  import-meta-resolve@4.2.0:
+    resolution: {integrity: sha512-Iqv2fzaTQN28s/FwZAoFq0ZSs/7hMAHJVX+w8PZl3cY19Pxk6jFFalxQoIfW2826i/fDLXv8IiEZRIT0lDuWcg==}
 
   indent-string@4.0.0:
     resolution: {integrity: sha512-EdDDZu4A2OyIK7Lr/2zG+w5jmbuk1DVBnEwREQvBzspBJkCEbRa8GxU1lghYcaGJCnRWibjDXlq779X1/y5xwg==}
@@ -3380,6 +3389,8 @@ snapshots:
   immediato@1.1.0: {}
 
   immutable@5.1.9: {}
+
+  import-meta-resolve@4.2.0: {}
 
   indent-string@4.0.0: {}
 

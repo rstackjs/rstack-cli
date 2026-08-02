@@ -39,6 +39,7 @@ catalog:
   'happy-dom': '^20.11.1'
   'heading-case': '^1.1.4'
   ignore: 7.0.6
+  'import-meta-resolve': '4.2.0'
   is-binary-path: 3.0.0
   'lint-staged': '^17.2.0'
   'micromatch': '4.0.8'
