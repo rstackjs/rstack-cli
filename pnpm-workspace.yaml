@@ -18,6 +18,7 @@ catalog:
   '@rslib/core': '~1.0.0-beta.1'
   '@rslint/core': '~0.7.2'
   '@rspress/core': '^2.0.19'
+  '@rspress/plugin-client-redirects': '^2.0.19'
   '@rspress/plugin-sitemap': '^2.0.19'
   '@rstack-dev/doc-ui': '1.14.7'
   '@rstackjs/load-config': ^0.1.2

@@ -1,3 +1,4 @@
+// Rstack configuration guide: https://rstack.rs/config
 import path from 'node:path';
 import { define } from 'rstack';
 
@@ -10,6 +11,7 @@ define.doc(async () => {
   const { pluginSass } = await import('@rsbuild/plugin-sass');
   const { transformerNotationDiff, transformerNotationFocus, transformerNotationHighlight } =
     await import('@shikijs/transformers');
+  const { pluginClientRedirects } = await import('@rspress/plugin-client-redirects');
   const { pluginSitemap } = await import('@rspress/plugin-sitemap');
   const { pluginOpenGraph } = await import('rsbuild-plugin-open-graph');
   const { pluginFontOpenSans } = await import('rspress-plugin-font-open-sans');
@@ -42,7 +44,18 @@ define.doc(async () => {
     route: {
       cleanUrls: true,
     },
-    plugins: [pluginFontOpenSans(), pluginSitemap({ siteUrl })],
+    plugins: [
+      pluginClientRedirects({
+        redirects: [
+          {
+            from: '^/config/?$',
+            to: '/guide/configuration',
+          },
+        ],
+      }),
+      pluginFontOpenSans(),
+      pluginSitemap({ siteUrl }),
+    ],
     themeConfig: {
       socialLinks: [
         {

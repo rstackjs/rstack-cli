@@ -78,18 +78,24 @@ type Define = {
    * Defines the Rsbuild config for the app.
    *
    * This config is used by the `rs dev`, `rs build`, and `rs preview` commands.
+   *
+   * @see {@link https://rstack.rs/config | Rstack configuration guide}
    */
   app: (config: RsbuildConfigDefinition) => void;
   /**
    * Defines the Rslib config for libraries.
    *
    * This config is used by the `rs lib` command.
+   *
+   * @see {@link https://rstack.rs/config | Rstack configuration guide}
    */
   lib: (config: RslibConfigDefinition) => void;
   /**
    * Defines the Rspress config for documentation.
    *
    * This config is used by the `rs doc` command.
+   *
+   * @see {@link https://rstack.rs/config | Rstack configuration guide}
    */
   doc: (config: RspressConfigDefinition) => void;
   /**
@@ -100,24 +106,32 @@ type Define = {
    * Unless `extends` is set explicitly, Rstest automatically extends `define.app` or
    * falls back to `define.lib`. For multi-project configs, this applies to every inline
    * project without an explicit `extends`. The app config takes precedence when both are defined.
+   *
+   * @see {@link https://rstack.rs/config | Rstack configuration guide}
    */
   test: (config: RstestConfigExport) => void;
   /**
    * Defines the Rslint config for linting.
    *
    * This config is used by the `rs lint` command.
+   *
+   * @see {@link https://rstack.rs/config | Rstack configuration guide}
    */
   lint: (config: RslintConfig | (() => Promise<RslintConfig>)) => void;
   /**
    * Defines the Prettier config for formatting.
    *
    * This config will be used by the `rs fmt` command.
+   *
+   * @see {@link https://rstack.rs/config | Rstack configuration guide}
    */
   fmt: (config: FmtConfigDefinition) => void;
   /**
    * Defines the lint-staged config for staged files.
    *
    * This config is used by the `rs staged` command.
+   *
+   * @see {@link https://rstack.rs/config | Rstack configuration guide}
    */
   staged: (config: StagedConfig) => void;
 };

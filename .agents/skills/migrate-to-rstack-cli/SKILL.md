@@ -40,6 +40,7 @@ Use one of the default names: `rstack.config.ts`, `.js`, `.mts`, or `.mjs`.
 Use `rs -c <path>` or `rs --config <path>` only for a custom path.
 
 ```ts
+// Rstack configuration guide: https://rstack.rs/config
 import { define } from 'rstack';
 
 define.app({
