@@ -43,16 +43,16 @@ test('does not write files when worker startup fails', async () => {
 
 test('uses serial execution when options cannot be cloned', async () => {
   await withTempProject(async (rootPath) => {
-    const uncloneablePlugin = {
+    const pluginWithFunction = {
       languages: [],
-      uncloneable() {},
+      run() {},
     };
     const filePaths = ['first.ts', 'second.ts'].map((name) =>
       writeProjectFile(rootPath, name, 'const value=1'),
     );
 
     const result = await runFmtFiles({
-      files: filePaths.map((filePath) => createRequest(filePath, [uncloneablePlugin])),
+      files: filePaths.map((filePath) => createRequest(filePath, [pluginWithFunction])),
       mode: 'write',
       cache: false,
       parallel: true,
