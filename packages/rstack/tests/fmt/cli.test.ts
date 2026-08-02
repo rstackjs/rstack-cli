@@ -58,10 +58,8 @@ test.each(['0', '-1', '1.5', 'invalid', '9007199254740992'])(
   },
 );
 
-test('rejects using both parallel worker aliases', () => {
-  expect(() => parseFmtCLIArgs(['--parallel-workers', '2', '--parallelWorkers', '3'])).toThrow(
-    'The --parallel-workers and --parallelWorkers options cannot be used together.',
-  );
+test('prefers the kebab-case parallel worker option', () => {
+  expect(parseFmtCLIArgs(['--parallel-workers', '2', '--parallelWorkers', '3']).maxWorkers).toBe(2);
 });
 
 test.each([

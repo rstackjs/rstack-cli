@@ -34,12 +34,6 @@ const parseMaxWorkers = (
   kebabValue: string | undefined,
   camelValue: string | undefined,
 ): number | undefined => {
-  if (kebabValue !== undefined && camelValue !== undefined) {
-    throw new Error(
-      'The --parallel-workers and --parallelWorkers options cannot be used together.',
-    );
-  }
-
   const value = kebabValue ?? camelValue;
   if (value === undefined) {
     return undefined;
