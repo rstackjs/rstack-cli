@@ -1,7 +1,6 @@
-/**
- * Internal build entry reserved for the fmt worker.
- *
- * The worker implementation is intentionally added by a later PR. Keeping a
- * dedicated entry now establishes a stable published asset boundary.
- */
-export {};
+import { formatFileSerial } from './serial.ts';
+
+/** Confirms that the worker module and its runtime dependencies are ready. */
+const initializeFmtWorker = (): true => true;
+
+export { formatFileSerial, initializeFmtWorker };

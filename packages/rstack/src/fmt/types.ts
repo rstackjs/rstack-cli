@@ -54,8 +54,8 @@ interface RunFmtFilesOptions {
   mode: FmtMode;
   /** Persistent cache support is added in a later implementation step. */
   cache: false;
-  /** Parallel execution support is added in a later implementation step. */
-  parallel: false;
+  /** Whether cloneable file requests should run in worker threads. */
+  parallel: boolean;
 }
 
 interface SuccessfulFmtFileResult {

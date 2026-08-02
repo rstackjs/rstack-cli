@@ -1,8 +1,4 @@
-/**
- * Derived from @prettier/cli v0.12.0.
- * SPDX-License-Identifier: MIT
- * Modified by Rstack contributors.
- */
+// Derived from @prettier/cli, see THIRD_PARTY_NOTICES.md
 
 import { readFile, writeFile } from 'atomically';
 import { format } from 'prettier';

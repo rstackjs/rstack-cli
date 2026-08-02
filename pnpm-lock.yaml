@@ -124,6 +124,9 @@ catalogs:
     typescript:
       specifier: ^7.0.2
       version: 7.0.2
+    worktank:
+      specifier: 3.0.2
+      version: 3.0.2
 
 importers:
 
@@ -385,6 +388,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
+      worktank:
+        specifier: 'catalog:'
+        version: 3.0.2
 
   website:
     devDependencies:
@@ -1500,6 +1506,9 @@ packages:
     resolution: {integrity: sha512-BAg6QkE8W+TuQLrrw0Ugr7HegXduRuuj8/ti2kSOc+jz1dmx8/WNcjr6XGnq5YpDWxFwwaavqD0+jIUOKelTsw==}
     engines: {node: '>= 4'}
 
+  immediato@1.1.0:
+    resolution: {integrity: sha512-6DTWQWiM3SyxAbNRDmMvFgZVwVP6wT8ciQv7GivxXejtXZFIcemC0Wlzfd/jEouJ2JroCIp4qZVloKW4BviUpQ==}
+
   immutable@5.1.9:
     resolution: {integrity: sha512-m8nVez3rwrgmWxtLMt1ZYXB2Lv7OKYn/disyxAlSDYAlKSlFoPPfIAmAM/M5xqL4m4C/wAPw7S2/CNaUii1Hxg==}
 
@@ -1545,6 +1554,12 @@ packages:
   is-plain-obj@4.1.0:
     resolution: {integrity: sha512-+Pgi+vMuUNkJyExiMBt5IlFoMyKnr5zhJ4Uspz58WOhBF5QoIZkFyNHIbBAtHwzVAgk5RtndVNsDRN61/mmDqg==}
     engines: {node: '>=12'}
+
+  isoconcurrency@1.0.0:
+    resolution: {integrity: sha512-YhuPf5V6uOtQQHt9gIkOTbq75ceXqraDvxtZZeS/XbNsre6fmM+WpJgNTSkGX5jB3+gnbwoTVqW1c3qdfyVpOA==}
+
+  isotimer@1.0.0:
+    resolution: {integrity: sha512-1p1wborMl9fFbulXx9YBpIqFnfUn/2tN8Ne9g3GLMaiQAPmN/wLlpNOKCNT822div3Sq7LKkApZJ+6JipDUusQ==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -2291,12 +2306,18 @@ packages:
   web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==}
 
+  webworker-shim@1.1.4:
+    resolution: {integrity: sha512-W/40L5W6ZQyGhYr3hJ7N/2SjdK5OdFtnYm94j6xlRyjckegXnIGwz0EdxdkQx6VGTglJjK8mqBhMz3fd3AY4bg==}
+
   whatwg-mimetype@3.0.0:
     resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
     engines: {node: '>=12'}
 
   when-exit@2.1.5:
     resolution: {integrity: sha512-VGkKJ564kzt6Ms1dbgPP/yuIoQCrsFAnRbptpC5wOEsDaNsbCB2bnfnaA8i/vRs5tjUSEOtIuvl9/MyVsvQZCg==}
+
+  worktank@3.0.2:
+    resolution: {integrity: sha512-ry5gPtWnakOnUBAAa2aiyWZwAFJuBtd/MwZH6o9DXnQHD4AZvidtl2uTLrb2d3Zjy9D04n84lHJNnIETQl7tuA==}
 
   ws@8.21.0:
     resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
@@ -3356,6 +3377,8 @@ snapshots:
 
   ignore@7.0.6: {}
 
+  immediato@1.1.0: {}
+
   immutable@5.1.9: {}
 
   indent-string@4.0.0: {}
@@ -3390,6 +3413,12 @@ snapshots:
   is-number@7.0.0: {}
 
   is-plain-obj@4.1.0: {}
+
+  isoconcurrency@1.0.0: {}
+
+  isotimer@1.0.0:
+    dependencies:
+      immediato: 1.1.0
 
   js-tokens@4.0.0: {}
 
@@ -4452,9 +4481,18 @@ snapshots:
 
   web-namespaces@2.0.1: {}
 
+  webworker-shim@1.1.4: {}
+
   whatwg-mimetype@3.0.0: {}
 
   when-exit@2.1.5: {}
+
+  worktank@3.0.2:
+    dependencies:
+      isoconcurrency: 1.0.0
+      isotimer: 1.0.0
+      promise-make-naked: 3.0.2
+      webworker-shim: 1.1.4
 
   ws@8.21.0: {}
 

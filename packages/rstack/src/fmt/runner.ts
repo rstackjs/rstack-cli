@@ -50,6 +50,31 @@ const runFmtFilesSerial = async (
   return results;
 };
 
+/** Processes files concurrently while preserving input order. */
+const runFmtFilesParallel = async (
+  files: FmtFileRequest[],
+  shouldWrite: boolean,
+): Promise<FmtFileResult[]> => {
+  const { createFmtWorker } = await import('./parallel.ts');
+  const worker = await createFmtWorker(files.length);
+
+  try {
+    return await Promise.all(files.map((file) => runFmtFile(file, shouldWrite, worker.formatFile)));
+  } finally {
+    worker.terminate();
+  }
+};
+
+/** Checks every worker payload before any formatting can begin. */
+const canRunFmtFilesParallel = (files: FmtFileRequest[]): boolean => {
+  try {
+    structuredClone(files);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 /** Maps file results to the Prettier-compatible CLI exit code. */
 const getFmtExitCode = (files: FmtFileResult[]): FmtExitCode => {
   let exitCode: FmtExitCode = 0;
@@ -67,9 +92,17 @@ const getFmtExitCode = (files: FmtFileResult[]): FmtExitCode => {
 };
 
 /** Runs resolved files and summarizes their outcomes for the CLI. */
-const runFmtFiles = async ({ files, mode }: RunFmtFilesOptions): Promise<FmtRunResult> => {
+const runFmtFiles = async ({
+  files,
+  mode,
+  parallel,
+}: RunFmtFilesOptions): Promise<FmtRunResult> => {
   const startTime = performance.now();
-  const results = await runFmtFilesSerial(files, mode === 'write');
+  const shouldWrite = mode === 'write';
+  const results =
+    parallel && files.length > 1 && canRunFmtFilesParallel(files)
+      ? await runFmtFilesParallel(files, shouldWrite)
+      : await runFmtFilesSerial(files, shouldWrite);
 
   return {
     files: results,

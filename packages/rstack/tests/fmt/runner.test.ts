@@ -3,7 +3,7 @@ import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { runFmtFiles } from '../../src/fmt/runner.ts';
 import type { FmtFileRequest, FmtMode } from '../../src/fmt/types.ts';
-import { withTempProject } from './helpers.ts';
+import { withTempProject, writeProjectFile } from './helpers.ts';
 
 const createRequest = (filePath: string): FmtFileRequest => ({
   path: filePath,
@@ -13,12 +13,12 @@ const createRequest = (filePath: string): FmtFileRequest => ({
   },
 });
 
-const run = (files: FmtFileRequest[], mode: FmtMode = 'write') =>
+const run = (files: FmtFileRequest[], mode: FmtMode = 'write', parallel = false) =>
   runFmtFiles({
     files,
     mode,
     cache: false,
-    parallel: false,
+    parallel,
   });
 
 test('does not rewrite unchanged files', async () => {
@@ -103,5 +103,39 @@ test('continues after a file fails and gives errors exit-code precedence', async
       ],
     });
     expect(readFileSync(validPath, 'utf8')).toBe('const value=1');
+  });
+});
+
+test('parallel execution matches serial results and preserves input order', async () => {
+  await withTempProject(async (rootPath) => {
+    const sources = [
+      ['changed.ts', 'const changed=1'],
+      ['invalid.ts', 'const invalid = ;'],
+      ['unchanged.ts', 'const unchanged = 1;\n'],
+    ] as const;
+
+    const createRequests = (directory: string) =>
+      sources.map(([name, source]) =>
+        createRequest(writeProjectFile(rootPath, path.join(directory, name), source)),
+      );
+
+    const serialResult = await run(createRequests('serial'));
+    const parallelResult = await run(createRequests('parallel'), 'write', true);
+
+    const summarize = (result: typeof serialResult) =>
+      result.files.map((file) => ({
+        name: path.basename(file.path),
+        status: file.status,
+        error: file.status === 'error' ? String(file.error) : undefined,
+      }));
+
+    expect(parallelResult.exitCode).toBe(serialResult.exitCode);
+    expect(summarize(parallelResult)).toEqual(summarize(serialResult));
+
+    for (const [name] of sources) {
+      expect(readFileSync(path.join(rootPath, 'parallel', name), 'utf8')).toBe(
+        readFileSync(path.join(rootPath, 'serial', name), 'utf8'),
+      );
+    }
   });
 });

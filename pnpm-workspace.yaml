@@ -51,6 +51,7 @@ catalog:
   'rspress-plugin-font-open-sans': '^1.0.4'
   tiny-readdir: 3.1.1
   'typescript': '^7.0.2'
+  worktank: '3.0.2'
 
 dedupePeers: true
 
