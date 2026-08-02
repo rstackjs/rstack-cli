@@ -12,6 +12,7 @@ catalogMode: prefer
 cleanupUnusedCatalogs: true
 
 catalog:
+  '@prettier/plugin-yuku': '0.0.1'
   '@rsbuild/core': '~2.1.9'
   '@rsbuild/plugin-react': '^2.1.0'
   '@rsbuild/plugin-sass': '^2.0.1'
@@ -54,6 +55,10 @@ catalog:
   tiny-readdir: 3.1.1
   'typescript': '^7.0.2'
   worktank: '3.0.2'
+  yuku-parser: '0.8.3'
+
+overrides:
+  '@prettier/plugin-yuku>yuku-parser': 'catalog:'
 
 dedupePeers: true
 
@@ -66,6 +71,21 @@ hoistPattern: []
 # Reduce the risk of installing compromised packages
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
+  - '@yuku-parser/binding-android-arm64@0.8.3'
+  - '@yuku-parser/binding-darwin-arm64@0.8.3'
+  - '@yuku-parser/binding-darwin-x64@0.8.3'
+  - '@yuku-parser/binding-freebsd-x64@0.8.3'
+  - '@yuku-parser/binding-linux-arm-gnu@0.8.3'
+  - '@yuku-parser/binding-linux-arm-musl@0.8.3'
+  - '@yuku-parser/binding-linux-arm64-gnu@0.8.3'
+  - '@yuku-parser/binding-linux-arm64-musl@0.8.3'
+  - '@yuku-parser/binding-linux-x64-gnu@0.8.3'
+  - '@yuku-parser/binding-linux-x64-musl@0.8.3'
+  - '@yuku-parser/binding-win32-arm64@0.8.3'
+  - '@yuku-parser/binding-win32-x64@0.8.3'
+  - '@yuku-toolchain/types@0.8.3'
+  - 'yuku-ast@0.8.3'
+  - 'yuku-parser@0.8.3'
   - '@rspack/*'
   - '@rsbuild/*'
   - '@rslib/*'

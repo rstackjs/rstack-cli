@@ -312,7 +312,7 @@ test('returns exit code 2 for formatting errors', () => {
 
   expect(result.status).toBe(2);
   expect(result.stdout).toBe('');
-  expect(result.stderr).toContain('error   index.ts: SyntaxError: Expression expected.');
+  expect(result.stderr).toContain('error   index.ts: SyntaxError:');
 });
 
 test('succeeds when no files can be formatted', () => {

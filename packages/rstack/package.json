@@ -57,9 +57,11 @@
     "@rslib/core": "catalog:",
     "@rslint/core": "catalog:",
     "@rstest/core": "catalog:",
-    "prettier": "catalog:"
+    "prettier": "catalog:",
+    "yuku-parser": "catalog:"
   },
   "devDependencies": {
+    "@prettier/plugin-yuku": "catalog:",
     "@rspress/core": "catalog:",
     "@rstackjs/load-config": "catalog:",
     "@rstackjs/test-utils": "catalog:",

@@ -12,18 +12,18 @@ Rstack CLI brings the Rstack toolchain together for JavaScript development, with
 
 It also covers local development needs outside Rstack's scope, with Prettier formatting and lint-staged commands.
 
-| Command      | Description                      | Powered by                                                |
-| ------------ | -------------------------------- | --------------------------------------------------------- |
-| `rs dev`     | Run the app dev server           | [Rsbuild](https://github.com/web-infra-dev/rsbuild)       |
-| `rs build`   | Build the app for production     | [Rsbuild](https://github.com/web-infra-dev/rsbuild)       |
-| `rs preview` | Preview the app production build | [Rsbuild](https://github.com/web-infra-dev/rsbuild)       |
-| `rs test`    | Run tests                        | [Rstest](https://github.com/web-infra-dev/rstest)         |
-| `rs lint`    | Lint code                        | [Rslint](https://github.com/web-infra-dev/rslint)         |
-| `rs lib`     | Build library                    | [Rslib](https://github.com/web-infra-dev/rslib)           |
-| `rs doc`     | Serve or build docs              | [Rspress](https://github.com/web-infra-dev/rspress)       |
-| `rs fmt`     | Format code                      | [Prettier](https://github.com/prettier/prettier)          |
-| `rs setup`   | Install Git hooks                | -                                                         |
-| `rs staged`  | Run tasks on staged Git files    | [lint-staged](https://github.com/lint-staged/lint-staged) |
+| Command      | Description                      | Powered by                                                                                        |
+| ------------ | -------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `rs dev`     | Run the app dev server           | [Rsbuild](https://github.com/web-infra-dev/rsbuild)                                               |
+| `rs build`   | Build the app for production     | [Rsbuild](https://github.com/web-infra-dev/rsbuild)                                               |
+| `rs preview` | Preview the app production build | [Rsbuild](https://github.com/web-infra-dev/rsbuild)                                               |
+| `rs test`    | Run tests                        | [Rstest](https://github.com/web-infra-dev/rstest)                                                 |
+| `rs lint`    | Lint code                        | [Rslint](https://github.com/web-infra-dev/rslint)                                                 |
+| `rs lib`     | Build library                    | [Rslib](https://github.com/web-infra-dev/rslib)                                                   |
+| `rs doc`     | Serve or build docs              | [Rspress](https://github.com/web-infra-dev/rspress)                                               |
+| `rs fmt`     | Format code                      | [Prettier](https://github.com/prettier/prettier) + [Yuku](https://github.com/yuku-toolchain/yuku) |
+| `rs setup`   | Install Git hooks                | -                                                                                                 |
+| `rs staged`  | Run tasks on staged Git files    | [lint-staged](https://github.com/lint-staged/lint-staged)                                         |
 
 Rstack CLI fits into your existing project workflow. It does not replace your runtime, package manager, or task runner, such as [pnpm](https://github.com/pnpm/pnpm), [Bun](https://github.com/oven-sh/bun), [Turborepo](https://github.com/vercel/turborepo), [Nx](https://github.com/nrwl/nx), and [Nub](https://github.com/nubjs/nub).
 

@@ -47,8 +47,9 @@ test('applies config ignore patterns outside the config root', async () => {
   });
 });
 
-test('resolves parsers and accepts unknown extensions with an explicit parser', async () => {
+test('uses Yuku parsers by default and accepts an explicit parser', async () => {
   await withTempProject(async (rootPath) => {
+    writeProjectFile(rootPath, 'index.js');
     writeProjectFile(rootPath, 'index.ts');
     writeProjectFile(rootPath, 'source.custom');
     writeProjectFile(rootPath, 'unknown.extension');
@@ -56,8 +57,8 @@ test('resolves parsers and accepts unknown extensions with an explicit parser', 
     const inferredFiles = await discover(rootPath);
     const configuredFiles = await discover(rootPath, ['source.custom'], { parser: 'babel' });
 
-    expect(relativePaths(rootPath, inferredFiles)).toEqual(['index.ts']);
-    expect(inferredFiles[0].options.parser).toBe('typescript');
+    expect(relativePaths(rootPath, inferredFiles)).toEqual(['index.js', 'index.ts']);
+    expect(inferredFiles.map((file) => file.options.parser)).toEqual(['yuku', 'yuku-ts']);
     expect(configuredFiles[0].options).toMatchObject({
       filepath: path.join(rootPath, 'source.custom'),
       parser: 'babel',
@@ -71,7 +72,10 @@ test('resolves plugins after applying matching overrides', async () => {
       rootPath,
       'node_modules/prettier-plugin-fixture/index.mjs',
       `export default {
-  languages: [{ name: 'Fixture JSON', parsers: ['json'], extensions: ['.fixture'] }],
+  languages: [
+    { name: 'Fixture JSON', parsers: ['json'], extensions: ['.fixture'] },
+    { name: 'Fixture TypeScript', parsers: ['babel'], extensions: ['.ts'] },
+  ],
 };
 `,
     );
@@ -89,6 +93,10 @@ test('resolves plugins after applying matching overrides', async () => {
           options: { plugins: ['prettier-plugin-fixture'] },
         },
         {
+          files: '*.ts',
+          options: { plugins: ['prettier-plugin-fixture'] },
+        },
+        {
           files: '*.md',
           options: { plugins: ['missing-plugin'] },
         },
@@ -101,6 +109,12 @@ test('resolves plugins after applying matching overrides', async () => {
     expect(files[0]).toMatchObject({
       options: {
         parser: 'json',
+        plugins: [pathToFileURL(pluginEntry).href],
+      },
+    });
+    expect(files[1]).toMatchObject({
+      options: {
+        parser: 'babel',
         plugins: [pathToFileURL(pluginEntry).href],
       },
     });
