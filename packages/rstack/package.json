@@ -70,6 +70,7 @@
     "atomically": "catalog:",
     "fast-ignore": "catalog:",
     "ignore": "catalog:",
+    "import-meta-resolve": "catalog:",
     "is-binary-path": "catalog:",
     "lint-staged": "catalog:",
     "micromatch": "catalog:",
