@@ -11,7 +11,7 @@ interface ParsedFmtCLIArgs {
   mode: FmtMode;
   patterns: string[];
   parallel: boolean;
-  parallelWorkers?: number;
+  maxWorkers?: number;
   help: boolean;
 }
 
@@ -30,17 +30,17 @@ ${color.cyan('Options')}:
   --parallel-workers <count>  Number of parallel workers
   -h, --help          Display this help message`;
 
-const parseParallelWorkers = (value: string | undefined): number | undefined => {
+const parseMaxWorkers = (value: string | undefined): number | undefined => {
   if (value === undefined) {
     return undefined;
   }
 
-  const parallelWorkers = Number(value);
-  if (!/^\d+$/.test(value) || !Number.isSafeInteger(parallelWorkers) || parallelWorkers < 1) {
+  const maxWorkers = Number(value);
+  if (!/^\d+$/.test(value) || !Number.isSafeInteger(maxWorkers) || maxWorkers < 1) {
     throw new Error('The --parallel-workers option must be a positive integer.');
   }
 
-  return parallelWorkers;
+  return maxWorkers;
 };
 
 const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
@@ -69,18 +69,18 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
 
   const mode = values.check ? 'check' : listDifferent ? 'list-different' : 'write';
   const noParallel = values['no-parallel'] || values.noParallel;
-  const kebabParallelWorkers = values['parallel-workers'];
-  const camelParallelWorkers = values.parallelWorkers;
+  const kebabMaxWorkers = values['parallel-workers'];
+  const camelMaxWorkers = values.parallelWorkers;
 
-  if (kebabParallelWorkers !== undefined && camelParallelWorkers !== undefined) {
+  if (kebabMaxWorkers !== undefined && camelMaxWorkers !== undefined) {
     throw new Error(
       'The --parallel-workers and --parallelWorkers options cannot be used together.',
     );
   }
 
-  const parallelWorkers = parseParallelWorkers(kebabParallelWorkers ?? camelParallelWorkers);
+  const maxWorkers = parseMaxWorkers(kebabMaxWorkers ?? camelMaxWorkers);
 
-  if (noParallel && parallelWorkers !== undefined) {
+  if (noParallel && maxWorkers !== undefined) {
     throw new Error('The --parallel-workers and --no-parallel options cannot be used together.');
   }
 
@@ -88,7 +88,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
     mode,
     patterns: positionals,
     parallel: !noParallel,
-    parallelWorkers,
+    maxWorkers,
     help: values.help ?? false,
   };
 };
@@ -131,7 +131,7 @@ const logFmtResult = (result: FmtRunResult, mode: FmtMode, cwd: string): void =>
 };
 
 const runFmtCLI = async (args: string[]): Promise<void> => {
-  const { help, mode, parallel, parallelWorkers, patterns } = parseFmtCLIArgs(args);
+  const { help, maxWorkers, mode, parallel, patterns } = parseFmtCLIArgs(args);
   if (help) {
     console.log(fmtHelpMessage);
     return;
@@ -157,7 +157,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       mode,
       cache: false,
       parallel,
-      parallelWorkers,
+      maxWorkers,
     });
 
     logFmtResult(result, mode, cwd);

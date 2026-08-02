@@ -9,8 +9,8 @@ const mocks = rs.hoisted(() => ({
 }));
 
 rs.mock('../../src/fmt/parallel.ts', () => ({
-  createFmtWorker: (fileCount: number, parallelWorkers?: number) => {
-    mocks.createFmtWorkerCalls.push([fileCount, parallelWorkers]);
+  createFmtWorker: (fileCount: number, maxWorkers?: number) => {
+    mocks.createFmtWorkerCalls.push([fileCount, maxWorkers]);
     return Promise.reject(new Error('worker startup failed'));
   },
 }));
@@ -43,7 +43,7 @@ test('does not write files when worker startup fails', async () => {
         mode: 'write',
         cache: false,
         parallel: true,
-        parallelWorkers: 3,
+        maxWorkers: 3,
       }),
     ).rejects.toThrow('worker startup failed');
 

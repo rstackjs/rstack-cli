@@ -6,7 +6,7 @@ test('uses write mode by default', () => {
     mode: 'write',
     patterns: [],
     parallel: true,
-    parallelWorkers: undefined,
+    maxWorkers: undefined,
     help: false,
   });
 });
@@ -21,7 +21,7 @@ test.each([
     mode,
     patterns: [],
     parallel: true,
-    parallelWorkers: undefined,
+    maxWorkers: undefined,
     help: false,
   });
 });
@@ -31,7 +31,7 @@ test.each(['--no-parallel', '--noParallel'])('disables parallel execution with %
     mode: 'write',
     patterns: [],
     parallel: false,
-    parallelWorkers: undefined,
+    maxWorkers: undefined,
     help: false,
   });
 });
@@ -43,7 +43,7 @@ test.each(['--parallel-workers', '--parallelWorkers'])(
       mode: 'write',
       patterns: [],
       parallel: true,
-      parallelWorkers: 3,
+      maxWorkers: 3,
       help: false,
     });
   },
@@ -67,8 +67,8 @@ test('rejects using both parallel worker aliases', () => {
 test.each([
   ['--no-parallel', '--parallel-workers'],
   ['--noParallel', '--parallelWorkers'],
-])('rejects conflicting parallel options: %s and %s', (noParallel, parallelWorkers) => {
-  expect(() => parseFmtCLIArgs([noParallel, parallelWorkers, '2'])).toThrow(
+])('rejects conflicting parallel options: %s and %s', (noParallel, maxWorkersOption) => {
+  expect(() => parseFmtCLIArgs([noParallel, maxWorkersOption, '2'])).toThrow(
     'The --parallel-workers and --no-parallel options cannot be used together.',
   );
 });
@@ -80,7 +80,7 @@ test('preserves file paths and globs', () => {
     mode: 'check',
     patterns,
     parallel: true,
-    parallelWorkers: undefined,
+    maxWorkers: undefined,
     help: false,
   });
 });
@@ -90,7 +90,7 @@ test('treats arguments after the terminator as paths', () => {
     mode: 'check',
     patterns: ['--write', '--help'],
     parallel: true,
-    parallelWorkers: undefined,
+    maxWorkers: undefined,
     help: false,
   });
 });

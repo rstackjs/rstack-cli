@@ -57,7 +57,7 @@ interface RunFmtFilesOptions {
   /** Whether cloneable file requests should run in worker threads. */
   parallel: boolean;
   /** Maximum worker count when parallel execution is enabled. */
-  parallelWorkers?: number;
+  maxWorkers?: number;
 }
 
 interface SuccessfulFmtFileResult {
