@@ -2,7 +2,7 @@ import { format, formatWithCursor } from 'prettier';
 import { resolveFmtOptions } from './config.ts';
 import { resolveFmtParser } from './parser.ts';
 import { createFmtPluginResolver } from './plugins.ts';
-import { getRuntimeFmtPlugins } from './runtimePlugins.ts';
+import { getPrettierPlugins } from './prettierPlugins.ts';
 import type { FormatTextOptions, FormatTextResult } from './types.ts';
 
 /** Formats source text without reading formatter config or ignore files. */
@@ -24,7 +24,7 @@ const formatText = async (
     ...options,
     filepath: filePath,
     parser,
-    plugins: getRuntimeFmtPlugins(options.plugins),
+    plugins: getPrettierPlugins(options.plugins),
   };
 
   if (cursorOffset === undefined) {

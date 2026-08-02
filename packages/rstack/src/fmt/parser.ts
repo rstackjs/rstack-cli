@@ -1,5 +1,5 @@
 import { getFileInfo, type FileInfoOptions, type Options as PrettierOptions } from 'prettier';
-import { getRuntimeFmtPlugins } from './runtimePlugins.ts';
+import { getPrettierPlugins } from './prettierPlugins.ts';
 
 const fileInfoOptions = {
   ignorePath: [],
@@ -16,7 +16,7 @@ const resolveFmtParser = async (
   (
     await getFileInfo(filePath, {
       ...fileInfoOptions,
-      plugins: getRuntimeFmtPlugins(options.plugins),
+      plugins: getPrettierPlugins(options.plugins),
     })
   ).inferredParser;
 

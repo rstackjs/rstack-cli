@@ -6,7 +6,7 @@ type PrettierPlugins = NonNullable<PrettierOptions['plugins']>;
 const defaultFmtPlugins: PrettierPlugins = [yukuPlugin];
 
 /** Prepends Yuku so project plugins can override the default parser. */
-const getRuntimeFmtPlugins = (plugins: PrettierOptions['plugins']): PrettierPlugins =>
+const getPrettierPlugins = (plugins: PrettierOptions['plugins']): PrettierPlugins =>
   plugins?.length ? [...defaultFmtPlugins, ...plugins] : defaultFmtPlugins;
 
-export { getRuntimeFmtPlugins };
+export { getPrettierPlugins };
