@@ -40,8 +40,7 @@ define.lint(async () => {
 
 define.fmt({
   ignorePatterns: ['**/dist/**', 'pnpm-lock.yaml'],
-  // TODO: Enable after rs fmt supports resolving Prettier plugins from the project root.
-  // plugins: ['prettier-plugin-packagejson'],
+  plugins: ['prettier-plugin-packagejson'],
   printWidth: 100,
   singleQuote: true,
 });
