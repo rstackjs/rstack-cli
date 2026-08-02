@@ -10,8 +10,8 @@ interface FmtWorker {
   terminate: () => void;
 }
 
-const getFmtWorkerCount = (fileCount: number): number =>
-  Math.min(fileCount, Math.max(1, availableParallelism() - 1));
+const getFmtWorkerCount = (fileCount: number, parallelWorkers?: number): number =>
+  Math.min(fileCount, parallelWorkers ?? Math.max(1, availableParallelism() - 1));
 
 const getFmtWorkerUrl = (): URL => {
   // Source tests run after build and exercise the same worker artifact as the CLI.
@@ -22,8 +22,8 @@ const getFmtWorkerUrl = (): URL => {
 };
 
 /** Creates and starts every worker before formatting can begin. */
-const createFmtWorker = async (fileCount: number): Promise<FmtWorker> => {
-  const workerCount = getFmtWorkerCount(fileCount);
+const createFmtWorker = async (fileCount: number, parallelWorkers?: number): Promise<FmtWorker> => {
+  const workerCount = getFmtWorkerCount(fileCount, parallelWorkers);
   const pool = new WorkTank<FmtWorkerMethods>({
     pool: {
       name: 'rstack-fmt',
@@ -51,4 +51,4 @@ const createFmtWorker = async (fileCount: number): Promise<FmtWorker> => {
   };
 };
 
-export { createFmtWorker };
+export { createFmtWorker, getFmtWorkerCount };

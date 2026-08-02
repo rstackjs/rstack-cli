@@ -84,11 +84,14 @@ test('formats the current directory with Prettier defaults', () => {
   expect(readProjectFile('index.ts')).toBe('const message = "hello";\n');
 });
 
-test('supports disabling parallel execution', () => {
+test.each([
+  ['disabling parallel execution', ['--no-parallel']],
+  ['configuring parallel worker count', ['--parallel-workers', '1']],
+] as const)('supports %s', (_, options) => {
   writeProjectFile('first.ts', 'const first="first"');
   writeProjectFile('second.ts', 'const second="second"');
 
-  const result = runFmt(['--no-parallel', 'first.ts', 'second.ts']);
+  const result = runFmt([...options, 'first.ts', 'second.ts']);
 
   expect(result.status).toBe(0);
   expect(result.stdout).toBe('first.ts\nsecond.ts\n');

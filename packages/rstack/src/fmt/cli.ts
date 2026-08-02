@@ -11,6 +11,7 @@ interface ParsedFmtCLIArgs {
   mode: FmtMode;
   patterns: string[];
   parallel: boolean;
+  parallelWorkers?: number;
   help: boolean;
 }
 
@@ -26,7 +27,21 @@ ${color.cyan('Options')}:
   --check             Check whether files are formatted
   --list-different    Print paths of unformatted files
   --no-parallel       Disable worker parallelism
+  --parallel-workers <count>  Number of parallel workers
   -h, --help          Display this help message`;
+
+const parseParallelWorkers = (value: string | undefined): number | undefined => {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const parallelWorkers = Number(value);
+  if (!/^\d+$/.test(value) || !Number.isSafeInteger(parallelWorkers) || parallelWorkers < 1) {
+    throw new Error('The --parallel-workers option must be a positive integer.');
+  }
+
+  return parallelWorkers;
+};
 
 const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   const { values, positionals } = parseArgs({
@@ -38,6 +53,8 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       listDifferent: { type: 'boolean' },
       'no-parallel': { type: 'boolean' },
       noParallel: { type: 'boolean' },
+      'parallel-workers': { type: 'string' },
+      parallelWorkers: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
     allowPositionals: true,
@@ -51,11 +68,27 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   }
 
   const mode = values.check ? 'check' : listDifferent ? 'list-different' : 'write';
+  const noParallel = values['no-parallel'] || values.noParallel;
+  const kebabParallelWorkers = values['parallel-workers'];
+  const camelParallelWorkers = values.parallelWorkers;
+
+  if (kebabParallelWorkers !== undefined && camelParallelWorkers !== undefined) {
+    throw new Error(
+      'The --parallel-workers and --parallelWorkers options cannot be used together.',
+    );
+  }
+
+  const parallelWorkers = parseParallelWorkers(kebabParallelWorkers ?? camelParallelWorkers);
+
+  if (noParallel && parallelWorkers !== undefined) {
+    throw new Error('The --parallel-workers and --no-parallel options cannot be used together.');
+  }
 
   return {
     mode,
     patterns: positionals,
-    parallel: !(values['no-parallel'] || values.noParallel),
+    parallel: !noParallel,
+    parallelWorkers,
     help: values.help ?? false,
   };
 };
@@ -98,7 +131,7 @@ const logFmtResult = (result: FmtRunResult, mode: FmtMode, cwd: string): void =>
 };
 
 const runFmtCLI = async (args: string[]): Promise<void> => {
-  const { help, mode, parallel, patterns } = parseFmtCLIArgs(args);
+  const { help, mode, parallel, parallelWorkers, patterns } = parseFmtCLIArgs(args);
   if (help) {
     console.log(fmtHelpMessage);
     return;
@@ -124,6 +157,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       mode,
       cache: false,
       parallel,
+      parallelWorkers,
     });
 
     logFmtResult(result, mode, cwd);

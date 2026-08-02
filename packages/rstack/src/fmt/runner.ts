@@ -54,9 +54,10 @@ const runFmtFilesSerial = async (
 const runFmtFilesParallel = async (
   files: FmtFileRequest[],
   shouldWrite: boolean,
+  parallelWorkers?: number,
 ): Promise<FmtFileResult[]> => {
   const { createFmtWorker } = await import('./parallel.ts');
-  const worker = await createFmtWorker(files.length);
+  const worker = await createFmtWorker(files.length, parallelWorkers);
 
   try {
     return await Promise.all(files.map((file) => runFmtFile(file, shouldWrite, worker.formatFile)));
@@ -96,12 +97,13 @@ const runFmtFiles = async ({
   files,
   mode,
   parallel,
+  parallelWorkers,
 }: RunFmtFilesOptions): Promise<FmtRunResult> => {
   const startTime = performance.now();
   const shouldWrite = mode === 'write';
   const results =
     parallel && files.length > 1 && canRunFmtFilesParallel(files)
-      ? await runFmtFilesParallel(files, shouldWrite)
+      ? await runFmtFilesParallel(files, shouldWrite, parallelWorkers)
       : await runFmtFilesSerial(files, shouldWrite);
 
   return {
