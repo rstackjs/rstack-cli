@@ -6,6 +6,7 @@ test('uses write mode by default', () => {
     mode: 'write',
     patterns: [],
     parallel: true,
+    maxWorkers: undefined,
     help: false,
   });
 });
@@ -20,6 +21,7 @@ test.each([
     mode,
     patterns: [],
     parallel: true,
+    maxWorkers: undefined,
     help: false,
   });
 });
@@ -29,8 +31,44 @@ test.each(['--no-parallel', '--noParallel'])('disables parallel execution with %
     mode: 'write',
     patterns: [],
     parallel: false,
+    maxWorkers: undefined,
     help: false,
   });
+});
+
+test.each(['--parallel-workers', '--parallelWorkers'])(
+  'configures parallel worker count with %s',
+  (option) => {
+    expect(parseFmtCLIArgs([option, '3'])).toEqual({
+      mode: 'write',
+      patterns: [],
+      parallel: true,
+      maxWorkers: 3,
+      help: false,
+    });
+  },
+);
+
+test.each(['0', '-1', '1.5', 'invalid', '9007199254740992'])(
+  'rejects invalid parallel worker count %s',
+  (count) => {
+    expect(() => parseFmtCLIArgs([`--parallel-workers=${count}`])).toThrow(
+      'The --parallel-workers option must be a positive integer.',
+    );
+  },
+);
+
+test('prefers the kebab-case parallel worker option', () => {
+  expect(parseFmtCLIArgs(['--parallel-workers', '2', '--parallelWorkers', '3']).maxWorkers).toBe(2);
+});
+
+test.each([
+  ['--no-parallel', '--parallel-workers'],
+  ['--noParallel', '--parallelWorkers'],
+])('rejects conflicting parallel options: %s and %s', (noParallel, maxWorkersOption) => {
+  expect(() => parseFmtCLIArgs([noParallel, maxWorkersOption, '2'])).toThrow(
+    'The --parallel-workers and --no-parallel options cannot be used together.',
+  );
 });
 
 test('preserves file paths and globs', () => {
@@ -40,6 +78,7 @@ test('preserves file paths and globs', () => {
     mode: 'check',
     patterns,
     parallel: true,
+    maxWorkers: undefined,
     help: false,
   });
 });
@@ -49,6 +88,7 @@ test('treats arguments after the terminator as paths', () => {
     mode: 'check',
     patterns: ['--write', '--help'],
     parallel: true,
+    maxWorkers: undefined,
     help: false,
   });
 });
@@ -63,6 +103,7 @@ test('provides command help', () => {
   expect(fmtHelpMessage).toContain('--check');
   expect(fmtHelpMessage).toContain('--list-different');
   expect(fmtHelpMessage).toContain('--no-parallel');
+  expect(fmtHelpMessage).toContain('--parallel-workers <count>');
   expect(fmtHelpMessage).toContain('-h, --help');
 });
 
@@ -78,9 +119,6 @@ test.each([
   );
 });
 
-test.each(['--unknown', '--no-cache', '--parallel-workers'])(
-  'rejects unsupported option %s',
-  (option) => {
-    expect(() => parseFmtCLIArgs([option])).toThrow();
-  },
-);
+test.each(['--unknown', '--no-cache'])('rejects unsupported option %s', (option) => {
+  expect(() => parseFmtCLIArgs([option])).toThrow();
+});

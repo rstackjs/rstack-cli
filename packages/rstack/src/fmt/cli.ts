@@ -11,6 +11,7 @@ interface ParsedFmtCLIArgs {
   mode: FmtMode;
   patterns: string[];
   parallel: boolean;
+  maxWorkers?: number;
   help: boolean;
 }
 
@@ -26,7 +27,25 @@ ${color.cyan('Options')}:
   --check             Check whether files are formatted
   --list-different    Print paths of unformatted files
   --no-parallel       Disable worker parallelism
+  --parallel-workers <count>  Number of parallel workers
   -h, --help          Display this help message`;
+
+const parseMaxWorkers = (
+  kebabValue: string | undefined,
+  camelValue: string | undefined,
+): number | undefined => {
+  const value = kebabValue ?? camelValue;
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const maxWorkers = Number(value);
+  if (!/^\d+$/.test(value) || !Number.isSafeInteger(maxWorkers) || maxWorkers < 1) {
+    throw new Error('The --parallel-workers option must be a positive integer.');
+  }
+
+  return maxWorkers;
+};
 
 const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   const { values, positionals } = parseArgs({
@@ -38,6 +57,8 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       listDifferent: { type: 'boolean' },
       'no-parallel': { type: 'boolean' },
       noParallel: { type: 'boolean' },
+      'parallel-workers': { type: 'string' },
+      parallelWorkers: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
     allowPositionals: true,
@@ -51,11 +72,18 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   }
 
   const mode = values.check ? 'check' : listDifferent ? 'list-different' : 'write';
+  const noParallel = values['no-parallel'] || values.noParallel;
+  const maxWorkers = parseMaxWorkers(values['parallel-workers'], values.parallelWorkers);
+
+  if (noParallel && maxWorkers !== undefined) {
+    throw new Error('The --parallel-workers and --no-parallel options cannot be used together.');
+  }
 
   return {
     mode,
     patterns: positionals,
-    parallel: !(values['no-parallel'] || values.noParallel),
+    parallel: !noParallel,
+    maxWorkers,
     help: values.help ?? false,
   };
 };
@@ -98,7 +126,7 @@ const logFmtResult = (result: FmtRunResult, mode: FmtMode, cwd: string): void =>
 };
 
 const runFmtCLI = async (args: string[]): Promise<void> => {
-  const { help, mode, parallel, patterns } = parseFmtCLIArgs(args);
+  const { help, maxWorkers, mode, parallel, patterns } = parseFmtCLIArgs(args);
   if (help) {
     console.log(fmtHelpMessage);
     return;
@@ -124,6 +152,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       mode,
       cache: false,
       parallel,
+      maxWorkers,
     });
 
     logFmtResult(result, mode, cwd);

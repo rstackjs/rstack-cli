@@ -1,12 +1,23 @@
 import { readFileSync } from 'node:fs';
-import { expect, rs, test } from 'rstack/test';
+import { beforeEach, expect, rs, test } from 'rstack/test';
 import { runFmtFiles } from '../../src/fmt/runner.ts';
 import type { FmtFileRequest } from '../../src/fmt/types.ts';
 import { withTempProject, writeProjectFile } from './helpers.ts';
 
-rs.mock('../../src/fmt/parallel.ts', () => ({
-  createFmtWorker: () => Promise.reject(new Error('worker startup failed')),
+const mocks = rs.hoisted(() => ({
+  createFmtWorkerCalls: [] as [number, number | undefined][],
 }));
+
+rs.mock('../../src/fmt/parallel.ts', () => ({
+  createFmtWorker: (fileCount: number, maxWorkers?: number) => {
+    mocks.createFmtWorkerCalls.push([fileCount, maxWorkers]);
+    return Promise.reject(new Error('worker startup failed'));
+  },
+}));
+
+beforeEach(() => {
+  mocks.createFmtWorkerCalls.length = 0;
+});
 
 const createRequest = (
   filePath: string,
@@ -32,8 +43,11 @@ test('does not write files when worker startup fails', async () => {
         mode: 'write',
         cache: false,
         parallel: true,
+        maxWorkers: 3,
       }),
     ).rejects.toThrow('worker startup failed');
+
+    expect(mocks.createFmtWorkerCalls).toEqual([[2, 3]]);
 
     for (const filePath of filePaths) {
       expect(readFileSync(filePath, 'utf8')).toBe('const value=1');
