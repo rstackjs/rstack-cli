@@ -11,6 +11,7 @@
   "devDependencies": {
     "@rsbuild/plugin-sass": "catalog:",
     "@rspress/core": "catalog:",
+    "@rspress/plugin-client-redirects": "catalog:",
     "@rspress/plugin-sitemap": "catalog:",
     "@rstack-dev/doc-ui": "catalog:",
     "@shikijs/transformers": "catalog:",

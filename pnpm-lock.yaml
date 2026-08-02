@@ -25,6 +25,9 @@ catalogs:
     '@rspress/core':
       specifier: ^2.0.19
       version: 2.0.19
+    '@rspress/plugin-client-redirects':
+      specifier: ^2.0.19
+      version: 2.0.19
     '@rspress/plugin-sitemap':
       specifier: ^2.0.19
       version: 2.0.19
@@ -406,6 +409,9 @@ importers:
       '@rspress/core':
         specifier: 'catalog:'
         version: 2.0.19(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
+      '@rspress/plugin-client-redirects':
+        specifier: 'catalog:'
+        version: 2.0.19(@rspress/core@2.0.19)
       '@rspress/plugin-sitemap':
         specifier: 'catalog:'
         version: 2.0.19(@rspress/core@2.0.19)
@@ -912,6 +918,12 @@ packages:
     resolution: {integrity: sha512-m0KfQNNXxjP975652nIOwUTqrvbJapRp4NpnoQMc5heawGhkC4+F7zTHvxY+huvzGYnKtL2fMMTrgWhEjKkrug==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
+
+  '@rspress/plugin-client-redirects@2.0.19':
+    resolution: {integrity: sha512-BUwgEyj8vCkU58cV3Gp97aTSnfGJm7aXh40K0Dot1BqsCQ8ekdsMuaLXrICROdP9/ctd4oALtLBkOE+PKTa4Sg==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    peerDependencies:
+      '@rspress/core': ^2.0.10
 
   '@rspress/plugin-sitemap@2.0.19':
     resolution: {integrity: sha512-9ydrpj9hmmXWKWKIXUqJ1UrfxSvfxhHZRBZLb5OkTlOuQBNAg6BpsrW1WHoJqJr7p+3zqlz7S/9HTzSA3+EYcA==}
@@ -2787,6 +2799,10 @@ snapshots:
       - micromark
       - micromark-util-types
       - supports-color
+
+  '@rspress/plugin-client-redirects@2.0.19(@rspress/core@2.0.19)':
+    dependencies:
+      '@rspress/core': 2.0.19(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
 
   '@rspress/plugin-sitemap@2.0.19(@rspress/core@2.0.19)':
     dependencies:
