@@ -2,76 +2,68 @@ import { isAbsolute, join, resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { moduleResolve } from 'import-meta-resolve';
 import type { Options as PrettierOptions } from 'prettier';
-import type { ResolvedFmtConfig } from './types.ts';
+import type { FmtPluginSpecifier } from './types.ts';
 
 type FmtPlugin = NonNullable<PrettierOptions['plugins']>[number];
+type FmtPluginResolver = (options: PrettierOptions) => PrettierOptions;
 
 const resolveModuleUrl = (specifier: string, parentUrl: URL): string =>
   moduleResolve(specifier, parentUrl).href;
 
-const resolvePlugin = (plugin: FmtPlugin, rootPath: string, parentUrl: URL): FmtPlugin => {
-  if (plugin instanceof URL) {
-    return resolveModuleUrl(plugin.href, parentUrl);
-  }
-  if (typeof plugin !== 'string') {
-    return plugin;
-  }
-  if (isAbsolute(plugin)) {
-    return resolveModuleUrl(pathToFileURL(plugin).href, parentUrl);
-  }
-  if (URL.canParse(plugin)) {
-    return resolveModuleUrl(plugin, parentUrl);
-  }
+const isFmtPluginSpecifier = (plugin: FmtPlugin): plugin is FmtPluginSpecifier =>
+  typeof plugin === 'string' || plugin instanceof URL;
 
-  try {
-    return resolveModuleUrl(pathToFileURL(resolvePath(rootPath, plugin)).href, parentUrl);
-  } catch {
-    return resolveModuleUrl(plugin, parentUrl);
-  }
-};
-
-const resolveOptionsPlugins = (
-  options: PrettierOptions,
-  rootPath: string,
-  parentUrl: URL,
-): PrettierOptions => {
-  const { plugins } = options;
-  if (!plugins?.some((plugin) => typeof plugin === 'string' || plugin instanceof URL)) {
-    return options;
-  }
-
-  const resolvedPlugins = plugins.map((plugin) => resolvePlugin(plugin, rootPath, parentUrl));
-
-  return resolvedPlugins.every((plugin, index) => plugin === plugins[index])
-    ? options
-    : { ...options, plugins: resolvedPlugins };
-};
-
-/** Resolves plugin specifiers from the Rstack config root. */
-const resolveFmtConfigPlugins = (config: ResolvedFmtConfig): ResolvedFmtConfig => {
-  const { rootPath } = config;
+/** Creates a project-root resolver for plugins in final per-file options. */
+const createFmtPluginResolver = (rootPath: string): FmtPluginResolver => {
   const parentUrl = pathToFileURL(join(rootPath, 'index.js'));
-  const baseOptions = resolveOptionsPlugins(config.baseOptions, rootPath, parentUrl);
-  let overrides = config.overrides;
+  const cache = new Map<string, string>();
 
-  for (let index = 0; index < overrides.length; index++) {
-    const override = overrides[index];
-    if (!override.options) {
-      continue;
+  const resolvePlugin = (plugin: FmtPluginSpecifier): string => {
+    const specifier = plugin instanceof URL ? plugin.href : plugin;
+    const cached = cache.get(specifier);
+    if (cached !== undefined) {
+      return cached;
     }
 
-    const options = resolveOptionsPlugins(override.options, rootPath, parentUrl);
-    if (options !== override.options) {
-      if (overrides === config.overrides) {
-        overrides = [...overrides];
+    let resolved: string;
+    if (isAbsolute(specifier)) {
+      resolved = resolveModuleUrl(pathToFileURL(specifier).href, parentUrl);
+    } else if (URL.canParse(specifier)) {
+      resolved = resolveModuleUrl(specifier, parentUrl);
+    } else {
+      try {
+        resolved = resolveModuleUrl(
+          pathToFileURL(resolvePath(rootPath, specifier)).href,
+          parentUrl,
+        );
+      } catch {
+        resolved = resolveModuleUrl(specifier, parentUrl);
       }
-      overrides[index] = { ...override, options };
     }
-  }
 
-  return baseOptions === config.baseOptions && overrides === config.overrides
-    ? config
-    : { ...config, baseOptions, overrides };
+    cache.set(specifier, resolved);
+    return resolved;
+  };
+
+  return (options) => {
+    const { plugins } = options;
+    if (!plugins?.length) {
+      return options;
+    }
+    if (!plugins.every(isFmtPluginSpecifier)) {
+      // Imported plugin objects are not planned for support.
+      throw new TypeError(
+        'Prettier plugin objects are not supported. Use a package name, path, or URL instead.',
+      );
+    }
+
+    const resolvedPlugins = plugins.map(resolvePlugin);
+
+    return resolvedPlugins.every((plugin, index) => plugin === plugins[index])
+      ? options
+      : { ...options, plugins: resolvedPlugins };
+  };
 };
 
-export { resolveFmtConfigPlugins };
+export { createFmtPluginResolver };
+export type { FmtPluginResolver };

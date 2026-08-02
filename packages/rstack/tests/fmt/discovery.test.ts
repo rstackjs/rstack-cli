@@ -1,5 +1,6 @@
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { expect, test } from 'rstack/test';
 import { normalizeFmtConfig } from '../../src/fmt/config.ts';
 import { discoverFmtFiles } from '../../src/fmt/discovery.ts';
@@ -60,6 +61,48 @@ test('resolves parsers and accepts unknown extensions with an explicit parser', 
     expect(configuredFiles[0].options).toMatchObject({
       filepath: path.join(rootPath, 'source.custom'),
       parser: 'babel',
+    });
+  });
+});
+
+test('resolves plugins after applying matching overrides', async () => {
+  await withTempProject(async (rootPath) => {
+    const pluginEntry = writeProjectFile(
+      rootPath,
+      'node_modules/prettier-plugin-fixture/index.mjs',
+      `export default {
+  languages: [{ name: 'Fixture JSON', parsers: ['json'], extensions: ['.fixture'] }],
+};
+`,
+    );
+    writeProjectFile(
+      rootPath,
+      'node_modules/prettier-plugin-fixture/package.json',
+      JSON.stringify({ name: 'prettier-plugin-fixture', exports: './index.mjs' }),
+    );
+    writeProjectFile(rootPath, 'example.fixture');
+    writeProjectFile(rootPath, 'example.ts');
+    const config = {
+      overrides: [
+        {
+          files: '*.fixture',
+          options: { plugins: ['prettier-plugin-fixture'] },
+        },
+        {
+          files: '*.md',
+          options: { plugins: ['missing-plugin'] },
+        },
+      ],
+    };
+
+    const files = await discover(rootPath, ['example.fixture', 'example.ts'], config);
+
+    expect(files).toHaveLength(2);
+    expect(files[0]).toMatchObject({
+      options: {
+        parser: 'json',
+        plugins: [pathToFileURL(pluginEntry).href],
+      },
     });
   });
 });

@@ -1,7 +1,6 @@
 import { pathToFileURL } from 'node:url';
 import { expect, test } from 'rstack/test';
-import { normalizeFmtConfig } from '../../src/fmt/config.ts';
-import { resolveFmtConfigPlugins } from '../../src/fmt/plugins.ts';
+import { createFmtPluginResolver } from '../../src/fmt/plugins.ts';
 import { withTempProject, writeProjectFile } from './helpers.ts';
 
 test('resolves plugin specifiers from the config root', async () => {
@@ -31,56 +30,33 @@ test('resolves plugin specifiers from the config root', async () => {
     const relativePlugin = writeProjectFile(rootPath, 'plugins/relative.mjs');
     const absolutePlugin = writeProjectFile(rootPath, 'plugins/absolute.mjs');
     const urlPlugin = writeProjectFile(rootPath, 'plugins/url.mjs');
-    const overridePlugin = writeProjectFile(rootPath, 'plugins/override.mjs');
-    const pluginObject = { languages: [] };
-    const config = normalizeFmtConfig(
-      {
-        plugins: [
-          'prettier-plugin-packagejson',
-          './plugins/relative.mjs',
-          absolutePlugin,
-          pathToFileURL(urlPlugin),
-          'data:text/javascript,export default {}',
-          pluginObject,
-        ],
-        overrides: [
-          {
-            files: '*.json',
-            options: {
-              plugins: ['plugins/override.mjs'],
-            },
-          },
-        ],
-      },
-      rootPath,
-    );
+    const options = {
+      plugins: [
+        'prettier-plugin-packagejson',
+        './plugins/relative.mjs',
+        absolutePlugin,
+        pathToFileURL(urlPlugin),
+        'data:text/javascript,export default {}',
+      ],
+    };
 
-    const resolved = resolveFmtConfigPlugins(config);
+    const resolved = createFmtPluginResolver(rootPath)(options);
 
-    expect(resolved.baseOptions.plugins).toEqual([
+    expect(resolved.plugins).toEqual([
       pathToFileURL(packageEntry).href,
       pathToFileURL(relativePlugin).href,
       pathToFileURL(absolutePlugin).href,
       pathToFileURL(urlPlugin).href,
       'data:text/javascript,export default {}',
-      pluginObject,
     ]);
-    expect(resolved.baseOptions.plugins?.at(-1)).toBe(pluginObject);
-    expect(resolved.overrides[0].options?.plugins).toEqual([pathToFileURL(overridePlugin).href]);
-    expect(config.baseOptions.plugins?.[0]).toBe('prettier-plugin-packagejson');
-    expect(config.overrides[0].options?.plugins?.[0]).toBe('plugins/override.mjs');
+    expect(options.plugins[0]).toBe('prettier-plugin-packagejson');
   });
 });
 
-test('does not copy config containing only plugin objects', () => {
-  const pluginObject = { languages: [] };
-  const config = normalizeFmtConfig(
-    {
-      plugins: [pluginObject],
-      overrides: [{ files: '*.json', options: { plugins: [pluginObject] } }],
-    },
-    import.meta.dirname,
-  );
+test('rejects imported plugin objects', () => {
+  const options = { plugins: [{ languages: [] }] };
 
-  expect(resolveFmtConfigPlugins(config)).toBe(config);
+  expect(() => createFmtPluginResolver(import.meta.dirname)(options)).toThrow(
+    'Prettier plugin objects are not supported. Use a package name, path, or URL instead.',
+  );
 });

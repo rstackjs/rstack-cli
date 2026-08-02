@@ -1,26 +1,17 @@
-import { getFileInfo, type FileInfoOptions } from 'prettier';
 import { resolveFmtOptions } from './config.ts';
 import { discoverFmtPaths } from './discoverPaths.ts';
 import { createFmtIgnoreMatcher } from './ignore.ts';
+import { resolveFmtParser } from './parser.ts';
+import { createFmtPluginResolver, type FmtPluginResolver } from './plugins.ts';
 import type { DiscoverFmtFilesOptions, FmtFileRequest, ResolvedFmtConfig } from './types.ts';
-
-const fileInfoOptions = {
-  ignorePath: [],
-  resolveConfig: false,
-  withNodeModules: true,
-} satisfies FileInfoOptions;
 
 const resolveFileRequest = async (
   filePath: string,
   config: ResolvedFmtConfig,
+  resolvePlugins: FmtPluginResolver,
 ): Promise<FmtFileRequest | undefined> => {
-  const options = resolveFmtOptions(filePath, config);
-
-  if (options.plugins?.length) {
-    throw new Error('Prettier plugins are not supported yet.');
-  }
-
-  const parser = options.parser ?? (await getFileInfo(filePath, fileInfoOptions)).inferredParser;
+  const options = resolvePlugins(resolveFmtOptions(filePath, config));
+  const parser = await resolveFmtParser(filePath, options);
   if (!parser) {
     return;
   }
@@ -50,8 +41,9 @@ const discoverFmtFiles = async ({
   const filePaths = isFmtIgnored
     ? candidates.filter((filePath) => !isFmtIgnored(filePath))
     : candidates;
+  const resolvePlugins = createFmtPluginResolver(config.rootPath);
   const files = await Promise.all(
-    filePaths.map((filePath) => resolveFileRequest(filePath, config)),
+    filePaths.map((filePath) => resolveFileRequest(filePath, config, resolvePlugins)),
   );
 
   return files.filter((file): file is FmtFileRequest => file !== undefined);

@@ -66,7 +66,7 @@ const runFmtFilesParallel = async (
   }
 };
 
-/** Checks every worker payload before any formatting can begin. */
+/** Checks whether every request can be cloned for a worker. */
 const canRunFmtFilesParallel = (files: FmtFileRequest[]): boolean => {
   try {
     structuredClone(files);

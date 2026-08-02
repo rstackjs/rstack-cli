@@ -15,6 +15,20 @@ const writeProjectFile = (filePath: string, content: string): void => {
 const readProjectFile = (filePath: string): string =>
   readFileSync(path.join(projectPath, filePath), 'utf8');
 
+const writeFixturePlugin = (): void => {
+  writeProjectFile(
+    'node_modules/prettier-plugin-fixture/package.json',
+    JSON.stringify({ name: 'prettier-plugin-fixture', exports: './index.mjs' }),
+  );
+  writeProjectFile(
+    'node_modules/prettier-plugin-fixture/index.mjs',
+    `export default {
+  languages: [{ name: 'Fixture JSON', parsers: ['json'], extensions: ['.fixture'] }],
+};
+`,
+  );
+};
+
 const runCLI = (args: string[]) => {
   const env: NodeJS.ProcessEnv = { ...process.env, NO_COLOR: '1' };
   delete env.FORCE_COLOR;
@@ -216,23 +230,79 @@ test('returns exit code 2 for config errors', () => {
   expect(result.stderr).toContain('invalid fmt config');
 });
 
-test('returns exit code 2 for unsupported plugins', () => {
+test.each([
+  ['parallel execution', []],
+  ['serial execution', ['--no-parallel']],
+] as const)('formats with a project-local plugin using %s', (_, options) => {
   writeProjectFile(
     'rstack.config.ts',
     `import { define } from 'rstack';
 
 define.fmt({
-  plugins: ['prettier-plugin-example'],
+  plugins: ['prettier-plugin-fixture'],
 });
 `,
   );
-  writeProjectFile('index.ts', 'const message="hello"');
+  writeFixturePlugin();
+  writeProjectFile('first.fixture', '{"first":true}');
+  writeProjectFile('second.fixture', '{"second":true}');
+
+  const result = runFmt([...options, '*.fixture']);
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe('first.fixture\nsecond.fixture\n');
+  expect(result.stderr).toBe('');
+  expect(readProjectFile('first.fixture')).toBe('{ "first": true }\n');
+  expect(readProjectFile('second.fixture')).toBe('{ "second": true }\n');
+});
+
+test('formats mixed plugin overrides in parallel', () => {
+  writeProjectFile(
+    'rstack.config.ts',
+    `import { define } from 'rstack';
+
+define.fmt({
+  overrides: [
+    {
+      files: '*.fixture',
+      options: { plugins: ['prettier-plugin-fixture'] },
+    },
+  ],
+});
+`,
+  );
+  writeFixturePlugin();
+  writeProjectFile('data.fixture', '{"value":true}');
+  writeProjectFile('index.ts', 'const value=true');
+
+  const result = runFmt(['data.fixture', 'index.ts']);
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe('data.fixture\nindex.ts\n');
+  expect(result.stderr).toBe('');
+  expect(readProjectFile('data.fixture')).toBe('{ "value": true }\n');
+  expect(readProjectFile('index.ts')).toBe('const value = true;\n');
+});
+
+test('returns exit code 2 for imported plugin objects', () => {
+  writeProjectFile(
+    'rstack.config.ts',
+    `import { define } from 'rstack';
+
+define.fmt({
+  plugins: [{ languages: [] }],
+});
+`,
+  );
+  writeProjectFile('index.ts', 'const value=true');
 
   const result = runFmt(['index.ts']);
 
   expect(result.status).toBe(2);
   expect(result.stdout).toBe('');
-  expect(result.stderr).toContain('Prettier plugins are not supported yet.');
+  expect(result.stderr).toContain(
+    'Prettier plugin objects are not supported. Use a package name, path, or URL instead.',
+  );
 });
 
 test('returns exit code 2 for formatting errors', () => {
