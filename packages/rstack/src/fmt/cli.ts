@@ -30,7 +30,17 @@ ${color.cyan('Options')}:
   --parallel-workers <count>  Number of parallel workers
   -h, --help          Display this help message`;
 
-const parseMaxWorkers = (value: string | undefined): number | undefined => {
+const parseMaxWorkers = (
+  kebabValue: string | undefined,
+  camelValue: string | undefined,
+): number | undefined => {
+  if (kebabValue !== undefined && camelValue !== undefined) {
+    throw new Error(
+      'The --parallel-workers and --parallelWorkers options cannot be used together.',
+    );
+  }
+
+  const value = kebabValue ?? camelValue;
   if (value === undefined) {
     return undefined;
   }
@@ -69,16 +79,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
 
   const mode = values.check ? 'check' : listDifferent ? 'list-different' : 'write';
   const noParallel = values['no-parallel'] || values.noParallel;
-  const kebabMaxWorkers = values['parallel-workers'];
-  const camelMaxWorkers = values.parallelWorkers;
-
-  if (kebabMaxWorkers !== undefined && camelMaxWorkers !== undefined) {
-    throw new Error(
-      'The --parallel-workers and --parallelWorkers options cannot be used together.',
-    );
-  }
-
-  const maxWorkers = parseMaxWorkers(kebabMaxWorkers ?? camelMaxWorkers);
+  const maxWorkers = parseMaxWorkers(values['parallel-workers'], values.parallelWorkers);
 
   if (noParallel && maxWorkers !== undefined) {
     throw new Error('The --parallel-workers and --no-parallel options cannot be used together.');
