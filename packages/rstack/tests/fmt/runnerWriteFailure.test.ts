@@ -8,14 +8,14 @@ const mocks = rs.hoisted(() => ({
 rs.mock('../../src/fmt/parallel.ts', () => ({
   createFmtWorker: () =>
     Promise.resolve({
-      formatFile: () => Promise.reject(new Error('atomic write failed')),
+      formatFile: () => Promise.reject(new Error('file write failed')),
       terminate: () => {
         mocks.terminateCalls++;
       },
     }),
 }));
 
-test('returns an error when the atomic write fails', async () => {
+test('returns an error when a file write fails', async () => {
   const filePath = '/virtual/example.ts';
 
   const result = await runFmtFiles({
@@ -38,7 +38,7 @@ test('returns an error when the atomic write fails', async () => {
       {
         path: filePath,
         status: 'error',
-        error: { message: 'atomic write failed' },
+        error: { message: 'file write failed' },
       },
     ],
   });
