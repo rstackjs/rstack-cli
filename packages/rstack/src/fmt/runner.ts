@@ -3,12 +3,12 @@ import type {
   FmtFileRequest,
   FmtFileResult,
   FmtRunResult,
-  FmtWorkerFileResult,
   RunFmtFilesOptions,
 } from './types.ts';
+import type { FmtWorkerPool } from './workerPool.ts';
 
 /** Formats one file and reports whether its contents differ. */
-type FormatFile = (file: FmtFileRequest, shouldWrite: boolean) => Promise<FmtWorkerFileResult>;
+type FormatFile = FmtWorkerPool['formatFile'];
 
 /** Converts a formatter outcome into the shared per-file result. */
 const runFmtFile = async (
@@ -39,22 +39,22 @@ const runFmtFile = async (
   }
 };
 
-/** Processes files in workers while preserving input order. */
-const runFmtFilesWithWorkers = async (
+/** Processes files in a worker pool while preserving input order. */
+const runFmtFilesInWorkerPool = async (
   files: FmtFileRequest[],
   shouldWrite: boolean,
   maxWorkers?: number,
 ): Promise<FmtFileResult[]> => {
-  const { createFmtWorker } = await import('./parallel.ts');
-  const worker = await createFmtWorker(files.length, maxWorkers);
+  const { createFmtWorkerPool } = await import('./workerPool.ts');
+  const workerPool = await createFmtWorkerPool(files.length, maxWorkers);
 
   try {
     const results = await Promise.all(
-      files.map((file) => runFmtFile(file, shouldWrite, worker.formatFile)),
+      files.map((file) => runFmtFile(file, shouldWrite, workerPool.formatFile)),
     );
     return results.filter((result): result is FmtFileResult => result !== undefined);
   } finally {
-    worker.terminate();
+    workerPool.terminate();
   }
 };
 
@@ -83,7 +83,7 @@ const runFmtFiles = async ({
   const startTime = performance.now();
   const shouldWrite = mode === 'write';
   const results =
-    files.length === 0 ? [] : await runFmtFilesWithWorkers(files, shouldWrite, maxWorkers);
+    files.length === 0 ? [] : await runFmtFilesInWorkerPool(files, shouldWrite, maxWorkers);
 
   return {
     files: results,

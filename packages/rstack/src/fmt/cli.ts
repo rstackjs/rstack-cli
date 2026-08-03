@@ -140,7 +140,6 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
     const result = await runFmtFiles({
       files,
       mode,
-      cache: false,
       maxWorkers,
     });
 

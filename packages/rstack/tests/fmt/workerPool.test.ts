@@ -1,6 +1,6 @@
 import { availableParallelism } from 'node:os';
 import { expect, test } from 'rstack/test';
-import { getFmtWorkerCount } from '../../src/fmt/parallel.ts';
+import { getFmtWorkerCount } from '../../src/fmt/workerPool.ts';
 
 test('uses one fewer worker than the available parallelism by default', () => {
   const defaultWorkerCount = Math.max(1, availableParallelism() - 1);

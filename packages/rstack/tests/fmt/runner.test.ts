@@ -17,7 +17,6 @@ const run = (files: FmtFileRequest[], mode: FmtMode = 'write') =>
   runFmtFiles({
     files,
     mode,
-    cache: false,
   });
 
 test('does not rewrite unchanged files', async () => {
