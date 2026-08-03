@@ -1,5 +1,7 @@
 # Configuration
 
+import { PackageManagerTabs } from '@rspress/core/theme';
+
 Rstack centralizes the configuration for your project's tools in a single file. Define only the configurations your project needs with the `define.*()` APIs.
 
 ## Configuration file
@@ -125,9 +127,7 @@ define.doc({
 
 `@rspress/core` is an optional dependency of Rstack. Install it in every project that uses the `rs doc` command:
 
-```bash
-pnpm add -D @rspress/core
-```
+<PackageManagerTabs command="install -D @rspress/core" />
 
 ### `define.test()` \{#define-test}
 
