@@ -109,8 +109,11 @@ const prettyTime = (seconds: number): string => {
   return `${minutesLabel} ${secondsLabel}`;
 };
 
-const getFileLabel = (count: number): string => (count === 1 ? 'file' : 'files');
-const formatFileCount = (count: number): string => color.bold(count);
+const formatCount = (count: number): string => color.bold(count);
+const formatFileCount = (count: number, isError = false): string => {
+  const formattedCount = formatCount(count);
+  return `${isError ? color.red(formattedCount) : formattedCount} ${count === 1 ? 'file' : 'files'}`;
+};
 
 const logFmtResult = (
   result: FmtRunResult,
@@ -119,38 +122,34 @@ const logFmtResult = (
   matchedFileCount: number,
   durationSeconds: number,
 ): void => {
-  let writtenCount = 0;
   let differentCount = 0;
-  let errorCount = 0;
 
   for (const file of result.files) {
-    const displayPath = getDisplayPath(cwd, file.path);
-
     if (file.status === 'written') {
-      writtenCount++;
-    } else if (file.status === 'different') {
+      continue;
+    }
+
+    const displayPath = getDisplayPath(cwd, file.path);
+    if (file.status === 'different') {
       differentCount++;
       logger[mode === 'check' ? 'error' : 'log'](displayPath);
     } else if (file.status === 'error') {
-      errorCount++;
       logger.error(`${displayPath}: ${String(file.error)}`);
     }
   }
 
   if (mode === 'write') {
-    if (errorCount > 0) {
+    if (result.exitCode !== 0) {
       return;
     }
 
-    const files = getFileLabel(matchedFileCount);
-    const matchedCount = formatFileCount(matchedFileCount);
+    const writtenCount = result.files.length;
+    const matchedFiles = formatFileCount(matchedFileCount);
     const time = prettyTime(durationSeconds);
     if (writtenCount > 0) {
-      logger.success(
-        `Formatted ${formatFileCount(writtenCount)} of ${matchedCount} ${files} in ${time}.`,
-      );
+      logger.success(`Formatted ${formatCount(writtenCount)} of ${matchedFiles} in ${time}.`);
     } else {
-      logger.success(`Checked ${matchedCount} ${files} in ${time}. No changes needed.`);
+      logger.success(`Checked ${matchedFiles} in ${time}. No changes needed.`);
     }
     return;
   }
@@ -160,19 +159,16 @@ const logFmtResult = (
   }
 
   if (differentCount > 0) {
-    const differentFiles = getFileLabel(differentCount);
-    const matchedFiles = getFileLabel(matchedFileCount);
-    const count = color.red(formatFileCount(differentCount));
-    const matchedCount = formatFileCount(matchedFileCount);
+    const differentFiles = formatFileCount(differentCount, true);
+    const matchedFiles = formatFileCount(matchedFileCount);
     const checkOption = color.cyan('--check');
     logger.error(
-      `Formatting issues found in ${count} ${differentFiles}. Run without ${checkOption} to fix.`,
+      `Formatting issues found in ${differentFiles}. Run without ${checkOption} to fix.`,
     );
-    logger.info(`Checked ${matchedCount} ${matchedFiles} in ${prettyTime(durationSeconds)}.`);
-  } else if (errorCount === 0) {
-    const files = getFileLabel(matchedFileCount);
+    logger.info(`Checked ${matchedFiles} in ${prettyTime(durationSeconds)}.`);
+  } else if (result.exitCode === 0) {
     logger.success(
-      `Checked ${formatFileCount(matchedFileCount)} ${files} in ${prettyTime(durationSeconds)}. No issues found.`,
+      `Checked ${formatFileCount(matchedFileCount)} in ${prettyTime(durationSeconds)}. No issues found.`,
     );
   }
 };
@@ -196,8 +192,10 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
     });
     const files = await discoverFmtFiles({ cwd, patterns, config });
 
-    if (files.length === 0 && mode !== 'list-different') {
-      logger.info('No files matched.');
+    if (files.length === 0) {
+      if (mode !== 'list-different') {
+        logger.info('No files matched.');
+      }
       return;
     }
 
