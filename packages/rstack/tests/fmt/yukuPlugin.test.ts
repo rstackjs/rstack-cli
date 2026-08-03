@@ -110,6 +110,125 @@ test('reuses Prettier options and pragma handling', async () => {
   ).resolves.toBe('/** @noformat */\nconst value={answer:"yes"}');
 });
 
+test.each([
+  {
+    source: '/** @prettier */\nconst value=1',
+    hasPragma: true,
+    hasIgnorePragma: false,
+  },
+  {
+    source: '/* @format */\nconst value=1',
+    hasPragma: true,
+    hasIgnorePragma: false,
+  },
+  {
+    source: '#!/usr/bin/env node\r\n/** @format */\r\nconst value=1',
+    hasPragma: true,
+    hasIgnorePragma: false,
+  },
+  {
+    source: '/**\n * @prettier\n * @noformat\n */\nconst value=1',
+    hasPragma: true,
+    hasIgnorePragma: true,
+  },
+  {
+    source: '/** @prettier @noformat */\nconst value=1',
+    hasPragma: true,
+    hasIgnorePragma: false,
+  },
+  {
+    source: '/** text @prettier */\nconst value=1',
+    hasPragma: false,
+    hasIgnorePragma: false,
+  },
+  {
+    source: '// before\n/** @prettier */\nconst value=1',
+    hasPragma: false,
+    hasIgnorePragma: false,
+  },
+])('matches Prettier pragma detection for $source', ({ source, hasPragma, hasIgnorePragma }) => {
+  const parser = yukuPlugin.parsers?.yuku;
+  if (!parser?.hasPragma || !parser.hasIgnorePragma) {
+    throw new Error('The Yuku parser does not expose pragma handlers.');
+  }
+
+  expect(parser.hasPragma(source)).toBe(hasPragma);
+  expect(parser.hasIgnorePragma(source)).toBe(hasIgnorePragma);
+});
+
+test('matches Prettier JavaScript location overrides', () => {
+  const parser = yukuPlugin.parsers?.yuku;
+  if (!parser) {
+    throw new Error('The Yuku parser is not registered.');
+  }
+
+  expect(
+    parser.locStart({
+      type: 'ClassDeclaration',
+      range: [10, 80],
+      decorators: [{ type: 'Decorator', range: [2, 9] }],
+    }),
+  ).toBe(2);
+
+  expect(
+    parser.locStart({
+      type: 'ExportNamedDeclaration',
+      range: [10, 80],
+      declaration: { decorators: [{ type: 'Decorator', range: [2, 9] }] },
+    }),
+  ).toBe(2);
+
+  const endCases = [
+    {
+      expected: 44,
+      node: {
+        type: 'IfStatement',
+        range: [0, 50],
+        consequent: { type: 'BlockStatement', range: [3, 20] },
+        alternate: { type: 'BlockStatement', range: [21, 44] },
+      },
+    },
+    {
+      expected: 45,
+      node: {
+        type: 'ForStatement',
+        range: [0, 50],
+        body: { type: 'BlockStatement', range: [20, 45] },
+      },
+    },
+    { expected: 15, node: { type: 'BreakStatement', range: [10, 50] } },
+    {
+      expected: 21,
+      node: {
+        type: 'BreakStatement',
+        range: [10, 50],
+        label: { type: 'Identifier', range: [16, 21] },
+      },
+    },
+    { expected: 18, node: { type: 'ContinueStatement', range: [10, 50] } },
+    { expected: 18, node: { type: 'DebuggerStatement', range: [10, 50] } },
+    {
+      expected: 22,
+      node: {
+        type: 'VariableDeclaration',
+        range: [0, 30],
+        declarations: [
+          { type: 'VariableDeclarator', range: [4, 10] },
+          { type: 'VariableDeclarator', range: [12, 22] },
+        ],
+      },
+    },
+    {
+      expected: 10,
+      node: { type: 'ExpressionStatement', range: [0, 12], __contentEnd: 10 },
+    },
+  ];
+
+  for (const { node, expected } of endCases) {
+    expect(parser.locEnd(node)).toBe(expected);
+  }
+});
+
 test('supports CommonJS source semantics for .cjs files', async () => {
   await expect(
     formatWithYuku('return require("example")', {

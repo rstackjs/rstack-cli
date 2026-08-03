@@ -1,4 +1,3 @@
-import { parsers as prettierBabelParsers } from 'prettier/plugins/babel';
 import * as prettierEstreePlugin from 'prettier/plugins/estree';
 import type { Parser, ParserOptions, Plugin, SupportLanguage } from 'prettier';
 import {
@@ -18,7 +17,15 @@ const SOURCE_TYPE_COMBINATIONS: SourceType[] = ['module', 'commonjs'];
 type Range = [start: number, end: number];
 
 type Locatable = {
+  __contentEnd?: number;
+  alternate?: Locatable | null;
+  body?: Locatable;
+  consequent?: Locatable;
+  declaration?: { decorators?: Locatable[] };
+  declarations?: Locatable[];
+  decorators?: Locatable[];
   end?: number;
+  label?: Locatable | null;
   range?: Range;
   start?: number;
   type?: string;
@@ -40,9 +47,95 @@ type EstreePlugin = typeof prettierEstreePlugin & {
 
 const estreePlugin = prettierEstreePlugin as EstreePlugin;
 const estreePrinter = estreePlugin.printers.estree;
-const babelParser = prettierBabelParsers.babel;
-const locStart = babelParser.locStart as (node: Locatable) => number;
-const locEnd = babelParser.locEnd as (node: Locatable) => number;
+
+const CONTENT_END_NODE_TYPES = new Set([
+  'ExpressionStatement',
+  'Directive',
+  'ImportDeclaration',
+  'ExportDefaultDeclaration',
+  'ExportNamedDeclaration',
+  'ExportAllDeclaration',
+  'ReturnStatement',
+  'ThrowStatement',
+  'DoWhileStatement',
+]);
+
+/** Mirrors Prettier's JavaScript location helpers without loading its Babel plugin. */
+const locStart = (node: Locatable): number => {
+  const start = (node.range?.[0] ?? node.start) as number;
+  const firstDecorator = (node.declaration?.decorators ?? node.decorators)?.[0];
+
+  return firstDecorator ? Math.min(locStart(firstDecorator), start) : start;
+};
+
+const locEndWithFullText = (node: Locatable): number => (node.range?.[1] ?? node.end) as number;
+
+const locEnd = (node: Locatable): number => {
+  switch (node.type) {
+    case 'IfStatement':
+      return locEnd((node.alternate ?? node.consequent) as Locatable);
+
+    case 'ForInStatement':
+    case 'ForOfStatement':
+    case 'ForStatement':
+    case 'LabeledStatement':
+    case 'WithStatement':
+    case 'WhileStatement':
+      return locEnd(node.body as Locatable);
+
+    case 'BreakStatement':
+      return node.label ? locEnd(node.label) : locStart(node) + 'break'.length;
+
+    case 'ContinueStatement':
+      return node.label ? locEnd(node.label) : locStart(node) + 'continue'.length;
+
+    case 'DebuggerStatement':
+      return locStart(node) + 'debugger'.length;
+
+    case 'VariableDeclaration':
+      return locEnd(node.declarations?.at(-1) as Locatable);
+
+    default:
+      return CONTENT_END_NODE_TYPES.has(node.type ?? '')
+        ? (node.__contentEnd ?? locEndWithFullText(node))
+        : locEndWithFullText(node);
+  }
+};
+
+const DOCBLOCK_REGEXP = /^\s*(\/\*\*?(.|\r?\n)*?\*\/)/;
+const COMMENT_END_REGEXP = /\*\/$/;
+const COMMENT_START_REGEXP = /^\/\*\*?/;
+const DOCBLOCK_LINE_START_REGEXP = /(\r?\n|^) *\* ?/g;
+const PRAGMA_REGEXP = /(?:^|\r?\n) *@(\S+) *([^\n\r]*)/g;
+const FORMAT_PRAGMAS = new Set(['format', 'prettier']);
+const FORMAT_IGNORE_PRAGMAS = new Set(['noformat', 'noprettier']);
+
+/** Matches Prettier's leading JavaScript docblock pragma handling. */
+const hasPragmaFrom = (originalText: string, pragmas: Set<string>): boolean => {
+  let text = originalText;
+
+  if (text.startsWith('#!')) {
+    const lineEnd = text.indexOf('\n');
+    text = text.slice((lineEnd === -1 ? text.length : lineEnd) + 1);
+  }
+
+  const docblock = (text.match(DOCBLOCK_REGEXP)?.[0] ?? '')
+    .trimStart()
+    .replace(COMMENT_START_REGEXP, '')
+    .replace(COMMENT_END_REGEXP, '')
+    .replaceAll(DOCBLOCK_LINE_START_REGEXP, '$1');
+
+  for (const match of docblock.matchAll(PRAGMA_REGEXP)) {
+    if (pragmas.has(match[1])) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const hasPragma = (text: string): boolean => hasPragmaFrom(text, FORMAT_PRAGMAS);
+const hasIgnorePragma = (text: string): boolean => hasPragmaFrom(text, FORMAT_IGNORE_PRAGMAS);
 
 const getVisitorKeys = estreePrinter.getVisitorKeys as ((node: AstNode) => string[]) | undefined;
 
@@ -117,18 +210,6 @@ const stripComments = (originalText: string, comments: PrettierComment[]): strin
 
   return text;
 };
-
-const CONTENT_END_NODE_TYPES = new Set([
-  'ExpressionStatement',
-  'Directive',
-  'ImportDeclaration',
-  'ExportDefaultDeclaration',
-  'ExportNamedDeclaration',
-  'ExportAllDeclaration',
-  'ReturnStatement',
-  'ThrowStatement',
-  'DoWhileStatement',
-]);
 
 const setContentEnd = (
   node: AstNode,
@@ -437,8 +518,8 @@ const createParser = (
   parse: (text: string, options: ParserOptions<AstNode>) => AstNode,
 ): Parser<AstNode> => ({
   astFormat: AST_FORMAT,
-  hasIgnorePragma: babelParser.hasIgnorePragma,
-  hasPragma: babelParser.hasPragma,
+  hasIgnorePragma,
+  hasPragma,
   locEnd,
   locStart,
   parse,
