@@ -1,5 +1,6 @@
 import { getFileInfo, type FileInfoOptions, type Options as PrettierOptions } from 'prettier';
-import { getPrettierPlugins } from './prettierPlugins.ts';
+
+type PrettierPlugins = NonNullable<PrettierOptions['plugins']>;
 
 const fileInfoOptions = {
   ignorePath: [],
@@ -11,12 +12,13 @@ const fileInfoOptions = {
 const resolveFmtParser = async (
   filePath: string,
   options: PrettierOptions,
+  plugins: PrettierPlugins,
 ): Promise<PrettierOptions['parser'] | null> =>
   options.parser ??
   (
     await getFileInfo(filePath, {
       ...fileInfoOptions,
-      plugins: await getPrettierPlugins(options),
+      plugins,
     })
   ).inferredParser;
 

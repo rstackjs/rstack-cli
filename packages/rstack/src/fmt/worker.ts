@@ -2,8 +2,9 @@
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { format } from 'prettier';
+import { resolveFmtParser } from './parser.ts';
 import { getPrettierPlugins } from './prettierPlugins.ts';
-import type { FmtFileRequest } from './types.ts';
+import type { FmtFileRequest, FmtWorkerFileResult } from './types.ts';
 
 /**
  * Use synchronous direct I/O inside the dedicated worker to avoid libuv
@@ -12,22 +13,29 @@ import type { FmtFileRequest } from './types.ts';
 const formatFile = async (
   { path, options }: FmtFileRequest,
   shouldWrite: boolean,
-): Promise<boolean> => {
+): Promise<FmtWorkerFileResult> => {
+  const plugins = await getPrettierPlugins(options);
+  const parser = await resolveFmtParser(path, options, plugins);
+  if (!parser) {
+    return 'unsupported';
+  }
+
   const source = readFileSync(path, 'utf8');
   const formatted = await format(source, {
     ...options,
-    plugins: await getPrettierPlugins(options),
+    parser,
+    plugins,
   });
 
   if (source === formatted) {
-    return false;
+    return 'unchanged';
   }
 
   if (shouldWrite) {
     writeFileSync(path, formatted, 'utf8');
   }
 
-  return true;
+  return 'changed';
 };
 
 /** Confirms that the worker module and its runtime dependencies are ready. */

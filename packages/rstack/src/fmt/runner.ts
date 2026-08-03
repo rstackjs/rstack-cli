@@ -3,26 +3,30 @@ import type {
   FmtFileRequest,
   FmtFileResult,
   FmtRunResult,
+  FmtWorkerFileResult,
   RunFmtFilesOptions,
 } from './types.ts';
 
 /** Formats one file and reports whether its contents differ. */
-type FormatFile = (file: FmtFileRequest, shouldWrite: boolean) => Promise<boolean>;
+type FormatFile = (file: FmtFileRequest, shouldWrite: boolean) => Promise<FmtWorkerFileResult>;
 
 /** Converts a formatter outcome into the shared per-file result. */
 const runFmtFile = async (
   file: FmtFileRequest,
   shouldWrite: boolean,
   formatFile: FormatFile,
-): Promise<FmtFileResult> => {
+): Promise<FmtFileResult | undefined> => {
   const startTime = performance.now();
 
   try {
-    const changed = await formatFile(file, shouldWrite);
+    const result = await formatFile(file, shouldWrite);
+    if (result === 'unsupported') {
+      return;
+    }
 
     return {
       path: file.path,
-      status: changed ? (shouldWrite ? 'written' : 'different') : 'unchanged',
+      status: result === 'changed' ? (shouldWrite ? 'written' : 'different') : 'unchanged',
       durationMs: performance.now() - startTime,
     };
   } catch (error) {
@@ -45,7 +49,10 @@ const runFmtFilesWithWorkers = async (
   const worker = await createFmtWorker(files.length, maxWorkers);
 
   try {
-    return await Promise.all(files.map((file) => runFmtFile(file, shouldWrite, worker.formatFile)));
+    const results = await Promise.all(
+      files.map((file) => runFmtFile(file, shouldWrite, worker.formatFile)),
+    );
+    return results.filter((result): result is FmtFileResult => result !== undefined);
   } finally {
     worker.terminate();
   }

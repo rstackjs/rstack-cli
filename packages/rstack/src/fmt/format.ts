@@ -11,7 +11,12 @@ const formatText = async (
   { filePath, cursorOffset, config }: FormatTextOptions,
 ): Promise<FormatTextResult> => {
   const options = createFmtPluginResolver(config.rootPath)(resolveFmtOptions(filePath, config));
-  const parser = await resolveFmtParser(filePath, options);
+  const formatOptions = {
+    ...options,
+    filepath: filePath,
+  };
+  const plugins = await getPrettierPlugins(formatOptions);
+  const parser = await resolveFmtParser(filePath, formatOptions, plugins);
 
   if (!parser) {
     return {
@@ -20,24 +25,18 @@ const formatText = async (
     };
   }
 
-  const formatOptions = {
-    ...options,
-    filepath: filePath,
-    parser,
-  };
-  const plugins = await getPrettierPlugins(formatOptions);
+  const resolvedOptions = { ...formatOptions, parser, plugins };
 
   if (cursorOffset === undefined) {
     return {
       status: 'formatted',
-      formatted: await format(source, { ...formatOptions, plugins }),
+      formatted: await format(source, resolvedOptions),
     };
   }
 
   const result = await formatWithCursor(source, {
-    ...formatOptions,
+    ...resolvedOptions,
     cursorOffset,
-    plugins,
   });
 
   return {

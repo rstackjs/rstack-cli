@@ -66,10 +66,11 @@ interface DiscoverFmtFilesOptions {
 interface FmtFileRequest {
   /** Absolute path to the file. */
   path: string;
-  /** Final Prettier options with the parser and file path resolved. */
-  options: ResolvedFmtOptions & Required<Pick<PrettierOptions, 'filepath' | 'parser'>>;
+  /** Final per-file options with project plugins and the file path resolved. */
+  options: ResolvedFmtOptions & Required<Pick<PrettierOptions, 'filepath'>>;
 }
 
+type FmtWorkerFileResult = 'changed' | 'unchanged' | 'unsupported';
 type FmtMode = 'write' | 'check' | 'list-different';
 type FmtExitCode = 0 | 1 | 2;
 
@@ -129,6 +130,7 @@ export type {
   FmtMode,
   FmtPluginSpecifier,
   FmtRunResult,
+  FmtWorkerFileResult,
   FormatTextOptions,
   FormatTextResult,
   ResolvedFmtConfig,
