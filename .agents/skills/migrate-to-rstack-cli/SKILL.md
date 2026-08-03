@@ -32,7 +32,7 @@ Read every matching reference before editing. Load only the tools present in the
 8. Refresh the lockfile with the repository's package manager. Confirm the expected tool version changes and resolve peer dependency warnings.
 9. Run the repository's existing migrated scripts and required checks. Compare generated artifacts or runtime behavior where relevant.
 
-The underlying Rsbuild, Rslib, Rstest, Rslint, Prettier, and sort-package-json packages remain transitive dependencies of `rstack`. Do not require their names to disappear from the lockfile; require obsolete direct manifest entries and imports to disappear.
+The underlying Rsbuild, Rslib, Rstest, Rslint, and Prettier packages remain transitive dependencies of `rstack`. Do not require their names to disappear from the lockfile; require obsolete direct manifest entries and imports to disappear.
 
 ## Configuration Rules
 
