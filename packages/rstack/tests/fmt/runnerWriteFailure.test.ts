@@ -1,9 +1,18 @@
 import { expect, rs, test } from 'rstack/test';
 import { runFmtFiles } from '../../src/fmt/runner.ts';
 
-rs.mock('atomically', () => ({
-  readFile: () => Promise.resolve('const value=1'),
-  writeFile: () => Promise.reject(new Error('atomic write failed')),
+const mocks = rs.hoisted(() => ({
+  terminateCalls: 0,
+}));
+
+rs.mock('../../src/fmt/parallel.ts', () => ({
+  createFmtWorker: () =>
+    Promise.resolve({
+      formatFile: () => Promise.reject(new Error('atomic write failed')),
+      terminate: () => {
+        mocks.terminateCalls++;
+      },
+    }),
 }));
 
 test('returns an error when the atomic write fails', async () => {
@@ -21,7 +30,6 @@ test('returns an error when the atomic write fails', async () => {
     ],
     mode: 'write',
     cache: false,
-    parallel: false,
   });
 
   expect(result).toMatchObject({
@@ -34,4 +42,5 @@ test('returns an error when the atomic write fails', async () => {
       },
     ],
   });
+  expect(mocks.terminateCalls).toBe(1);
 });

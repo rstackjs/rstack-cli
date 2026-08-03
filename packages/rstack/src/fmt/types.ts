@@ -80,9 +80,7 @@ interface RunFmtFilesOptions {
   mode: FmtMode;
   /** Persistent cache support is added in a later implementation step. */
   cache: false;
-  /** Whether cloneable file requests should run in worker threads. */
-  parallel: boolean;
-  /** Maximum worker count when parallel execution is enabled. */
+  /** Maximum number of formatting workers. */
   maxWorkers?: number;
 }
 

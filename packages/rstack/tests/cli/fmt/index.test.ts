@@ -113,10 +113,7 @@ test('does not sort package.json by default', () => {
   );
 });
 
-test.each([
-  ['parallel execution', []],
-  ['serial execution', ['--no-parallel']],
-] as const)('sorts package.json with %s', (_, options) => {
+test('sorts package.json with workers', () => {
   writeProjectFile(
     'rstack.config.ts',
     `import { define } from 'rstack';
@@ -127,7 +124,7 @@ define.fmt({ sortPackageJson: true });
   writeProjectFile('package.json', packageJsonSource);
   writeProjectFile('packages/example/package.json', packageJsonSource);
 
-  const result = runFmt([...options, 'package.json', 'packages/example/package.json']);
+  const result = runFmt(['package.json', 'packages/example/package.json']);
 
   expect(result.status).toBe(0);
   expect(result.stderr).toBe('');
@@ -135,14 +132,11 @@ define.fmt({ sortPackageJson: true });
   expect(readProjectFile('packages/example/package.json')).toBe(sortedPackageJson);
 });
 
-test.each([
-  ['disabling parallel execution', ['--no-parallel']],
-  ['configuring parallel worker count', ['--parallel-workers', '1']],
-] as const)('supports %s', (_, options) => {
+test('supports configuring the worker count', () => {
   writeProjectFile('first.ts', 'const first="first"');
   writeProjectFile('second.ts', 'const second="second"');
 
-  const result = runFmt([...options, 'first.ts', 'second.ts']);
+  const result = runFmt(['--parallel-workers', '1', 'first.ts', 'second.ts']);
 
   expect(result.status).toBe(0);
   expect(result.stdout).toBe('first.ts\nsecond.ts\n');
@@ -267,10 +261,7 @@ test('returns exit code 2 for config errors', () => {
   expect(result.stderr).toContain('invalid fmt config');
 });
 
-test.each([
-  ['parallel execution', []],
-  ['serial execution', ['--no-parallel']],
-] as const)('formats with a project-local plugin using %s', (_, options) => {
+test('formats with a project-local plugin in workers', () => {
   writeProjectFile(
     'rstack.config.ts',
     `import { define } from 'rstack';
@@ -284,7 +275,7 @@ define.fmt({
   writeProjectFile('first.fixture', '{"first":true}');
   writeProjectFile('second.fixture', '{"second":true}');
 
-  const result = runFmt([...options, '*.fixture']);
+  const result = runFmt(['*.fixture']);
 
   expect(result.status).toBe(0);
   expect(result.stdout).toBe('first.fixture\nsecond.fixture\n');
@@ -293,7 +284,7 @@ define.fmt({
   expect(readProjectFile('second.fixture')).toBe('{ "second": true }\n');
 });
 
-test('formats mixed plugin overrides in parallel', () => {
+test('formats mixed plugin overrides in workers', () => {
   writeProjectFile(
     'rstack.config.ts',
     `import { define } from 'rstack';

@@ -6,7 +6,7 @@ import WorkTank from 'worktank';
 type FmtWorkerMethods = typeof import('./worker.ts');
 
 interface FmtWorker {
-  formatFile: FmtWorkerMethods['formatFileSerial'];
+  formatFile: FmtWorkerMethods['formatFile'];
   terminate: () => void;
 }
 
@@ -46,7 +46,7 @@ const createFmtWorker = async (fileCount: number, maxWorkers?: number): Promise<
   }
 
   return {
-    formatFile: (file, shouldWrite) => pool.exec('formatFileSerial', [file, shouldWrite]),
+    formatFile: (file, shouldWrite) => pool.exec('formatFile', [file, shouldWrite]),
     terminate: pool.terminate,
   };
 };

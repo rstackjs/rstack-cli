@@ -5,7 +5,6 @@ import type {
   FmtRunResult,
   RunFmtFilesOptions,
 } from './types.ts';
-import { formatFileSerial } from './serial.ts';
 
 /** Formats one file and reports whether its contents differ. */
 type FormatFile = (file: FmtFileRequest, shouldWrite: boolean) => Promise<boolean>;
@@ -36,22 +35,8 @@ const runFmtFile = async (
   }
 };
 
-/** Processes files sequentially while preserving input order. */
-const runFmtFilesSerial = async (
-  files: FmtFileRequest[],
-  shouldWrite: boolean,
-): Promise<FmtFileResult[]> => {
-  const results: FmtFileResult[] = [];
-
-  for (const file of files) {
-    results.push(await runFmtFile(file, shouldWrite, formatFileSerial));
-  }
-
-  return results;
-};
-
-/** Processes files concurrently while preserving input order. */
-const runFmtFilesParallel = async (
+/** Processes files in workers while preserving input order. */
+const runFmtFilesWithWorkers = async (
   files: FmtFileRequest[],
   shouldWrite: boolean,
   maxWorkers?: number,
@@ -63,16 +48,6 @@ const runFmtFilesParallel = async (
     return await Promise.all(files.map((file) => runFmtFile(file, shouldWrite, worker.formatFile)));
   } finally {
     worker.terminate();
-  }
-};
-
-/** Checks whether every request can be cloned for a worker. */
-const canRunFmtFilesParallel = (files: FmtFileRequest[]): boolean => {
-  try {
-    structuredClone(files);
-    return true;
-  } catch {
-    return false;
   }
 };
 
@@ -96,15 +71,12 @@ const getFmtExitCode = (files: FmtFileResult[]): FmtExitCode => {
 const runFmtFiles = async ({
   files,
   mode,
-  parallel,
   maxWorkers,
 }: RunFmtFilesOptions): Promise<FmtRunResult> => {
   const startTime = performance.now();
   const shouldWrite = mode === 'write';
   const results =
-    parallel && files.length > 1 && canRunFmtFilesParallel(files)
-      ? await runFmtFilesParallel(files, shouldWrite, maxWorkers)
-      : await runFmtFilesSerial(files, shouldWrite);
+    files.length === 0 ? [] : await runFmtFilesWithWorkers(files, shouldWrite, maxWorkers);
 
   return {
     files: results,

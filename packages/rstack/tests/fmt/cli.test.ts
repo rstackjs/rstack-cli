@@ -5,7 +5,6 @@ test('uses write mode by default', () => {
   expect(parseFmtCLIArgs([])).toEqual({
     mode: 'write',
     patterns: [],
-    parallel: true,
     maxWorkers: undefined,
     help: false,
   });
@@ -20,17 +19,6 @@ test.each([
   expect(parseFmtCLIArgs([option])).toEqual({
     mode,
     patterns: [],
-    parallel: true,
-    maxWorkers: undefined,
-    help: false,
-  });
-});
-
-test.each(['--no-parallel', '--noParallel'])('disables parallel execution with %s', (option) => {
-  expect(parseFmtCLIArgs([option])).toEqual({
-    mode: 'write',
-    patterns: [],
-    parallel: false,
     maxWorkers: undefined,
     help: false,
   });
@@ -42,7 +30,6 @@ test.each(['--parallel-workers', '--parallelWorkers'])(
     expect(parseFmtCLIArgs([option, '3'])).toEqual({
       mode: 'write',
       patterns: [],
-      parallel: true,
       maxWorkers: 3,
       help: false,
     });
@@ -62,22 +49,12 @@ test('prefers the kebab-case parallel worker option', () => {
   expect(parseFmtCLIArgs(['--parallel-workers', '2', '--parallelWorkers', '3']).maxWorkers).toBe(2);
 });
 
-test.each([
-  ['--no-parallel', '--parallel-workers'],
-  ['--noParallel', '--parallelWorkers'],
-])('rejects conflicting parallel options: %s and %s', (noParallel, maxWorkersOption) => {
-  expect(() => parseFmtCLIArgs([noParallel, maxWorkersOption, '2'])).toThrow(
-    'The --parallel-workers and --no-parallel options cannot be used together.',
-  );
-});
-
 test('preserves file paths and globs', () => {
   const patterns = ['src/file with spaces.ts', 'src/**/*.{js,ts}', '!src/generated/**'];
 
   expect(parseFmtCLIArgs([patterns[0], '--check', ...patterns.slice(1)])).toEqual({
     mode: 'check',
     patterns,
-    parallel: true,
     maxWorkers: undefined,
     help: false,
   });
@@ -87,7 +64,6 @@ test('treats arguments after the terminator as paths', () => {
   expect(parseFmtCLIArgs(['--check', '--', '--write', '--help'])).toEqual({
     mode: 'check',
     patterns: ['--write', '--help'],
-    parallel: true,
     maxWorkers: undefined,
     help: false,
   });
@@ -102,7 +78,6 @@ test('provides command help', () => {
   expect(fmtHelpMessage).toContain('--write');
   expect(fmtHelpMessage).toContain('--check');
   expect(fmtHelpMessage).toContain('--list-different');
-  expect(fmtHelpMessage).toContain('--no-parallel');
   expect(fmtHelpMessage).toContain('--parallel-workers <count>');
   expect(fmtHelpMessage).toContain('-h, --help');
 });
@@ -119,6 +94,9 @@ test.each([
   );
 });
 
-test.each(['--unknown', '--no-cache'])('rejects unsupported option %s', (option) => {
-  expect(() => parseFmtCLIArgs([option])).toThrow();
-});
+test.each(['--unknown', '--no-cache', '--no-parallel', '--noParallel'])(
+  'rejects unsupported option %s',
+  (option) => {
+    expect(() => parseFmtCLIArgs([option])).toThrow();
+  },
+);
