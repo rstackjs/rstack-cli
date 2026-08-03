@@ -1,8 +1,6 @@
 import { join } from 'node:path';
 import { color } from 'rslog';
 import { getConfigState } from '../config.ts';
-import { runSetupCLI } from '../setup/index.ts';
-import { runStagedCLI } from '../staged.ts';
 import { insertConfigArg, parseCliArgs } from './args.ts';
 
 declare global {
@@ -154,11 +152,19 @@ export async function setupCommands(): Promise<void> {
   }
 
   if (command === 'staged') {
+    const { runStagedCLI } = await import(
+      /* rspackChunkName: 'staged' */
+      '../staged.ts'
+    );
     await runStagedCLI(args.slice(1));
     return;
   }
 
   if (command === 'setup') {
+    const { runSetupCLI } = await import(
+      /* rspackChunkName: 'setup' */
+      '../setup/index.ts'
+    );
     runSetupCLI(args.slice(1));
     return;
   }
