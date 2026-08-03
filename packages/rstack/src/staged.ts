@@ -1,4 +1,5 @@
 import { parseArgs } from 'node:util';
+import lintStaged from 'lint-staged';
 import { color } from 'rslog';
 import { loadRstackConfig } from './config.ts';
 
@@ -70,10 +71,6 @@ export async function runStagedCLI(args: string[]): Promise<void> {
     );
   }
 
-  const { default: lintStaged } = await import(
-    /* rspackChunkName: 'lintStaged' */
-    'lint-staged'
-  );
   const success = await lintStaged({
     allowEmpty: values['allow-empty'] ?? values.allowEmpty,
     concurrent: values.concurrent === undefined ? undefined : JSON.parse(values.concurrent),
