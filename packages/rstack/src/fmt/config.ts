@@ -13,6 +13,65 @@ type ResolveFmtConfigOptions = {
   cwd: string;
 };
 
+type PathMatcher = (filePath: string) => boolean;
+
+const neverMatches: PathMatcher = () => false;
+
+const compileMatchers = (
+  patterns: string[],
+  excludedPatterns: string | string[] | undefined,
+  basename: boolean,
+): PathMatcher | undefined => {
+  if (patterns.length === 0) {
+    return;
+  }
+
+  const options = {
+    ignore: excludedPatterns,
+    basename,
+    dot: true,
+  };
+
+  if (patterns.length === 1) {
+    return micromatch.matcher(patterns[0], options);
+  }
+
+  const matchers = patterns.map((pattern) => micromatch.matcher(pattern, options));
+
+  return (filePath) => {
+    for (const matches of matchers) {
+      if (matches(filePath)) {
+        return true;
+      }
+    }
+    return false;
+  };
+};
+
+const createPathMatcher = (
+  patterns: string | string[],
+  excludedPatterns?: string | string[],
+): PathMatcher => {
+  const pathPatterns: string[] = [];
+  const basenamePatterns: string[] = [];
+
+  for (const pattern of Array.isArray(patterns) ? patterns : [patterns]) {
+    if (pattern.includes('/')) {
+      pathPatterns.push(pattern);
+    } else {
+      basenamePatterns.push(pattern);
+    }
+  }
+
+  const basenameMatcher = compileMatchers(basenamePatterns, excludedPatterns, true);
+  const pathMatcher = compileMatchers(pathPatterns, excludedPatterns, false);
+
+  if (!basenameMatcher || !pathMatcher) {
+    return basenameMatcher ?? pathMatcher ?? neverMatches;
+  }
+  return (filePath) => basenameMatcher(filePath) || pathMatcher(filePath);
+};
+
 /** Splits a flat config into project-level formatting options and rules. */
 const normalizeFmtConfig = (config: FmtConfig | undefined, rootPath: string): ResolvedFmtConfig => {
   const { ignorePatterns = [], overrides = [], ...baseOptions } = config ?? {};
@@ -20,32 +79,12 @@ const normalizeFmtConfig = (config: FmtConfig | undefined, rootPath: string): Re
   return {
     rootPath,
     baseOptions,
-    overrides,
+    overrides: overrides.map(({ files, excludeFiles, options }) => ({
+      matches: createPathMatcher(files, excludeFiles),
+      options,
+    })),
     ignorePatterns,
   };
-};
-
-const pathMatchesGlobs = (
-  filePath: string,
-  patterns: string | string[],
-  excludedPatterns?: string | string[],
-): boolean => {
-  const patternList = Array.isArray(patterns) ? patterns : [patterns];
-  const withSlashes = patternList.filter((pattern) => pattern.includes('/'));
-  const withoutSlashes = patternList.filter((pattern) => !pattern.includes('/'));
-
-  return (
-    micromatch.isMatch(filePath, withoutSlashes, {
-      ignore: excludedPatterns,
-      basename: true,
-      dot: true,
-    }) ||
-    micromatch.isMatch(filePath, withSlashes, {
-      ignore: excludedPatterns,
-      basename: false,
-      dot: true,
-    })
-  );
 };
 
 /** Applies matching overrides to the shared formatter options. */
@@ -54,13 +93,17 @@ const resolveFmtOptions = (filePath: string, config: ResolvedFmtConfig): Resolve
     return config.baseOptions;
   }
 
-  const options = { ...config.baseOptions };
+  let options = config.baseOptions;
   const relativeFilePath = relative(config.rootPath, filePath);
 
   for (const override of config.overrides) {
-    if (pathMatchesGlobs(relativeFilePath, override.files, override.excludeFiles)) {
-      Object.assign(options, override.options);
+    if (!override.options || !override.matches(relativeFilePath)) {
+      continue;
     }
+    if (options === config.baseOptions) {
+      options = { ...options };
+    }
+    Object.assign(options, override.options);
   }
 
   return options;
