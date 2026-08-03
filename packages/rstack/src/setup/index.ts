@@ -1,5 +1,5 @@
 import { parseArgs } from 'node:util';
-import { color } from 'rslog';
+import { color, logger } from 'rslog';
 import { installHooks } from './install.ts';
 
 const helpMessage = `Rstack v${RSTACK_VERSION}
@@ -45,7 +45,7 @@ export const runSetupCLI = (args: string[]): void => {
   if (result.status === 'skipped') {
     const reason =
       result.reason === 'disabled' ? 'disabled by RSTACK_HOOKS' : 'not a Git repository';
-    console.log(`Git hooks setup skipped: ${reason}.`);
+    logger.info(`Git hooks setup skipped: ${color.yellow(reason)}.`);
     return;
   }
 

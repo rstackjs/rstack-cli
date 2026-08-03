@@ -108,7 +108,7 @@ test('installs a custom hooks directory from a nested project', ({ execCli, expe
 
 test('skips non-Git directories without creating files', ({ execCli, expect }) => {
   expect(execCli('setup', { cwd, env })).toContain(
-    'Git hooks setup skipped: not a Git repository.',
+    'info    Git hooks setup skipped: not a Git repository.',
   );
   expect(existsSync(path.join(cwd, '.rstack'))).toBe(false);
 });
@@ -116,7 +116,7 @@ test('skips non-Git directories without creating files', ({ execCli, expect }) =
 test('skips setup when hooks are disabled', ({ execCli, expect }) => {
   const output = execCli('setup', { cwd, env: { ...env, RSTACK_HOOKS: '0' } });
 
-  expect(output).toContain('Git hooks setup skipped: disabled by RSTACK_HOOKS.');
+  expect(output).toContain('info    Git hooks setup skipped: disabled by RSTACK_HOOKS.');
   expect(existsSync(path.join(cwd, '.rstack'))).toBe(false);
 });
 
