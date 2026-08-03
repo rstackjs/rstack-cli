@@ -1,5 +1,21 @@
+import { stripVTControlCharacters } from 'node:util';
 import { expect, test } from 'rstack/test';
-import { fmtHelpMessage, parseFmtCLIArgs } from '../../src/fmt/cli.ts';
+import { fmtHelpMessage, parseFmtCLIArgs, prettyTime } from '../../src/fmt/cli.ts';
+
+test.each([
+  [0, '0.000s'],
+  [0.009, '0.009s'],
+  [0.01, '0.01s'],
+  [9.876, '9.88s'],
+  [10, '10.0s'],
+  [59.9, '59.9s'],
+  [60, '1m'],
+  [61, '1m 1s'],
+  [61.25, '1m 1.3s'],
+  [125.25, '2m 5.3s'],
+] as const)('formats %s seconds as %s', (seconds, expected) => {
+  expect(stripVTControlCharacters(prettyTime(seconds))).toBe(expected);
+});
 
 test('uses write mode by default', () => {
   expect(parseFmtCLIArgs([])).toEqual({

@@ -46,6 +46,21 @@ const runCLI = (args: string[]) => {
 
 const runFmt = (args: string[] = []) => runCLI(['fmt', ...args]);
 
+const normalizeDuration = (output: string): string =>
+  output.replace(/\d+m(?: \d+(?:\.\d+)?s)?|\d+(?:\.\d+)?s/g, '<duration>');
+
+const expectWriteSummary = (
+  output: string,
+  matchedFileCount: number,
+  writtenCount: number,
+): void => {
+  const files = matchedFileCount === 1 ? 'file' : 'files';
+  const message = writtenCount
+    ? `Formatted ${writtenCount} of ${matchedFileCount} ${files} in <duration>.`
+    : `Checked ${matchedFileCount} ${files} in <duration>. No changes needed.`;
+  expect(normalizeDuration(output)).toBe(`success ${message}\n`);
+};
+
 beforeEach(() => {
   projectPath = mkdtempSync(path.join(import.meta.dirname, 'test-temp-fmt-'));
   // Prevent repository-level ignore rules from affecting the fixture.
@@ -76,7 +91,7 @@ test('supports format as an alias for fmt', () => {
   const result = runCLI(['format', 'index.ts']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('success index.ts\n');
+  expectWriteSummary(result.stdout, 1, 1);
   expect(result.stderr).toBe('');
   expect(readProjectFile('index.ts')).toBe('const message = "hello";\n');
 });
@@ -97,9 +112,19 @@ test('formats the current directory with Prettier defaults', () => {
   const result = runFmt();
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('success index.ts\n');
+  expectWriteSummary(result.stdout, 2, 1);
   expect(result.stderr).toBe('');
   expect(readProjectFile('index.ts')).toBe('const message = "hello";\n');
+});
+
+test('summarizes write mode when no files change', () => {
+  writeProjectFile('index.ts', 'const message = "hello";\n');
+
+  const result = runFmt(['index.ts']);
+
+  expect(result.status).toBe(0);
+  expectWriteSummary(result.stdout, 1, 0);
+  expect(result.stderr).toBe('');
 });
 
 test('does not sort package.json by default', () => {
@@ -139,7 +164,7 @@ test('supports configuring the worker count', () => {
   const result = runFmt(['--parallel-workers', '1', 'first.ts', 'second.ts']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('success first.ts\nsuccess second.ts\n');
+  expectWriteSummary(result.stdout, 2, 2);
   expect(result.stderr).toBe('');
   expect(readProjectFile('first.ts')).toBe('const first = "first";\n');
   expect(readProjectFile('second.ts')).toBe('const second = "second";\n');
@@ -154,7 +179,7 @@ test('does not load Prettier config or ignore files', () => {
   const result = runFmt(['index.ts']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('success index.ts\n');
+  expectWriteSummary(result.stdout, 1, 1);
   expect(result.stderr).toBe('');
   expect(readProjectFile('index.ts')).toBe('function getMessage() {\n  return "hello";\n}\n');
 });
@@ -186,7 +211,7 @@ define.fmt({
   const result = runFmt(['--write', 'src/**/*.ts']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('success src/index.test.ts\nsuccess src/index.ts\n');
+  expectWriteSummary(result.stdout, 2, 2);
   expect(result.stderr).toBe('');
   expect(readProjectFile('src/index.ts')).toBe("const message = 'hello';\n");
   expect(readProjectFile('src/index.test.ts')).toBe("const test = 'test'\n");
@@ -209,7 +234,7 @@ define.fmt({
   const result = runFmt(['index.ts', '--config', 'custom.config.ts']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('success index.ts\n');
+  expectWriteSummary(result.stdout, 1, 1);
   expect(result.stderr).toBe('');
   expect(readProjectFile('index.ts')).toBe("const message = 'hello';\n");
 });
@@ -221,10 +246,12 @@ test('checks formatting without writing files', () => {
   const result = runFmt(['--check', 'index.ts']);
 
   expect(result.status).toBe(1);
-  expect(result.stdout).toBe('start   Checking formatting...\n');
+  expect(normalizeDuration(result.stdout)).toBe(
+    'start   Checking formatting...\ninfo    Checked 1 file in <duration>.\n',
+  );
   expect(result.stderr).toContain('error   index.ts');
-  expect(result.stderr).toContain(
-    'error   Code style issues found in 1 file. Run rs fmt --write to fix.',
+  expect(normalizeDuration(result.stderr)).toContain(
+    'error   Formatting issues found in 1 file. Run without --check to fix.',
   );
   expect(readProjectFile('index.ts')).toBe(source);
 
@@ -232,8 +259,8 @@ test('checks formatting without writing files', () => {
   const formattedResult = runFmt(['--check', 'index.ts']);
 
   expect(formattedResult.status).toBe(0);
-  expect(formattedResult.stdout).toBe(
-    'start   Checking formatting...\nsuccess All matched files are correctly formatted.\n',
+  expect(normalizeDuration(formattedResult.stdout)).toBe(
+    'start   Checking formatting...\nsuccess Checked 1 file in <duration>. No issues found.\n',
   );
   expect(formattedResult.stderr).toBe('');
 });
@@ -278,7 +305,7 @@ define.fmt({
   const result = runFmt(['*.fixture']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('success first.fixture\nsuccess second.fixture\n');
+  expectWriteSummary(result.stdout, 2, 2);
   expect(result.stderr).toBe('');
   expect(readProjectFile('first.fixture')).toBe('{ "first": true }\n');
   expect(readProjectFile('second.fixture')).toBe('{ "second": true }\n');
@@ -306,7 +333,7 @@ define.fmt({
   const result = runFmt(['data.fixture', 'index.ts']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('success data.fixture\nsuccess index.ts\n');
+  expectWriteSummary(result.stdout, 2, 2);
   expect(result.stderr).toBe('');
   expect(readProjectFile('data.fixture')).toBe('{ "value": true }\n');
   expect(readProjectFile('index.ts')).toBe('const value = true;\n');
@@ -343,10 +370,16 @@ test('returns exit code 2 for formatting errors', () => {
   expect(result.stderr).toContain('error   index.ts: SyntaxError:');
 });
 
-test('succeeds when no files can be formatted', () => {
-  const result = runFmt(['missing/**/*.ts']);
+test('reports when no files match', () => {
+  const writeResult = runFmt(['missing/**/*.ts']);
 
-  expect(result.status).toBe(0);
-  expect(result.stdout).toBe('');
-  expect(result.stderr).toBe('');
+  expect(writeResult.status).toBe(0);
+  expect(writeResult.stdout).toBe('info    No files matched.\n');
+  expect(writeResult.stderr).toBe('');
+
+  const checkResult = runFmt(['--check', 'missing/**/*.ts']);
+
+  expect(checkResult.status).toBe(0);
+  expect(checkResult.stdout).toBe('info    No files matched.\n');
+  expect(checkResult.stderr).toBe('');
 });
