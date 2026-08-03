@@ -76,7 +76,7 @@ test('supports format as an alias for fmt', () => {
   const result = runCLI(['format', 'index.ts']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('index.ts\n');
+  expect(result.stdout).toBe('success index.ts\n');
   expect(result.stderr).toBe('');
   expect(readProjectFile('index.ts')).toBe('const message = "hello";\n');
 });
@@ -97,7 +97,7 @@ test('formats the current directory with Prettier defaults', () => {
   const result = runFmt();
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('index.ts\n');
+  expect(result.stdout).toBe('success index.ts\n');
   expect(result.stderr).toBe('');
   expect(readProjectFile('index.ts')).toBe('const message = "hello";\n');
 });
@@ -139,7 +139,7 @@ test('supports configuring the worker count', () => {
   const result = runFmt(['--parallel-workers', '1', 'first.ts', 'second.ts']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('first.ts\nsecond.ts\n');
+  expect(result.stdout).toBe('success first.ts\nsuccess second.ts\n');
   expect(result.stderr).toBe('');
   expect(readProjectFile('first.ts')).toBe('const first = "first";\n');
   expect(readProjectFile('second.ts')).toBe('const second = "second";\n');
@@ -154,7 +154,7 @@ test('does not load Prettier config or ignore files', () => {
   const result = runFmt(['index.ts']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('index.ts\n');
+  expect(result.stdout).toBe('success index.ts\n');
   expect(result.stderr).toBe('');
   expect(readProjectFile('index.ts')).toBe('function getMessage() {\n  return "hello";\n}\n');
 });
@@ -186,7 +186,7 @@ define.fmt({
   const result = runFmt(['--write', 'src/**/*.ts']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('src/index.test.ts\nsrc/index.ts\n');
+  expect(result.stdout).toBe('success src/index.test.ts\nsuccess src/index.ts\n');
   expect(result.stderr).toBe('');
   expect(readProjectFile('src/index.ts')).toBe("const message = 'hello';\n");
   expect(readProjectFile('src/index.test.ts')).toBe("const test = 'test'\n");
@@ -209,7 +209,7 @@ define.fmt({
   const result = runFmt(['index.ts', '--config', 'custom.config.ts']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('index.ts\n');
+  expect(result.stdout).toBe('success index.ts\n');
   expect(result.stderr).toBe('');
   expect(readProjectFile('index.ts')).toBe("const message = 'hello';\n");
 });
@@ -221,7 +221,7 @@ test('checks formatting without writing files', () => {
   const result = runFmt(['--check', 'index.ts']);
 
   expect(result.status).toBe(1);
-  expect(result.stdout).toBe('Checking formatting...\n');
+  expect(result.stdout).toBe('start   Checking formatting...\n');
   expect(result.stderr).toContain('warn    index.ts');
   expect(result.stderr).toContain(
     'warn    Code style issues found in 1 file. Run rs fmt --write to fix.',
@@ -233,7 +233,7 @@ test('checks formatting without writing files', () => {
 
   expect(formattedResult.status).toBe(0);
   expect(formattedResult.stdout).toBe(
-    'Checking formatting...\nAll matched files use Prettier code style!\n',
+    'start   Checking formatting...\nsuccess All matched files are correctly formatted.\n',
   );
   expect(formattedResult.stderr).toBe('');
 });
@@ -278,7 +278,7 @@ define.fmt({
   const result = runFmt(['*.fixture']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('first.fixture\nsecond.fixture\n');
+  expect(result.stdout).toBe('success first.fixture\nsuccess second.fixture\n');
   expect(result.stderr).toBe('');
   expect(readProjectFile('first.fixture')).toBe('{ "first": true }\n');
   expect(readProjectFile('second.fixture')).toBe('{ "second": true }\n');
@@ -306,7 +306,7 @@ define.fmt({
   const result = runFmt(['data.fixture', 'index.ts']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('data.fixture\nindex.ts\n');
+  expect(result.stdout).toBe('success data.fixture\nsuccess index.ts\n');
   expect(result.stderr).toBe('');
   expect(readProjectFile('data.fixture')).toBe('{ "value": true }\n');
   expect(readProjectFile('index.ts')).toBe('const value = true;\n');

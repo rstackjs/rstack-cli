@@ -91,7 +91,7 @@ const logFmtResult = (result: FmtRunResult, mode: FmtMode, cwd: string): void =>
     const displayPath = getDisplayPath(cwd, file.path);
 
     if (file.status === 'written') {
-      logger.log(displayPath);
+      logger.success(displayPath);
     } else if (file.status === 'different') {
       differentCount++;
       logger[mode === 'check' ? 'warn' : 'log'](displayPath);
@@ -111,14 +111,14 @@ const logFmtResult = (result: FmtRunResult, mode: FmtMode, cwd: string): void =>
       `Code style issues found in ${differentCount} ${files}. Run rs fmt --write to fix.`,
     );
   } else if (errorCount === 0) {
-    logger.log('All matched files use Prettier code style!');
+    logger.success('All matched files are correctly formatted.');
   }
 };
 
 const runFmtCLI = async (args: string[]): Promise<void> => {
   const { help, maxWorkers, mode, patterns } = parseFmtCLIArgs(args);
   if (help) {
-    console.log(fmtHelpMessage);
+    logger.log(fmtHelpMessage);
     return;
   }
 
@@ -134,7 +134,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
     const files = await discoverFmtFiles({ cwd, patterns, config });
 
     if (mode === 'check') {
-      logger.log('Checking formatting...');
+      logger.start('Checking formatting...');
     }
 
     const result = await runFmtFiles({
