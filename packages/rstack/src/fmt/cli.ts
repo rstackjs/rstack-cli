@@ -10,7 +10,6 @@ import type { FmtMode, FmtRunResult } from './types.ts';
 interface ParsedFmtCLIArgs {
   mode: FmtMode;
   patterns: string[];
-  parallel: boolean;
   maxWorkers?: number;
   help: boolean;
 }
@@ -26,7 +25,6 @@ ${color.cyan('Options')}:
   --write             Write formatted files in place (default)
   --check             Check whether files are formatted
   --list-different    Print paths of unformatted files
-  --no-parallel       Disable worker parallelism
   --parallel-workers <count>  Number of parallel workers
   -h, --help          Display this help message`;
 
@@ -55,8 +53,6 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       check: { type: 'boolean' },
       'list-different': { type: 'boolean' },
       listDifferent: { type: 'boolean' },
-      'no-parallel': { type: 'boolean' },
-      noParallel: { type: 'boolean' },
       'parallel-workers': { type: 'string' },
       parallelWorkers: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
@@ -72,17 +68,11 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   }
 
   const mode = values.check ? 'check' : listDifferent ? 'list-different' : 'write';
-  const noParallel = values['no-parallel'] || values.noParallel;
   const maxWorkers = parseMaxWorkers(values['parallel-workers'], values.parallelWorkers);
-
-  if (noParallel && maxWorkers !== undefined) {
-    throw new Error('The --parallel-workers and --no-parallel options cannot be used together.');
-  }
 
   return {
     mode,
     patterns: positionals,
-    parallel: !noParallel,
     maxWorkers,
     help: values.help ?? false,
   };
@@ -126,7 +116,7 @@ const logFmtResult = (result: FmtRunResult, mode: FmtMode, cwd: string): void =>
 };
 
 const runFmtCLI = async (args: string[]): Promise<void> => {
-  const { help, maxWorkers, mode, parallel, patterns } = parseFmtCLIArgs(args);
+  const { help, maxWorkers, mode, patterns } = parseFmtCLIArgs(args);
   if (help) {
     console.log(fmtHelpMessage);
     return;
@@ -151,7 +141,6 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       files,
       mode,
       cache: false,
-      parallel,
       maxWorkers,
     });
 
