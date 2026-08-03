@@ -33,14 +33,20 @@ interface FmtConfig extends Omit<PrettierConfig, 'plugins' | 'overrides'>, FmtBu
 
 type FmtConfigDefinition = FmtConfig | (() => FmtConfig | Promise<FmtConfig>);
 
+interface ResolvedFmtOverride {
+  /** Matches a path relative to the config root. */
+  matches: (relativeFilePath: string) => boolean;
+  options?: ResolvedFmtOptions;
+}
+
 /** Internal project config before per-file rules are applied. */
 interface ResolvedFmtConfig {
   /** Root for relative patterns and plugin paths. */
   rootPath: string;
   /** Shared Prettier options before per-file overrides. */
   baseOptions: ResolvedFmtOptions;
-  /** Per-file override rules. */
-  overrides: NonNullable<PrettierConfig['overrides']>;
+  /** Precompiled per-file override rules. */
+  overrides: ResolvedFmtOverride[];
   /** Root-relative ignore patterns. */
   ignorePatterns: string[];
 }
