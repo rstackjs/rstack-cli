@@ -71,6 +71,16 @@ rs fmt "src/**/*.{js,ts}" "!src/generated/**"
 
 `.gitignore` 只在扫描目录和 glob 时生效，不会排除命令行中显式传入的文件。如果需要始终排除某个文件，请使用 [`ignorePatterns`](#ignore-files)。
 
+## 格式化标准输入 \{#formatting-stdin}
+
+使用 `--stdin-filepath` 可以格式化通过 stdin 传入的内容，例如来自编辑器集成的调用。传入的路径决定使用的 parser 和匹配的[覆盖配置](#overrides)，并不需要在磁盘上真实存在：
+
+```bash
+cat src/index.ts | rs fmt --stdin-filepath src/index.ts
+```
+
+格式化结果输出到 stdout，诊断信息输出到 stderr。当路径匹配 [`ignorePatterns`](#ignore-files) 或默认的 [lock 文件](#lock-files)时，`rs fmt` 会跳过格式化，将输入原样输出。当无法从路径推断 parser 或内容无法解析时，`rs fmt` 输出错误并以状态码 2 退出。
+
 ## 忽略文件 \{#ignore-files}
 
 使用 `ignorePatterns` 排除不需要格式化的文件：

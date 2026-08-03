@@ -6,13 +6,16 @@ import { loadRstackConfig } from '../config.ts';
 import { resolveFmtConfig } from './config.ts';
 import { discoverFmtFiles } from './discovery.ts';
 import { runFmtFiles } from './runner.ts';
-import type { FmtMode, FmtRunResult } from './types.ts';
+import { runFmtStdin } from './stdin.ts';
+import type { FmtMode, FmtRunResult, ResolvedFmtConfig } from './types.ts';
 
 interface ParsedFmtCLIArgs {
   mode: FmtMode;
   patterns: string[];
   maxWorkers?: number;
   help: boolean;
+  /** Path the stdin content is formatted as; it need not exist on disk. */
+  stdinFilepath?: string;
 }
 
 const fmtHelpMessage: string = `Rstack v${RSTACK_VERSION}
@@ -27,6 +30,7 @@ ${color.cyan('Options')}:
   --check             Check whether files are formatted
   --list-different    Print paths of unformatted files
   --parallel-workers <count>  Number of parallel workers
+  --stdin-filepath <path>  Format stdin as if it were saved at <path>
   -h, --help          Display this help message`;
 
 const parseMaxWorkers = (
@@ -56,6 +60,8 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       listDifferent: { type: 'boolean' },
       'parallel-workers': { type: 'string' },
       parallelWorkers: { type: 'string' },
+      'stdin-filepath': { type: 'string' },
+      stdinFilepath: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
     allowPositionals: true,
@@ -70,12 +76,26 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
 
   const mode = values.check ? 'check' : listDifferent ? 'list-different' : 'write';
   const maxWorkers = parseMaxWorkers(values['parallel-workers'], values.parallelWorkers);
+  const stdinFilepath = values['stdin-filepath'] ?? values.stdinFilepath;
+
+  if (stdinFilepath !== undefined) {
+    if (modes.length > 0) {
+      throw new Error(
+        'The --stdin-filepath option cannot be used with --write, --check, or --list-different.',
+      );
+    }
+
+    if (positionals.length > 0) {
+      throw new Error('The --stdin-filepath option cannot be used with file arguments.');
+    }
+  }
 
   return {
     mode,
     patterns: positionals,
     maxWorkers,
     help: values.help ?? false,
+    stdinFilepath,
   };
 };
 
@@ -174,23 +194,35 @@ const logFmtResult = (
   }
 };
 
-const runFmtCLI = async (args: string[]): Promise<void> => {
-  const { help, maxWorkers, mode, patterns } = parseFmtCLIArgs(args);
-  if (help) {
-    logger.log(fmtHelpMessage);
-    return;
-  }
+const loadFmtConfig = async (cwd: string): Promise<ResolvedFmtConfig> => {
+  const { configs, filePath } = await loadRstackConfig();
 
+  return resolveFmtConfig({
+    definition: configs.fmt,
+    configFilePath: filePath,
+    cwd,
+  });
+};
+
+const runFmtCLI = async (args: string[]): Promise<void> => {
   const cwd = process.cwd();
   const startTime = performance.now();
 
+  // Argument errors are reported like every other failure so that a single
+  // exit code identifies "rs fmt refused to run".
   try {
-    const { configs, filePath } = await loadRstackConfig();
-    const config = await resolveFmtConfig({
-      definition: configs.fmt,
-      configFilePath: filePath,
-      cwd,
-    });
+    const { help, maxWorkers, mode, patterns, stdinFilepath } = parseFmtCLIArgs(args);
+    if (help) {
+      logger.log(fmtHelpMessage);
+      return;
+    }
+
+    if (stdinFilepath !== undefined) {
+      await runFmtStdin({ filepath: stdinFilepath, cwd, loadConfig: () => loadFmtConfig(cwd) });
+      return;
+    }
+
+    const config = await loadFmtConfig(cwd);
     const files = await discoverFmtFiles({ cwd, patterns, config });
 
     if (files.length === 0) {
