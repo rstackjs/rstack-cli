@@ -222,9 +222,9 @@ test('checks formatting without writing files', () => {
 
   expect(result.status).toBe(1);
   expect(result.stdout).toBe('start   Checking formatting...\n');
-  expect(result.stderr).toContain('warn    index.ts');
+  expect(result.stderr).toContain('error   index.ts');
   expect(result.stderr).toContain(
-    'warn    Code style issues found in 1 file. Run rs fmt --write to fix.',
+    'error   Code style issues found in 1 file. Run rs fmt --write to fix.',
   );
   expect(readProjectFile('index.ts')).toBe(source);
 

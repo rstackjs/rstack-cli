@@ -94,7 +94,7 @@ const logFmtResult = (result: FmtRunResult, mode: FmtMode, cwd: string): void =>
       logger.success(displayPath);
     } else if (file.status === 'different') {
       differentCount++;
-      logger[mode === 'check' ? 'warn' : 'log'](displayPath);
+      logger[mode === 'check' ? 'error' : 'log'](displayPath);
     } else if (file.status === 'error') {
       errorCount++;
       logger.error(`${displayPath}: ${String(file.error)}`);
@@ -107,9 +107,9 @@ const logFmtResult = (result: FmtRunResult, mode: FmtMode, cwd: string): void =>
 
   if (differentCount > 0) {
     const files = differentCount === 1 ? 'file' : 'files';
-    logger.warn(
-      `Code style issues found in ${differentCount} ${files}. Run rs fmt --write to fix.`,
-    );
+    const count = color.bold(color.red(differentCount));
+    const writeCommand = color.cyan('rs fmt --write');
+    logger.error(`Code style issues found in ${count} ${files}. Run ${writeCommand} to fix.`);
   } else if (errorCount === 0) {
     logger.success('All matched files are correctly formatted.');
   }
