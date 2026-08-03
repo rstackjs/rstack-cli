@@ -1,0 +1,476 @@
+import { parsers as prettierBabelParsers } from 'prettier/plugins/babel';
+import * as prettierEstreePlugin from 'prettier/plugins/estree';
+import type { Parser, ParserOptions, Plugin, SupportLanguage } from 'prettier';
+import {
+  parse as parseWithYuku,
+  type Comment,
+  type Diagnostic,
+  type ParseOptions,
+  type ParseResult,
+  type SourceLang,
+  type SourceType,
+} from 'yuku-parser';
+
+const AST_FORMAT = 'estree-yuku';
+const JSX_REGEXP = /^[^"'`]*<\/|^[^/]{2}.*\/>/m;
+const SOURCE_TYPE_COMBINATIONS: SourceType[] = ['module', 'commonjs'];
+
+type Range = [start: number, end: number];
+
+type Locatable = {
+  end?: number;
+  range?: Range;
+  start?: number;
+  type?: string;
+};
+
+type AstNode = Locatable & {
+  [key: string]: unknown;
+  type: string;
+};
+
+type PrettierComment = Comment & {
+  range?: Range;
+};
+
+type EstreePlugin = typeof prettierEstreePlugin & {
+  languages: SupportLanguage[];
+  options: NonNullable<Plugin['options']>;
+};
+
+const estreePlugin = prettierEstreePlugin as EstreePlugin;
+const estreePrinter = estreePlugin.printers.estree;
+const babelParser = prettierBabelParsers.babel;
+const locStart = babelParser.locStart as (node: Locatable) => number;
+const locEnd = babelParser.locEnd as (node: Locatable) => number;
+
+const getVisitorKeys = estreePrinter.getVisitorKeys as ((node: AstNode) => string[]) | undefined;
+
+if (!getVisitorKeys) {
+  throw new Error('The Prettier ESTree printer does not expose visitor keys.');
+}
+
+const isAstNode = (value: unknown): value is AstNode =>
+  value !== null &&
+  typeof value === 'object' &&
+  !Array.isArray(value) &&
+  typeof (value as { type?: unknown }).type === 'string';
+
+const asAstNode = (value: unknown): AstNode => {
+  if (!isAstNode(value)) {
+    throw new TypeError('Expected a Yuku AST node.');
+  }
+  return value;
+};
+
+const withExtra = (node: AstNode, extra: Record<string, unknown>): Record<string, unknown> => ({
+  ...(node.extra !== null && typeof node.extra === 'object'
+    ? (node.extra as Record<string, unknown>)
+    : undefined),
+  ...extra,
+});
+
+const isIndentableBlockComment = (comment: PrettierComment): boolean => {
+  if (comment.type !== 'Block' || !comment.value.includes('\n')) {
+    return false;
+  }
+
+  for (let line of `*${comment.value}*`.split('\n')) {
+    line = line.trimStart();
+    if (!line.startsWith('*')) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+const mergeNestedJsdocComments = (comments: PrettierComment[]): void => {
+  let followingComment: PrettierComment | undefined;
+
+  for (let index = comments.length - 1; index >= 0; index--) {
+    const comment = comments[index];
+
+    if (
+      followingComment &&
+      locEnd(comment) === locStart(followingComment) &&
+      isIndentableBlockComment(comment) &&
+      isIndentableBlockComment(followingComment)
+    ) {
+      comments.splice(index + 1, 1);
+      comment.value += `*//*${followingComment.value}`;
+      comment.range = [locStart(comment), locEnd(followingComment)];
+    }
+
+    followingComment = comment;
+  }
+};
+
+const stripComments = (originalText: string, comments: PrettierComment[]): string => {
+  let text = originalText;
+
+  for (const comment of comments) {
+    const start = locStart(comment);
+    const end = locEnd(comment);
+    text = text.slice(0, start) + text.slice(start, end).replace(/[^\n]/g, ' ') + text.slice(end);
+  }
+
+  return text;
+};
+
+const CONTENT_END_NODE_TYPES = new Set([
+  'ExpressionStatement',
+  'Directive',
+  'ImportDeclaration',
+  'ExportDefaultDeclaration',
+  'ExportNamedDeclaration',
+  'ExportAllDeclaration',
+  'ReturnStatement',
+  'ThrowStatement',
+  'DoWhileStatement',
+]);
+
+const setContentEnd = (
+  node: AstNode,
+  originalText: string,
+  getTextWithoutComments: () => string,
+): void => {
+  if (!CONTENT_END_NODE_TYPES.has(node.type)) {
+    return;
+  }
+
+  let end = node.range?.[1] ?? node.end;
+  if (end === undefined || originalText[end - 1] !== ';') {
+    return;
+  }
+
+  end -= 1;
+  const textWithoutComments = getTextWithoutComments();
+  const textBeforeSemicolon = textWithoutComments.slice(locStart(node), end);
+  const cleanedText = textBeforeSemicolon.trimEnd();
+  node.__contentEnd = end - (textBeforeSemicolon.length - cleanedText.length);
+};
+
+const isTypeCastComment = (comment: PrettierComment): boolean =>
+  comment.type === 'Block' &&
+  comment.value.startsWith('*') &&
+  /@(?:type|satisfies)\b/.test(comment.value);
+
+type VisitOptions = {
+  onEnter?: (node: AstNode) => AstNode | undefined;
+  onLeave?: (node: AstNode) => AstNode | undefined;
+};
+
+const visitNode = (value: unknown, options: VisitOptions): unknown => {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    for (let index = 0; index < value.length; index++) {
+      value[index] = visitNode(value[index], options);
+    }
+    return value;
+  }
+
+  let node = asAstNode(value);
+
+  if (options.onEnter) {
+    const result = options.onEnter(node) ?? node;
+    if (result !== node) {
+      return visitNode(result, options);
+    }
+    node = result;
+  }
+
+  for (const key of getVisitorKeys(node)) {
+    node[key] = visitNode(node[key], options);
+  }
+
+  return options.onLeave?.(node) ?? node;
+};
+
+const isUnbalancedLogicalTree = (node: AstNode): boolean => {
+  if (node.type !== 'LogicalExpression' || !isAstNode(node.right)) {
+    return false;
+  }
+
+  return node.right.type === 'LogicalExpression' && node.operator === node.right.operator;
+};
+
+const rebalanceLogicalTree = (node: AstNode): AstNode => {
+  if (!isUnbalancedLogicalTree(node)) {
+    return node;
+  }
+
+  const left = asAstNode(node.left);
+  const right = asAstNode(node.right);
+  const rightLeft = asAstNode(right.left);
+  const rightRight = asAstNode(right.right);
+
+  return rebalanceLogicalTree({
+    type: 'LogicalExpression',
+    operator: node.operator,
+    left: rebalanceLogicalTree({
+      type: 'LogicalExpression',
+      operator: node.operator,
+      left,
+      right: rightLeft,
+      range: [locStart(left), locEnd(rightLeft)],
+    }),
+    right: rightRight,
+    range: [locStart(node), locEnd(node)],
+  });
+};
+
+const postprocess = (
+  ast: AstNode,
+  comments: PrettierComment[],
+  text: string,
+  astType: 'yuku-js' | 'yuku-ts',
+): AstNode => {
+  mergeNestedJsdocComments(comments);
+
+  if (isAstNode(ast.hashbang)) {
+    comments.unshift(ast.hashbang as unknown as PrettierComment);
+    delete ast.hashbang;
+  }
+
+  ast.comments = comments;
+  ast.range = [0, text.length];
+
+  let textWithoutComments: string | undefined;
+  const getTextWithoutComments = (): string => {
+    textWithoutComments ??= stripComments(text, comments);
+    return textWithoutComments;
+  };
+  let typeCastCommentEnds: number[] | undefined;
+
+  return visitNode(ast, {
+    onEnter(node) {
+      setContentEnd(node, text, getTextWithoutComments);
+
+      switch (node.type) {
+        case 'ParenthesizedExpression': {
+          const expression = asAstNode(node.expression);
+          const start = locStart(node);
+
+          typeCastCommentEnds ??= comments
+            .filter(isTypeCastComment)
+            .map((comment) => locEnd(comment));
+
+          const previousCommentEnd = typeCastCommentEnds.findLast((end) => end <= start);
+          const shouldKeepParentheses =
+            previousCommentEnd !== undefined &&
+            text.slice(previousCommentEnd, start).trim().length === 0;
+
+          if (shouldKeepParentheses) {
+            return undefined;
+          }
+
+          expression.extra = withExtra(expression, { parenthesized: true });
+          return expression;
+        }
+
+        case 'TemplateLiteral': {
+          const expressions = node.expressions as unknown[];
+          const quasis = node.quasis as unknown[];
+          if (expressions.length !== quasis.length - 1) {
+            throw new Error('Malformed template literal.');
+          }
+          break;
+        }
+
+        case 'TemplateElement': {
+          if (astType === 'yuku-ts') {
+            const start = locStart(node) + 1;
+            const end = locEnd(node) - (node.tail ? 1 : 2);
+            node.range = [start, end];
+          }
+          break;
+        }
+
+        case 'TSParenthesizedType':
+          return asAstNode(node.typeAnnotation);
+
+        case 'TopicReference':
+          ast.extra = withExtra(ast, { __isUsingHackPipeline: true });
+          break;
+
+        case 'TSUnionType':
+        case 'TSIntersectionType': {
+          const types = node.types as unknown[];
+          if (types.length === 1) {
+            return asAstNode(types[0]);
+          }
+          break;
+        }
+      }
+
+      return undefined;
+    },
+    onLeave(node) {
+      return isUnbalancedLogicalTree(node) ? rebalanceLogicalTree(node) : undefined;
+    },
+  }) as AstNode;
+};
+
+const indexToPosition = (text: string, index: number): { column: number; line: number } => {
+  const lineBreakBefore = index === 0 ? -1 : text.lastIndexOf('\n', index - 1);
+  let line = 1;
+
+  for (let current = 0; current <= lineBreakBefore; current++) {
+    if (text[current] === '\n') {
+      line++;
+    }
+  }
+
+  return {
+    column: index - lineBreakBefore,
+    line,
+  };
+};
+
+const createParseError = (error: Diagnostic, text: string): Diagnostic | SyntaxError => {
+  if (typeof error?.start !== 'number' || typeof error?.end !== 'number') {
+    return error;
+  }
+
+  const start = indexToPosition(text, error.start);
+  const end = indexToPosition(text, error.end);
+
+  return Object.assign(new SyntaxError(`${error.message} (${start.line}:${start.column})`), {
+    cause: error,
+    loc: { start, end },
+  });
+};
+
+const parseWithOptions = (text: string, options: ParseOptions): ParseResult => {
+  const result = parseWithYuku(text, {
+    preserveParens: true,
+    semanticErrors: false,
+    attachComments: false,
+    ...options,
+  });
+
+  if (result.diagnostics.length > 0) {
+    throw createParseError(result.diagnostics[0], text);
+  }
+
+  return result;
+};
+
+const getSourceType = (filepath: unknown): SourceType | undefined => {
+  if (typeof filepath !== 'string') {
+    return undefined;
+  }
+
+  if (/\.(?:mjs|mts)$/i.test(filepath)) {
+    return 'module';
+  }
+
+  if (/\.(?:cjs|cts)$/i.test(filepath)) {
+    return 'commonjs';
+  }
+
+  return undefined;
+};
+
+const getLanguageCombinations = (text: string, filepath: unknown): SourceLang[] => {
+  if (typeof filepath === 'string') {
+    if (/\.(?:jsx|tsx)$/i.test(filepath)) {
+      return ['tsx'];
+    }
+
+    if (filepath.toLowerCase().endsWith('.d.ts')) {
+      return ['dts'];
+    }
+  }
+
+  return JSX_REGEXP.test(text) ? ['tsx', 'ts', 'dts'] : ['ts', 'tsx', 'dts'];
+};
+
+const tryCombinations = (combinations: (() => ParseResult)[]): ParseResult => {
+  let firstError: unknown;
+  let hasError = false;
+
+  for (const combination of combinations) {
+    try {
+      return combination();
+    } catch (error) {
+      if (!hasError) {
+        firstError = error;
+        hasError = true;
+      }
+    }
+  }
+
+  if (hasError) {
+    throw firstError;
+  }
+
+  throw new Error('No Yuku parser combinations were provided.');
+};
+
+const parseJavaScript = (text: string, options: ParserOptions<AstNode>): AstNode => {
+  const sourceType = getSourceType(options.filepath);
+  const combinations = (sourceType ? [sourceType] : SOURCE_TYPE_COMBINATIONS).map(
+    (candidate) => () => parseWithOptions(text, { sourceType: candidate, lang: 'jsx' }),
+  );
+  const { program, comments } = tryCombinations(combinations);
+
+  return postprocess(program as unknown as AstNode, comments as PrettierComment[], text, 'yuku-js');
+};
+
+const parseTypeScript = (text: string, options: ParserOptions<AstNode>): AstNode => {
+  const sourceType = getSourceType(options.filepath);
+  const languages = getLanguageCombinations(text, options.filepath);
+  const combinations = (sourceType ? [sourceType] : SOURCE_TYPE_COMBINATIONS).flatMap((candidate) =>
+    languages.map((lang) => () => parseWithOptions(text, { sourceType: candidate, lang })),
+  );
+  const { program, comments } = tryCombinations(combinations);
+
+  return postprocess(program as unknown as AstNode, comments as PrettierComment[], text, 'yuku-ts');
+};
+
+const createParser = (
+  parse: (text: string, options: ParserOptions<AstNode>) => AstNode,
+): Parser<AstNode> => ({
+  astFormat: AST_FORMAT,
+  hasIgnorePragma: babelParser.hasIgnorePragma,
+  hasPragma: babelParser.hasPragma,
+  locEnd,
+  locStart,
+  parse,
+});
+
+const parserNames = new Map([
+  ['babel', 'yuku'],
+  ['typescript', 'yuku-ts'],
+]);
+
+const languages: SupportLanguage[] = estreePlugin.languages.flatMap((language) => {
+  const parsers = [
+    ...new Set(
+      language.parsers
+        .map((parser) => parserNames.get(parser))
+        .filter((parser): parser is string => parser !== undefined),
+    ),
+  ];
+
+  return parsers.length > 0 ? [{ ...language, parsers }] : [];
+});
+
+const yukuPlugin: Plugin = {
+  languages,
+  options: estreePlugin.options,
+  parsers: {
+    yuku: createParser(parseJavaScript),
+    'yuku-ts': createParser(parseTypeScript),
+  },
+  printers: {
+    [AST_FORMAT]: estreePrinter,
+  },
+};
+
+export { yukuPlugin };
