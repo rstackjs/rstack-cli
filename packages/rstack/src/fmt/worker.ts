@@ -1,21 +1,15 @@
 // Derived from @prettier/cli, see THIRD_PARTY_NOTICES.md
 
-import { readFile, writeFile } from 'atomically';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { format } from 'prettier';
 import { resolveFmtParser } from './parser.ts';
 import { getPrettierPlugins } from './prettierPlugins.ts';
 import type { FmtFileRequest, FmtWorkerFileResult } from './types.ts';
 
 /**
- * Formatting output can be regenerated, so avoid waiting for a durability sync
- * after every file, which is especially expensive during parallel formatting.
- * `atomically` still uses a temporary file and rename for atomic replacement.
+ * Use synchronous direct I/O inside the dedicated worker to avoid libuv
+ * scheduling overhead. This prioritizes throughput over crash-safe replacement.
  */
-const atomicWriteOptions = {
-  encoding: 'utf8',
-  fsync: false,
-} as const;
-
 const formatFile = async (
   { path, options }: FmtFileRequest,
   shouldWrite: boolean,
@@ -26,7 +20,7 @@ const formatFile = async (
     return 'unsupported';
   }
 
-  const source = await readFile(path, 'utf8');
+  const source = readFileSync(path, 'utf8');
   const formatted = await format(source, {
     ...options,
     parser,
@@ -38,7 +32,7 @@ const formatFile = async (
   }
 
   if (shouldWrite) {
-    await writeFile(path, formatted, atomicWriteOptions);
+    writeFileSync(path, formatted, 'utf8');
   }
 
   return 'changed';

@@ -1,78 +1,61 @@
-import { beforeEach, expect, rs, test } from 'rstack/test';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { expect, test } from 'rstack/test';
 import { formatFile } from '../../src/fmt/worker.ts';
+import { withTempProject, writeProjectFile } from './helpers.ts';
 
-const mocks = rs.hoisted(() => ({
-  readFileCalls: [] as string[],
-  writeFileCalls: [] as [string, string, unknown][],
-}));
+test('writes formatted files', async () => {
+  await withTempProject(async (rootPath) => {
+    const filePath = writeProjectFile(rootPath, 'example.ts', 'const value=1');
 
-rs.mock('atomically', () => ({
-  readFile: (path: string) => {
-    mocks.readFileCalls.push(path);
-    return Promise.resolve('const value=1');
-  },
-  writeFile: (path: string, data: string, options: unknown) => {
-    mocks.writeFileCalls.push([path, data, options]);
-    return Promise.resolve();
-  },
-}));
-
-beforeEach(() => {
-  mocks.readFileCalls.length = 0;
-  mocks.writeFileCalls.length = 0;
-});
-
-test('disables fsync for atomic writes', async () => {
-  const filePath = '/virtual/example.ts';
-
-  await expect(
-    formatFile(
-      {
-        path: filePath,
-        options: {
-          filepath: filePath,
-          parser: 'typescript',
+    await expect(
+      formatFile(
+        {
+          path: filePath,
+          options: {
+            filepath: filePath,
+            parser: 'typescript',
+          },
         },
-      },
-      true,
-    ),
-  ).resolves.toBe('changed');
+        true,
+      ),
+    ).resolves.toBe('changed');
 
-  expect(mocks.writeFileCalls).toEqual([
-    [filePath, 'const value = 1;\n', { encoding: 'utf8', fsync: false }],
-  ]);
+    expect(readFileSync(filePath, 'utf8')).toBe('const value = 1;\n');
+  });
 });
 
 test('infers the parser before formatting', async () => {
-  const filePath = '/virtual/example.ts';
+  await withTempProject(async (rootPath) => {
+    const source = 'const value=1';
+    const filePath = writeProjectFile(rootPath, 'example.ts', source);
 
-  await expect(
-    formatFile(
-      {
-        path: filePath,
-        options: { filepath: filePath },
-      },
-      false,
-    ),
-  ).resolves.toBe('changed');
+    await expect(
+      formatFile(
+        {
+          path: filePath,
+          options: { filepath: filePath },
+        },
+        false,
+      ),
+    ).resolves.toBe('changed');
 
-  expect(mocks.readFileCalls).toEqual([filePath]);
-  expect(mocks.writeFileCalls).toEqual([]);
+    expect(readFileSync(filePath, 'utf8')).toBe(source);
+  });
 });
 
 test('skips unsupported files before reading them', async () => {
-  const filePath = '/virtual/example.unknown';
+  await withTempProject(async (rootPath) => {
+    const filePath = path.join(rootPath, 'missing.unknown');
 
-  await expect(
-    formatFile(
-      {
-        path: filePath,
-        options: { filepath: filePath },
-      },
-      true,
-    ),
-  ).resolves.toBe('unsupported');
-
-  expect(mocks.readFileCalls).toEqual([]);
-  expect(mocks.writeFileCalls).toEqual([]);
+    await expect(
+      formatFile(
+        {
+          path: filePath,
+          options: { filepath: filePath },
+        },
+        true,
+      ),
+    ).resolves.toBe('unsupported');
+  });
 });
