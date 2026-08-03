@@ -8,7 +8,7 @@ Read this reference when the project uses the `prettier` CLI or API, `package.js
 
 1. Inventory formatting commands and inputs, Prettier options and overrides, ignore rules, `.editorconfig`, plugins, package.json sorting, and programmatic API calls.
 2. Move Prettier options and overrides into `define.fmt` in `rstack.config.*`.
-3. Move `.prettierignore` or custom `--ignore-path` rules into `ignorePatterns`, preserving rule order and negations. Translate relevant `.editorconfig` values into explicit formatting options.
+3. Move `.prettierignore` or custom `--ignore-path` rules into `ignorePatterns`. Rebase patterns from each ignore file's directory to the Rstack configuration directory when they differ, preserving rule order and negations. Translate relevant `.editorconfig` values into explicit formatting options.
 4. Replace Prettier CLI commands with the matching `rs fmt` commands and preserve their file or glob arguments.
 5. Reference plugins by package name, file path, or URL. Do not pass imported plugin objects, and keep each plugin package as a direct dependency.
 6. When replacing `prettier-plugin-packagejson`, enable `sortPackageJson` and preserve the original manifest paths.
