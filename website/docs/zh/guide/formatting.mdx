@@ -1,0 +1,168 @@
+# 格式化
+
+import { PackageManagerTabs } from '@rspress/core/theme';
+
+Rstack CLI 提供了基于 [Prettier](https://prettier.io/) 的格式化工具。相比直接使用 Prettier，`rs fmt` 的性能更好，主要得益于以下两点：
+
+- **并行格式化**：`rs fmt` 通过 worker 池并行格式化文件。
+- **Yuku 解析器**：默认使用高性能的 [Yuku](https://yuku.fyi/) 解析器处理 JavaScript、JSX 和 TypeScript 文件。
+
+`rs fmt` 兼容 Prettier 的选项和插件，并提供更多内置能力，例如支持[排序 package.json 字段](#sort-package-json)。
+
+## 基本用法 \{#basic-usage}
+
+直接运行 `rs fmt`，即可格式化当前目录中的文件并保存修改：
+
+```bash
+rs fmt
+```
+
+使用 `--check` 检查文件是否已格式化，而不修改文件：
+
+```bash
+rs fmt --check
+```
+
+更多命令行选项请参考 [`rs fmt` CLI 文档](./cli/fmt)。
+
+## 配置 \{#configuration}
+
+在 `rstack.config.ts` 中使用 [`define.fmt()`](./configuration#define-fmt) 设置格式化规则。它支持所有的 [Prettier 选项](https://prettier.io/docs/options)：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.fmt({
+  printWidth: 100,
+  singleQuote: true,
+});
+```
+
+除了 Prettier 选项和 `overrides`，Rstack 还提供两个选项：
+
+- [`ignorePatterns`](#ignore-files)：使用兼容 Gitignore 的模式排除文件。
+- [`sortPackageJson`](#sort-package-json)：对 `package.json` 中的字段排序，默认值为 `false`。
+
+:::warning Prettier 配置文件
+
+`rs fmt` 不会读取 Prettier 配置文件、`.prettierignore` 或 `.editorconfig`。请在 `define.fmt()` 中设置格式化选项和额外的忽略规则。
+
+:::
+
+## 格式化范围 \{#formatting-scope}
+
+`rs fmt` 根据命令行中传入的路径确定格式化范围。以下输入可以组合使用：
+
+- **文件**：只格式化指定文件。
+- **目录**：递归扫描目录并格式化支持的文件。
+- **glob 模式**：匹配多个路径，并通过以 `!` 开头的模式排除匹配结果。
+
+不传入路径时，`rs fmt` 默认格式化当前目录。所有 glob 模式都基于当前工作目录解析。请为 glob 添加引号，避免它们被 shell 提前展开：
+
+```bash
+# 格式化一个目录和一个文件
+rs fmt src package.json
+
+# 格式化 JavaScript 和 TypeScript 文件，并排除生成文件
+rs fmt "src/**/*.{js,ts}" "!src/generated/**"
+```
+
+扫描目录或 glob 时，`rs fmt` 会遵循 `.gitignore` 规则、跳过二进制文件，并且不会遍历版本控制目录或 `node_modules`。Prettier 无法推断解析器的文件也会被跳过。
+
+`.gitignore` 只在扫描目录和 glob 时生效，不会排除命令行中显式传入的文件。如果需要始终排除某个文件，请使用 [`ignorePatterns`](#ignore-files)。
+
+## 忽略文件 \{#ignore-files}
+
+使用 `ignorePatterns` 排除不需要格式化的文件：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.fmt({
+  ignorePatterns: ['dist/**', 'coverage/**', '**/generated/**'],
+});
+```
+
+这些模式遵循 Gitignore 语法，并且基于 Rstack 配置文件所在的目录解析。由于规则会在确定格式化范围后生效，因此也会排除命令行中显式传入的文件。
+
+## 排序 package.json 字段 \{#sort-package-json}
+
+启用 `sortPackageJson` 后，`rs fmt` 会使用 [`sort-package-json`](https://github.com/keithamus/sort-package-json) 对每个待格式化的 `package.json` 中的字段排序：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.fmt({
+  sortPackageJson: true,
+});
+```
+
+## 覆盖配置 \{#overrides}
+
+通过 `overrides` 字段，可以为特定文件单独设置格式化选项。每一项都支持以下字段：
+
+- `files`：需要应用格式化选项的文件或 glob 模式。
+- `options`：应用于匹配文件的格式化选项。
+- `excludeFiles`：可选，需要从匹配结果中排除的文件或 glob 模式。
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.fmt({
+  overrides: [
+    {
+      files: 'docs/**/*.md',
+      excludeFiles: 'docs/generated/**',
+      options: {
+        proseWrap: 'always',
+      },
+    },
+  ],
+});
+```
+
+### 模式匹配 \{#pattern-matching}
+
+`files` 和 `excludeFiles` 模式都基于 `rstack.config.ts` 所在目录解析。
+
+在 `files` 中，不包含 `/` 的模式会匹配任意深度的文件名，包含 `/` 的模式则匹配相对路径。下面示例中的 `*.md` 会匹配任意目录中的 Markdown 文件，而 `scripts/**/*.js` 会匹配相对于 Rstack 配置文件所在目录的路径：
+
+```ts
+define.fmt({
+  overrides: [
+    { files: '*.md', options: { proseWrap: 'always' } },
+    { files: 'scripts/**/*.js', options: { singleQuote: true } },
+  ],
+});
+```
+
+### 合并顺序 \{#merge-order}
+
+如果同一文件匹配多条 override 规则，Rstack 会按声明顺序合并配置，后面的值优先。下面的 `README.md` 会同时匹配两条规则，因此最终的 `printWidth` 为 `80`：
+
+```ts
+define.fmt({
+  overrides: [
+    { files: '*.md', options: { printWidth: 100 } },
+    { files: 'README.md', options: { printWidth: 80 } },
+  ],
+});
+```
+
+## Prettier 插件 \{#prettier-plugins}
+
+如果需要使用 Rstack 未内置的格式化能力，可以安装相应的 [Prettier 插件](https://prettier.io/docs/plugins)，并添加到 `plugins` 中。插件支持通过包名、文件路径或 URL 引用，其中包名和相对路径基于 Rstack 配置文件所在的目录解析。
+
+由于 `rs fmt` 会在 worker 中加载插件，因此不支持直接传入插件对象。请通过包名、路径或 URL 引用插件。例如，安装并启用 [`prettier-plugin-tailwindcss`](https://github.com/tailwindlabs/prettier-plugin-tailwindcss)：
+
+<PackageManagerTabs command="install -D prettier-plugin-tailwindcss" />
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.fmt({
+  plugins: ['prettier-plugin-tailwindcss'],
+});
+```
+
+如果只需要为特定文件启用插件，可以在 [`overrides`](#overrides) 的 `options` 中配置 `plugins`。

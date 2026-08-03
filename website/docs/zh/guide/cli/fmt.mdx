@@ -1,6 +1,6 @@
 # fmt
 
-`rs fmt` 命令底层基于 [Prettier](https://prettier.io/)。它默认并行处理文件，并使用高性能的 [Yuku](https://yuku.fyi/) 解析器处理 JavaScript 和 TypeScript，相比于直接使用 Prettier 具有更好的性能。
+`rs fmt` 命令用于格式化文件或检查文件格式。详细用法请参考[格式化](../formatting)指南。
 
 ## 用法 \{#usage}
 
@@ -8,7 +8,26 @@
 rs fmt [options] [files/globs...]
 ```
 
-可以传入文件、目录或 glob 模式来指定格式化范围。未传入目标时，`rs fmt` 会格式化当前目录。`rs format` 是 `rs fmt` 的别名。
+可以传入文件、目录或 glob 模式来指定格式化范围。不传入路径时，`rs fmt` 会格式化当前目录。
+
+示例：
+
+```bash
+# 格式化当前目录中的文件
+rs fmt
+
+# 格式化指定文件和目录
+rs fmt src package.json
+
+# 在 CI 中检查格式
+rs fmt --check
+```
+
+`rs format` 是 `rs fmt` 的别名：
+
+```bash
+rs format
+```
 
 ## 选项 \{#options}
 
@@ -20,62 +39,4 @@ rs fmt [options] [files/globs...]
 | `--parallel-workers <count>` | 设置格式化 worker 的最大数量。                        |
 | `-h, --help`                 | 显示命令用法和选项。                                  |
 
-`--write`、`--check` 和 `--list-different` 不能同时使用。
-
-示例：
-
-```bash
-# 就地格式化当前目录
-rs fmt
-
-# 格式化指定文件和目录
-rs fmt src package.json
-
-# 使用带引号的 glob 包含和排除文件
-rs fmt "src/**/*.{js,ts}" "!src/generated/**"
-
-# 在 CI 中检查格式
-rs fmt --check
-```
-
-## 文件发现 \{#file-discovery}
-
-扫描目录或 glob 时，`rs fmt` 会遵循 `.gitignore`、跳过二进制文件，并且不会遍历版本控制目录或 `node_modules`。Prettier 无法推断 parser 的文件也会被跳过。
-
-如需添加项目专属的排除规则，请使用 [`ignorePatterns`](../configuration#define-fmt)。传入的正向和反向 glob 都基于当前工作目录解析。
-
-## 配置 \{#configuration}
-
-在 [Rstack 配置文件](/guide/configuration#configuration-file)中通过 [`define.fmt()`](../configuration#define-fmt) 配置格式化：
-
-```ts title="rstack.config.ts"
-import { define } from 'rstack';
-
-define.fmt({
-  printWidth: 100,
-  singleQuote: true,
-  sortPackageJson: true,
-  ignorePatterns: ['dist/**'],
-  overrides: [
-    {
-      files: '*.md',
-      options: {
-        proseWrap: 'always',
-      },
-    },
-  ],
-});
-```
-
-`define.fmt()` 支持标准的 [Prettier 选项](https://prettier.io/docs/options)和 `overrides` 字段，并额外提供以下 Rstack 选项：
-
-- `ignorePatterns`：相对于 `rstack.config.ts` 所在目录的 Gitignore 兼容模式。
-- `sortPackageJson`：格式化前对 `package.json` 字段排序，默认值为 `false`。
-
-:::warning 配置来源
-
-`rs fmt` 不会加载 Prettier 配置文件、`.prettierignore` 或 `.editorconfig`。请将其中的配置和忽略规则迁移到 `define.fmt()`。
-
-:::
-
-使用 [Prettier 插件](https://prettier.io/docs/plugins)时，需要将插件指定为包名、文件路径或 URL。由于格式化在 worker 中运行，因此不支持传入已导入的插件对象。包名和相对路径会基于 Rstack 配置文件所在目录解析。
+> `--write`、`--check` 和 `--list-different` 不能同时使用。

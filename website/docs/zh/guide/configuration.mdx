@@ -168,9 +168,7 @@ define.lint(async () => {
 
 ### `define.fmt()` \{#define-fmt}
 
-定义 [`rs fmt`](./cli/fmt) 使用的格式化配置。可以直接传入配置，也可以通过同步或异步函数返回配置。
-
-`define.fmt()` 支持标准的 [Prettier 选项](https://prettier.io/docs/options) 和 `overrides` 字段。此外，还可以通过 `ignorePatterns` 配置 Gitignore 兼容的排除规则，并通过 `sortPackageJson` 在格式化前对 `package.json` 字段排序。
+定义 [`rs fmt`](./cli/fmt) 的格式化配置。可以直接传入配置对象，也可以传入返回配置对象的同步或异步函数。
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
@@ -178,22 +176,10 @@ import { define } from 'rstack';
 define.fmt({
   printWidth: 100,
   singleQuote: true,
-  sortPackageJson: true,
-  ignorePatterns: ['dist/**'],
-  overrides: [
-    {
-      files: '*.md',
-      options: {
-        proseWrap: 'always',
-      },
-    },
-  ],
 });
 ```
 
-忽略模式、override 模式和插件相对路径都基于 Rstack 配置文件所在目录解析。Prettier 插件需要指定为包名、路径或 URL，不能传入已导入的插件对象。
-
-`rs fmt` 不会加载 Prettier 配置文件、`.prettierignore` 或 `.editorconfig`；请将所有格式化选项和忽略规则集中在 `define.fmt()` 中。
+详细用法请参考[格式化](./formatting)指南。
 
 ### `define.staged()` \{#define-staged}
 

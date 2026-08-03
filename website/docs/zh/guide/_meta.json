@@ -24,13 +24,18 @@
   },
   {
     "type": "file",
-    "name": "monorepo",
-    "label": "Monorepo"
+    "name": "testing",
+    "label": "测试"
   },
   {
     "type": "file",
-    "name": "testing",
-    "label": "测试"
+    "name": "formatting",
+    "label": "格式化"
+  },
+  {
+    "type": "file",
+    "name": "monorepo",
+    "label": "Monorepo"
   },
   {
     "type": "dir-section-header",

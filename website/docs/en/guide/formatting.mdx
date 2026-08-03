@@ -1,0 +1,168 @@
+# Formatting
+
+import { PackageManagerTabs } from '@rspress/core/theme';
+
+Rstack CLI includes a formatter built on [Prettier](https://prettier.io/). Compared with running Prettier directly, `rs fmt` offers better performance in two ways:
+
+- **Parallel formatting**: `rs fmt` formats files concurrently in a worker pool.
+- **Yuku parser**: `rs fmt` uses the high-performance [Yuku](https://yuku.fyi/) parser by default for JavaScript, JSX, and TypeScript files.
+
+`rs fmt` supports Prettier options and plugins and adds built-in capabilities such as [sorting package.json fields](#sort-package-json).
+
+## Basic usage
+
+Run `rs fmt` without file arguments to format files in the current directory and save the changes:
+
+```bash
+rs fmt
+```
+
+Use `--check` to verify formatting without changing files:
+
+```bash
+rs fmt --check
+```
+
+See the [`rs fmt` CLI reference](./cli/fmt) for more command-line options.
+
+## Configuration
+
+Use [`define.fmt()`](./configuration#define-fmt) in `rstack.config.ts` to set formatting rules. It supports all [Prettier options](https://prettier.io/docs/options):
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.fmt({
+  printWidth: 100,
+  singleQuote: true,
+});
+```
+
+In addition to Prettier options and `overrides`, Rstack provides two options:
+
+- [`ignorePatterns`](#ignore-files): exclude files with Gitignore-compatible patterns.
+- [`sortPackageJson`](#sort-package-json): sort fields in `package.json` files. The default value is `false`.
+
+:::warning Prettier configuration files
+
+`rs fmt` does not read Prettier configuration files, `.prettierignore`, or `.editorconfig`. Keep formatting options and additional ignore rules in `define.fmt()`.
+
+:::
+
+## Formatting scope
+
+`rs fmt` determines the formatting scope from the paths passed on the command line. You can combine the following inputs:
+
+- **Files**: format only the specified files.
+- **Directories**: scan directories recursively and format supported files.
+- **Glob patterns**: match multiple paths, and prefix a pattern with `!` to exclude matches.
+
+When no paths are provided, `rs fmt` formats the current directory. All glob patterns are resolved from the current working directory. Quote them so that `rs fmt`, rather than the shell, expands them:
+
+```bash
+# Format a directory and a file
+rs fmt src package.json
+
+# Format JavaScript and TypeScript files, excluding generated files
+rs fmt "src/**/*.{js,ts}" "!src/generated/**"
+```
+
+When scanning directories or globs, `rs fmt` follows `.gitignore` rules, skips binary files, and does not traverse version-control directories or `node_modules`. It also skips files for which Prettier cannot infer a parser.
+
+`.gitignore` applies only when scanning directories and globs. It does not exclude files passed explicitly on the command line. To always exclude a file, use [`ignorePatterns`](#ignore-files).
+
+## Ignore files
+
+Use `ignorePatterns` to exclude files from formatting:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.fmt({
+  ignorePatterns: ['dist/**', 'coverage/**', '**/generated/**'],
+});
+```
+
+Patterns follow Gitignore syntax and are resolved relative to the directory containing the Rstack configuration file. Because they are applied after the files are selected, they also exclude files passed explicitly on the command line.
+
+## Sort package.json fields \{#sort-package-json}
+
+Enable `sortPackageJson` to sort fields in each selected `package.json` with [`sort-package-json`](https://github.com/keithamus/sort-package-json):
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.fmt({
+  sortPackageJson: true,
+});
+```
+
+## Overrides
+
+Use the `overrides` field to set options for specific files. Each override supports these fields:
+
+- `files`: files or glob patterns to match.
+- `options`: formatting options applied to matching files.
+- `excludeFiles`: optional files or glob patterns to exclude.
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.fmt({
+  overrides: [
+    {
+      files: 'docs/**/*.md',
+      excludeFiles: 'docs/generated/**',
+      options: {
+        proseWrap: 'always',
+      },
+    },
+  ],
+});
+```
+
+### Pattern matching
+
+The `files` and `excludeFiles` patterns are resolved relative to the directory containing `rstack.config.ts`.
+
+In `files`, a pattern without `/` matches file names at any depth, while a pattern containing `/` matches relative paths. In this example, `*.md` matches Markdown files in any directory, while `scripts/**/*.js` matches paths relative to the configuration directory:
+
+```ts
+define.fmt({
+  overrides: [
+    { files: '*.md', options: { proseWrap: 'always' } },
+    { files: 'scripts/**/*.js', options: { singleQuote: true } },
+  ],
+});
+```
+
+### Merge order
+
+When multiple overrides match, they are applied in declaration order, so later values take precedence. Here, `README.md` matches both overrides, so the final `printWidth` is `80`:
+
+```ts
+define.fmt({
+  overrides: [
+    { files: '*.md', options: { printWidth: 100 } },
+    { files: 'README.md', options: { printWidth: 80 } },
+  ],
+});
+```
+
+## Prettier plugins
+
+To add formatting capabilities that are not built into Rstack, install the corresponding [Prettier plugin](https://prettier.io/docs/plugins) and add it to `plugins`. Plugins can be referenced by package name, file path, or URL. Package names and relative paths are resolved from the directory containing the Rstack configuration file.
+
+Because `rs fmt` loads plugins in workers, plugin objects cannot be passed directly. Reference each plugin by package name, path, or URL instead. For example, install and enable [`prettier-plugin-tailwindcss`](https://github.com/tailwindlabs/prettier-plugin-tailwindcss):
+
+<PackageManagerTabs command="install -D prettier-plugin-tailwindcss" />
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.fmt({
+  plugins: ['prettier-plugin-tailwindcss'],
+});
+```
+
+To enable a plugin only for specific files, add `plugins` to the `options` of an [`overrides`](#overrides) entry.
