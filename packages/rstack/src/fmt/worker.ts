@@ -2,8 +2,9 @@
 
 import { readFile, writeFile } from 'atomically';
 import { format } from 'prettier';
+import { resolveFmtParser } from './parser.ts';
 import { getPrettierPlugins } from './prettierPlugins.ts';
-import type { FmtFileRequest } from './types.ts';
+import type { FmtFileRequest, FmtWorkerFileResult } from './types.ts';
 
 /**
  * Formatting output can be regenerated, so avoid waiting for a durability sync
@@ -18,22 +19,29 @@ const atomicWriteOptions = {
 const formatFile = async (
   { path, options }: FmtFileRequest,
   shouldWrite: boolean,
-): Promise<boolean> => {
+): Promise<FmtWorkerFileResult> => {
+  const plugins = await getPrettierPlugins(options);
+  const parser = await resolveFmtParser(path, options, plugins);
+  if (!parser) {
+    return 'unsupported';
+  }
+
   const source = await readFile(path, 'utf8');
   const formatted = await format(source, {
     ...options,
-    plugins: await getPrettierPlugins(options),
+    parser,
+    plugins,
   });
 
   if (source === formatted) {
-    return false;
+    return 'unchanged';
   }
 
   if (shouldWrite) {
     await writeFile(path, formatted, atomicWriteOptions);
   }
 
-  return true;
+  return 'changed';
 };
 
 /** Confirms that the worker module and its runtime dependencies are ready. */

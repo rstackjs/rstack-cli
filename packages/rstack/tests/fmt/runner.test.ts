@@ -104,3 +104,20 @@ test('continues after a file fails and gives errors exit-code precedence', async
     expect(readFileSync(validPath, 'utf8')).toBe('const value=1');
   });
 });
+
+test('omits unsupported files from the result', async () => {
+  await withTempProject(async (rootPath) => {
+    const filePath = path.join(rootPath, 'example.unknown');
+    writeFileSync(filePath, 'plain text');
+
+    const result = await run([
+      {
+        path: filePath,
+        options: { filepath: filePath },
+      },
+    ]);
+
+    expect(result).toMatchObject({ exitCode: 0, files: [] });
+    expect(readFileSync(filePath, 'utf8')).toBe('plain text');
+  });
+});

@@ -1,32 +1,26 @@
 import { resolveFmtOptions } from './config.ts';
 import { discoverFmtPaths } from './discoverPaths.ts';
 import { createFmtIgnoreMatcher } from './ignore.ts';
-import { resolveFmtParser } from './parser.ts';
 import { createFmtPluginResolver, type FmtPluginResolver } from './plugins.ts';
 import type { DiscoverFmtFilesOptions, FmtFileRequest, ResolvedFmtConfig } from './types.ts';
 
-const resolveFileRequest = async (
+const createFileRequest = (
   filePath: string,
   config: ResolvedFmtConfig,
   resolvePlugins: FmtPluginResolver,
-): Promise<FmtFileRequest | undefined> => {
+): FmtFileRequest => {
   const options = resolvePlugins(resolveFmtOptions(filePath, config));
-  const parser = await resolveFmtParser(filePath, options);
-  if (!parser) {
-    return;
-  }
 
   return {
     path: filePath,
     options: {
       ...options,
       filepath: filePath,
-      parser,
     },
   };
 };
 
-/** Discovers format-ready files without reading Prettier config files or `.prettierignore`. */
+/** Discovers worker-ready files without reading Prettier config files or `.prettierignore`. */
 const discoverFmtFiles = async ({
   cwd,
   patterns,
@@ -42,11 +36,8 @@ const discoverFmtFiles = async ({
     ? candidates.filter((filePath) => !isFmtIgnored(filePath))
     : candidates;
   const resolvePlugins = createFmtPluginResolver(config.rootPath);
-  const files = await Promise.all(
-    filePaths.map((filePath) => resolveFileRequest(filePath, config, resolvePlugins)),
-  );
 
-  return files.filter((file): file is FmtFileRequest => file !== undefined);
+  return filePaths.map((filePath) => createFileRequest(filePath, config, resolvePlugins));
 };
 
 export { discoverFmtFiles };
