@@ -16,8 +16,8 @@
     "zh": "统一命令行"
   },
   "unifiedCliDesc": {
-    "en": "Develop, build, test, lint, publish libraries, and serve docs with the rs command.",
-    "zh": "通过 rs 命令完成开发、构建、测试、检查、库构建和文档开发。"
+    "en": "Develop, build, test, lint, format code, build libraries, and serve docs with the rs command.",
+    "zh": "通过 rs 命令完成开发、构建、测试、检查、格式化、库构建和文档开发。"
   },
   "oneConfig": {
     "en": "One Configuration",

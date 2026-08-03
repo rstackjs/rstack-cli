@@ -123,7 +123,7 @@ define.fmt({
 
 ### 模式匹配 \{#pattern-matching}
 
-`files` 和 `excludeFiles` 模式都基于 `rstack.config.ts` 所在目录解析。
+`files` 和 `excludeFiles` 模式都基于 Rstack 配置文件所在目录解析。
 
 在 `files` 中，不包含 `/` 的模式会匹配任意深度的文件名，包含 `/` 的模式则匹配相对路径。下面示例中的 `*.md` 会匹配任意目录中的 Markdown 文件，而 `scripts/**/*.js` 会匹配相对于 Rstack 配置文件所在目录的路径：
 
