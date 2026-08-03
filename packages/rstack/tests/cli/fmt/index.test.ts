@@ -5,6 +5,10 @@ import { afterEach, beforeEach, expect, test } from 'rstack/test';
 import { RSTACK_BIN_PATH } from '#test-helpers';
 
 let projectPath: string;
+const packageJsonSource =
+  '{"dependencies":{"z":"1.0.0","a":"1.0.0"},"type":"module","version":"1.0.0","name":"fixture"}';
+const sortedPackageJson =
+  '{\n  "name": "fixture",\n  "version": "1.0.0",\n  "type": "module",\n  "dependencies": {\n    "a": "1.0.0",\n    "z": "1.0.0"\n  }\n}\n';
 
 const writeProjectFile = (filePath: string, content: string): void => {
   const absolutePath = path.join(projectPath, filePath);
@@ -96,6 +100,39 @@ test('formats the current directory with Prettier defaults', () => {
   expect(result.stdout).toBe('index.ts\n');
   expect(result.stderr).toBe('');
   expect(readProjectFile('index.ts')).toBe('const message = "hello";\n');
+});
+
+test('does not sort package.json by default', () => {
+  writeProjectFile('package.json', packageJsonSource);
+
+  const result = runFmt(['package.json']);
+
+  expect(result.status).toBe(0);
+  expect(readProjectFile('package.json')).toContain(
+    '"dependencies": {\n    "z": "1.0.0",\n    "a": "1.0.0"',
+  );
+});
+
+test.each([
+  ['parallel execution', []],
+  ['serial execution', ['--no-parallel']],
+] as const)('sorts package.json with %s', (_, options) => {
+  writeProjectFile(
+    'rstack.config.ts',
+    `import { define } from 'rstack';
+
+define.fmt({ sortPackageJson: true });
+`,
+  );
+  writeProjectFile('package.json', packageJsonSource);
+  writeProjectFile('packages/example/package.json', packageJsonSource);
+
+  const result = runFmt([...options, 'package.json', 'packages/example/package.json']);
+
+  expect(result.status).toBe(0);
+  expect(result.stderr).toBe('');
+  expect(readProjectFile('package.json')).toBe(sortedPackageJson);
+  expect(readProjectFile('packages/example/package.json')).toBe(sortedPackageJson);
 });
 
 test.each([

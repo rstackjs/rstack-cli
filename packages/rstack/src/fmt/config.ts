@@ -1,7 +1,11 @@
 import { dirname, relative } from 'node:path';
 import micromatch from 'micromatch';
-import type { Options as PrettierOptions } from 'prettier';
-import type { FmtConfig, FmtConfigDefinition, ResolvedFmtConfig } from './types.ts';
+import type {
+  FmtConfig,
+  FmtConfigDefinition,
+  ResolvedFmtConfig,
+  ResolvedFmtOptions,
+} from './types.ts';
 
 type ResolveFmtConfigOptions = {
   definition: FmtConfigDefinition | undefined;
@@ -45,7 +49,7 @@ const pathMatchesGlobs = (
 };
 
 /** Applies matching overrides to the shared formatter options. */
-const resolveFmtOptions = (filePath: string, config: ResolvedFmtConfig): PrettierOptions => {
+const resolveFmtOptions = (filePath: string, config: ResolvedFmtConfig): ResolvedFmtOptions => {
   if (config.overrides.length === 0) {
     return config.baseOptions;
   }

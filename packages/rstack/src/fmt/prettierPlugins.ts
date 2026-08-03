@@ -1,12 +1,30 @@
 import * as yukuPlugin from '@prettier/plugin-yuku';
-import type { Options as PrettierOptions } from 'prettier';
+import type { Options as PrettierOptions, Plugin } from 'prettier';
+import type { ResolvedFmtOptions } from './types.ts';
 
 type PrettierPlugins = NonNullable<PrettierOptions['plugins']>;
 
-const defaultFmtPlugins: PrettierPlugins = [yukuPlugin];
+const fmtOptionsPlugin = {
+  options: {
+    sortPackageJson: {
+      category: 'Global',
+      default: false,
+      description: 'Sort package.json fields using sort-package-json.',
+      type: 'boolean',
+    },
+  },
+} satisfies Plugin;
 
-/** Prepends Yuku so project plugins can override the default parser. */
-const getPrettierPlugins = (plugins: PrettierOptions['plugins']): PrettierPlugins =>
-  plugins?.length ? [...defaultFmtPlugins, ...plugins] : defaultFmtPlugins;
+const defaultFmtPlugins: PrettierPlugins = [yukuPlugin, fmtOptionsPlugin];
+
+/** Prepends bundled plugins so project plugins can override their parsers. */
+const getPrettierPlugins = async (options: ResolvedFmtOptions): Promise<PrettierPlugins> => {
+  const plugins =
+    options.sortPackageJson === true && /(^|[/\\])package\.json$/.test(options.filepath ?? '')
+      ? [...defaultFmtPlugins, (await import('./sortPackageJsonPlugin.ts')).sortPackageJsonPlugin]
+      : defaultFmtPlugins;
+
+  return options.plugins?.length ? [...plugins, ...options.plugins] : plugins;
+};
 
 export { getPrettierPlugins };

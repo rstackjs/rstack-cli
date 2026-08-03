@@ -77,6 +77,7 @@
     "lint-staged": "catalog:",
     "micromatch": "catalog:",
     "rslog": "catalog:",
+    "sort-package-json": "catalog:",
     "tiny-readdir": "catalog:",
     "typescript": "catalog:",
     "worktank": "catalog:"

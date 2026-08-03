@@ -109,9 +109,6 @@ catalogs:
     prettier:
       specifier: 3.9.6
       version: 3.9.6
-    prettier-plugin-packagejson:
-      specifier: ^3.0.2
-      version: 3.0.2
     react:
       specifier: ^19.2.8
       version: 19.2.8
@@ -127,6 +124,9 @@ catalogs:
     rspress-plugin-font-open-sans:
       specifier: ^1.0.4
       version: 1.0.4
+    sort-package-json:
+      specifier: 4.0.0
+      version: 4.0.0
     tiny-readdir:
       specifier: 3.1.1
       version: 3.1.1
@@ -159,9 +159,6 @@ importers:
       prettier:
         specifier: 'catalog:'
         version: 3.9.6
-      prettier-plugin-packagejson:
-        specifier: 'catalog:'
-        version: 3.0.2(prettier@3.9.6)
       rstack:
         specifier: workspace:*
         version: link:packages/rstack
@@ -406,6 +403,9 @@ importers:
       rslog:
         specifier: 'catalog:'
         version: 2.3.0
+      sort-package-json:
+        specifier: 'catalog:'
+        version: 4.0.0
       tiny-readdir:
         specifier: 'catalog:'
         version: 3.1.1
@@ -1957,14 +1957,6 @@ packages:
     resolution: {integrity: sha512-Mz8SaolMd8nB+G13WkORcxQKHZ/NE4xXevtkJHVuG+guo9/wYKlIMTKAqGdEmYOXR2ijPjTYNHssizdaVSUNdQ==}
     engines: {node: ^10 || ^12 || >=14}
 
-  prettier-plugin-packagejson@3.0.2:
-    resolution: {integrity: sha512-kmoj3hEynXwoHDo8ZhmWAIjRBoQWCDUVackiWfSDWdgD0rS3LGB61T9zoVbume/cotYdCoadUh4sqViAmXvpBQ==}
-    peerDependencies:
-      prettier: ^3
-    peerDependenciesMeta:
-      prettier:
-        optional: true
-
   prettier@3.9.6:
     resolution: {integrity: sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g==}
     engines: {node: '>=14'}
@@ -2284,9 +2276,9 @@ packages:
   sort-object-keys@2.1.0:
     resolution: {integrity: sha512-SOiEnthkJKPv2L6ec6HMwhUcN0/lppkeYuN1x63PbyPRrgSPIuBJCiYxYyvWRTtjMlOi14vQUCGUJqS6PLVm8g==}
 
-  sort-package-json@3.7.1:
-    resolution: {integrity: sha512-ssk1HG7whF8N/T1IsNAQrtHG5Cbdi0rAgRJZXYBr9hF5xaHnBNzUx/W6LcthEW7FhOwvZssbESZuO+GxssqAyA==}
-    engines: {node: '>=20'}
+  sort-package-json@4.0.0:
+    resolution: {integrity: sha512-6aYOlYI9AWioZ+rzu+4zKLmoFqJP0/fHDxrd7X04yqEibikY+5YVF0EYlyGn4v6X2PJY7yAUWV7oeP+i5rOm/g==}
+    engines: {node: '>=22'}
     hasBin: true
 
   source-map-js@1.2.1:
@@ -4144,12 +4136,6 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  prettier-plugin-packagejson@3.0.2(prettier@3.9.6):
-    dependencies:
-      sort-package-json: 3.7.1
-    optionalDependencies:
-      prettier: 3.9.6
-
   prettier@3.9.6: {}
 
   pretty-format@27.5.1:
@@ -4479,7 +4465,7 @@ snapshots:
 
   sort-object-keys@2.1.0: {}
 
-  sort-package-json@3.7.1:
+  sort-package-json@4.0.0:
     dependencies:
       detect-indent: 7.0.2
       detect-newline: 4.0.1

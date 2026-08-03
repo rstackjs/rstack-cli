@@ -2,10 +2,10 @@ import { isAbsolute, join, resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { moduleResolve } from 'import-meta-resolve';
 import type { Options as PrettierOptions } from 'prettier';
-import type { FmtPluginSpecifier } from './types.ts';
+import type { FmtPluginSpecifier, ResolvedFmtOptions } from './types.ts';
 
 type FmtPlugin = NonNullable<PrettierOptions['plugins']>[number];
-type FmtPluginResolver = (options: PrettierOptions) => PrettierOptions;
+type FmtPluginResolver = (options: ResolvedFmtOptions) => ResolvedFmtOptions;
 
 const resolveModuleUrl = (specifier: string, parentUrl: URL): string =>
   moduleResolve(specifier, parentUrl).href;

@@ -3,9 +3,20 @@ import type { Config as PrettierConfig, Options as PrettierOptions } from 'prett
 /** Plugin objects cannot cross worker boundaries and are not planned for support. */
 type FmtPluginSpecifier = string | URL;
 
-type FmtOptions = Omit<PrettierOptions, 'plugins'> & {
-  plugins?: FmtPluginSpecifier[];
-};
+interface FmtBuiltinOptions {
+  /**
+   * Sort `package.json` fields using `sort-package-json`.
+   * @default false
+   */
+  sortPackageJson?: boolean;
+}
+
+type ResolvedFmtOptions = PrettierOptions & FmtBuiltinOptions;
+
+type FmtOptions = Omit<PrettierOptions, 'plugins'> &
+  FmtBuiltinOptions & {
+    plugins?: FmtPluginSpecifier[];
+  };
 
 type PrettierOverride = NonNullable<PrettierConfig['overrides']>[number];
 
@@ -13,7 +24,7 @@ type FmtOverride = Omit<PrettierOverride, 'options'> & {
   options?: FmtOptions;
 };
 
-interface FmtConfig extends Omit<PrettierConfig, 'plugins' | 'overrides'> {
+interface FmtConfig extends Omit<PrettierConfig, 'plugins' | 'overrides'>, FmtBuiltinOptions {
   plugins?: FmtPluginSpecifier[];
   overrides?: FmtOverride[];
   /** Gitignore-compatible patterns relative to the Rstack config root. */
@@ -27,7 +38,7 @@ interface ResolvedFmtConfig {
   /** Root for relative patterns and plugin paths. */
   rootPath: string;
   /** Shared Prettier options before per-file overrides. */
-  baseOptions: PrettierOptions;
+  baseOptions: ResolvedFmtOptions;
   /** Per-file override rules. */
   overrides: NonNullable<PrettierConfig['overrides']>;
   /** Root-relative ignore patterns. */
@@ -56,7 +67,7 @@ interface FmtFileRequest {
   /** Absolute path to the file. */
   path: string;
   /** Final Prettier options with the parser and file path resolved. */
-  options: PrettierOptions & Required<Pick<PrettierOptions, 'filepath' | 'parser'>>;
+  options: ResolvedFmtOptions & Required<Pick<PrettierOptions, 'filepath' | 'parser'>>;
 }
 
 type FmtMode = 'write' | 'check' | 'list-different';
@@ -123,5 +134,6 @@ export type {
   FormatTextOptions,
   FormatTextResult,
   ResolvedFmtConfig,
+  ResolvedFmtOptions,
   RunFmtFilesOptions,
 };
