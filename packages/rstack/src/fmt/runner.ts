@@ -16,25 +16,21 @@ const runFmtFile = async (
   shouldWrite: boolean,
   formatFile: FormatFile,
 ): Promise<FmtFileResult | undefined> => {
-  const startTime = performance.now();
-
   try {
     const result = await formatFile(file, shouldWrite);
-    if (result === 'unsupported') {
+    if (result !== 'changed') {
       return;
     }
 
     return {
       path: file.path,
-      status: result === 'changed' ? (shouldWrite ? 'written' : 'different') : 'unchanged',
-      durationMs: performance.now() - startTime,
+      status: shouldWrite ? 'written' : 'different',
     };
   } catch (error) {
     return {
       path: file.path,
       status: 'error',
       error,
-      durationMs: performance.now() - startTime,
     };
   }
 };
@@ -80,7 +76,6 @@ const runFmtFiles = async ({
   mode,
   maxWorkers,
 }: RunFmtFilesOptions): Promise<FmtRunResult> => {
-  const startTime = performance.now();
   const shouldWrite = mode === 'write';
   const results =
     files.length === 0 ? [] : await runFmtFilesInWorkerPool(files, shouldWrite, maxWorkers);
@@ -88,7 +83,6 @@ const runFmtFiles = async ({
   return {
     files: results,
     exitCode: getFmtExitCode(results),
-    durationMs: performance.now() - startTime,
   };
 };
 

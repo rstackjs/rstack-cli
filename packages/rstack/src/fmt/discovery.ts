@@ -8,17 +8,10 @@ const createFileRequest = (
   filePath: string,
   config: ResolvedFmtConfig,
   resolvePlugins: FmtPluginResolver,
-): FmtFileRequest => {
-  const options = resolvePlugins(resolveFmtOptions(filePath, config));
-
-  return {
-    path: filePath,
-    options: {
-      ...options,
-      filepath: filePath,
-    },
-  };
-};
+): FmtFileRequest => ({
+  path: filePath,
+  options: resolvePlugins(resolveFmtOptions(filePath, config)),
+});
 
 /** Discovers worker-ready files without reading Prettier config files or `.prettierignore`. */
 const discoverFmtFiles = async ({

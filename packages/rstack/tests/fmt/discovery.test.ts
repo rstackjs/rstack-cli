@@ -64,9 +64,9 @@ test('defers parser inference to workers and preserves an explicit parser', asyn
       'unknown.extension',
     ]);
     expect(inferredFiles.every((file) => file.options.parser === undefined)).toBe(true);
-    expect(configuredFiles[0].options).toMatchObject({
-      filepath: path.join(rootPath, 'source.custom'),
-      parser: 'babel',
+    expect(configuredFiles[0]).toEqual({
+      path: path.join(rootPath, 'source.custom'),
+      options: { parser: 'babel' },
     });
   });
 });

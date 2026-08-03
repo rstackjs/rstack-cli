@@ -23,7 +23,6 @@ test('returns an error when a file write fails', async () => {
       {
         path: filePath,
         options: {
-          filepath: filePath,
           parser: 'typescript',
         },
       },

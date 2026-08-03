@@ -8,7 +8,6 @@ import { withTempProject } from './helpers.ts';
 const createRequest = (filePath: string): FmtFileRequest => ({
   path: filePath,
   options: {
-    filepath: filePath,
     parser: 'typescript',
   },
 });
@@ -31,11 +30,9 @@ test('does not rewrite unchanged files', async () => {
 
     expect(result).toMatchObject({
       exitCode: 0,
-      files: [{ path: filePath, status: 'unchanged' }],
+      files: [],
     });
     expect(statSync(filePath).mtimeMs).toBe(mtimeMs);
-    expect(result.durationMs).toBeGreaterThanOrEqual(0);
-    expect(result.files[0].durationMs).toBeGreaterThanOrEqual(0);
   });
 });
 
@@ -112,7 +109,7 @@ test('omits unsupported files from the result', async () => {
     const result = await run([
       {
         path: filePath,
-        options: { filepath: filePath },
+        options: {},
       },
     ]);
 
