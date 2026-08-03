@@ -11,6 +11,7 @@ rs.mock('../../src/fmt/workerPool.ts', () => ({
       formatFile: () => Promise.reject(new Error('file write failed')),
       terminate: () => {
         mocks.terminateCalls++;
+        return Promise.resolve();
       },
     }),
 }));

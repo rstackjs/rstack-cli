@@ -127,12 +127,12 @@ catalogs:
     tiny-readdir:
       specifier: 3.1.1
       version: 3.1.1
+    tinypool:
+      specifier: 2.1.0
+      version: 2.1.0
     typescript:
       specifier: ^7.0.2
       version: 7.0.2
-    worktank:
-      specifier: 3.0.2
-      version: 3.0.2
     yuku-parser:
       specifier: 0.8.3
       version: 0.8.3
@@ -348,6 +348,9 @@ importers:
       prettier:
         specifier: 'catalog:'
         version: 3.9.6
+      tinypool:
+        specifier: 'catalog:'
+        version: 2.1.0
       yuku-parser:
         specifier: 'catalog:'
         version: 0.8.3
@@ -406,9 +409,6 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
-      worktank:
-        specifier: 'catalog:'
-        version: 3.0.2
 
   website:
     devDependencies:
@@ -1603,9 +1603,6 @@ packages:
     resolution: {integrity: sha512-BAg6QkE8W+TuQLrrw0Ugr7HegXduRuuj8/ti2kSOc+jz1dmx8/WNcjr6XGnq5YpDWxFwwaavqD0+jIUOKelTsw==}
     engines: {node: '>= 4'}
 
-  immediato@1.1.0:
-    resolution: {integrity: sha512-6DTWQWiM3SyxAbNRDmMvFgZVwVP6wT8ciQv7GivxXejtXZFIcemC0Wlzfd/jEouJ2JroCIp4qZVloKW4BviUpQ==}
-
   immutable@5.1.9:
     resolution: {integrity: sha512-m8nVez3rwrgmWxtLMt1ZYXB2Lv7OKYn/disyxAlSDYAlKSlFoPPfIAmAM/M5xqL4m4C/wAPw7S2/CNaUii1Hxg==}
 
@@ -1654,12 +1651,6 @@ packages:
   is-plain-obj@4.1.0:
     resolution: {integrity: sha512-+Pgi+vMuUNkJyExiMBt5IlFoMyKnr5zhJ4Uspz58WOhBF5QoIZkFyNHIbBAtHwzVAgk5RtndVNsDRN61/mmDqg==}
     engines: {node: '>=12'}
-
-  isoconcurrency@1.0.0:
-    resolution: {integrity: sha512-YhuPf5V6uOtQQHt9gIkOTbq75ceXqraDvxtZZeS/XbNsre6fmM+WpJgNTSkGX5jB3+gnbwoTVqW1c3qdfyVpOA==}
-
-  isotimer@1.0.0:
-    resolution: {integrity: sha512-1p1wborMl9fFbulXx9YBpIqFnfUn/2tN8Ne9g3GLMaiQAPmN/wLlpNOKCNT822div3Sq7LKkApZJ+6JipDUusQ==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -2326,6 +2317,10 @@ packages:
     resolution: {integrity: sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==}
     engines: {node: '>=12.0.0'}
 
+  tinypool@2.1.0:
+    resolution: {integrity: sha512-Pugqs6M0m7Lv1I7FtxN4aoyToKg1C4tu+/381vH35y8oENM/Ai7f7C4StcoK4/+BSw9ebcS8jRiVrORFKCALLw==}
+    engines: {node: ^20.0.0 || >=22.0.0}
+
   to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
@@ -2392,15 +2387,9 @@ packages:
   web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==}
 
-  webworker-shim@1.1.4:
-    resolution: {integrity: sha512-W/40L5W6ZQyGhYr3hJ7N/2SjdK5OdFtnYm94j6xlRyjckegXnIGwz0EdxdkQx6VGTglJjK8mqBhMz3fd3AY4bg==}
-
   whatwg-mimetype@3.0.0:
     resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
     engines: {node: '>=12'}
-
-  worktank@3.0.2:
-    resolution: {integrity: sha512-ry5gPtWnakOnUBAAa2aiyWZwAFJuBtd/MwZH6o9DXnQHD4AZvidtl2uTLrb2d3Zjy9D04n84lHJNnIETQl7tuA==}
 
   ws@8.21.0:
     resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
@@ -3507,8 +3496,6 @@ snapshots:
 
   ignore@7.0.6: {}
 
-  immediato@1.1.0: {}
-
   immutable@5.1.9: {}
 
   import-meta-resolve@4.2.0: {}
@@ -3545,12 +3532,6 @@ snapshots:
   is-number@7.0.0: {}
 
   is-plain-obj@4.1.0: {}
-
-  isoconcurrency@1.0.0: {}
-
-  isotimer@1.0.0:
-    dependencies:
-      immediato: 1.1.0
 
   js-tokens@4.0.0: {}
 
@@ -4500,6 +4481,8 @@ snapshots:
       fdir: 6.5.0(picomatch@4.0.5)
       picomatch: 4.0.5
 
+  tinypool@2.1.0: {}
+
   to-regex-range@5.0.1:
     dependencies:
       is-number: 7.0.0
@@ -4601,16 +4584,7 @@ snapshots:
 
   web-namespaces@2.0.1: {}
 
-  webworker-shim@1.1.4: {}
-
   whatwg-mimetype@3.0.0: {}
-
-  worktank@3.0.2:
-    dependencies:
-      isoconcurrency: 1.0.0
-      isotimer: 1.0.0
-      promise-make-naked: 3.0.2
-      webworker-shim: 1.1.4
 
   ws@8.21.0: {}
 
