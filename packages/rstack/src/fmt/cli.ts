@@ -122,10 +122,12 @@ const logFmtResult = (
   matchedFileCount: number,
   durationSeconds: number,
 ): void => {
+  let writtenCount = 0;
   let differentCount = 0;
 
   for (const file of result.files) {
     if (file.status === 'written') {
+      writtenCount++;
       continue;
     }
 
@@ -139,18 +141,17 @@ const logFmtResult = (
   }
 
   if (mode === 'write') {
-    if (result.exitCode !== 0) {
+    if (writtenCount === 0 && result.exitCode !== 0) {
       return;
     }
 
-    const writtenCount = result.files.length;
     const matchedFiles = formatFileCount(matchedFileCount);
     const time = prettyTime(durationSeconds);
-    if (writtenCount > 0) {
-      logger.success(`Formatted ${formatCount(writtenCount)} of ${matchedFiles} in ${time}.`);
-    } else {
-      logger.success(`Checked ${matchedFiles} in ${time}. No changes needed.`);
-    }
+    const message =
+      writtenCount > 0
+        ? `Formatted ${formatCount(writtenCount)} of ${matchedFiles} in ${time}.`
+        : `Checked ${matchedFiles} in ${time}. No changes needed.`;
+    logger[result.exitCode === 0 ? 'success' : 'info'](message);
     return;
   }
 
