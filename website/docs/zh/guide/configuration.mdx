@@ -21,6 +21,10 @@ define.test({
 define.lint({
   // Rslint 配置
 });
+
+define.fmt({
+  // 格式化配置
+});
 ```
 
 配置文件无需默认导出。每个 `define.*()` API 最多调用一次；重复定义同一类型的配置会抛出错误。
@@ -67,6 +71,7 @@ define.app(async () => {
 | [`define.doc()`](#define-doc)       | [Rspress](https://rspress.rs/zh/api/config/config-basic)                | [`rs doc`](./cli/doc)                                                           |
 | [`define.test()`](#define-test)     | [Rstest](https://rstest.rs/zh/config/)                                  | [`rs test`](./cli/test)                                                         |
 | [`define.lint()`](#define-lint)     | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
+| [`define.fmt()`](#define-fmt)       | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
 | [`define.staged()`](#define-staged) | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
 
 ### `define.app()` \{#define-app}
@@ -161,6 +166,35 @@ define.lint(async () => {
 });
 ```
 
+### `define.fmt()` \{#define-fmt}
+
+定义 [`rs fmt`](./cli/fmt) 使用的格式化配置。可以直接传入配置，也可以通过同步或异步函数返回配置。
+
+`define.fmt()` 支持标准的 [Prettier 选项](https://prettier.io/docs/options) 和 `overrides` 字段。此外，还可以通过 `ignorePatterns` 配置 Gitignore 兼容的排除规则，并通过 `sortPackageJson` 在格式化前对 `package.json` 字段排序。
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.fmt({
+  printWidth: 100,
+  singleQuote: true,
+  sortPackageJson: true,
+  ignorePatterns: ['dist/**'],
+  overrides: [
+    {
+      files: '*.md',
+      options: {
+        proseWrap: 'always',
+      },
+    },
+  ],
+});
+```
+
+忽略模式、override 模式和插件相对路径都基于 Rstack 配置文件所在目录解析。Prettier 插件需要指定为包名、路径或 URL，不能传入已导入的插件对象。
+
+`rs fmt` 不会加载 Prettier 配置文件、`.prettierignore` 或 `.editorconfig`；请将所有格式化选项和忽略规则集中在 `define.fmt()` 中。
+
 ### `define.staged()` \{#define-staged}
 
 定义用于处理 Git 暂存文件的 [lint-staged 配置](https://github.com/lint-staged/lint-staged#configuration)。支持传入从 glob 匹配模式映射到任务的配置对象，也支持传入任务生成函数。任务可以是 lint-staged 支持的命令、命令数组或函数。
@@ -169,7 +203,8 @@ define.lint(async () => {
 import { define } from 'rstack';
 
 define.staged({
-  '*.{js,jsx,ts,tsx}': 'rs lint',
+  '*.{js,jsx,ts,tsx}': ['rs lint', 'rs fmt'],
+  '*.{json,jsonc,md,mdx,css,html,yml,yaml}': 'rs fmt',
 });
 ```
 

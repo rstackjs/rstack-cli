@@ -21,6 +21,10 @@ define.test({
 define.lint({
   // Rslint configuration
 });
+
+define.fmt({
+  // Formatting configuration
+});
 ```
 
 The configuration file does not require a default export. Each `define.*()` API can be called at most once; defining the same configuration type more than once throws an error.
@@ -67,6 +71,7 @@ Configuration options follow the formats of the underlying tools. When using API
 | [`define.doc()`](#define-doc)       | [Rspress](https://rspress.rs/api/config/config-basic)                   | [`rs doc`](./cli/doc)                                                           |
 | [`define.test()`](#define-test)     | [Rstest](https://rstest.rs/config/)                                     | [`rs test`](./cli/test)                                                         |
 | [`define.lint()`](#define-lint)     | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
+| [`define.fmt()`](#define-fmt)       | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
 | [`define.staged()`](#define-staged) | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
 
 ### `define.app()` \{#define-app}
@@ -161,6 +166,35 @@ define.lint(async () => {
 });
 ```
 
+### `define.fmt()` \{#define-fmt}
+
+Defines the formatting configuration used by [`rs fmt`](./cli/fmt). Pass the configuration directly, or return it from a synchronous or asynchronous function.
+
+`define.fmt()` accepts standard [Prettier options](https://prettier.io/docs/options) and the `overrides` field. It also supports `ignorePatterns` for Gitignore-compatible exclusions and `sortPackageJson` for sorting `package.json` fields before formatting.
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.fmt({
+  printWidth: 100,
+  singleQuote: true,
+  sortPackageJson: true,
+  ignorePatterns: ['dist/**'],
+  overrides: [
+    {
+      files: '*.md',
+      options: {
+        proseWrap: 'always',
+      },
+    },
+  ],
+});
+```
+
+Ignore patterns, override patterns, and relative plugin paths are resolved from the directory containing the Rstack configuration file. Specify Prettier plugins as package names, paths, or URLs rather than imported plugin objects.
+
+`rs fmt` does not load Prettier configuration files, `.prettierignore`, or `.editorconfig`; keep all formatting options and ignore rules in `define.fmt()`.
+
 ### `define.staged()` \{#define-staged}
 
 Defines the [lint-staged configuration](https://github.com/lint-staged/lint-staged#configuration) used to run tasks on staged Git files. It accepts either an object that maps glob patterns to tasks or a task-generator function. Tasks can be commands, command arrays, or functions supported by lint-staged.
@@ -169,7 +203,8 @@ Defines the [lint-staged configuration](https://github.com/lint-staged/lint-stag
 import { define } from 'rstack';
 
 define.staged({
-  '*.{js,jsx,ts,tsx}': 'rs lint',
+  '*.{js,jsx,ts,tsx}': ['rs lint', 'rs fmt'],
+  '*.{json,jsonc,md,mdx,css,html,yml,yaml}': 'rs fmt',
 });
 ```
 
