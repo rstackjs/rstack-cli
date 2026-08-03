@@ -13,7 +13,6 @@ test('writes formatted files', async () => {
         file: {
           path: filePath,
           options: {
-            filepath: filePath,
             parser: 'typescript',
           },
         },
@@ -34,7 +33,7 @@ test('infers the parser for an explicitly provided node_modules file', async () 
       formatFile({
         file: {
           path: filePath,
-          options: { filepath: filePath },
+          options: {},
         },
         shouldWrite: false,
       }),
@@ -52,7 +51,7 @@ test('skips unsupported files before reading them', async () => {
       formatFile({
         file: {
           path: filePath,
-          options: { filepath: filePath },
+          options: {},
         },
         shouldWrite: true,
       }),

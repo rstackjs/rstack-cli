@@ -18,9 +18,12 @@ const fmtOptionsPlugin = {
 const defaultFmtPlugins: PrettierPlugins = [yukuPlugin, fmtOptionsPlugin];
 
 /** Prepends bundled plugins so project plugins can override their parsers. */
-const getPrettierPlugins = async (options: ResolvedFmtOptions): Promise<PrettierPlugins> => {
+const getPrettierPlugins = async (
+  options: ResolvedFmtOptions,
+  filePath: string,
+): Promise<PrettierPlugins> => {
   const plugins =
-    options.sortPackageJson === true && /(^|[/\\])package\.json$/.test(options.filepath ?? '')
+    options.sortPackageJson === true && /(^|[/\\])package\.json$/.test(filePath)
       ? [...defaultFmtPlugins, (await import('./sortPackageJsonPlugin.ts')).sortPackageJsonPlugin]
       : defaultFmtPlugins;
 

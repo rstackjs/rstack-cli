@@ -46,7 +46,7 @@ const formatFile = async ({
   file: { path, options },
   shouldWrite,
 }: FormatFileTask): Promise<FormatFileResult> => {
-  const plugins = await getPrettierPlugins(options);
+  const plugins = await getPrettierPlugins(options, path);
   const parser = await resolveFmtParser(path, options, plugins);
   if (!parser) {
     return 'unsupported';
@@ -55,6 +55,7 @@ const formatFile = async ({
   const source = readFileSync(path, 'utf8');
   const formatted = await format(source, {
     ...options,
+    filepath: path,
     parser,
     plugins,
   });

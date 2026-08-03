@@ -22,7 +22,6 @@ beforeEach(() => {
 const createRequest = (filePath: string): FmtFileRequest => ({
   path: filePath,
   options: {
-    filepath: filePath,
     parser: 'typescript',
   },
 });
