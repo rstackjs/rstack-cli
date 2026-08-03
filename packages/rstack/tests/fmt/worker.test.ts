@@ -25,10 +25,10 @@ test('writes formatted files', async () => {
   });
 });
 
-test('infers the parser before formatting', async () => {
+test('infers the parser for an explicitly provided node_modules file', async () => {
   await withTempProject(async (rootPath) => {
     const source = 'const value=1';
-    const filePath = writeProjectFile(rootPath, 'example.ts', source);
+    const filePath = writeProjectFile(rootPath, 'node_modules/example/index.ts', source);
 
     await expect(
       formatFile(

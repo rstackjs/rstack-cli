@@ -5,7 +5,7 @@ import WorkTank from 'worktank';
 
 type FmtWorkerMethods = typeof import('./worker.ts');
 
-interface FmtWorker {
+interface FmtWorkerPool {
   formatFile: FmtWorkerMethods['formatFile'];
   terminate: () => void;
 }
@@ -22,7 +22,10 @@ const getFmtWorkerUrl = (): URL => {
 };
 
 /** Creates and starts every worker before formatting can begin. */
-const createFmtWorker = async (fileCount: number, maxWorkers?: number): Promise<FmtWorker> => {
+const createFmtWorkerPool = async (
+  fileCount: number,
+  maxWorkers?: number,
+): Promise<FmtWorkerPool> => {
   const workerCount = getFmtWorkerCount(fileCount, maxWorkers);
   const pool = new WorkTank<FmtWorkerMethods>({
     pool: {
@@ -51,4 +54,5 @@ const createFmtWorker = async (fileCount: number, maxWorkers?: number): Promise<
   };
 };
 
-export { createFmtWorker, getFmtWorkerCount };
+export { createFmtWorkerPool, getFmtWorkerCount };
+export type { FmtWorkerPool };

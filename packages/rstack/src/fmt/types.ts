@@ -45,15 +45,6 @@ interface ResolvedFmtConfig {
   ignorePatterns: string[];
 }
 
-interface FormatTextOptions {
-  /** File path used to resolve per-file options and infer the parser. */
-  filePath: string;
-  /** Cursor offset in the source to preserve across formatting. */
-  cursorOffset?: number;
-  /** Resolved project config used to derive per-file options. */
-  config: ResolvedFmtConfig;
-}
-
 interface DiscoverFmtFilesOptions {
   /** Absolute directory used to resolve input paths. */
   cwd: string;
@@ -70,7 +61,6 @@ interface FmtFileRequest {
   options: ResolvedFmtOptions & Required<Pick<PrettierOptions, 'filepath'>>;
 }
 
-type FmtWorkerFileResult = 'changed' | 'unchanged' | 'unsupported';
 type FmtMode = 'write' | 'check' | 'list-different';
 type FmtExitCode = 0 | 1 | 2;
 
@@ -79,8 +69,6 @@ interface RunFmtFilesOptions {
   files: FmtFileRequest[];
   /** Whether to write changes or only report them. */
   mode: FmtMode;
-  /** Persistent cache support is added in a later implementation step. */
-  cache: false;
   /** Maximum number of formatting workers. */
   maxWorkers?: number;
 }
@@ -107,19 +95,6 @@ interface FmtRunResult {
   durationMs: number;
 }
 
-interface FormattedTextResult {
-  status: 'formatted';
-  formatted: string;
-  cursorOffset?: number;
-}
-
-interface SkippedTextResult {
-  status: 'skipped';
-  reason: 'unsupported';
-}
-
-type FormatTextResult = FormattedTextResult | SkippedTextResult;
-
 export type {
   DiscoverFmtFilesOptions,
   FmtConfig,
@@ -130,9 +105,6 @@ export type {
   FmtMode,
   FmtPluginSpecifier,
   FmtRunResult,
-  FmtWorkerFileResult,
-  FormatTextOptions,
-  FormatTextResult,
   ResolvedFmtConfig,
   ResolvedFmtOptions,
   RunFmtFilesOptions,

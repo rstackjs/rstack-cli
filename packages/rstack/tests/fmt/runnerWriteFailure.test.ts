@@ -5,8 +5,8 @@ const mocks = rs.hoisted(() => ({
   terminateCalls: 0,
 }));
 
-rs.mock('../../src/fmt/parallel.ts', () => ({
-  createFmtWorker: () =>
+rs.mock('../../src/fmt/workerPool.ts', () => ({
+  createFmtWorkerPool: () =>
     Promise.resolve({
       formatFile: () => Promise.reject(new Error('file write failed')),
       terminate: () => {
@@ -29,7 +29,6 @@ test('returns an error when a file write fails', async () => {
       },
     ],
     mode: 'write',
-    cache: false,
   });
 
   expect(result).toMatchObject({
