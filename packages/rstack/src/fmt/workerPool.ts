@@ -14,8 +14,13 @@ interface FmtWorkerPool {
   terminate: () => Promise<void>;
 }
 
+/**
+ * Caps the default worker count at 8 because formatter throughput can
+ * plateau before all CPU cores are occupied, while additional workers increase
+ * scheduling and memory pressure.
+ */
 const getFmtWorkerCount = (fileCount: number, maxWorkers?: number): number =>
-  Math.min(fileCount, maxWorkers ?? Math.max(1, availableParallelism() - 1));
+  Math.min(fileCount, maxWorkers ?? Math.min(8, Math.max(1, availableParallelism() - 1)));
 
 const getFmtWorkerUrl = (): URL => {
   // Source tests run after build and exercise the same worker artifact as the CLI.
