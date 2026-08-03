@@ -5,6 +5,16 @@ import { format } from 'prettier';
 import { getPrettierPlugins } from './prettierPlugins.ts';
 import type { FmtFileRequest } from './types.ts';
 
+/**
+ * Formatting output can be regenerated, so avoid waiting for a durability sync
+ * after every file, which is especially expensive during parallel formatting.
+ * `atomically` still uses a temporary file and rename for atomic replacement.
+ */
+const atomicWriteOptions = {
+  encoding: 'utf8',
+  fsync: false,
+} as const;
+
 const formatFile = async (
   { path, options }: FmtFileRequest,
   shouldWrite: boolean,
@@ -20,7 +30,7 @@ const formatFile = async (
   }
 
   if (shouldWrite) {
-    await writeFile(path, formatted, 'utf8');
+    await writeFile(path, formatted, atomicWriteOptions);
   }
 
   return true;
