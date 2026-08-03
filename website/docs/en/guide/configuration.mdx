@@ -168,9 +168,7 @@ define.lint(async () => {
 
 ### `define.fmt()` \{#define-fmt}
 
-Defines the formatting configuration used by [`rs fmt`](./cli/fmt). Pass the configuration directly, or return it from a synchronous or asynchronous function.
-
-`define.fmt()` accepts standard [Prettier options](https://prettier.io/docs/options) and the `overrides` field. It also supports `ignorePatterns` for Gitignore-compatible exclusions and `sortPackageJson` for sorting `package.json` fields before formatting.
+Defines formatting settings for [`rs fmt`](./cli/fmt). Pass a configuration object directly, or use a synchronous or asynchronous function that returns one.
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
@@ -178,22 +176,10 @@ import { define } from 'rstack';
 define.fmt({
   printWidth: 100,
   singleQuote: true,
-  sortPackageJson: true,
-  ignorePatterns: ['dist/**'],
-  overrides: [
-    {
-      files: '*.md',
-      options: {
-        proseWrap: 'always',
-      },
-    },
-  ],
 });
 ```
 
-Ignore patterns, override patterns, and relative plugin paths are resolved from the directory containing the Rstack configuration file. Specify Prettier plugins as package names, paths, or URLs rather than imported plugin objects.
-
-`rs fmt` does not load Prettier configuration files, `.prettierignore`, or `.editorconfig`; keep all formatting options and ignore rules in `define.fmt()`.
+For detailed usage, see [Formatting](./formatting).
 
 ### `define.staged()` \{#define-staged}
 

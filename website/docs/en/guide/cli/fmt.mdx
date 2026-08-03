@@ -1,6 +1,6 @@
 # fmt
 
-The `rs fmt` command is built on [Prettier](https://prettier.io/). It processes files in parallel by default and uses the high-performance [Yuku](https://yuku.fyi/) parser for JavaScript and TypeScript, providing better performance than using Prettier directly.
+The `rs fmt` command formats files or checks whether they are formatted. For detailed usage, see [Formatting](../formatting).
 
 ## Usage
 
@@ -8,7 +8,26 @@ The `rs fmt` command is built on [Prettier](https://prettier.io/). It processes 
 rs fmt [options] [files/globs...]
 ```
 
-Pass files, directories, or glob patterns to select what to format. When no inputs are provided, `rs fmt` formats the current directory. `rs format` is an alias for `rs fmt`.
+Pass files, directories, or glob patterns to choose what to format. When no paths are provided, `rs fmt` formats the current directory.
+
+Examples:
+
+```bash
+# Format files in the current directory
+rs fmt
+
+# Format specific files and directories
+rs fmt src package.json
+
+# Check formatting in CI
+rs fmt --check
+```
+
+`rs format` is an alias for `rs fmt`:
+
+```bash
+rs format
+```
 
 ## Options
 
@@ -20,62 +39,4 @@ Pass files, directories, or glob patterns to select what to format. When no inpu
 | `--parallel-workers <count>` | Set the maximum number of formatting workers.                                       |
 | `-h, --help`                 | Display usage and option information.                                               |
 
-`--write`, `--check`, and `--list-different` are mutually exclusive.
-
-Examples:
-
-```bash
-# Format the current directory in place
-rs fmt
-
-# Format specific files and directories
-rs fmt src package.json
-
-# Include and exclude files with quoted globs
-rs fmt "src/**/*.{js,ts}" "!src/generated/**"
-
-# Check formatting in CI
-rs fmt --check
-```
-
-## File discovery
-
-Directory and glob discovery follows `.gitignore` files, skips binary files, and does not traverse version-control directories or `node_modules`. Files for which Prettier cannot infer a parser are skipped.
-
-Use [`ignorePatterns`](../configuration#define-fmt) for additional project-specific exclusions. Both positive and negative input globs are resolved from the current working directory.
-
-## Configuration
-
-Configure formatting through [`define.fmt()`](../configuration#define-fmt) in the [Rstack configuration file](/guide/configuration#configuration-file):
-
-```ts title="rstack.config.ts"
-import { define } from 'rstack';
-
-define.fmt({
-  printWidth: 100,
-  singleQuote: true,
-  sortPackageJson: true,
-  ignorePatterns: ['dist/**'],
-  overrides: [
-    {
-      files: '*.md',
-      options: {
-        proseWrap: 'always',
-      },
-    },
-  ],
-});
-```
-
-`define.fmt()` accepts standard [Prettier options](https://prettier.io/docs/options) and the `overrides` field, plus these Rstack options:
-
-- `ignorePatterns`: Gitignore-compatible patterns relative to the directory containing `rstack.config.ts`.
-- `sortPackageJson`: Sort `package.json` fields before formatting. The default value is `false`.
-
-:::warning Configuration sources
-
-`rs fmt` does not load Prettier configuration files, `.prettierignore`, or `.editorconfig`. Move those settings and ignore rules into `define.fmt()`.
-
-:::
-
-When using [Prettier plugins](https://prettier.io/docs/plugins), pass each plugin as a package name, file path, or URL. Imported plugin objects are not supported because formatting runs in workers. Package names and relative paths are resolved from the Rstack configuration directory.
+> `--write`, `--check`, and `--list-different` are mutually exclusive.
