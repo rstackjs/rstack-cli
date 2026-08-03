@@ -21,3 +21,4 @@ shikijs
 turborepo
 typicode
 worktank
+yuku

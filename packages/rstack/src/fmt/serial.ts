@@ -2,6 +2,7 @@
 
 import { readFile, writeFile } from 'atomically';
 import { format } from 'prettier';
+import { getPrettierPlugins } from './prettierPlugins.ts';
 import type { FmtFileRequest } from './types.ts';
 
 const formatFileSerial = async (
@@ -9,7 +10,10 @@ const formatFileSerial = async (
   shouldWrite: boolean,
 ): Promise<boolean> => {
   const source = await readFile(path, 'utf8');
-  const formatted = await format(source, options);
+  const formatted = await format(source, {
+    ...options,
+    plugins: getPrettierPlugins(options.plugins),
+  });
 
   if (source === formatted) {
     return false;
