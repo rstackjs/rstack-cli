@@ -57,8 +57,8 @@ interface DiscoverFmtFilesOptions {
 interface FmtFileRequest {
   /** Absolute path to the file. */
   path: string;
-  /** Final per-file options with project plugins and the file path resolved. */
-  options: ResolvedFmtOptions & Required<Pick<PrettierOptions, 'filepath'>>;
+  /** Final per-file options with project plugins resolved. */
+  options: ResolvedFmtOptions;
 }
 
 type FmtMode = 'write' | 'check' | 'list-different';
@@ -75,15 +75,13 @@ interface RunFmtFilesOptions {
 
 interface SuccessfulFmtFileResult {
   path: string;
-  status: 'unchanged' | 'written' | 'different';
-  durationMs: number;
+  status: 'written' | 'different';
 }
 
 interface FailedFmtFileResult {
   path: string;
   status: 'error';
   error: unknown;
-  durationMs: number;
 }
 
 type FmtFileResult = SuccessfulFmtFileResult | FailedFmtFileResult;
@@ -92,7 +90,6 @@ interface FmtRunResult {
   files: FmtFileResult[];
   /** Recommended CLI exit code. */
   exitCode: FmtExitCode;
-  durationMs: number;
 }
 
 export type {
