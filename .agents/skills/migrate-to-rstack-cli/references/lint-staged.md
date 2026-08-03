@@ -4,6 +4,8 @@
 
 Read this reference when the project uses `lint-staged`, `nano-staged`, a staged-file config, or a staged-file Git hook.
 
+If staged tasks invoke Prettier, also read [prettier.md](prettier.md).
+
 ## Steps
 
 1. Replace staged-file script invocations with `rs staged`.
@@ -17,8 +19,8 @@ Read this reference when the project uses `lint-staged`, `nano-staged`, a staged
 import { define } from 'rstack';
 
 define.staged({
-  '*.{ts,tsx,js,jsx}': ['rs lint --fix', 'prettier -w'],
-  '*.{json,md}': 'prettier -w',
+  '*.{ts,tsx,js,jsx}': ['rs lint --fix', 'rs fmt'],
+  '*.{json,md}': 'rs fmt',
 });
 ```
 

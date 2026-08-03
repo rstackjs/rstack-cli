@@ -23,11 +23,13 @@ define.lint(async () => {
 
 ## Script Pattern
 
+If a script also runs Prettier, migrate its formatting command as described in [prettier.md](prettier.md).
+
 ```json
 {
   "scripts": {
-    "lint": "rs lint && prettier -c .",
-    "lint:write": "rs lint --fix && prettier -w ."
+    "lint": "rs lint && rs fmt --check",
+    "lint:write": "rs lint --fix && rs fmt"
   }
 }
 ```

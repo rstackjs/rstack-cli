@@ -1,6 +1,6 @@
 ---
 name: migrate-to-rstack-cli
-description: Use when migrating projects from standalone Rsbuild, Rslib, Rstest, Rslint, Rspress, lint-staged, husky or simple-git-hooks tooling to the unified `rstack` package, `rs` commands, and `rstack.config.*`.
+description: Use when migrating projects from standalone Rsbuild, Rslib, Rstest, Rslint, Rspress, Prettier, sort-package-json, lint-staged, husky, or simple-git-hooks tooling to the unified `rstack` package, `rs` commands, and `rstack.config.*`.
 ---
 
 # Migrate to Rstack CLI
@@ -15,13 +15,14 @@ Read every matching reference before editing. Load only the tools present in the
 - `@rslib/core`, `rslib.config.*`, `rslib` commands, or Rslib types: [rslib.md](references/rslib.md)
 - `@rstest/core`, `@rstest/adapter-*`, `rstest.config.*`, `rstest` commands, or test imports: [rstest.md](references/rstest.md)
 - `@rslint/core`, `rslint.config.*`, `rslint` commands, or lint imports: [rslint.md](references/rslint.md)
+- `prettier`, `package.json#prettier`, `.prettierrc*`, `prettier.config.*`, `.prettierignore`, `.editorconfig`, `sort-package-json`, Prettier plugins, or formatting scripts: [prettier.md](references/prettier.md)
 - `@rspress/core`, `rspress.config.*`, `rspress` commands, themes, or plugins: [rspress.md](references/rspress.md)
 - `lint-staged`, `nano-staged`, their configs: [lint-staged.md](references/lint-staged.md)
 - `husky`, `.husky/`, `package.json#husky`, `simple-git-hooks`, `.simple-git-hooks.*`, or Git hook installer scripts: [git-hooks.md](references/git-hooks.md)
 
 ## Workflow
 
-1. Inspect manifests, workspace catalogs, lock files, scripts, standalone configs, Git hooks, TypeScript `types`, and source imports.
+1. Inspect manifests, workspace catalogs, lock files, scripts, standalone configs, ignore files, Git hooks, TypeScript `types`, and source imports.
 2. Read the matching references and inventory behavior that must survive: config functions, CLI arguments, plugins, presets, adapters, custom config paths, and chained commands.
 3. Check the latest `rstack` version and inspect its Node.js engine and underlying tool versions. Resolve plugin and adapter peer ranges first; upgrade incompatible extensions or stop when no compatible version exists. Add `rstack` using the repository's existing package manager and version convention, usually as a development dependency.
 4. If a matching reference uses a `define.*` registration, create `rstack.config.ts` and move the standalone configuration into it.
@@ -31,7 +32,7 @@ Read every matching reference before editing. Load only the tools present in the
 8. Refresh the lockfile with the repository's package manager. Confirm the expected tool version changes and resolve peer dependency warnings.
 9. Run the repository's existing migrated scripts and required checks. Compare generated artifacts or runtime behavior where relevant.
 
-Underlying Rsbuild, Rslib, Rstest, and Rslint packages remain transitive dependencies of `rstack`. Do not require their names to disappear from the lockfile; require obsolete direct manifest entries and imports to disappear.
+The underlying Rsbuild, Rslib, Rstest, Rslint, and Prettier packages remain transitive dependencies of `rstack`. Do not require their names to disappear from the lockfile; require obsolete direct manifest entries and imports to disappear.
 
 ## Configuration Rules
 
