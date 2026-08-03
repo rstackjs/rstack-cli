@@ -85,6 +85,20 @@ define.fmt({
 
 Patterns follow Gitignore syntax and are resolved relative to the directory containing the Rstack configuration file. Because they are applied after the files are selected, they also exclude files passed explicitly on the command line.
 
+### Lock files
+
+By default, `rs fmt` ignores common lock files, including `package-lock.json` and `pnpm-lock.yaml`.
+
+To format these files, use a negated pattern to explicitly include them:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.fmt({
+  ignorePatterns: ['!pnpm-lock.yaml'],
+});
+```
+
 ## Sort package.json fields \{#sort-package-json}
 
 Enable `sortPackageJson` to sort fields in each selected `package.json` with [`sort-package-json`](https://github.com/keithamus/sort-package-json):

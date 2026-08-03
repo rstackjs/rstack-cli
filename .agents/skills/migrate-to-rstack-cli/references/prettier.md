@@ -15,6 +15,8 @@ Read this reference when the project uses the `prettier` CLI or API, `package.js
 7. Delete old config and ignore files only after their behavior is represented in `define.fmt`.
 8. Remove direct dependencies only when no script, config, API call, plugin peer requirement, or other tool still needs them.
 
+`rs fmt` ignores `package-lock.json` and `pnpm-lock.yaml` by default. Drop redundant ignore entries during migration, but keep intentional negations.
+
 `rs fmt` does not read Prettier configuration files, `.prettierignore`, or `.editorconfig`.
 
 Keep `.editorconfig` when editors or other tools use it. Keep Prettier when application code uses APIs such as `prettier.format()`; `rs fmt` is not a drop-in replacement for the programmatic API.

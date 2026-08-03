@@ -24,10 +24,8 @@ const discoverFmtFiles = async ({
     return [];
   }
 
-  const isFmtIgnored = config.ignorePatterns.length ? createFmtIgnoreMatcher(config) : undefined;
-  const filePaths = isFmtIgnored
-    ? candidates.filter((filePath) => !isFmtIgnored(filePath))
-    : candidates;
+  const isFmtIgnored = createFmtIgnoreMatcher(config);
+  const filePaths = candidates.filter((filePath) => !isFmtIgnored(filePath));
   const resolvePlugins = createFmtPluginResolver(config.rootPath);
 
   return filePaths.map((filePath) => createFileRequest(filePath, config, resolvePlugins));

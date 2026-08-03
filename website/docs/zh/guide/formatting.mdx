@@ -85,6 +85,20 @@ define.fmt({
 
 这些模式遵循 Gitignore 语法，并且基于 Rstack 配置文件所在的目录解析。由于规则会在确定格式化范围后生效，因此也会排除命令行中显式传入的文件。
 
+### Lock 文件 \{#lock-files}
+
+`rs fmt` 默认忽略常见的 lock 文件，包括 `package-lock.json` 和 `pnpm-lock.yaml`。
+
+如果你需要格式化这些文件，可以使用否定模式主动包含它们：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.fmt({
+  ignorePatterns: ['!pnpm-lock.yaml'],
+});
+```
+
 ## 排序 package.json 字段 \{#sort-package-json}
 
 启用 `sortPackageJson` 后，`rs fmt` 会使用 [`sort-package-json`](https://github.com/keithamus/sort-package-json) 对每个待格式化的 `package.json` 中的字段排序：

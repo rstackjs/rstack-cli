@@ -40,7 +40,6 @@ define.lint(async () => {
 });
 
 define.fmt({
-  ignorePatterns: ['**/dist/**', 'pnpm-lock.yaml'],
   printWidth: 100,
   singleQuote: true,
   sortPackageJson: true,
