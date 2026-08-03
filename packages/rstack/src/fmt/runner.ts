@@ -50,7 +50,7 @@ const runFmtFilesInWorkerPool = async (
     );
     return results.filter((result): result is FmtFileResult => result !== undefined);
   } finally {
-    workerPool.terminate();
+    await workerPool.terminate();
   }
 };
 

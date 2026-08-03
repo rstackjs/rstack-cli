@@ -1,13 +1,17 @@
 // Derived from @prettier/cli, see THIRD_PARTY_NOTICES.md
 
 import { availableParallelism } from 'node:os';
-import WorkTank from 'worktank';
+import Tinypool from 'tinypool';
+import type { FmtFileRequest } from './types.ts';
 
 type FmtWorkerMethods = typeof import('./worker.ts');
 
 interface FmtWorkerPool {
-  formatFile: FmtWorkerMethods['formatFile'];
-  terminate: () => void;
+  formatFile: (
+    file: FmtFileRequest,
+    shouldWrite: boolean,
+  ) => ReturnType<FmtWorkerMethods['formatFile']>;
+  terminate: () => Promise<void>;
 }
 
 const getFmtWorkerCount = (fileCount: number, maxWorkers?: number): number =>
@@ -27,30 +31,27 @@ const createFmtWorkerPool = async (
   maxWorkers?: number,
 ): Promise<FmtWorkerPool> => {
   const workerCount = getFmtWorkerCount(fileCount, maxWorkers);
-  const pool = new WorkTank<FmtWorkerMethods>({
-    pool: {
-      name: 'rstack-fmt',
-      size: workerCount,
-    },
-    worker: {
-      autoInstantiate: true,
-      methods: getFmtWorkerUrl(),
-    },
+  const pool = new Tinypool({
+    filename: getFmtWorkerUrl().href,
+    name: 'initializeFmtWorker',
+    minThreads: workerCount,
+    maxThreads: workerCount,
   });
 
   try {
-    // Concurrent handshakes make WorkTank assign one task to every worker.
     await Promise.all(
-      Array.from({ length: workerCount }, () => pool.exec('initializeFmtWorker', [])),
+      Array.from({ length: workerCount }, () =>
+        pool.run(undefined, { name: 'initializeFmtWorker' }),
+      ),
     );
   } catch (error) {
-    pool.terminate();
+    await pool.destroy();
     throw error;
   }
 
   return {
-    formatFile: (file, shouldWrite) => pool.exec('formatFile', [file, shouldWrite]),
-    terminate: pool.terminate,
+    formatFile: (file, shouldWrite) => pool.run({ file, shouldWrite }, { name: 'formatFile' }),
+    terminate: () => pool.destroy(),
   };
 };
 

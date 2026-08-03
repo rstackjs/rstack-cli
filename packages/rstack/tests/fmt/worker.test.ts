@@ -9,15 +9,15 @@ test('writes formatted files', async () => {
     const filePath = writeProjectFile(rootPath, 'example.ts', 'const value=1');
 
     await expect(
-      formatFile(
-        {
+      formatFile({
+        file: {
           path: filePath,
           options: {
             parser: 'typescript',
           },
         },
-        true,
-      ),
+        shouldWrite: true,
+      }),
     ).resolves.toBe('changed');
 
     expect(readFileSync(filePath, 'utf8')).toBe('const value = 1;\n');
@@ -30,13 +30,13 @@ test('infers the parser for an explicitly provided node_modules file', async () 
     const filePath = writeProjectFile(rootPath, 'node_modules/example/index.ts', source);
 
     await expect(
-      formatFile(
-        {
+      formatFile({
+        file: {
           path: filePath,
           options: {},
         },
-        false,
-      ),
+        shouldWrite: false,
+      }),
     ).resolves.toBe('changed');
 
     expect(readFileSync(filePath, 'utf8')).toBe(source);
@@ -48,13 +48,13 @@ test('skips unsupported files before reading them', async () => {
     const filePath = path.join(rootPath, 'missing.unknown');
 
     await expect(
-      formatFile(
-        {
+      formatFile({
+        file: {
           path: filePath,
           options: {},
         },
-        true,
-      ),
+        shouldWrite: true,
+      }),
     ).resolves.toBe('unsupported');
   });
 });

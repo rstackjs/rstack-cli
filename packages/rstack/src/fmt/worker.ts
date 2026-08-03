@@ -13,6 +13,11 @@ import type { FmtFileRequest } from './types.ts';
 type PrettierPlugins = NonNullable<PrettierOptions['plugins']>;
 type FormatFileResult = 'changed' | 'unchanged' | 'unsupported';
 
+interface FormatFileTask {
+  file: FmtFileRequest;
+  shouldWrite: boolean;
+}
+
 const fileInfoOptions = {
   ignorePath: [],
   resolveConfig: false,
@@ -37,10 +42,10 @@ const resolveFmtParser = async (
  * Use synchronous direct I/O inside the dedicated worker to avoid libuv
  * scheduling overhead. This prioritizes throughput over crash-safe replacement.
  */
-const formatFile = async (
-  { path, options }: FmtFileRequest,
-  shouldWrite: boolean,
-): Promise<FormatFileResult> => {
+const formatFile = async ({
+  file: { path, options },
+  shouldWrite,
+}: FormatFileTask): Promise<FormatFileResult> => {
   const plugins = await getPrettierPlugins(options, path);
   const parser = await resolveFmtParser(path, options, plugins);
   if (!parser) {

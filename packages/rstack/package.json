@@ -58,6 +58,7 @@
     "@rslint/core": "catalog:",
     "@rstest/core": "catalog:",
     "prettier": "catalog:",
+    "tinypool": "catalog:",
     "yuku-parser": "catalog:"
   },
   "devDependencies": {
@@ -78,8 +79,7 @@
     "rslog": "catalog:",
     "sort-package-json": "catalog:",
     "tiny-readdir": "catalog:",
-    "typescript": "catalog:",
-    "worktank": "catalog:"
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "@rspress/core": "^2.0.17"
