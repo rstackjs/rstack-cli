@@ -22,13 +22,22 @@ test('matches gitignore patterns relative to the config root', () => {
 test('applies negated patterns in declaration order', () => {
   const isIgnored = createMatcher(['*.js', '!src/keep.js']);
   const isIgnoredAgain = createMatcher(['*.js', '!src/keep.js', 'src/keep.js']);
-  const isReincluded = createMatcher(['dist', '!dist']);
+  const isIgnoredAfterReinclude = createMatcher(['dist', '!dist']);
   const filePath = path.join(rootPath, 'src/keep.js');
 
   expect(isIgnored(filePath)).toBe(false);
   expect(isIgnored(path.join(rootPath, 'src/drop.js'))).toBe(true);
   expect(isIgnoredAgain(filePath)).toBe(true);
-  expect(isReincluded(path.join(rootPath, 'dist'))).toBe(false);
+  expect(isIgnoredAfterReinclude(path.join(rootPath, 'dist'))).toBe(false);
+});
+
+test('ignores common lock files by default and allows explicit negation', () => {
+  const isIgnored = createMatcher([]);
+  const isIgnoredAfterReinclude = createMatcher(['!pnpm-lock.yaml']);
+
+  expect(isIgnored(path.join(rootPath, 'package-lock.json'))).toBe(true);
+  expect(isIgnored(path.join(rootPath, 'packages/app/pnpm-lock.yaml'))).toBe(true);
+  expect(isIgnoredAfterReinclude(path.join(rootPath, 'pnpm-lock.yaml'))).toBe(false);
 });
 
 test('does not let explicit files bypass ignore patterns', () => {
@@ -45,7 +54,7 @@ test('matches parent directory patterns without validation', () => {
   expect(isIgnored(path.join(rootPath, 'shared/index.js'))).toBe(false);
 });
 
-test('does not ignore files when no patterns are configured', () => {
+test('does not ignore other files when no patterns are configured', () => {
   const isIgnored = createMatcher([]);
 
   expect(isIgnored(path.join(rootPath, 'src/index.js'))).toBe(false);
