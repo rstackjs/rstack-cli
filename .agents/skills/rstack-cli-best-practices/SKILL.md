@@ -7,7 +7,7 @@ description: Guidance on using Rstack CLI, including `rs` commands, the `rstack.
 
 Rstack CLI is the `rstack` package, exposed through the `rs` binaries. It provides one CLI, one config file, and a consistent workflow for the Rstack JavaScript toolchain.
 
-It covers web app, library, docs, test, lint, Git hook, and staged-file workflows.
+It covers web app, library, docs, test, lint, formatting, Git hook, and staged-file workflows.
 
 ## Commands
 
@@ -22,6 +22,7 @@ Use `rs -h` for top-level help, and `rs <command> -h` for command help where sup
 | `rs doc`     | Serve or build docs              | Rspress         | `define.doc`    |
 | `rs test`    | Run tests                        | Rstest          | `define.test`   |
 | `rs lint`    | Lint code                        | Rslint          | `define.lint`   |
+| `rs fmt`     | Format code                      | Prettier        | `define.fmt`    |
 | `rs setup`   | Install project-local Git hooks  | None            | None            |
 | `rs staged`  | Run tasks on staged Git files    | lint-staged     | `define.staged` |
 
@@ -53,6 +54,7 @@ define.test({
 - `define.doc(config)`: Rspress config for `rs doc`; Docs: https://rspress.rs/api/config/config-basic
 - `define.test(config)`: Rstest config for `rs test`; Docs: https://rstest.rs/config/
 - `define.lint(config)`: Rslint config for `rs lint`; Docs: https://rslint.rs/config/
+- `define.fmt(config)`: Formatting options for `rs fmt`.
 - `define.staged(config)`: lint-staged config for `rs staged`; accepts `Record<string, string | string[]>`.
 
 ### Lazy Configuration
