@@ -24,19 +24,20 @@ const formatText = async (
     ...options,
     filepath: filePath,
     parser,
-    plugins: getPrettierPlugins(options.plugins),
   };
+  const plugins = await getPrettierPlugins(formatOptions);
 
   if (cursorOffset === undefined) {
     return {
       status: 'formatted',
-      formatted: await format(source, formatOptions),
+      formatted: await format(source, { ...formatOptions, plugins }),
     };
   }
 
   const result = await formatWithCursor(source, {
     ...formatOptions,
     cursorOffset,
+    plugins,
   });
 
   return {

@@ -41,9 +41,9 @@ define.lint(async () => {
 
 define.fmt({
   ignorePatterns: ['**/dist/**', 'pnpm-lock.yaml'],
-  plugins: ['prettier-plugin-packagejson'],
   printWidth: 100,
   singleQuote: true,
+  sortPackageJson: true,
 });
 
 define.staged({

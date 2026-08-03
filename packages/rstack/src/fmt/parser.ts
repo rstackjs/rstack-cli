@@ -16,7 +16,7 @@ const resolveFmtParser = async (
   (
     await getFileInfo(filePath, {
       ...fileInfoOptions,
-      plugins: getPrettierPlugins(options.plugins),
+      plugins: await getPrettierPlugins(options),
     })
   ).inferredParser;
 

@@ -12,7 +12,7 @@ const formatFileSerial = async (
   const source = await readFile(path, 'utf8');
   const formatted = await format(source, {
     ...options,
-    plugins: getPrettierPlugins(options.plugins),
+    plugins: await getPrettierPlugins(options),
   });
 
   if (source === formatted) {

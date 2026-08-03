@@ -5,6 +5,8 @@ import { formatText } from '../../src/fmt/format.ts';
 import { withTempProject, writeProjectFile } from './helpers.ts';
 
 const rootPath = import.meta.dirname;
+const packageJsonSource =
+  '{"dependencies":{"z":"1.0.0","a":"1.0.0"},"version":"1.0.0","name":"fixture"}';
 
 test('applies per-file overrides and maps the cursor', async () => {
   const source = 'const value={message:"hello"}';
@@ -60,6 +62,35 @@ test('uses an explicit parser for unknown file extensions', async () => {
   expect(result).toEqual({
     status: 'formatted',
     formatted: 'const value = { nested: true };\n',
+  });
+});
+
+test('does not sort package.json by default', async () => {
+  const result = await formatText(packageJsonSource, {
+    config: normalizeFmtConfig(undefined, rootPath),
+    filePath: path.join(rootPath, 'package.json'),
+  });
+
+  expect(result).toMatchObject({
+    formatted:
+      '{\n  "dependencies": {\n    "z": "1.0.0",\n    "a": "1.0.0"\n  },\n  "version": "1.0.0",\n  "name": "fixture"\n}\n',
+  });
+});
+
+test('sorts package.json when enabled', async () => {
+  const result = await formatText(packageJsonSource, {
+    config: normalizeFmtConfig(
+      {
+        overrides: [{ files: 'package.json', options: { sortPackageJson: true } }],
+      },
+      rootPath,
+    ),
+    filePath: path.join(rootPath, 'package.json'),
+  });
+
+  expect(result).toMatchObject({
+    formatted:
+      '{\n  "name": "fixture",\n  "version": "1.0.0",\n  "dependencies": {\n    "a": "1.0.0",\n    "z": "1.0.0"\n  }\n}\n',
   });
 });
 
