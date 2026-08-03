@@ -2,13 +2,13 @@
 
 This guide explains how to use Rstack CLI in a monorepo, including how it works with task orchestrators such as [Turborepo](https://turborepo.com/docs) and [Nx](https://nx.dev/docs/getting-started/intro).
 
-It covers managing Rstack dependencies, configuring lint and staged-file tasks at the root, and defining separate configurations for web applications and libraries.
+It covers managing Rstack dependencies, configuring lint, formatting, and staged-file tasks at the root, and defining separate configurations for web applications and libraries.
 
 ## Project structure
 
 The recommended setup has two levels:
 
-- The root manages the shared Rstack version, lint rules, and staged-file tasks.
+- The root manages the shared Rstack version, lint and formatting rules, and staged-file tasks.
 - Each application or library has its own [Rstack configuration](./configuration) for build, test, or documentation configuration.
 
 ```text
@@ -37,7 +37,7 @@ Project-specific dependencies, such as Rsbuild plugins and testing libraries, sh
 
 ## Root configuration
 
-Use [`define.lint()`](./configuration#define-lint) and [`define.staged()`](./configuration#define-staged) in the root `rstack.config.ts` for checks that apply to the entire repository:
+Use [`define.lint()`](./configuration#define-lint), [`define.fmt()`](./configuration#define-fmt), and [`define.staged()`](./configuration#define-staged) in the root `rstack.config.ts` for checks and formatting that apply to the entire repository:
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
@@ -48,8 +48,14 @@ define.lint(async () => {
   return [js.configs.recommended, ts.configs.recommended];
 });
 
+define.fmt({
+  singleQuote: true,
+  ignorePatterns: ['**/dist/**'],
+});
+
 define.staged({
-  '*.{js,jsx,ts,tsx,mjs,cjs}': 'rs lint',
+  '*.{js,jsx,ts,tsx,mjs,cjs}': ['rs lint', 'rs fmt'],
+  '*.{json,md,mdx,css,html,yml,yaml}': 'rs fmt',
 });
 ```
 
@@ -60,6 +66,8 @@ Expose these tasks through scripts in the root `package.json`:
   "private": true,
   "scripts": {
     "lint": "rs lint",
+    "format": "rs fmt",
+    "check:format": "rs fmt --check",
     "staged": "rs staged"
   }
 }

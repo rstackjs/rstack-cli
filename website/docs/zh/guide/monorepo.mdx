@@ -2,13 +2,13 @@
 
 本指南介绍如何在 Monorepo 中使用 Rstack CLI，以及如何让它与 [Turborepo](https://turborepo.com/docs)、[Nx](https://nx.dev/docs/getting-started/intro) 等任务编排工具协同工作。
 
-主要内容包括管理 Rstack 依赖、在根目录统一配置代码检查和暂存文件任务，以及为 Web 应用和库项目定义独立配置。
+主要内容包括管理 Rstack 依赖、在根目录统一配置代码检查、格式化和暂存文件任务，以及为 Web 应用和库项目定义独立配置。
 
 ## 目录结构 \{#project-structure}
 
 推荐使用两层配置：
 
-- 根目录统一管理 Rstack 版本、lint 规则和暂存文件任务。
+- 根目录统一管理 Rstack 版本、lint 和格式化规则，以及暂存文件任务。
 - 每个应用或库使用自己的 [Rstack 配置](./configuration)，定义构建、测试或文档配置。
 
 ```text
@@ -37,7 +37,7 @@ Rsbuild 插件、测试库等项目专属依赖，建议定义在实际使用它
 
 ## 根配置 \{#root-configuration}
 
-在根目录的 `rstack.config.ts` 中使用 [`define.lint()`](./configuration#define-lint) 和 [`define.staged()`](./configuration#define-staged) 配置适用于整个仓库的检查：
+在根目录的 `rstack.config.ts` 中使用 [`define.lint()`](./configuration#define-lint)、[`define.fmt()`](./configuration#define-fmt) 和 [`define.staged()`](./configuration#define-staged)，配置适用于整个仓库的检查和格式化：
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
@@ -48,8 +48,14 @@ define.lint(async () => {
   return [js.configs.recommended, ts.configs.recommended];
 });
 
+define.fmt({
+  singleQuote: true,
+  ignorePatterns: ['**/dist/**'],
+});
+
 define.staged({
-  '*.{js,jsx,ts,tsx,mjs,cjs}': 'rs lint',
+  '*.{js,jsx,ts,tsx,mjs,cjs}': ['rs lint', 'rs fmt'],
+  '*.{json,md,mdx,css,html,yml,yaml}': 'rs fmt',
 });
 ```
 
@@ -60,6 +66,8 @@ define.staged({
   "private": true,
   "scripts": {
     "lint": "rs lint",
+    "format": "rs fmt",
+    "check:format": "rs fmt --check",
     "staged": "rs staged"
   }
 }
