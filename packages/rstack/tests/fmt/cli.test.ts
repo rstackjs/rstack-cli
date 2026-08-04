@@ -139,14 +139,10 @@ test('rejects file arguments with --stdin-filepath', () => {
 });
 
 test('provides command help', () => {
-  expect(fmtHelpMessage).toContain('Usage:\n  $ rs fmt [options] [files/globs...]');
-  expect(fmtHelpMessage).toContain('--write');
-  expect(fmtHelpMessage).toContain('--check');
-  expect(fmtHelpMessage).toContain('--list-different');
-  expect(fmtHelpMessage).toContain('--ignore-path <path>');
-  expect(fmtHelpMessage).toContain('--parallel-workers <count>');
-  expect(fmtHelpMessage).toContain('--stdin-filepath <path>');
-  expect(fmtHelpMessage).toContain('-h, --help');
+  const helpMessage = stripVTControlCharacters(fmtHelpMessage).replace(/^Rstack v.*\n\n/, '');
+
+  expect(helpMessage).toContain('Usage:\n  $ rs fmt [options] [files/globs...]');
+  expect(helpMessage).toMatchSnapshot();
 });
 
 test.each([

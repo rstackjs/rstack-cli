@@ -26,13 +26,13 @@ ${color.yellow('  $ rs fmt [options] [files/globs...]')}
 Format files with Prettier.
 
 ${color.cyan('Options')}:
-  --write             Write formatted files in place (default)
-  --check             Check whether files are formatted
-  --list-different    Print paths of unformatted files
-  --ignore-path <path>  Path to an additional ignore file (repeatable)
+  --write                     Write formatted files in place (default)
+  --check                     Check whether files are formatted
+  --list-different            Print paths of unformatted files
+  --ignore-path <path>        Path to an additional ignore file (repeatable)
   --parallel-workers <count>  Number of parallel workers
-  --stdin-filepath <path>  Format stdin as if it were saved at <path>
-  -h, --help          Display this help message`;
+  --stdin-filepath <path>     Format stdin as if it were saved at <path>
+  -h, --help                  Display this help message`;
 
 const parseMaxWorkers = (
   kebabValue: string | undefined,
