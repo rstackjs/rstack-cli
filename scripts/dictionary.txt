@@ -8,6 +8,7 @@ huskyrc
 indentable
 llms
 noformat
+noprettier
 nosystem
 quasis
 rsbuild
