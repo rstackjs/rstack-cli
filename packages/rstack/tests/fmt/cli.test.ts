@@ -139,14 +139,17 @@ test('rejects file arguments with --stdin-filepath', () => {
 });
 
 test('provides command help', () => {
-  expect(fmtHelpMessage).toContain('Usage:\n  $ rs fmt [options] [files/globs...]');
-  expect(fmtHelpMessage).toContain('--write');
-  expect(fmtHelpMessage).toContain('--check');
-  expect(fmtHelpMessage).toContain('--list-different');
-  expect(fmtHelpMessage).toContain('--ignore-path <path>');
-  expect(fmtHelpMessage).toContain('--parallel-workers <count>');
-  expect(fmtHelpMessage).toContain('--stdin-filepath <path>');
-  expect(fmtHelpMessage).toContain('-h, --help');
+  const helpMessage = stripVTControlCharacters(fmtHelpMessage);
+
+  expect(helpMessage).toContain('Usage:\n  $ rs fmt [options] [files/globs...]');
+  expect(helpMessage).toContain(`Options:
+  --write                     Write formatted files in place (default)
+  --check                     Check whether files are formatted
+  --list-different            Print paths of unformatted files
+  --ignore-path <path>        Path to an additional ignore file (repeatable)
+  --parallel-workers <count>  Number of parallel workers
+  --stdin-filepath <path>     Format stdin as if it were saved at <path>
+  -h, --help                  Display this help message`);
 });
 
 test.each([
