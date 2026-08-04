@@ -57,6 +57,16 @@ rs fmt . --check
 rs fmt --help
 ```
 
+### `--ignore-path <path>`
+
+从 `<path>` 加载额外的 Gitignore 兼容规则。重复传入该选项可以加载多个 ignore 文件：
+
+```bash
+rs fmt --ignore-path .prettierignore --ignore-path config/docs.ignore
+```
+
+相对 ignore 路径基于当前工作目录解析；每个文件中的规则基于该 ignore 文件所在目录解析，并追加到内置忽略规则和 `define.fmt.ignorePatterns`。这些规则会作用于扫描得到的路径、显式传入的文件以及 `--stdin-filepath`。ignore 文件无法读取时，命令以状态码 `2` 退出。
+
 ### `--list-different`
 
 输出未格式化文件的路径，但不提供 `--check` 的汇总信息。需要将结果交给其他命令处理时，可以使用此选项：
@@ -79,13 +89,15 @@ rs fmt . --parallel-workers 4
 
 ### `--stdin-filepath <path>`
 
-将 stdin 传入的内容按保存在 `<path>` 的文件进行格式化。该路径用于确定 parser 和匹配的覆盖配置，但不需要在磁盘上真实存在。格式化结果会输出到 stdout：
+将 stdin 传入的内容按保存在 `<path>` 的文件进行格式化，例如用于编辑器集成。该路径用于确定 parser 和匹配的[覆盖配置](../formatting#overrides)，但不需要在磁盘上真实存在：
 
 ```bash
 cat src/index.ts | rs fmt --stdin-filepath src/index.ts
 ```
 
-`--stdin-filepath` 不能与文件参数或 `--write`、`--check`、`--list-different` 同时使用。详细说明请参考[格式化标准输入](../formatting#formatting-stdin)。
+格式化结果写入 stdout，诊断信息写入 stderr。若输入路径被忽略，`rs fmt` 会跳过格式化并原样输出内容；若无法根据路径推断 parser 或内容解析失败，则输出错误并以状态码 `2` 退出。
+
+> `--stdin-filepath` 不能与文件参数或 `--write`、`--check`、`--list-different` 同时使用。
 
 ### `--write`
 

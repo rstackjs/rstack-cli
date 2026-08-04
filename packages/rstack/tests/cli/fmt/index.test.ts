@@ -195,6 +195,41 @@ test('does not load Prettier config or ignore files', () => {
   expect(readProjectFile('index.ts')).toBe('function getMessage() {\n  return "hello";\n}\n');
 });
 
+test('applies repeated ignore paths to explicit files', () => {
+  writeProjectFile('.prettierignore', 'src/ignored-by-root.ts\n');
+  writeProjectFile('config/extra.ignore', '../src/ignored-by-extra.ts\n');
+  writeProjectFile('src/ignored-by-root.ts', 'const root="ignored"');
+  writeProjectFile('src/ignored-by-extra.ts', 'const extra="ignored"');
+  writeProjectFile('src/index.ts', 'const index="formatted"');
+
+  const result = runFmt([
+    '--ignore-path',
+    '.prettierignore',
+    '--ignore-path=config/extra.ignore',
+    'src/ignored-by-root.ts',
+    'src/ignored-by-extra.ts',
+    'src/index.ts',
+  ]);
+
+  expect(result.status).toBe(0);
+  expectWriteSummary(result.stdout, 1, 1);
+  expect(result.stderr).toBe('');
+  expect(readProjectFile('src/ignored-by-root.ts')).toBe('const root="ignored"');
+  expect(readProjectFile('src/ignored-by-extra.ts')).toBe('const extra="ignored"');
+  expect(readProjectFile('src/index.ts')).toBe('const index = "formatted";\n');
+});
+
+test('returns exit code 2 for an unreadable ignore path', () => {
+  writeProjectFile('index.ts', 'const value=true');
+
+  const result = runFmt(['--ignore-path', 'missing.ignore', 'index.ts']);
+
+  expect(result.status).toBe(2);
+  expect(result.stdout).toBe('');
+  expect(result.stderr).toContain('Failed to read ignore file "missing.ignore".');
+  expect(readProjectFile('index.ts')).toBe('const value=true');
+});
+
 test('applies define.fmt options, overrides, ignore patterns, and globs', () => {
   writeProjectFile(
     'rstack.config.ts',
@@ -463,6 +498,20 @@ define.fmt({ ignorePatterns: ['src/ignored.ts'] });
 
   const source = 'const ignored="ignored"';
   const result = runFmtStdin(['--stdin-filepath', 'src/ignored.ts'], source);
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe(source);
+  expect(result.stderr).toBe('');
+});
+
+test('echoes stdin paths ignored by --ignore-path', () => {
+  writeProjectFile('.prettierignore', 'src/ignored.ts\n');
+
+  const source = 'const ignored="ignored"';
+  const result = runFmtStdin(
+    ['--ignore-path', '.prettierignore', '--stdin-filepath', 'src/ignored.ts'],
+    source,
+  );
 
   expect(result.status).toBe(0);
   expect(result.stdout).toBe(source);

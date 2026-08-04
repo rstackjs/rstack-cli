@@ -56,6 +56,8 @@ interface DiscoverFmtFilesOptions {
   cwd: string;
   /** Files, directories, and positive or negative globs. Defaults to the current directory. */
   patterns?: string[];
+  /** Ignore files resolved from `cwd`; each file's patterns are relative to its own directory. */
+  ignorePaths?: string[];
   /** Resolved project config applied to discovered files. */
   config: ResolvedFmtConfig;
 }

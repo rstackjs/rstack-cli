@@ -57,6 +57,20 @@ Display usage and option information without formatting files:
 rs fmt --help
 ```
 
+### `--ignore-path <path>`
+
+Load additional Gitignore-compatible rules from `<path>`. Repeat the option to load multiple
+ignore files:
+
+```bash
+rs fmt --ignore-path .prettierignore --ignore-path config/docs.ignore
+```
+
+Relative ignore paths are resolved from the current working directory. Rules in each file are
+resolved from the directory containing that ignore file and extend the built-in ignore rules and
+`define.fmt.ignorePatterns`. They apply to scanned paths, explicitly passed files, and
+`--stdin-filepath`. An unreadable ignore file causes the command to exit with code `2`.
+
 ### `--list-different`
 
 Print the paths of unformatted files without the summary produced by `--check`. This is useful when another command needs to consume the output:
@@ -79,13 +93,15 @@ When this option is omitted, `rs fmt` automatically chooses up to eight workers 
 
 ### `--stdin-filepath <path>`
 
-Format content received from stdin as if it were saved at `<path>`. The path determines the parser and matching configuration overrides, but it does not need to exist on disk. The formatted content is written to stdout:
+Format content received from stdin as if it were saved at `<path>`, for example when integrating with an editor. The path determines the parser and matching [configuration overrides](../formatting#overrides), but it does not need to exist on disk:
 
 ```bash
 cat src/index.ts | rs fmt --stdin-filepath src/index.ts
 ```
 
-`--stdin-filepath` cannot be combined with file arguments or with `--write`, `--check`, or `--list-different`. See [Formatting stdin](../formatting#formatting-stdin) for details.
+Formatted output is written to stdout and diagnostics to stderr. If the input path is ignored, `rs fmt` skips formatting and writes the input unchanged. If it cannot infer a parser from the path or parse the content, it reports an error and exits with code `2`.
+
+> `--stdin-filepath` cannot be combined with file arguments or with `--write`, `--check`, or `--list-different`.
 
 ### `--write`
 

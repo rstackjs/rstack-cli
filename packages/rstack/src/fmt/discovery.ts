@@ -1,6 +1,6 @@
 import { resolveFmtOptions } from './config.ts';
 import { discoverFmtPaths } from './discoverPaths.ts';
-import { createFmtIgnoreMatcher } from './ignore.ts';
+import { createIgnoreMatcher } from './ignore.ts';
 import type { DiscoverFmtFilesOptions, FmtFileRequest, ResolvedFmtConfig } from './types.ts';
 
 const createFileRequest = (filePath: string, config: ResolvedFmtConfig): FmtFileRequest => ({
@@ -12,15 +12,18 @@ const createFileRequest = (filePath: string, config: ResolvedFmtConfig): FmtFile
 const discoverFmtFiles = async ({
   cwd,
   patterns,
+  ignorePaths,
   config,
 }: DiscoverFmtFilesOptions): Promise<FmtFileRequest[]> => {
-  const candidates = await discoverFmtPaths({ cwd, patterns });
+  const [candidates, isIgnored] = await Promise.all([
+    discoverFmtPaths({ cwd, patterns }),
+    createIgnoreMatcher({ config, cwd, ignorePaths }),
+  ]);
   if (candidates.length === 0) {
     return [];
   }
 
-  const isFmtIgnored = createFmtIgnoreMatcher(config);
-  const filePaths = candidates.filter((filePath) => !isFmtIgnored(filePath));
+  const filePaths = candidates.filter((filePath) => !isIgnored(filePath));
   const files = filePaths.map((filePath) => createFileRequest(filePath, config));
   if (!files.some((file) => file.options.plugins?.length)) {
     return files;
@@ -32,7 +35,10 @@ const discoverFmtFiles = async ({
   );
   const resolvePlugins = createFmtPluginResolver(config.rootPath);
 
-  return files.map((file) => ({ ...file, options: resolvePlugins(file.options) }));
+  return files.map((file) => ({
+    ...file,
+    options: resolvePlugins(file.options),
+  }));
 };
 
 export { createFileRequest, discoverFmtFiles };
