@@ -8,7 +8,7 @@ The `rs fmt` command formats files or checks whether they are formatted. For det
 rs fmt [options] [files/globs...]
 ```
 
-Pass files, directories, or glob patterns to choose what to format. When no paths are provided, `rs fmt` formats the current directory.
+Pass files, directories, or glob patterns to choose what to format. When no paths are provided, `rs fmt` formats the current directory. See [Formatting scope](../formatting#formatting-scope) for path resolution and ignore rules.
 
 Examples:
 
@@ -31,15 +31,68 @@ rs format
 
 ## Options
 
-| Option                       | Description                                                                         |
-| ---------------------------- | ----------------------------------------------------------------------------------- |
-| `--write`                    | Write formatted files in place. This is the default mode.                           |
-| `--check`                    | Check formatting without writing files. Exits with code 1 when files are different. |
-| `--list-different`           | Print only unformatted paths. Exits with code 1 when files are different.           |
-| `--parallel-workers <count>` | Set the maximum number of formatting workers.                                       |
-| `--stdin-filepath <path>`    | Format stdin as if it were saved at `<path>` and print the result to stdout.        |
-| `-h, --help`                 | Display usage and option information.                                               |
+### `--check`
 
-> `--write`, `--check`, and `--list-different` are mutually exclusive.
+Check whether files are formatted without changing them. The output lists files with formatting issues and includes a human-friendly summary, making this option useful in CI:
 
-> `--stdin-filepath` cannot be combined with `--write`, `--check`, `--list-different`, or file arguments.
+```bash
+rs fmt . --check
+```
+
+`--check` cannot be combined with `--write` or `--list-different`.
+
+The command uses the following exit codes:
+
+| Code | Meaning                                                   |
+| ---- | --------------------------------------------------------- |
+| `0`  | All matched files are formatted.                          |
+| `1`  | One or more matched files have formatting issues.         |
+| `2`  | `rs fmt` could not run or encountered a formatting error. |
+
+### `-h, --help`
+
+Display usage and option information without formatting files:
+
+```bash
+rs fmt --help
+```
+
+### `--list-different`
+
+Print the paths of unformatted files without the summary produced by `--check`. This is useful when another command needs to consume the output:
+
+```bash
+rs fmt . --list-different
+```
+
+The option uses the same exit codes as `--check` and cannot be combined with `--write` or `--check`.
+
+### `--parallel-workers <count>`
+
+Set the maximum number of formatting workers to a positive integer:
+
+```bash
+rs fmt . --parallel-workers 4
+```
+
+When this option is omitted, `rs fmt` automatically chooses up to eight workers based on the available CPU parallelism and the number of matched files. Set a lower value to limit CPU or memory usage in constrained environments.
+
+### `--stdin-filepath <path>`
+
+Format content received from stdin as if it were saved at `<path>`. The path determines the parser and matching configuration overrides, but it does not need to exist on disk. The formatted content is written to stdout:
+
+```bash
+cat src/index.ts | rs fmt --stdin-filepath src/index.ts
+```
+
+`--stdin-filepath` cannot be combined with file arguments or with `--write`, `--check`, or `--list-different`. See [Formatting stdin](../formatting#formatting-stdin) for details.
+
+### `--write`
+
+Write formatted files in place. This is the default mode, so specifying `--write` is optional:
+
+```bash
+rs fmt src --write
+```
+
+`--write` cannot be combined with `--check` or `--list-different`.
