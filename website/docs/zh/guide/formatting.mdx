@@ -45,7 +45,7 @@ define.fmt({
 
 :::warning Prettier 配置文件
 
-`rs fmt` 不会读取 Prettier 配置文件、`.prettierignore` 或 `.editorconfig`。请在 `define.fmt()` 中设置格式化选项和额外的忽略规则。
+`rs fmt` 不会自动加载 Prettier 配置文件、`.prettierignore` 或 `.editorconfig`。请在 `define.fmt()` 中设置格式化选项和额外的忽略规则。如需显式加载 ignore 文件，请使用 [`--ignore-path`](./cli/fmt#--ignore-path-path)。
 
 :::
 
@@ -85,8 +85,6 @@ define.fmt({
 
 这些模式遵循 Gitignore 语法，并且基于 Rstack 配置文件所在的目录解析。由于规则会在确定格式化范围后生效，因此也会排除命令行中显式传入的文件。
 
-> 你也可以使用使用 [`--ignore-path`](./cli/fmt#--ignore-path-path) CLI 选项来忽略文件。
-
 ### Lock 文件 \{#lock-files}
 
 `rs fmt` 默认忽略常见的 lock 文件，包括 `package-lock.json` 和 `pnpm-lock.yaml`。
@@ -100,6 +98,16 @@ define.fmt({
   ignorePatterns: ['!pnpm-lock.yaml'],
 });
 ```
+
+### 忽略顺序 \{#ignore-order}
+
+`rs fmt` 会通过以下三个步骤，决定需要格式化哪些路径：
+
+1. **处理命令行参数和 `.gitignore`**：`rs fmt` 首先处理命令行中指定的文件、目录和 glob 模式。以 `!` 开头的 glob 模式用于排除路径。扫描目录或 glob 模式时会遵循 `.gitignore`，直接指定的文件则不会。在这一步被排除的路径无法被后续规则重新包含。
+2. **应用默认忽略规则和 `ignorePatterns`**：`rs fmt` 默认忽略 [lock 文件](#lock-files)，随后应用 `ignorePatterns`。这些规则按顺序匹配，后面的规则优先。例如，`!pnpm-lock.yaml` 可以重新包含默认忽略的文件。
+3. **应用 [`--ignore-path`](./cli/fmt#--ignore-path-path) 指定的文件**：每个 ignore 文件单独匹配，同一文件中后面的规则优先。不同 ignore 文件与 `ignorePatterns` 的排除结果会叠加：只要任一来源忽略某个路径，该路径就会保持排除，即使其他来源尝试重新包含它。
+
+> 对于命令行中直接指定的文件，以及通过 [`--stdin-filepath`](./cli/fmt#--stdin-filepath-path) 指定的路径，`rs fmt` 仍会应用第二、三步中的忽略规则。只有未被这些规则排除的路径才会被格式化。
 
 ## 排序 package.json 字段 \{#sort-package-json}
 

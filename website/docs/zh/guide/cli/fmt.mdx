@@ -59,13 +59,33 @@ rs fmt --help
 
 ### `--ignore-path <path>`
 
-从 `<path>` 加载额外的 Gitignore 兼容规则。重复传入该选项可以加载多个 ignore 文件：
+使用 `--ignore-path` 从文件中加载额外的 Gitignore 兼容规则。
+
+相对的 ignore 文件路径基于当前工作目录解析。文件中的规则基于该文件所在目录解析。
+
+例如，在项目根目录执行以下命令：
 
 ```bash
-rs fmt --ignore-path .prettierignore --ignore-path config/docs.ignore
+rs fmt --ignore-path config/format.ignore
 ```
 
-相对 ignore 路径基于当前工作目录解析；每个文件中的规则基于该 ignore 文件所在目录解析，并追加到内置忽略规则和 `define.fmt.ignorePatterns`。这些规则会作用于扫描得到的路径、显式传入的文件以及 `--stdin-filepath`。ignore 文件无法读取时，命令以状态码 `2` 退出。
+假设 `config/format.ignore` 包含以下规则：
+
+```text title="config/format.ignore"
+generated/**
+```
+
+这里，`config/format.ignore` 相对项目根目录定位。文件中的 `generated/**` 规则则相对 `config/` 目录解析。因此，它会忽略 `config/generated/**`，而不是项目根目录下的 `generated/**`。
+
+加载的规则会作用于扫描得到的路径、显式传入的文件和 `--stdin-filepath`。
+
+如需加载多个 ignore 文件，可以重复传入该选项：
+
+```bash
+rs fmt --ignore-path .prettierignore --ignore-path config/format.ignore
+```
+
+每个文件都是独立的忽略来源。关于这些来源与 `.gitignore`、默认忽略规则和 `ignorePatterns` 的组合方式，请参考[忽略顺序](../formatting#ignore-order)。
 
 ### `--list-different`
 

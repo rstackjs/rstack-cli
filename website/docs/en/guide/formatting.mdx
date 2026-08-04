@@ -45,7 +45,7 @@ In addition to Prettier options and `overrides`, Rstack provides two options:
 
 :::warning Prettier configuration files
 
-`rs fmt` does not read Prettier configuration files, `.prettierignore`, or `.editorconfig`. Keep formatting options and additional ignore rules in `define.fmt()`.
+`rs fmt` does not automatically load Prettier configuration files, `.prettierignore`, or `.editorconfig`. Keep formatting options and additional ignore rules in `define.fmt()`. To load an ignore file explicitly, use [`--ignore-path`](./cli/fmt#--ignore-path-path).
 
 :::
 
@@ -85,8 +85,6 @@ define.fmt({
 
 Patterns follow Gitignore syntax and are resolved relative to the directory containing the Rstack configuration file. Because they are applied after the files are selected, they also exclude files passed explicitly on the command line.
 
-> You can also use the [`--ignore-path`](./cli/fmt#--ignore-path-path) CLI option to ignore files.
-
 ### Lock files
 
 By default, `rs fmt` ignores common lock files, including `package-lock.json` and `pnpm-lock.yaml`.
@@ -100,6 +98,16 @@ define.fmt({
   ignorePatterns: ['!pnpm-lock.yaml'],
 });
 ```
+
+### Ignore order
+
+`rs fmt` uses the following three steps to decide which paths to format:
+
+1. **Process command-line arguments and `.gitignore`**: `rs fmt` first processes the files, directories, and glob patterns passed on the command line. A glob that starts with `!` excludes matching paths. Directory and glob scans follow `.gitignore`, while files passed directly do not. Paths excluded in this step cannot be re-included later.
+2. **Apply default ignore rules and `ignorePatterns`**: `rs fmt` ignores [lock files](#lock-files) by default, then applies `ignorePatterns`. These rules are evaluated in order, with later rules taking precedence. For example, `!pnpm-lock.yaml` re-includes the otherwise ignored file.
+3. **Apply files specified with [`--ignore-path`](./cli/fmt#--ignore-path-path)**: Each ignore file is evaluated separately, and later rules take precedence within that file. Exclusions from different files and `ignorePatterns` are combined: if any source ignores a path, that path remains excluded, even if another source re-includes it.
+
+> `rs fmt` still applies the rules from the second and third steps to files passed directly on the command line and to paths specified with [`--stdin-filepath`](./cli/fmt#--stdin-filepath-path). It formats a path only if none of these rules excludes it.
 
 ## Sort package.json fields \{#sort-package-json}
 
