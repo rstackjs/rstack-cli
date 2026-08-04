@@ -1,0 +1,19 @@
+// Rstest Snapshot v1
+
+exports[`provides command help 1`] = `
+"Rstack v0.3.2
+
+Usage:
+  $ rs fmt [options] [files/globs...]
+
+Format files with Prettier.
+
+Options:
+  --write                     Write formatted files in place (default)
+  --check                     Check whether files are formatted
+  --list-different            Print paths of unformatted files
+  --ignore-path <path>        Path to an additional ignore file (repeatable)
+  --parallel-workers <count>  Number of parallel workers
+  --stdin-filepath <path>     Format stdin as if it were saved at <path>
+  -h, --help                  Display this help message"
+`;
