@@ -89,12 +89,48 @@ test.each(['--help', '-h'])('parses %s', (option) => {
   expect(parseFmtCLIArgs([option]).help).toBe(true);
 });
 
+test.each(['--stdin-filepath', '--stdinFilepath'])('parses %s', (option) => {
+  expect(parseFmtCLIArgs([option, 'src/index.ts'])).toEqual({
+    mode: 'write',
+    patterns: [],
+    maxWorkers: undefined,
+    help: false,
+    stdinFilepath: 'src/index.ts',
+  });
+});
+
+test('accepts a worker count with --stdin-filepath', () => {
+  expect(parseFmtCLIArgs(['--stdin-filepath', 'index.ts', '--parallel-workers', '2'])).toEqual({
+    mode: 'write',
+    patterns: [],
+    maxWorkers: 2,
+    help: false,
+    stdinFilepath: 'index.ts',
+  });
+});
+
+test.each(['--write', '--check', '--list-different', '--listDifferent'])(
+  'rejects %s with --stdin-filepath',
+  (option) => {
+    expect(() => parseFmtCLIArgs(['--stdin-filepath', 'index.ts', option])).toThrow(
+      'The --stdin-filepath option cannot be used with --write, --check, or --list-different.',
+    );
+  },
+);
+
+test('rejects file arguments with --stdin-filepath', () => {
+  expect(() => parseFmtCLIArgs(['--stdin-filepath', 'index.ts', 'src/other.ts'])).toThrow(
+    'The --stdin-filepath option cannot be used with file arguments.',
+  );
+});
+
 test('provides command help', () => {
   expect(fmtHelpMessage).toContain('Usage:\n  $ rs fmt [options] [files/globs...]');
   expect(fmtHelpMessage).toContain('--write');
   expect(fmtHelpMessage).toContain('--check');
   expect(fmtHelpMessage).toContain('--list-different');
   expect(fmtHelpMessage).toContain('--parallel-workers <count>');
+  expect(fmtHelpMessage).toContain('--stdin-filepath <path>');
   expect(fmtHelpMessage).toContain('-h, --help');
 });
 

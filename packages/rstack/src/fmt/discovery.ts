@@ -35,4 +35,4 @@ const discoverFmtFiles = async ({
   return files.map((file) => ({ ...file, options: resolvePlugins(file.options) }));
 };
 
-export { discoverFmtFiles };
+export { createFileRequest, discoverFmtFiles };
