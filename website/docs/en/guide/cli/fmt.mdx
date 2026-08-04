@@ -59,17 +59,33 @@ rs fmt --help
 
 ### `--ignore-path <path>`
 
-Load additional Gitignore-compatible rules from `<path>`. Repeat the option to load multiple
-ignore files:
+Use `--ignore-path` to load additional Gitignore-compatible rules from a file.
+
+Relative ignore-file paths are resolved from the current working directory. Rules inside a file are resolved from the directory containing that file.
+
+For example, run the following command from the project root:
 
 ```bash
-rs fmt --ignore-path .prettierignore --ignore-path config/docs.ignore
+rs fmt --ignore-path config/format.ignore
 ```
 
-Relative ignore paths are resolved from the current working directory. Rules in each file are
-resolved from the directory containing that ignore file and extend the built-in ignore rules and
-`define.fmt.ignorePatterns`. They apply to scanned paths, explicitly passed files, and
-`--stdin-filepath`. An unreadable ignore file causes the command to exit with code `2`.
+If `config/format.ignore` contains this rule:
+
+```text title="config/format.ignore"
+generated/**
+```
+
+Here, `config/format.ignore` is located relative to the project root. The `generated/**` rule is relative to `config/`. It therefore ignores `config/generated/**` instead of `generated/**` in the project root.
+
+Loaded rules apply to scanned paths, explicitly passed files, and `--stdin-filepath`.
+
+To load multiple ignore files, repeat the option:
+
+```bash
+rs fmt --ignore-path .prettierignore --ignore-path config/format.ignore
+```
+
+Each file acts as a separate ignore source. See [Ignore order](../formatting#ignore-order) for how these sources combine with `.gitignore`, default ignore rules, and `ignorePatterns`.
 
 ### `--list-different`
 
