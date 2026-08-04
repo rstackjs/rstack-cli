@@ -1,7 +1,7 @@
 import { defineConfig } from '@rslib/core';
 import pkgJson from './package.json' with { type: 'json' };
 
-const fullyMinifiedChunks = /lintStaged\.js$/;
+const fullyMinifiedChunks = /(?:fmtWorker|lintStaged)\.js$/;
 
 export default defineConfig({
   lib: [{ syntax: 'es2023', dts: true }],
@@ -32,7 +32,7 @@ export default defineConfig({
       css: false,
       jsOptions: [
         {
-          // Fully minify the bundled lint-staged code to reduce package size.
+          // Fully minify large bundles to reduce package size.
           include: fullyMinifiedChunks,
         },
         {
