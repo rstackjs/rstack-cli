@@ -6,7 +6,6 @@ import { loadRstackConfig } from '../config.ts';
 import { resolveFmtConfig } from './config.ts';
 import { discoverFmtFiles } from './discovery.ts';
 import { runFmtFiles } from './runner.ts';
-import { runFmtStdin } from './stdin.ts';
 import type { FmtMode, FmtRunResult, ResolvedFmtConfig } from './types.ts';
 
 interface ParsedFmtCLIArgs {
@@ -218,6 +217,10 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
     }
 
     if (stdinFilepath !== undefined) {
+      const { runFmtStdin } = await import(
+        /* rspackChunkName: 'fmtStdin' */
+        './stdin.ts'
+      );
       await runFmtStdin({ filepath: stdinFilepath, cwd, loadConfig: () => loadFmtConfig(cwd) });
       return;
     }
