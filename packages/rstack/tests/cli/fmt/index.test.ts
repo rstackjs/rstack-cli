@@ -585,16 +585,15 @@ test('writes nothing for empty stdin', () => {
   expect(result.stderr).toBe('');
 });
 
-test('reports when no files match', () => {
-  const writeResult = runFmt(['missing/**/*.ts']);
+test('returns exit code 2 when no files match', () => {
+  for (const modeArgs of [[], ['--check'], ['--list-different']]) {
+    const result = runFmt([...modeArgs, 'missing/**/*.ts']);
 
-  expect(writeResult.status).toBe(0);
-  expect(writeResult.stdout).toBe('info    No files matched.\n');
-  expect(writeResult.stderr).toBe('');
-
-  const checkResult = runFmt(['--check', 'missing/**/*.ts']);
-
-  expect(checkResult.status).toBe(0);
-  expect(checkResult.stdout).toBe('info    No files matched.\n');
-  expect(checkResult.stderr).toBe('');
+    expect(result.status).toBe(2);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toContain(
+      'No supported files matched "missing/**/*.ts", or all matching files were ignored.',
+    );
+    expect(result.stderr).not.toContain('\n    at ');
+  }
 });
