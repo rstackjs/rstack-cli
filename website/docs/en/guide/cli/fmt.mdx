@@ -43,11 +43,11 @@ rs fmt . --check
 
 The command uses the following exit codes:
 
-| Code | Meaning                                                   |
-| ---- | --------------------------------------------------------- |
-| `0`  | All matched files are formatted.                          |
-| `1`  | One or more matched files have formatting issues.         |
-| `2`  | `rs fmt` could not run or encountered a formatting error. |
+| Code | Meaning                                                                                                                                                  |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0`  | All matched files are formatted; or no supported files matched, but [`--no-error-on-unmatched-pattern`](#--no-error-on-unmatched-pattern) was specified. |
+| `1`  | One or more matched files have formatting issues.                                                                                                        |
+| `2`  | `rs fmt` could not run or encountered a formatting error.                                                                                                |
 
 ### `-h, --help`
 
@@ -96,6 +96,16 @@ rs fmt . --list-different
 ```
 
 The option uses the same exit codes as `--check` and cannot be combined with `--write` or `--check`.
+
+### `--no-error-on-unmatched-pattern`
+
+Exit successfully without diagnostics when no supported files match the provided paths or globs, including when all matching files are ignored:
+
+```bash
+rs fmt --no-error-on-unmatched-pattern 'src/**/*.ts'
+```
+
+For example, a pre-commit script may always run `rs fmt`, even when the staged changes contain no supported files. This option lets the command exit successfully in that case instead of blocking the commit.
 
 ### `--parallel-workers <count>`
 
