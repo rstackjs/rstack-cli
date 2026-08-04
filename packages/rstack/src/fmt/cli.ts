@@ -243,9 +243,11 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
     });
 
     if (files.length === 0) {
-      if (mode !== 'list-different') {
-        logger.info('No files matched.');
-      }
+      const targets = (patterns.length ? patterns : ['.'])
+        .map((pattern) => color.cyan(JSON.stringify(pattern)))
+        .join(', ');
+      logger.error(`No supported files matched ${targets}, or all matching files were ignored.`);
+      process.exitCode = 2;
       return;
     }
 
