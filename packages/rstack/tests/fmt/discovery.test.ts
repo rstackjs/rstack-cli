@@ -47,6 +47,27 @@ test('applies config ignore patterns outside the config root', async () => {
   });
 });
 
+test('keeps files re-included by a CLI ignore file during directory traversal', async () => {
+  await withTempProject(async (rootPath) => {
+    writeProjectFile(rootPath, '.prettierignore', 'generated/*\n!generated/keep.ts\n');
+    writeProjectFile(rootPath, 'generated/drop.ts');
+    writeProjectFile(rootPath, 'generated/keep.ts');
+    writeProjectFile(rootPath, 'src/index.ts');
+
+    const files = await discoverFmtFiles({
+      cwd: rootPath,
+      patterns: ['**/*.ts'],
+      ignorePaths: ['.prettierignore'],
+      config: normalizeFmtConfig(undefined, rootPath),
+    });
+
+    expect(relativePaths(rootPath, files)).toEqual([
+      path.join('generated', 'keep.ts'),
+      path.join('src', 'index.ts'),
+    ]);
+  });
+});
+
 test('defers parser inference to workers and preserves an explicit parser', async () => {
   await withTempProject(async (rootPath) => {
     writeProjectFile(rootPath, 'index.js');

@@ -11,6 +11,8 @@ interface DiscoverFmtPathsOptions {
   /** Absolute directory used to resolve input paths. */
   cwd: string;
   patterns?: string[];
+  /** Returns whether a scanned directory can be pruned before traversal. */
+  isDirectoryIgnored?: (directoryPath: string) => boolean;
 }
 
 const isErrnoException = (error: unknown): error is NodeJS.ErrnoException =>
@@ -201,6 +203,7 @@ class GitIgnoreMatcher {
 const createTraversalOptions = (
   gitIgnore: GitIgnoreMatcher,
   isIncluded?: (filePath: string) => boolean,
+  isDirectoryIgnored?: (directoryPath: string) => boolean,
 ) => {
   // tiny-readdir passes only a path to `ignore`, so retain the dirent type briefly.
   const directories = new Set<string>();
@@ -214,7 +217,7 @@ const createTraversalOptions = (
       }
 
       if (isDirectory) {
-        return gitIgnore.isIgnored(targetPath, true);
+        return gitIgnore.isIgnored(targetPath, true) || isDirectoryIgnored?.(targetPath) === true;
       }
 
       return (
@@ -343,6 +346,7 @@ const getTraversalRoots = (cwd: string, directories: string[], globs: string[]):
 const discoverFmtPaths = async ({
   cwd,
   patterns: inputPatterns,
+  isDirectoryIgnored,
 }: DiscoverFmtPathsOptions): Promise<string[]> => {
   const patterns = inputPatterns?.length ? inputPatterns : ['.'];
   const {
@@ -366,7 +370,7 @@ const discoverFmtPaths = async ({
         }
 
         await gitIgnore.loadThrough(rootPath);
-        if (gitIgnore.isIgnored(rootPath, true)) {
+        if (gitIgnore.isIgnored(rootPath, true) || isDirectoryIgnored?.(rootPath) === true) {
           return [];
         }
 
@@ -384,7 +388,9 @@ const discoverFmtPaths = async ({
               return globMatchers.some((matches) => matches(relativePath));
             };
 
-        return (await readdir(rootPath, createTraversalOptions(gitIgnore, isIncluded))).files;
+        return (
+          await readdir(rootPath, createTraversalOptions(gitIgnore, isIncluded, isDirectoryIgnored))
+        ).files;
       }),
     );
 

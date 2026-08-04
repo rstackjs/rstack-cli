@@ -29,6 +29,15 @@ test('matches gitignore patterns relative to the config root', async () => {
   expect(isIgnored(path.join(rootPath, 'src/index.js'))).toBe(false);
 });
 
+test('distinguishes directory-only patterns from files', async () => {
+  const isIgnored = await createMatcher(['dist/']);
+  const directoryPath = path.join(rootPath, 'dist');
+
+  expect(isIgnored(directoryPath)).toBe(false);
+  expect(isIgnored(directoryPath, true)).toBe(true);
+  expect(isIgnored(path.join(directoryPath, 'index.js'))).toBe(true);
+});
+
 test('applies negated patterns in declaration order', async () => {
   const isIgnored = await createMatcher(['*.js', '!src/keep.js']);
   const isIgnoredAgain = await createMatcher(['*.js', '!src/keep.js', 'src/keep.js']);

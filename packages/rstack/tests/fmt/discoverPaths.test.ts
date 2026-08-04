@@ -112,6 +112,31 @@ test('lets explicit files bypass gitignore', async () => {
   });
 });
 
+test('prunes directories with an external ignore matcher', async () => {
+  await withTempProject(async (rootPath) => {
+    writeProjectFile(rootPath, 'generated/nested/output.ts');
+    writeProjectFile(rootPath, 'src/index.ts');
+    const checkedDirectories: string[] = [];
+    const generatedPath = path.join(rootPath, 'generated');
+    const isDirectoryIgnored = (directoryPath: string): boolean => {
+      checkedDirectories.push(path.relative(rootPath, directoryPath));
+      return directoryPath === generatedPath;
+    };
+
+    const files = await discoverFmtPaths({ cwd: rootPath, isDirectoryIgnored });
+    const ignoredRoot = await discoverFmtPaths({
+      cwd: rootPath,
+      patterns: ['generated'],
+      isDirectoryIgnored,
+    });
+
+    expect(relativePaths(rootPath, files)).toEqual([path.join('src', 'index.ts')]);
+    expect(ignoredRoot).toEqual([]);
+    expect(checkedDirectories).toContain('generated');
+    expect(checkedDirectories).not.toContain(path.join('generated', 'nested'));
+  });
+});
+
 test.runIf(process.platform !== 'win32')('does not follow file or directory symlinks', async () => {
   await withTempProject(async (rootPath) => {
     const targetPath = writeProjectFile(rootPath, 'target/index.ts');

@@ -8,17 +8,19 @@ const createFileRequest = (filePath: string, config: ResolvedFmtConfig): FmtFile
   options: resolveFmtOptions(filePath, config),
 });
 
-/** Discovers worker-ready files without reading Prettier config files or `.prettierignore`. */
+/** Discovers worker-ready files without automatically reading Prettier config or ignore files. */
 const discoverFmtFiles = async ({
   cwd,
   patterns,
   ignorePaths,
   config,
 }: DiscoverFmtFilesOptions): Promise<FmtFileRequest[]> => {
-  const [candidates, isIgnored] = await Promise.all([
-    discoverFmtPaths({ cwd, patterns }),
-    createIgnoreMatcher({ config, cwd, ignorePaths }),
-  ]);
+  const isIgnored = await createIgnoreMatcher({ config, cwd, ignorePaths });
+  const candidates = await discoverFmtPaths({
+    cwd,
+    patterns,
+    isDirectoryIgnored: (directoryPath) => isIgnored(directoryPath, true),
+  });
   if (candidates.length === 0) {
     return [];
   }
