@@ -11,7 +11,7 @@ import type { ResolvedFmtConfig } from './types.ts';
  */
 const defaultIgnorePatterns = ['package-lock.json', 'pnpm-lock.yaml'];
 
-type IgnoreMatcher = (filePath: string) => boolean;
+type IgnoreMatcher = (filePath: string, isDirectory?: boolean) => boolean;
 
 interface CreateIgnoreMatcherOptions {
   config: ResolvedFmtConfig;
@@ -23,7 +23,8 @@ interface CreateIgnoreMatcherOptions {
 const createPatternMatcher = (rootPath: string, patterns: string): IgnoreMatcher => {
   const matches = fastIgnore(patterns);
 
-  return (filePath) => matches(path.relative(rootPath, filePath));
+  return (filePath, isDirectory = false) =>
+    matches(path.relative(rootPath, filePath), { isDirectory });
 };
 
 const loadIgnoreMatcher = async (cwd: string, ignorePath: string): Promise<IgnoreMatcher> => {
@@ -55,8 +56,9 @@ const createIgnoreMatcher = async ({
     ignorePaths.map((ignorePath) => loadIgnoreMatcher(cwd, ignorePath)),
   );
 
-  return (filePath) =>
-    configMatcher(filePath) || ignoreMatchers.some((matches) => matches(filePath));
+  return (filePath, isDirectory = false) =>
+    configMatcher(filePath, isDirectory) ||
+    ignoreMatchers.some((matches) => matches(filePath, isDirectory));
 };
 
 export { createIgnoreMatcher };
