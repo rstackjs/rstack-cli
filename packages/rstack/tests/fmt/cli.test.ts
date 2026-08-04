@@ -21,6 +21,7 @@ test('uses write mode by default', () => {
   expect(parseFmtCLIArgs([])).toEqual({
     mode: 'write',
     patterns: [],
+    ignorePaths: [],
     maxWorkers: undefined,
     help: false,
   });
@@ -35,6 +36,7 @@ test.each([
   expect(parseFmtCLIArgs([option])).toEqual({
     mode,
     patterns: [],
+    ignorePaths: [],
     maxWorkers: undefined,
     help: false,
   });
@@ -46,6 +48,7 @@ test.each(['--parallel-workers', '--parallelWorkers'])(
     expect(parseFmtCLIArgs([option, '3'])).toEqual({
       mode: 'write',
       patterns: [],
+      ignorePaths: [],
       maxWorkers: 3,
       help: false,
     });
@@ -71,6 +74,7 @@ test('preserves file paths and globs', () => {
   expect(parseFmtCLIArgs([patterns[0], '--check', ...patterns.slice(1)])).toEqual({
     mode: 'check',
     patterns,
+    ignorePaths: [],
     maxWorkers: undefined,
     help: false,
   });
@@ -80,6 +84,7 @@ test('treats arguments after the terminator as paths', () => {
   expect(parseFmtCLIArgs(['--check', '--', '--write', '--help'])).toEqual({
     mode: 'check',
     patterns: ['--write', '--help'],
+    ignorePaths: [],
     maxWorkers: undefined,
     help: false,
   });
@@ -89,10 +94,18 @@ test.each(['--help', '-h'])('parses %s', (option) => {
   expect(parseFmtCLIArgs([option]).help).toBe(true);
 });
 
+test('collects repeated ignore paths', () => {
+  expect(
+    parseFmtCLIArgs(['--ignore-path', '.prettierignore', '--ignore-path=config/format.ignore'])
+      .ignorePaths,
+  ).toEqual(['.prettierignore', 'config/format.ignore']);
+});
+
 test.each(['--stdin-filepath', '--stdinFilepath'])('parses %s', (option) => {
   expect(parseFmtCLIArgs([option, 'src/index.ts'])).toEqual({
     mode: 'write',
     patterns: [],
+    ignorePaths: [],
     maxWorkers: undefined,
     help: false,
     stdinFilepath: 'src/index.ts',
@@ -103,6 +116,7 @@ test('accepts a worker count with --stdin-filepath', () => {
   expect(parseFmtCLIArgs(['--stdin-filepath', 'index.ts', '--parallel-workers', '2'])).toEqual({
     mode: 'write',
     patterns: [],
+    ignorePaths: [],
     maxWorkers: 2,
     help: false,
     stdinFilepath: 'index.ts',
@@ -129,6 +143,7 @@ test('provides command help', () => {
   expect(fmtHelpMessage).toContain('--write');
   expect(fmtHelpMessage).toContain('--check');
   expect(fmtHelpMessage).toContain('--list-different');
+  expect(fmtHelpMessage).toContain('--ignore-path <path>');
   expect(fmtHelpMessage).toContain('--parallel-workers <count>');
   expect(fmtHelpMessage).toContain('--stdin-filepath <path>');
   expect(fmtHelpMessage).toContain('-h, --help');

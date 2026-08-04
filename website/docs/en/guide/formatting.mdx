@@ -71,16 +71,6 @@ When scanning directories or globs, `rs fmt` follows `.gitignore` rules, skips b
 
 `.gitignore` applies only when scanning directories and globs. It does not exclude files passed explicitly on the command line. To always exclude a file, use [`ignorePatterns`](#ignore-files).
 
-## Formatting stdin
-
-Use `--stdin-filepath` to format content piped through stdin, for example from an editor integration. The provided path determines the parser and the matching [overrides](#overrides); it does not need to exist on disk:
-
-```bash
-cat src/index.ts | rs fmt --stdin-filepath src/index.ts
-```
-
-The formatted result is written to stdout, and diagnostics go to stderr. When the path matches [`ignorePatterns`](#ignore-files) or a default [lock file](#lock-files), `rs fmt` skips formatting and writes the input unchanged. When no parser can be inferred from the path, or the content cannot be parsed, `rs fmt` prints an error and exits with code 2.
-
 ## Ignore files
 
 Use `ignorePatterns` to exclude files from formatting:
@@ -94,6 +84,8 @@ define.fmt({
 ```
 
 Patterns follow Gitignore syntax and are resolved relative to the directory containing the Rstack configuration file. Because they are applied after the files are selected, they also exclude files passed explicitly on the command line.
+
+> You can also use the [`--ignore-path`](./cli/fmt#--ignore-path-path) CLI option to ignore files.
 
 ### Lock files
 

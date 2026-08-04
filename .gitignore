@@ -12,6 +12,8 @@ doc_build
 
 # Temp files
 test-temp-*
+TODO.md
+TODO-*.md
 
 # IDE
 .vscode/*

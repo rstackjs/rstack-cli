@@ -11,6 +11,7 @@ import type { FmtMode, FmtRunResult, ResolvedFmtConfig } from './types.ts';
 interface ParsedFmtCLIArgs {
   mode: FmtMode;
   patterns: string[];
+  ignorePaths: string[];
   maxWorkers?: number;
   help: boolean;
   /** Path the stdin content is formatted as; it need not exist on disk. */
@@ -28,6 +29,7 @@ ${color.cyan('Options')}:
   --write             Write formatted files in place (default)
   --check             Check whether files are formatted
   --list-different    Print paths of unformatted files
+  --ignore-path <path>  Path to an additional ignore file (repeatable)
   --parallel-workers <count>  Number of parallel workers
   --stdin-filepath <path>  Format stdin as if it were saved at <path>
   -h, --help          Display this help message`;
@@ -57,6 +59,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       check: { type: 'boolean' },
       'list-different': { type: 'boolean' },
       listDifferent: { type: 'boolean' },
+      'ignore-path': { type: 'string', multiple: true },
       'parallel-workers': { type: 'string' },
       parallelWorkers: { type: 'string' },
       'stdin-filepath': { type: 'string' },
@@ -92,6 +95,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   return {
     mode,
     patterns: positionals,
+    ignorePaths: values['ignore-path'] ?? [],
     maxWorkers,
     help: values.help ?? false,
     stdinFilepath,
@@ -210,7 +214,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
   // Argument errors are reported like every other failure so that a single
   // exit code identifies "rs fmt refused to run".
   try {
-    const { help, maxWorkers, mode, patterns, stdinFilepath } = parseFmtCLIArgs(args);
+    const { help, ignorePaths, maxWorkers, mode, patterns, stdinFilepath } = parseFmtCLIArgs(args);
     if (help) {
       logger.log(fmtHelpMessage);
       return;
@@ -221,12 +225,22 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
         /* rspackChunkName: 'fmtStdin' */
         './stdin.ts'
       );
-      await runFmtStdin({ filepath: stdinFilepath, cwd, loadConfig: () => loadFmtConfig(cwd) });
+      await runFmtStdin({
+        filepath: stdinFilepath,
+        cwd,
+        ignorePaths,
+        loadConfig: () => loadFmtConfig(cwd),
+      });
       return;
     }
 
     const config = await loadFmtConfig(cwd);
-    const files = await discoverFmtFiles({ cwd, patterns, config });
+    const files = await discoverFmtFiles({
+      cwd,
+      patterns,
+      config,
+      ignorePaths,
+    });
 
     if (files.length === 0) {
       if (mode !== 'list-different') {

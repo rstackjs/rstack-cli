@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 import { createFileRequest } from './discovery.ts';
 import { formatFmtSource } from './format.ts';
-import { createFmtIgnoreMatcher } from './ignore.ts';
+import { createIgnoreMatcher } from './ignore.ts';
 import type { ResolvedFmtConfig } from './types.ts';
 
 interface RunFmtStdinOptions {
@@ -9,6 +9,8 @@ interface RunFmtStdinOptions {
   filepath: string;
   /** Absolute directory used to resolve the path. */
   cwd: string;
+  /** Ignore files resolved from `cwd`. */
+  ignorePaths?: string[];
   /** Loads the project config; its failures surface only after stdin is drained. */
   loadConfig: () => Promise<ResolvedFmtConfig>;
 }
@@ -45,7 +47,12 @@ const writeStdout = (output: string): Promise<void> =>
  * Formats stdin on the main thread and writes the result to stdout.
  * Nothing but the formatted output may reach stdout in this mode.
  */
-const runFmtStdin = async ({ filepath, cwd, loadConfig }: RunFmtStdinOptions): Promise<void> => {
+const runFmtStdin = async ({
+  filepath,
+  cwd,
+  ignorePaths,
+  loadConfig,
+}: RunFmtStdinOptions): Promise<void> => {
   const configPromise = loadConfig();
   // Drain stdin before surfacing any failure, otherwise a writer that already
   // queued more than the pipe buffer sees EPIPE instead of the real error.
@@ -54,7 +61,12 @@ const runFmtStdin = async ({ filepath, cwd, loadConfig }: RunFmtStdinOptions): P
   const config = await configPromise;
 
   const absolutePath = resolve(cwd, filepath);
-  if (createFmtIgnoreMatcher(config)(absolutePath)) {
+  const isIgnored = await createIgnoreMatcher({
+    config,
+    cwd,
+    ignorePaths,
+  });
+  if (isIgnored(absolutePath)) {
     await writeStdout(source);
     return;
   }
@@ -69,7 +81,10 @@ const runFmtStdin = async ({ filepath, cwd, loadConfig }: RunFmtStdinOptions): P
       /* rspackChunkName: 'fmtPlugins' */
       './plugins.ts'
     );
-    file = { ...file, options: createFmtPluginResolver(config.rootPath)(file.options) };
+    file = {
+      ...file,
+      options: createFmtPluginResolver(config.rootPath)(file.options),
+    };
   }
 
   const result = await formatFmtSource(file, () => source);
