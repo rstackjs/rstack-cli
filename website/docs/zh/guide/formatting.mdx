@@ -1,10 +1,10 @@
-# 格式化
+# 格式化 \{#formatting}
 
 import { PackageManagerTabs } from '@rspress/core/theme';
 
 Rstack CLI 提供了基于 [Prettier](https://prettier.io/) 的格式化工具。相比直接使用 Prettier，`rs fmt` 的性能更好，主要得益于以下两点：
 
-- **并行格式化**：`rs fmt` 通过 worker 池并行格式化文件。
+- **并行格式化**：通过 worker 池并行格式化文件。
 - **Yuku 解析器**：默认使用高性能的 [Yuku](https://yuku.fyi/) 解析器处理 JavaScript、JSX 和 TypeScript 文件。
 
 `rs fmt` 兼容 Prettier 的选项和插件，并提供更多内置能力，例如支持[排序 package.json 字段](#sort-package-json)。
@@ -103,11 +103,11 @@ define.fmt({
 
 `rs fmt` 会通过以下三个步骤，决定需要格式化哪些路径：
 
-1. **处理命令行参数和 `.gitignore`**：`rs fmt` 首先处理命令行中指定的文件、目录和 glob 模式。以 `!` 开头的 glob 模式用于排除路径。扫描目录或 glob 模式时会遵循 `.gitignore`，直接指定的文件则不会。在这一步被排除的路径无法被后续规则重新包含。
-2. **应用默认忽略规则和 `ignorePatterns`**：`rs fmt` 默认忽略 [lock 文件](#lock-files)，随后应用 `ignorePatterns`。这些规则按顺序匹配，后面的规则优先。例如，`!pnpm-lock.yaml` 可以重新包含默认忽略的文件。
+1. **处理命令行参数和 `.gitignore`**：首先处理命令行中指定的文件、目录和 glob 模式。以 `!` 开头的 glob 模式用于排除路径。扫描目录或 glob 模式时会遵循 `.gitignore`，直接指定的文件则不会。在这一步被排除的路径无法被后续规则重新包含。
+2. **应用默认忽略规则和 `ignorePatterns`**：默认忽略 [lock 文件](#lock-files)，随后应用 `ignorePatterns`。这些规则按顺序匹配，后面的规则优先。例如，`!pnpm-lock.yaml` 可以重新包含默认忽略的文件。
 3. **应用 [`--ignore-path`](./cli/fmt#--ignore-path-path) 指定的文件**：每个 ignore 文件单独匹配，同一文件中后面的规则优先。不同 ignore 文件与 `ignorePatterns` 的排除结果会叠加：只要任一来源忽略某个路径，该路径就会保持排除，即使其他来源尝试重新包含它。
 
-> 对于命令行中直接指定的文件，以及通过 [`--stdin-filepath`](./cli/fmt#--stdin-filepath-path) 指定的路径，`rs fmt` 仍会应用第二、三步中的忽略规则。只有未被这些规则排除的路径才会被格式化。
+> 即使命令行直接指定了某个文件，默认忽略规则、`ignorePatterns` 和 `--ignore-path` 中的规则仍然有效。通过 [`--stdin-filepath`](./cli/fmt#--stdin-filepath-path) 指定的路径也是如此。
 
 ## 排序 package.json 字段 \{#sort-package-json}
 
