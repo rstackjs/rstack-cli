@@ -164,6 +164,15 @@ class GitIgnoreMatcher {
   }
 
   #matches(relativePath: string, isDirectory: boolean): boolean {
+    // Most repositories only use a root `.gitignore`. Avoid checking every path
+    // segment when no nested matcher can override its result.
+    const rootMatcher = this.#matchers.size === 1 ? this.#matchers.get(this.#rootPath) : undefined;
+    if (rootMatcher) {
+      // `ignore` expects POSIX separators and uses a trailing slash to distinguish directories.
+      const pathFromMatcher = toPosixPath(relativePath);
+      return rootMatcher.test(isDirectory ? `${pathFromMatcher}/` : pathFromMatcher).ignored;
+    }
+
     const segments = relativePath.split(path.sep);
     let directoryPath = this.#rootPath;
     let pathFromMatcher = segments.join('/');
