@@ -1,6 +1,6 @@
-import * as yukuPlugin from '@prettier/plugin-yuku';
 import type { Options as PrettierOptions, Plugin } from 'prettier';
 import type { ResolvedFmtOptions } from './types.ts';
+import { yukuPlugin } from './yukuPlugin.ts';
 
 type PrettierPlugins = NonNullable<PrettierOptions['plugins']>;
 

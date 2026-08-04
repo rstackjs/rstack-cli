@@ -29,10 +29,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## @prettier/plugin-yuku
+## Prettier yuku parser adapter
 
-This package includes bundled code from
-[@prettier/plugin-yuku](https://github.com/prettier/prettier/tree/main/packages/plugin-yuku).
+The local Yuku parser adapter includes portions derived from
+[@prettier/plugin-yuku](https://github.com/prettier/prettier/tree/main/packages/plugin-yuku)
+and Prettier's JavaScript parser postprocessing. The adapter reuses the public
+ESTree printer, formatter options, and parser utilities from the installed
+`prettier` package.
 
 License: MIT
 
@@ -46,38 +49,6 @@ of the Software, and to permit persons to whom the Software is furnished to do
 so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-The bundled plugin also contains MIT-licensed code from:
-
-- emoji-regex 10.6.0, copyright Mathias Bynens
-- escape-string-regexp 5.0.0, copyright Sindre Sorhus
-- get-east-asian-width 1.6.0, copyright Sindre Sorhus
-- index-to-position 1.2.0, copyright Sindre Sorhus
-- is-es5-identifier-name 1.0.1, copyright fisker Cheung
-- jest-docblock 30.4.0, copyright Meta Platforms, Inc. and Jest contributors
-- narrow-emojis 0.0.3, copyright fisker Cheung
-- Prettier 3.10.0-dev, copyright James Long and contributors
-- to-fast-properties 4.0.0, copyright Petka Antonov, Benjamin Gruenbaum,
-  John-David Dalton, and Sindre Sorhus
-- trim-newlines 5.0.0, copyright Sindre Sorhus
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
-
-The above copyright notices and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
