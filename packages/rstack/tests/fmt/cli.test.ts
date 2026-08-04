@@ -99,9 +99,15 @@ test.each(['--help', '-h'])('parses %s', (option) => {
   expect(parseFmtCLIArgs([option]).help).toBe(true);
 });
 
-test('collects repeated ignore paths', () => {
+test.each(['--ignore-path', '--ignorePath'])('collects repeated ignore paths with %s', (option) => {
   expect(
-    parseFmtCLIArgs(['--ignore-path', '.prettierignore', '--ignore-path=config/format.ignore'])
+    parseFmtCLIArgs([option, '.prettierignore', `${option}=config/format.ignore`]).ignorePaths,
+  ).toEqual(['.prettierignore', 'config/format.ignore']);
+});
+
+test('combines kebab-case and camel-case ignore paths', () => {
+  expect(
+    parseFmtCLIArgs(['--ignore-path', '.prettierignore', '--ignorePath', 'config/format.ignore'])
       .ignorePaths,
   ).toEqual(['.prettierignore', 'config/format.ignore']);
 });

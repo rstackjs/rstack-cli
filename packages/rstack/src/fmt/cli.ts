@@ -62,6 +62,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       'list-different': { type: 'boolean' },
       listDifferent: { type: 'boolean' },
       'ignore-path': { type: 'string', multiple: true },
+      ignorePath: { type: 'string', multiple: true },
       'no-error-on-unmatched-pattern': { type: 'boolean' },
       noErrorOnUnmatchedPattern: { type: 'boolean' },
       'parallel-workers': { type: 'string' },
@@ -81,6 +82,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   }
 
   const mode = values.check ? 'check' : listDifferent ? 'list-different' : 'write';
+  const ignorePaths = [...(values['ignore-path'] ?? []), ...(values.ignorePath ?? [])];
   const noErrorOnUnmatchedPattern =
     values['no-error-on-unmatched-pattern'] ?? values.noErrorOnUnmatchedPattern ?? false;
   const maxWorkers = parseMaxWorkers(values['parallel-workers'], values.parallelWorkers);
@@ -101,7 +103,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   return {
     mode,
     patterns: positionals,
-    ignorePaths: values['ignore-path'] ?? [],
+    ignorePaths,
     noErrorOnUnmatchedPattern,
     maxWorkers,
     help: values.help ?? false,

@@ -195,7 +195,7 @@ test('does not load Prettier config or ignore files', () => {
   expect(readProjectFile('index.ts')).toBe('function getMessage() {\n  return "hello";\n}\n');
 });
 
-test('applies repeated ignore paths to explicit files', () => {
+test.each(['--ignore-path', '--ignorePath'])('applies repeated ignore paths with %s', (option) => {
   writeProjectFile('.prettierignore', 'src/ignored-by-root.ts\n');
   writeProjectFile('config/extra.ignore', '../src/ignored-by-extra.ts\n');
   writeProjectFile('src/ignored-by-root.ts', 'const root="ignored"');
@@ -203,9 +203,9 @@ test('applies repeated ignore paths to explicit files', () => {
   writeProjectFile('src/index.ts', 'const index="formatted"');
 
   const result = runFmt([
-    '--ignore-path',
+    option,
     '.prettierignore',
-    '--ignore-path=config/extra.ignore',
+    `${option}=config/extra.ignore`,
     'src/ignored-by-root.ts',
     'src/ignored-by-extra.ts',
     'src/index.ts',
