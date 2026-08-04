@@ -12,7 +12,6 @@ catalogMode: prefer
 cleanupUnusedCatalogs: true
 
 catalog:
-  '@prettier/plugin-yuku': '0.0.1'
   '@rsbuild/core': '~2.1.9'
   '@rsbuild/plugin-react': '^2.1.0'
   '@rsbuild/plugin-sass': '^2.0.1'
@@ -55,9 +54,6 @@ catalog:
   tiny-readdir: 3.1.1
   'typescript': '^7.0.2'
   yuku-parser: '0.8.3'
-
-overrides:
-  '@prettier/plugin-yuku>yuku-parser': 'catalog:'
 
 dedupePeers: true
 

@@ -7,9 +7,6 @@ settings:
 
 catalogs:
   default:
-    '@prettier/plugin-yuku':
-      specifier: 0.0.1
-      version: 0.0.1
     '@rsbuild/core':
       specifier: ~2.1.9
       version: 2.1.9
@@ -136,9 +133,6 @@ catalogs:
     yuku-parser:
       specifier: 0.8.3
       version: 0.8.3
-
-overrides:
-  '@prettier/plugin-yuku>yuku-parser': 0.8.3
 
 importers:
 
@@ -355,9 +349,6 @@ importers:
         specifier: 'catalog:'
         version: 0.8.3
     devDependencies:
-      '@prettier/plugin-yuku':
-        specifier: 'catalog:'
-        version: 0.0.1
       '@rspress/core':
         specifier: 'catalog:'
         version: 2.0.19(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
@@ -651,10 +642,6 @@ packages:
   '@parcel/watcher@2.5.6':
     resolution: {integrity: sha512-tmmZ3lQxAe/k/+rNnXQRawJ4NjxO2hqiOLTHvWchtGZULp4RyFeh6aU4XdOYBFe2KE1oShQTv4AblOs2iOrNnQ==}
     engines: {node: '>= 10.0.0'}
-
-  '@prettier/plugin-yuku@0.0.1':
-    resolution: {integrity: sha512-6Z3XcE5afL5pdBcG5KSl2eZ6HvNR0erXJn7FjR5OWeSoajrQPAIOpVCSZ+CXnJJSwUKi/UcqvUMcuYjRDd2IKQ==}
-    engines: {node: '>=14'}
 
   '@rsbuild/core@2.1.8':
     resolution: {integrity: sha512-Y70LMcCZspVoQ7Oip1W2Agu5wVhWZ2x3cYl4s9GLQG4VYphBud53DY/jkrqkyQF8ASYZDDDrW2KWNFj0kNLLuA==}
@@ -2591,10 +2578,6 @@ snapshots:
       '@parcel/watcher-win32-ia32': 2.5.6
       '@parcel/watcher-win32-x64': 2.5.6
     optional: true
-
-  '@prettier/plugin-yuku@0.0.1':
-    dependencies:
-      yuku-parser: 0.8.3
 
   '@rsbuild/core@2.1.8':
     dependencies:

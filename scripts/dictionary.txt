@@ -5,8 +5,12 @@ errexit
 extglob
 fnames
 huskyrc
+indentable
 llms
+noformat
+noprettier
 nosystem
+quasis
 rsbuild
 rslib
 rslint

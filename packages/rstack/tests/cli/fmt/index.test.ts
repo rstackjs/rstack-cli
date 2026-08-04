@@ -33,7 +33,7 @@ const writeFixturePlugin = (): void => {
   );
 };
 
-const runCLI = (args: string[]) => {
+const runCLI = (args: string[], input?: string) => {
   const env: NodeJS.ProcessEnv = { ...process.env, NO_COLOR: '1' };
   delete env.FORCE_COLOR;
 
@@ -41,10 +41,13 @@ const runCLI = (args: string[]) => {
     cwd: projectPath,
     encoding: 'utf8',
     env,
+    input,
   });
 };
 
 const runFmt = (args: string[] = []) => runCLI(['fmt', ...args]);
+
+const runFmtStdin = (args: string[], input: string) => runCLI(['fmt', ...args], input);
 
 const normalizeDuration = (output: string): string =>
   output.replace(/\d+m(?: \d+(?:\.\d+)?s)?|\d+(?:\.\d+)?s/g, '<duration>');
@@ -96,14 +99,22 @@ test('supports format as an alias for fmt', () => {
   expect(readProjectFile('index.ts')).toBe('const message = "hello";\n');
 });
 
-test('returns exit code 1 for invalid arguments', () => {
+test('returns exit code 2 for invalid arguments', () => {
   const result = runFmt(['--write', '--check']);
 
-  expect(result.status).toBe(1);
+  expect(result.status).toBe(2);
   expect(result.stdout).toBe('');
   expect(result.stderr).toContain(
     'The --write, --check, and --list-different options cannot be used together.',
   );
+});
+
+test('returns exit code 2 for unknown options', () => {
+  const result = runFmt(['--bogus']);
+
+  expect(result.status).toBe(2);
+  expect(result.stdout).toBe('');
+  expect(result.stderr).toContain('--bogus');
 });
 
 test('formats the current directory with Prettier defaults', () => {
@@ -381,6 +392,148 @@ test('reports partial writes when formatting fails', () => {
   expect(result.stderr).toContain('error   invalid.ts: SyntaxError:');
   expect(readProjectFile('valid.ts')).toBe('const value = true;\n');
   expect(readProjectFile('invalid.ts')).toBe('const invalid = ;');
+});
+
+test('formats stdin for the given filepath', () => {
+  const result = runFmtStdin(['--stdin-filepath', 'src/index.ts'], 'const message="hello"');
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe('const message = "hello";\n');
+  expect(result.stderr).toBe('');
+});
+
+test('formats stdin with the camel-case option', () => {
+  const result = runFmtStdin(['--stdinFilepath', 'data.json'], '{"a":1,"b":[2,3]}');
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe('{ "a": 1, "b": [2, 3] }\n');
+  expect(result.stderr).toBe('');
+});
+
+test('applies define.fmt options and overrides to stdin', () => {
+  writeProjectFile(
+    'rstack.config.ts',
+    `import { define } from 'rstack';
+
+define.fmt({
+  singleQuote: true,
+  overrides: [
+    {
+      files: '*.test.ts',
+      options: {
+        semi: false,
+      },
+    },
+  ],
+});
+`,
+  );
+
+  const result = runFmtStdin(['--stdin-filepath', 'src/index.test.ts'], 'const test="test"');
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe("const test = 'test'\n");
+  expect(result.stderr).toBe('');
+});
+
+test('sorts package.json from stdin', () => {
+  writeProjectFile(
+    'rstack.config.ts',
+    `import { define } from 'rstack';
+
+define.fmt({ sortPackageJson: true });
+`,
+  );
+
+  const result = runFmtStdin(['--stdin-filepath', 'package.json'], packageJsonSource);
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe(sortedPackageJson);
+  expect(result.stderr).toBe('');
+});
+
+test('echoes ignored stdin paths verbatim', () => {
+  writeProjectFile(
+    'rstack.config.ts',
+    `import { define } from 'rstack';
+
+define.fmt({ ignorePatterns: ['src/ignored.ts'] });
+`,
+  );
+
+  const source = 'const ignored="ignored"';
+  const result = runFmtStdin(['--stdin-filepath', 'src/ignored.ts'], source);
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe(source);
+  expect(result.stderr).toBe('');
+});
+
+test('echoes stdin for default ignored lock files', () => {
+  const source = 'lockfileVersion:   "9.0"\n';
+  const result = runFmtStdin(['--stdin-filepath', 'pnpm-lock.yaml'], source);
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe(source);
+  expect(result.stderr).toBe('');
+});
+
+test('returns exit code 2 when no parser can be inferred for stdin', () => {
+  const result = runFmtStdin(['--stdin-filepath', 'data.unknown'], 'value');
+
+  expect(result.status).toBe(2);
+  expect(result.stdout).toBe('');
+  expect(result.stderr).toContain('No parser could be inferred for "data.unknown".');
+});
+
+test('returns exit code 2 for stdin parse errors', () => {
+  const result = runFmtStdin(['--stdin-filepath', 'index.ts'], 'const value = ;');
+
+  expect(result.status).toBe(2);
+  expect(result.stdout).toBe('');
+  expect(result.stderr).toContain("Unexpected token ';'");
+});
+
+test.each(['--write', '--check', '--list-different'])(
+  'returns exit code 2 for %s with --stdin-filepath',
+  (option) => {
+    const result = runFmtStdin(['--stdin-filepath', 'index.ts', option], 'const value=1');
+
+    expect(result.status).toBe(2);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toContain(
+      'The --stdin-filepath option cannot be used with --write, --check, or --list-different.',
+    );
+  },
+);
+
+test('returns exit code 2 for file arguments with --stdin-filepath', () => {
+  const result = runFmtStdin(['--stdin-filepath', 'index.ts', 'src/other.ts'], 'const value=1');
+
+  expect(result.status).toBe(2);
+  expect(result.stdout).toBe('');
+  expect(result.stderr).toContain(
+    'The --stdin-filepath option cannot be used with file arguments.',
+  );
+});
+
+test('accepts --parallel-workers with --stdin-filepath', () => {
+  const result = runFmtStdin(
+    ['--stdin-filepath', 'index.ts', '--parallel-workers', '2'],
+    'const value=1',
+  );
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe('const value = 1;\n');
+  expect(result.stderr).toBe('');
+});
+
+test('writes nothing for empty stdin', () => {
+  const result = runFmtStdin(['--stdin-filepath', 'index.ts'], '');
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe('');
+  expect(result.stderr).toBe('');
 });
 
 test('reports when no files match', () => {

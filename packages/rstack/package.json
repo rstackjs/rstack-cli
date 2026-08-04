@@ -62,7 +62,6 @@
     "yuku-parser": "catalog:"
   },
   "devDependencies": {
-    "@prettier/plugin-yuku": "catalog:",
     "@rspress/core": "catalog:",
     "@rstackjs/load-config": "catalog:",
     "@rstackjs/test-utils": "catalog:",

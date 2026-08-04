@@ -37,6 +37,9 @@ rs format
 | `--check`                    | Check formatting without writing files. Exits with code 1 when files are different. |
 | `--list-different`           | Print only unformatted paths. Exits with code 1 when files are different.           |
 | `--parallel-workers <count>` | Set the maximum number of formatting workers.                                       |
+| `--stdin-filepath <path>`    | Format stdin as if it were saved at `<path>` and print the result to stdout.        |
 | `-h, --help`                 | Display usage and option information.                                               |
 
 > `--write`, `--check`, and `--list-different` are mutually exclusive.
+
+> `--stdin-filepath` cannot be combined with `--write`, `--check`, `--list-different`, or file arguments.

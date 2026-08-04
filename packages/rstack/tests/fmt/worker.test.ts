@@ -1,5 +1,4 @@
 import { readFileSync } from 'node:fs';
-import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { formatFile } from '../../src/fmt/worker.ts';
 import { withTempProject, writeProjectFile } from './helpers.ts';
@@ -40,21 +39,5 @@ test('infers the parser for an explicitly provided node_modules file', async () 
     ).resolves.toBe('changed');
 
     expect(readFileSync(filePath, 'utf8')).toBe(source);
-  });
-});
-
-test('skips unsupported files before reading them', async () => {
-  await withTempProject(async (rootPath) => {
-    const filePath = path.join(rootPath, 'missing.unknown');
-
-    await expect(
-      formatFile({
-        file: {
-          path: filePath,
-          options: {},
-        },
-        shouldWrite: true,
-      }),
-    ).resolves.toBe('unsupported');
   });
 });
