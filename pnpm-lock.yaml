@@ -76,9 +76,6 @@ catalogs:
     cspell-ban-words:
       specifier: ^0.0.4
       version: 0.0.4
-    fast-ignore:
-      specifier: 2.0.0
-      version: 2.0.0
     happy-dom:
       specifier: ^20.11.1
       version: 20.11.1
@@ -370,9 +367,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.3
-      fast-ignore:
-        specifier: 'catalog:'
-        version: 2.0.0
       ignore:
         specifier: 'catalog:'
         version: 7.0.6
@@ -1503,9 +1497,6 @@ packages:
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
 
-  fast-ignore@2.0.0:
-    resolution: {integrity: sha512-41OOPBgTDyVjF2oytGXvmqm56a38znzWLTQhvD3gp3FPCs37+j7qYjWDnL2WEA0P/Z80W53MKAXNJxc0JT8Tpw==}
-
   fdir@6.5.0:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
     engines: {node: '>=12.0.0'}
@@ -1528,9 +1519,6 @@ packages:
 
   git-hooks-list@4.2.1:
     resolution: {integrity: sha512-WNvqJjOxxs/8ZP9+DWdwWJ7cDsd60NHf39XnD82pDVrKO5q7xfPqpkK6hwEAmBa/ZSEE4IOoR75EzbbIuwGlMw==}
-
-  grammex@3.1.13:
-    resolution: {integrity: sha512-LnPnhOBLEJEVKS8WFDVaA397L9Kq55Q9oSITJiVLHVdhAclfUkWzQv74KhvZHKL2Q09Pb1XdsrOsZ4LfTFFTEg==}
 
   happy-dom@20.11.1:
     resolution: {integrity: sha512-XSt8tMzbW9ymE7687xztkO1ckR7qJNQ3LywY9vlYGhGi3zXrGBHuUo2Cl1ztZaICW+1eAGdkLbj6iwVqDT33kg==}
@@ -2264,9 +2252,6 @@ packages:
   string-argv@0.3.2:
     resolution: {integrity: sha512-aqD2Q0144Z+/RqG52NeHEkZauTAUWJO8c6yTftGJKO3Tja5tUgIfmIl6kExvhtxSDP7fXB6DvzkfMpCd/F3G+Q==}
     engines: {node: '>=0.6.19'}
-
-  string-escape-regex@1.0.1:
-    resolution: {integrity: sha512-cdSXOHSJ32K/T2dbj9t7rJwonujaOkaINpa1zsXT+PNFIv1zuPjtr0tXanCvUhN2bIu2IB0z/C7ksl+Qsy44nA==}
 
   stringify-entities@4.0.4:
     resolution: {integrity: sha512-IwfBptatlO+QCJUo19AqvrPNqlVMpW9YEL2LIVY+Rpv2qsjCGxaDLNRgeGsQWJhfItebuJhsGSLjaBbNSQ+ieg==}
@@ -3315,11 +3300,6 @@ snapshots:
 
   extend@3.0.2: {}
 
-  fast-ignore@2.0.0:
-    dependencies:
-      grammex: 3.1.13
-      string-escape-regex: 1.0.1
-
   fdir@6.5.0(picomatch@4.0.5):
     optionalDependencies:
       picomatch: 4.0.5
@@ -3333,8 +3313,6 @@ snapshots:
   get-east-asian-width@1.6.0: {}
 
   git-hooks-list@4.2.1: {}
-
-  grammex@3.1.13: {}
 
   happy-dom@20.11.1:
     dependencies:
@@ -4423,8 +4401,6 @@ snapshots:
   space-separated-tokens@2.0.2: {}
 
   string-argv@0.3.2: {}
-
-  string-escape-regex@1.0.1: {}
 
   stringify-entities@4.0.4:
     dependencies:
