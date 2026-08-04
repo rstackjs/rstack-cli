@@ -139,7 +139,7 @@ test('rejects file arguments with --stdin-filepath', () => {
 });
 
 test('provides command help', () => {
-  const helpMessage = stripVTControlCharacters(fmtHelpMessage);
+  const helpMessage = stripVTControlCharacters(fmtHelpMessage).replace(/^Rstack v.*\n\n/, '');
 
   expect(helpMessage).toContain('Usage:\n  $ rs fmt [options] [files/globs...]');
   expect(helpMessage).toMatchSnapshot();

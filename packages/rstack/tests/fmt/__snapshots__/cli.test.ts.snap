@@ -1,9 +1,7 @@
 // Rstest Snapshot v1
 
 exports[`provides command help 1`] = `
-"Rstack v0.3.2
-
-Usage:
+"Usage:
   $ rs fmt [options] [files/globs...]
 
 Format files with Prettier.
