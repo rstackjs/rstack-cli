@@ -1,7 +1,7 @@
 import { defineConfig } from '@rslib/core';
 import pkgJson from './package.json' with { type: 'json' };
 
-const fullyMinifiedChunks = /(?:fmtWorker|staged)\.js$/;
+const fullyMinifiedChunks = /(?:fmt(?:Plugins)?|sortPackageJsonPlugin|staged)\.js$/;
 
 export default defineConfig({
   lib: [{ syntax: 'es2023', dts: true }],
@@ -32,7 +32,7 @@ export default defineConfig({
       css: false,
       jsOptions: [
         {
-          // Fully minify the formatter worker and staged chunk to reduce package size.
+          // Fully minify formatter and staged command bundles to reduce package size.
           include: fullyMinifiedChunks,
         },
         {
