@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import fastIgnore from 'fast-ignore';
+import createIgnore from 'ignore';
 import type { ResolvedFmtConfig } from './types.ts';
 
 /**
@@ -21,10 +21,17 @@ interface CreateIgnoreMatcherOptions {
 }
 
 const createPatternMatcher = (rootPath: string, patterns: string): IgnoreMatcher => {
-  const matches = fastIgnore(patterns);
+  const matcher = createIgnore({ allowRelativePaths: true }).add(patterns);
 
-  return (filePath, isDirectory = false) =>
-    matches(path.relative(rootPath, filePath), { isDirectory });
+  return (filePath, isDirectory = false) => {
+    const relativePath = path.relative(rootPath, filePath);
+    if (relativePath === '') {
+      return false;
+    }
+
+    const posixPath = path.sep === '\\' ? relativePath.replaceAll('\\', '/') : relativePath;
+    return matcher.ignores(isDirectory ? `${posixPath}/` : posixPath);
+  };
 };
 
 const loadIgnoreMatcher = async (cwd: string, ignorePath: string): Promise<IgnoreMatcher> => {

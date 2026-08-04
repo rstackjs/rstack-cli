@@ -38,6 +38,14 @@ test('distinguishes directory-only patterns from files', async () => {
   expect(isIgnored(path.join(directoryPath, 'index.js'))).toBe(true);
 });
 
+test('does not apply negated directory patterns to files', async () => {
+  const isIgnored = await createMatcher(['fixtures/**/*', '!fixtures/**/']);
+  const directoryPath = path.join(rootPath, 'fixtures/case');
+
+  expect(isIgnored(directoryPath, true)).toBe(false);
+  expect(isIgnored(path.join(directoryPath, 'index.js'))).toBe(true);
+});
+
 test('applies negated patterns in declaration order', async () => {
   const isIgnored = await createMatcher(['*.js', '!src/keep.js']);
   const isIgnoredAgain = await createMatcher(['*.js', '!src/keep.js', 'src/keep.js']);
