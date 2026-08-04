@@ -597,3 +597,16 @@ test('returns exit code 2 when no files match', () => {
     expect(result.stderr).not.toContain('\n    at ');
   }
 });
+
+test.each(['--no-error-on-unmatched-pattern', '--noErrorOnUnmatchedPattern'])(
+  'allows no files to match with %s',
+  (option) => {
+    for (const modeArgs of [[], ['--check'], ['--list-different']]) {
+      const result = runFmt([...modeArgs, option, 'missing/**/*.ts']);
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toBe('');
+      expect(result.stderr).toBe('');
+    }
+  },
+);

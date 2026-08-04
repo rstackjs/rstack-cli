@@ -12,6 +12,7 @@ interface ParsedFmtCLIArgs {
   mode: FmtMode;
   patterns: string[];
   ignorePaths: string[];
+  noErrorOnUnmatchedPattern: boolean;
   maxWorkers?: number;
   help: boolean;
   /** Path the stdin content is formatted as; it need not exist on disk. */
@@ -26,13 +27,14 @@ ${color.yellow('  $ rs fmt [options] [files/globs...]')}
 Format files with Prettier.
 
 ${color.cyan('Options')}:
-  --write                     Write formatted files in place (default)
-  --check                     Check whether files are formatted
-  --list-different            Print paths of unformatted files
-  --ignore-path <path>        Path to an additional ignore file (repeatable)
-  --parallel-workers <count>  Number of parallel workers
-  --stdin-filepath <path>     Format stdin as if it were saved at <path>
-  -h, --help                  Display this help message`;
+  --write                          Write formatted files in place (default)
+  --check                          Check whether files are formatted
+  --list-different                 Print paths of unformatted files
+  --ignore-path <path>             Path to an additional ignore file (repeatable)
+  --no-error-on-unmatched-pattern  Do not error when no files match
+  --parallel-workers <count>       Number of parallel workers
+  --stdin-filepath <path>          Format stdin as if it were saved at <path>
+  -h, --help                       Display this help message`;
 
 const parseMaxWorkers = (
   kebabValue: string | undefined,
@@ -60,6 +62,8 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       'list-different': { type: 'boolean' },
       listDifferent: { type: 'boolean' },
       'ignore-path': { type: 'string', multiple: true },
+      'no-error-on-unmatched-pattern': { type: 'boolean' },
+      noErrorOnUnmatchedPattern: { type: 'boolean' },
       'parallel-workers': { type: 'string' },
       parallelWorkers: { type: 'string' },
       'stdin-filepath': { type: 'string' },
@@ -77,6 +81,8 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   }
 
   const mode = values.check ? 'check' : listDifferent ? 'list-different' : 'write';
+  const noErrorOnUnmatchedPattern =
+    values['no-error-on-unmatched-pattern'] ?? values.noErrorOnUnmatchedPattern ?? false;
   const maxWorkers = parseMaxWorkers(values['parallel-workers'], values.parallelWorkers);
   const stdinFilepath = values['stdin-filepath'] ?? values.stdinFilepath;
 
@@ -96,6 +102,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
     mode,
     patterns: positionals,
     ignorePaths: values['ignore-path'] ?? [],
+    noErrorOnUnmatchedPattern,
     maxWorkers,
     help: values.help ?? false,
     stdinFilepath,
@@ -214,7 +221,15 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
   // Argument errors are reported like every other failure so that a single
   // exit code identifies "rs fmt refused to run".
   try {
-    const { help, ignorePaths, maxWorkers, mode, patterns, stdinFilepath } = parseFmtCLIArgs(args);
+    const {
+      help,
+      ignorePaths,
+      maxWorkers,
+      mode,
+      noErrorOnUnmatchedPattern,
+      patterns,
+      stdinFilepath,
+    } = parseFmtCLIArgs(args);
     if (help) {
       logger.log(fmtHelpMessage);
       return;
@@ -243,6 +258,9 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
     });
 
     if (files.length === 0) {
+      if (noErrorOnUnmatchedPattern) {
+        return;
+      }
       const targets = (patterns.length ? patterns : ['.'])
         .map((pattern) => color.cyan(JSON.stringify(pattern)))
         .join(', ');

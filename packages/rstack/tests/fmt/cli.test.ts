@@ -22,6 +22,7 @@ test('uses write mode by default', () => {
     mode: 'write',
     patterns: [],
     ignorePaths: [],
+    noErrorOnUnmatchedPattern: false,
     maxWorkers: undefined,
     help: false,
   });
@@ -37,6 +38,7 @@ test.each([
     mode,
     patterns: [],
     ignorePaths: [],
+    noErrorOnUnmatchedPattern: false,
     maxWorkers: undefined,
     help: false,
   });
@@ -49,6 +51,7 @@ test.each(['--parallel-workers', '--parallelWorkers'])(
       mode: 'write',
       patterns: [],
       ignorePaths: [],
+      noErrorOnUnmatchedPattern: false,
       maxWorkers: 3,
       help: false,
     });
@@ -75,6 +78,7 @@ test('preserves file paths and globs', () => {
     mode: 'check',
     patterns,
     ignorePaths: [],
+    noErrorOnUnmatchedPattern: false,
     maxWorkers: undefined,
     help: false,
   });
@@ -85,6 +89,7 @@ test('treats arguments after the terminator as paths', () => {
     mode: 'check',
     patterns: ['--write', '--help'],
     ignorePaths: [],
+    noErrorOnUnmatchedPattern: false,
     maxWorkers: undefined,
     help: false,
   });
@@ -101,11 +106,19 @@ test('collects repeated ignore paths', () => {
   ).toEqual(['.prettierignore', 'config/format.ignore']);
 });
 
+test.each(['--no-error-on-unmatched-pattern', '--noErrorOnUnmatchedPattern'])(
+  'parses %s',
+  (option) => {
+    expect(parseFmtCLIArgs([option]).noErrorOnUnmatchedPattern).toBe(true);
+  },
+);
+
 test.each(['--stdin-filepath', '--stdinFilepath'])('parses %s', (option) => {
   expect(parseFmtCLIArgs([option, 'src/index.ts'])).toEqual({
     mode: 'write',
     patterns: [],
     ignorePaths: [],
+    noErrorOnUnmatchedPattern: false,
     maxWorkers: undefined,
     help: false,
     stdinFilepath: 'src/index.ts',
@@ -117,6 +130,7 @@ test('accepts a worker count with --stdin-filepath', () => {
     mode: 'write',
     patterns: [],
     ignorePaths: [],
+    noErrorOnUnmatchedPattern: false,
     maxWorkers: 2,
     help: false,
     stdinFilepath: 'index.ts',
