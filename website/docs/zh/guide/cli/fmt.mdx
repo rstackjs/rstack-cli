@@ -36,7 +36,7 @@ rs format
 检查文件是否已格式化，但不修改文件。输出会列出存在格式问题的文件，并提供便于阅读的汇总信息，因此适合在 CI 中使用：
 
 ```bash
-rs fmt . --check
+rs fmt --check
 ```
 
 `--check` 不能与 `--write` 或 `--list-different` 同时使用。
@@ -110,7 +110,13 @@ rs fmt -u
 输出未格式化文件的路径，但不提供 `--check` 的汇总信息。需要将结果交给其他命令处理时，可以使用此选项：
 
 ```bash
-rs fmt . --list-different
+rs fmt --list-different
+```
+
+短选项 `-l` 是 `--list-different` 的别名：
+
+```bash
+rs fmt -l
 ```
 
 此选项与 `--check` 使用相同的退出状态码，且不能与 `--write` 或 `--check` 同时使用。
@@ -132,7 +138,7 @@ rs fmt --no-error-on-unmatched-pattern 'src/**/*.ts'
 将格式化 worker 的最大数量设置为正整数：
 
 ```bash
-rs fmt . --parallel-workers 4
+rs fmt --parallel-workers 4
 ```
 
 省略此选项时，`rs fmt` 会根据可用的 CPU 并行度和匹配的文件数量，自动选择最多 8 个 worker。在资源受限的环境中，可以设置较小的值来限制 CPU 或内存用量。

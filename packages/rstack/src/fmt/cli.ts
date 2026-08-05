@@ -31,7 +31,7 @@ Format files with Prettier.
 ${color.cyan('Options')}:
   -w, --write                      Write formatted files in place (default)
   --check                          Check whether files are formatted
-  --list-different                 Print paths of unformatted files
+  -l, --list-different             Print paths of unformatted files
   --ignore-path <path>             Path to an additional ignore file (repeatable)
   -u, --ignore-unknown             Ignore unknown files
   --no-error-on-unmatched-pattern  Do not error when no files match
@@ -59,7 +59,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
     options: {
       write: { type: 'boolean', short: 'w' },
       check: { type: 'boolean' },
-      'list-different': { type: 'boolean' },
+      'list-different': { type: 'boolean', short: 'l' },
       'ignore-path': { type: 'string', multiple: true },
       'ignore-unknown': { type: 'boolean', short: 'u' },
       'no-error-on-unmatched-pattern': { type: 'boolean' },

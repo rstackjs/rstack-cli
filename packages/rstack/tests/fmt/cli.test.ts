@@ -34,6 +34,7 @@ test.each([
   ['-w', 'write'],
   ['--write', 'write'],
   ['--check', 'check'],
+  ['-l', 'list-different'],
   ['--list-different', 'list-different'],
 ] as const)('parses %s mode', (option, mode) => {
   expect(parseFmtCLIArgs([option])).toEqual({
