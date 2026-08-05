@@ -5,12 +5,14 @@ import isBinaryPath from 'is-binary-path';
 import micromatch from 'micromatch';
 import readdir, { type Dirent } from 'tiny-readdir';
 
-const alwaysIgnoredNames = new Set(['.git', '.sl', '.svn', '.hg', '.jj', 'node_modules']);
+const defaultIgnoredDirNames = new Set(['.git', '.sl', '.svn', '.hg', '.jj', 'node_modules']);
 
 interface DiscoverFmtPathsOptions {
   /** Absolute directory used to resolve input paths. */
   cwd: string;
   patterns?: string[];
+  /** Whether files inside node_modules may be discovered. */
+  withNodeModules?: boolean;
   /** Returns whether a scanned directory can be pruned before traversal. */
   isDirectoryIgnored?: (directoryPath: string) => boolean;
 }
@@ -47,11 +49,15 @@ const getDirentParentPath = (dirent: Dirent): string =>
 const getDirentPath = (dirent: Dirent, parentPath: string): string =>
   `${parentPath}${parentPath === path.sep ? '' : path.sep}${dirent.name}`;
 
-const hasAlwaysIgnoredSegment = (cwd: string, filePath: string): boolean =>
+const hasBuiltInIgnoredSegment = (
+  cwd: string,
+  filePath: string,
+  ignoredDirNames: ReadonlySet<string>,
+): boolean =>
   path
     .relative(cwd, filePath)
     .split(path.sep)
-    .some((segment) => alwaysIgnoredNames.has(segment));
+    .some((segment) => ignoredDirNames.has(segment));
 
 const findGitRoot = async (cwd: string): Promise<string> => {
   let directoryPath = cwd;
@@ -202,6 +208,7 @@ class GitIgnoreMatcher {
 
 const createTraversalOptions = (
   gitIgnore: GitIgnoreMatcher,
+  ignoredDirNames: ReadonlySet<string>,
   isIncluded?: (filePath: string) => boolean,
   isDirectoryIgnored?: (directoryPath: string) => boolean,
 ) => {
@@ -212,7 +219,7 @@ const createTraversalOptions = (
     followSymlinks: false,
     ignore: (targetPath: string) => {
       const isDirectory = directories.delete(targetPath);
-      if (alwaysIgnoredNames.has(path.basename(targetPath))) {
+      if (ignoredDirNames.has(path.basename(targetPath))) {
         return true;
       }
 
@@ -265,7 +272,11 @@ type ClassifiedPatterns = {
   negativeGlobs: string[];
 };
 
-const classifyPatterns = async (cwd: string, patterns: string[]): Promise<ClassifiedPatterns> => {
+const classifyPatterns = async (
+  cwd: string,
+  patterns: string[],
+  ignoredDirNames: ReadonlySet<string>,
+): Promise<ClassifiedPatterns> => {
   const entries = await Promise.all(
     patterns.map(async (pattern): Promise<PatternEntry | undefined> => {
       if (pattern.startsWith('!')) {
@@ -273,7 +284,7 @@ const classifyPatterns = async (cwd: string, patterns: string[]): Promise<Classi
       }
 
       const filePath = path.resolve(cwd, pattern);
-      if (hasAlwaysIgnoredSegment(cwd, filePath)) {
+      if (hasBuiltInIgnoredSegment(cwd, filePath, ignoredDirNames)) {
         return;
       }
 
@@ -346,15 +357,24 @@ const getTraversalRoots = (cwd: string, directories: string[], globs: string[]):
 const discoverFmtPaths = async ({
   cwd,
   patterns: inputPatterns,
+  withNodeModules = false,
   isDirectoryIgnored,
 }: DiscoverFmtPathsOptions): Promise<string[]> => {
   const patterns = inputPatterns?.length ? inputPatterns : ['.'];
+  const ignoredDirNames = withNodeModules
+    ? new Set(defaultIgnoredDirNames)
+    : defaultIgnoredDirNames;
+
+  if (withNodeModules) {
+    ignoredDirNames.delete('node_modules');
+  }
+
   const {
     files: explicitFiles,
     directories,
     globs,
     negativeGlobs,
-  } = await classifyPatterns(cwd, patterns);
+  } = await classifyPatterns(cwd, patterns, ignoredDirNames);
   const directoryRoots = getOutermostPaths(directories);
   const globMatchers = globs.map((pattern) => micromatch.matcher(pattern, { dot: true }));
   const candidates = new Set(explicitFiles);
@@ -389,7 +409,10 @@ const discoverFmtPaths = async ({
             };
 
         return (
-          await readdir(rootPath, createTraversalOptions(gitIgnore, isIncluded, isDirectoryIgnored))
+          await readdir(
+            rootPath,
+            createTraversalOptions(gitIgnore, ignoredDirNames, isIncluded, isDirectoryIgnored),
+          )
         ).files;
       }),
     );

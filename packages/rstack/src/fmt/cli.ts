@@ -14,6 +14,7 @@ interface ParsedFmtCLIArgs {
   ignorePaths: string[];
   ignoreUnknown: boolean;
   noErrorOnUnmatchedPattern: boolean;
+  withNodeModules: boolean;
   maxWorkers?: number;
   help: boolean;
   /** Path the stdin content is formatted as; it need not exist on disk. */
@@ -34,6 +35,7 @@ ${color.cyan('Options')}:
   --ignore-path <path>             Path to an additional ignore file (repeatable)
   -u, --ignore-unknown             Ignore unknown files
   --no-error-on-unmatched-pattern  Do not error when no files match
+  --with-node-modules              Process files inside node_modules
   --parallel-workers <count>       Number of parallel workers
   --stdin-filepath <path>          Format stdin as if it were saved at <path>
   -h, --help                       Display this help message`;
@@ -61,6 +63,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       'ignore-path': { type: 'string', multiple: true },
       'ignore-unknown': { type: 'boolean', short: 'u' },
       'no-error-on-unmatched-pattern': { type: 'boolean' },
+      'with-node-modules': { type: 'boolean' },
       'parallel-workers': { type: 'string' },
       'stdin-filepath': { type: 'string' },
       help: { type: 'boolean', short: 'h' },
@@ -81,6 +84,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   const ignorePaths = values.ignorePath ?? [];
   const ignoreUnknown = values.ignoreUnknown ?? false;
   const noErrorOnUnmatchedPattern = values.noErrorOnUnmatchedPattern ?? false;
+  const withNodeModules = values.withNodeModules ?? false;
   const parallelWorkers = values.parallelWorkers;
   const maxWorkers = parseMaxWorkers(parallelWorkers);
   const help = values.help ?? false;
@@ -104,6 +108,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
     ignorePaths,
     ignoreUnknown,
     noErrorOnUnmatchedPattern,
+    withNodeModules,
     maxWorkers,
     help,
     stdinFilepath,
@@ -239,6 +244,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       noErrorOnUnmatchedPattern,
       patterns,
       stdinFilepath,
+      withNodeModules,
     } = parseFmtCLIArgs(args);
     if (help) {
       logger.log(fmtHelpMessage);
@@ -266,6 +272,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       patterns,
       config,
       ignorePaths,
+      withNodeModules,
     });
 
     if (files.length === 0) {

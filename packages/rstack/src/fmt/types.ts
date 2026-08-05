@@ -58,6 +58,8 @@ interface DiscoverFmtFilesOptions {
   patterns?: string[];
   /** Ignore files resolved from `cwd`; each file's patterns are relative to its own directory. */
   ignorePaths?: string[];
+  /** Whether files inside node_modules may be discovered. */
+  withNodeModules?: boolean;
   /** Resolved project config applied to discovered files. */
   config: ResolvedFmtConfig;
 }

@@ -128,6 +128,21 @@ test('formats the current directory with Prettier defaults', () => {
   expect(readProjectFile('index.ts')).toBe('const message = "hello";\n');
 });
 
+test('formats files in node_modules with --with-node-modules', () => {
+  const source = 'const message="hello"';
+  writeProjectFile('node_modules/example/index.ts', source);
+
+  const skipped = runFmt(['node_modules/example']);
+  expect(skipped.status).toBe(2);
+  expect(readProjectFile('node_modules/example/index.ts')).toBe(source);
+
+  const result = runFmt(['--with-node-modules', 'node_modules/example']);
+  expect(result.status).toBe(0);
+  expectWriteSummary(result.stdout, 1, 1);
+  expect(result.stderr).toBe('');
+  expect(readProjectFile('node_modules/example/index.ts')).toBe('const message = "hello";\n');
+});
+
 test('summarizes write mode when no files change', () => {
   writeProjectFile('index.ts', 'const message = "hello";\n');
 
