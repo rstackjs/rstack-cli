@@ -128,6 +128,17 @@ test('formats the current directory with Prettier defaults', () => {
   expect(readProjectFile('index.ts')).toBe('const message = "hello";\n');
 });
 
+test('accepts -w as an alias for --write', () => {
+  writeProjectFile('index.ts', 'const message="hello"');
+
+  const result = runFmt(['-w', 'index.ts']);
+
+  expect(result.status).toBe(0);
+  expectWriteSummary(result.stdout, 1, 1);
+  expect(result.stderr).toBe('');
+  expect(readProjectFile('index.ts')).toBe('const message = "hello";\n');
+});
+
 test('formats files in node_modules with --with-node-modules', () => {
   const source = 'const message="hello"';
   writeProjectFile('node_modules/example/index.ts', source);
