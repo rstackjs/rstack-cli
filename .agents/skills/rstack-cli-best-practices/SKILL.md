@@ -10,17 +10,16 @@ config file, and a consistent workflow for the Rstack JavaScript toolchain.
 
 It covers web app, library, docs, test, lint, formatting, Git hook, and staged-file workflows.
 
-## Rstack: ALWAYS read installed docs before working
+## ALWAYS read installed docs before working
 
-Before any Rstack work, find and read the relevant Markdown documentation shipped with the
-installed `rstack` package. Model knowledge and summaries in this skill can be outdated; the
-installed documentation is the source of truth for the project's Rstack version.
+Before any Rstack work, find and read the relevant Markdown documentation shipped with the installed `rstack` package.
 
-1. Start with `node_modules/rstack/dist/docs/llms.txt`, then read only the linked pages relevant to
-   the task before proposing or making changes.
+Model knowledge can be outdated; the installed documentation is the source of truth for the project's Rstack version.
+
+1. Start with `node_modules/rstack/dist/docs/llms.txt`, then read only the linked pages relevant to the task before proposing or making changes.
 
 2. For exact CLI flags and behavior, also run `rs -h` or `rs <command> -h` when supported.
 
-If the bundled docs are not available at that path, locate the installed `rstack` package. If they
-are still unavailable, verify that `rstack` is installed, report the installed version, and use CLI
-help plus the online Rstack documentation as a fallback. Do not guess from model memory.
+If the bundled docs are not available at that path, locate the installed `rstack` package.
+
+If they are still unavailable, verify that `rstack` is installed, and use CLI help plus the online [Rstack documentation](https://rstack.rs/) as a fallback.
