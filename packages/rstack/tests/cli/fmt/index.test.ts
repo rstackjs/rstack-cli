@@ -195,7 +195,7 @@ test('does not load Prettier config or ignore files', () => {
   expect(readProjectFile('index.ts')).toBe('function getMessage() {\n  return "hello";\n}\n');
 });
 
-test.each(['--ignore-path', '--ignorePath'])('applies repeated ignore paths with %s', (option) => {
+test('applies repeated ignore paths', () => {
   writeProjectFile('.prettierignore', 'src/ignored-by-root.ts\n');
   writeProjectFile('config/extra.ignore', '../src/ignored-by-extra.ts\n');
   writeProjectFile('src/ignored-by-root.ts', 'const root="ignored"');
@@ -203,9 +203,9 @@ test.each(['--ignore-path', '--ignorePath'])('applies repeated ignore paths with
   writeProjectFile('src/index.ts', 'const index="formatted"');
 
   const result = runFmt([
-    option,
+    '--ignore-path',
     '.prettierignore',
-    `${option}=config/extra.ignore`,
+    '--ignore-path=config/extra.ignore',
     'src/ignored-by-root.ts',
     'src/ignored-by-extra.ts',
     'src/index.ts',
@@ -437,14 +437,6 @@ test('formats stdin for the given filepath', () => {
   expect(result.stderr).toBe('');
 });
 
-test('formats stdin with the camel-case option', () => {
-  const result = runFmtStdin(['--stdinFilepath', 'data.json'], '{"a":1,"b":[2,3]}');
-
-  expect(result.status).toBe(0);
-  expect(result.stdout).toBe('{ "a": 1, "b": [2, 3] }\n');
-  expect(result.stderr).toBe('');
-});
-
 test('applies define.fmt options and overrides to stdin', () => {
   writeProjectFile(
     'rstack.config.ts',
@@ -598,18 +590,15 @@ test('returns exit code 2 when no files match', () => {
   }
 });
 
-test.each(['--no-error-on-unmatched-pattern', '--noErrorOnUnmatchedPattern'])(
-  'allows no files to match with %s',
-  (option) => {
-    for (const modeArgs of [[], ['--check'], ['--list-different']]) {
-      const result = runFmt([...modeArgs, option, 'missing/**/*.ts']);
+test('allows no files to match with --no-error-on-unmatched-pattern', () => {
+  for (const modeArgs of [[], ['--check'], ['--list-different']]) {
+    const result = runFmt([...modeArgs, '--no-error-on-unmatched-pattern', 'missing/**/*.ts']);
 
-      expect(result.status).toBe(0);
-      expect(result.stdout).toBe('');
-      expect(result.stderr).toBe('');
-    }
-  },
-);
+    expect(result.status).toBe(0);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toBe('');
+  }
+});
 
 test('counts only supported files', () => {
   writeProjectFile('index.ts', 'const value = 1;\n');

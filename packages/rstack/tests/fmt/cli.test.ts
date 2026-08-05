@@ -32,7 +32,6 @@ test.each([
   ['--write', 'write'],
   ['--check', 'check'],
   ['--list-different', 'list-different'],
-  ['--listDifferent', 'list-different'],
 ] as const)('parses %s mode', (option, mode) => {
   expect(parseFmtCLIArgs([option])).toEqual({
     mode,
@@ -44,19 +43,16 @@ test.each([
   });
 });
 
-test.each(['--parallel-workers', '--parallelWorkers'])(
-  'configures parallel worker count with %s',
-  (option) => {
-    expect(parseFmtCLIArgs([option, '3'])).toEqual({
-      mode: 'write',
-      patterns: [],
-      ignorePaths: [],
-      noErrorOnUnmatchedPattern: false,
-      maxWorkers: 3,
-      help: false,
-    });
-  },
-);
+test('configures parallel worker count', () => {
+  expect(parseFmtCLIArgs(['--parallel-workers', '3'])).toEqual({
+    mode: 'write',
+    patterns: [],
+    ignorePaths: [],
+    noErrorOnUnmatchedPattern: false,
+    maxWorkers: 3,
+    help: false,
+  });
+});
 
 test.each(['0', '-1', '1.5', 'invalid', '9007199254740992'])(
   'rejects invalid parallel worker count %s',
@@ -66,10 +62,6 @@ test.each(['0', '-1', '1.5', 'invalid', '9007199254740992'])(
     );
   },
 );
-
-test('prefers the kebab-case parallel worker option', () => {
-  expect(parseFmtCLIArgs(['--parallel-workers', '2', '--parallelWorkers', '3']).maxWorkers).toBe(2);
-});
 
 test('preserves file paths and globs', () => {
   const patterns = ['src/file with spaces.ts', 'src/**/*.{js,ts}', '!src/generated/**'];
@@ -99,28 +91,19 @@ test.each(['--help', '-h'])('parses %s', (option) => {
   expect(parseFmtCLIArgs([option]).help).toBe(true);
 });
 
-test.each(['--ignore-path', '--ignorePath'])('collects repeated ignore paths with %s', (option) => {
+test('collects repeated ignore paths', () => {
   expect(
-    parseFmtCLIArgs([option, '.prettierignore', `${option}=config/format.ignore`]).ignorePaths,
-  ).toEqual(['.prettierignore', 'config/format.ignore']);
-});
-
-test('combines kebab-case and camel-case ignore paths', () => {
-  expect(
-    parseFmtCLIArgs(['--ignore-path', '.prettierignore', '--ignorePath', 'config/format.ignore'])
+    parseFmtCLIArgs(['--ignore-path', '.prettierignore', '--ignore-path=config/format.ignore'])
       .ignorePaths,
   ).toEqual(['.prettierignore', 'config/format.ignore']);
 });
 
-test.each(['--no-error-on-unmatched-pattern', '--noErrorOnUnmatchedPattern'])(
-  'parses %s',
-  (option) => {
-    expect(parseFmtCLIArgs([option]).noErrorOnUnmatchedPattern).toBe(true);
-  },
-);
+test('parses --no-error-on-unmatched-pattern', () => {
+  expect(parseFmtCLIArgs(['--no-error-on-unmatched-pattern']).noErrorOnUnmatchedPattern).toBe(true);
+});
 
-test.each(['--stdin-filepath', '--stdinFilepath'])('parses %s', (option) => {
-  expect(parseFmtCLIArgs([option, 'src/index.ts'])).toEqual({
+test('parses --stdin-filepath', () => {
+  expect(parseFmtCLIArgs(['--stdin-filepath', 'src/index.ts'])).toEqual({
     mode: 'write',
     patterns: [],
     ignorePaths: [],
@@ -143,7 +126,7 @@ test('accepts a worker count with --stdin-filepath', () => {
   });
 });
 
-test.each(['--write', '--check', '--list-different', '--listDifferent'])(
+test.each(['--write', '--check', '--list-different'])(
   'rejects %s with --stdin-filepath',
   (option) => {
     expect(() => parseFmtCLIArgs(['--stdin-filepath', 'index.ts', option])).toThrow(
@@ -168,7 +151,6 @@ test('provides command help', () => {
 test.each([
   ['--write', '--check'],
   ['--write', '--list-different'],
-  ['--write', '--listDifferent'],
   ['--check', '--list-different'],
   ['--write', '--check', '--list-different'],
 ])('rejects conflicting modes: %s', (...args) => {
@@ -177,7 +159,7 @@ test.each([
   );
 });
 
-test.each(['--unknown', '--no-cache', '--no-parallel', '--noParallel'])(
+test.each(['--unknown', '--no-cache', '--no-parallel'])(
   'rejects unsupported option %s',
   (option) => {
     expect(() => parseFmtCLIArgs([option])).toThrow();
