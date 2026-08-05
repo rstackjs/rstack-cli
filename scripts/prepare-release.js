@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawn } from 'node:child_process';
-import { copyFile, mkdir, readdir, rm } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const rootDir = path.resolve(import.meta.dirname, '..');
@@ -71,4 +71,10 @@ for (const relativePath of markdownFiles) {
   await copyFile(path.join(websiteDistDir, relativePath), destination);
 }
 
-console.log(`Copied ${markdownFiles.length} English Markdown files to ${packageDocsDir}.`);
+const llmsTxt = await readFile(path.join(websiteDistDir, 'llms.txt'), 'utf8');
+const packageLlmsTxt = llmsTxt.replace(/\]\(\/(?!\/)/g, '](./');
+await writeFile(path.join(packageDocsDir, 'llms.txt'), packageLlmsTxt);
+
+console.log(
+  `Copied ${markdownFiles.length} English Markdown files and llms.txt to ${packageDocsDir}.`,
+);
