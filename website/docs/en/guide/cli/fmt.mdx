@@ -107,6 +107,8 @@ rs fmt --no-error-on-unmatched-pattern 'src/**/*.ts'
 
 For example, a pre-commit script may always run `rs fmt`, even when the staged changes contain no supported files. This option lets the command exit successfully in that case instead of blocking the commit.
 
+> [`rs staged`](./staged) enables this behavior automatically for its `rs fmt` tasks.
+
 ### `--parallel-workers <count>`
 
 Set the maximum number of formatting workers to a positive integer:

@@ -1,5 +1,5 @@
 import lintStaged from 'lint-staged';
-import { beforeEach, rs } from 'rstack/test';
+import { afterEach, beforeEach, rs } from 'rstack/test';
 import { test } from '#test-helpers';
 import { loadRstackConfig } from '../../../src/config.ts';
 import { runStagedCLI, type StagedConfig } from '../../../src/staged.ts';
@@ -17,6 +17,7 @@ const stagedConfig: StagedConfig = {
 };
 
 beforeEach(() => {
+  delete process.env.RSTACK_STAGED;
   rs.resetAllMocks();
   mocks.lintStaged.mockResolvedValue(true);
   mocks.loadRstackConfig.mockResolvedValue({
@@ -24,6 +25,10 @@ beforeEach(() => {
     filePath: null,
     dependencies: [],
   });
+});
+
+afterEach(() => {
+  delete process.env.RSTACK_STAGED;
 });
 
 test('should display the staged help message', ({ execCli, expect }) => {
@@ -60,6 +65,17 @@ test('should pass default options to lint-staged', async ({ expect }) => {
     stash: undefined,
     verbose: undefined,
   });
+});
+
+test('should set the staged environment', async ({ expect }) => {
+  mocks.lintStaged.mockImplementation(async () => {
+    expect(process.env.RSTACK_STAGED).toBe('1');
+    return true;
+  });
+
+  await runStagedCLI([]);
+
+  expect(process.env.RSTACK_STAGED).toBe('1');
 });
 
 test('should pass long options to lint-staged', async ({ expect }) => {

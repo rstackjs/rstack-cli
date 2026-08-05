@@ -81,6 +81,29 @@ test('formats staged files with rs fmt and applies ignore rules', () => {
   expect(git(['show', ':ignored-by-git.ts'])).toBe('const gitIgnored = "git ignored";\n');
 });
 
+test('allows rs fmt when all staged files are ignored', () => {
+  const source = 'const fmtIgnored="fmt ignored"';
+  writeProjectFile('ignored-by-fmt.ts', source);
+  git(['add', '--', 'ignored-by-fmt.ts']);
+
+  const result = runStaged();
+
+  expect(result.status).toBe(0);
+  expect(readProjectFile('ignored-by-fmt.ts')).toBe(source);
+  expect(git(['show', ':ignored-by-fmt.ts'])).toBe(source);
+  expect(`${result.stdout}\n${result.stderr}`).not.toContain('No supported files matched');
+});
+
+test('still rejects staged files unsupported by rs fmt', () => {
+  writeProjectFile('notes.unknown', 'plain text');
+  git(['add', '--', 'notes.unknown']);
+
+  const result = runStaged();
+
+  expect(result.status).toBe(1);
+  expect(`${result.stdout}\n${result.stderr}`).toContain('No supported files matched');
+});
+
 test('propagates rs fmt failures', () => {
   writeProjectFile('invalid.ts', 'const value = ;');
   git(['add', '--', 'invalid.ts']);

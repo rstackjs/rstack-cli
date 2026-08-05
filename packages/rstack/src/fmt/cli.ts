@@ -262,7 +262,9 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
     });
 
     if (files.length === 0) {
-      if (noErrorOnUnmatchedPattern) {
+      // Staged tasks may pass only paths excluded by formatter ignore rules.
+      const allowUnmatched = noErrorOnUnmatchedPattern || process.env.RSTACK_STAGED === '1';
+      if (allowUnmatched) {
         return;
       }
       reportNoSupportedFiles(patterns);
