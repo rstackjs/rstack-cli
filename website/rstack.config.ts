@@ -6,6 +6,7 @@ const title = 'Rstack CLI';
 const description =
   'Rstack CLI brings the Rstack toolchain together with one CLI, one configuration, and one consistent workflow.';
 const descriptionZh = 'Rstack CLI 通过统一的命令行、配置和工作流整合 Rstack 工具链。';
+const injectLlmsHint = process.env.RSPRESS_INJECT_LLMS_HINT !== 'false';
 
 define.doc(async () => {
   const { pluginSass } = await import('@rsbuild/plugin-sass');
@@ -57,6 +58,9 @@ define.doc(async () => {
       pluginSitemap({ siteUrl }),
     ],
     themeConfig: {
+      llmsUI: {
+        injectLlmsHint,
+      },
       socialLinks: [
         {
           icon: 'github',
