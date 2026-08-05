@@ -83,9 +83,12 @@ Rstack CLI is inspired by:
 - [Bun](https://github.com/oven-sh/bun)
 - [Cargo](https://github.com/rust-lang/cargo)
 - [Deno](https://github.com/denoland/deno)
-- [Husky](https://github.com/typicode/husky)
-- [Prettier](https://github.com/prettier/prettier)
+- [Oxfmt](https://github.com/oxc-project/oxc)
 - [Vite Plus](https://github.com/voidzero-dev/vite-plus)
+
+Parts of the Git hook implementation are derived from [Husky](https://github.com/typicode/husky), and parts of the formatter runtime are derived from [Prettier CLI](https://github.com/prettier/prettier-cli).
+
+See [Third-Party Notices](./packages/rstack/THIRD_PARTY_NOTICES.md) for complete attribution and license information.
 
 ## License
 
