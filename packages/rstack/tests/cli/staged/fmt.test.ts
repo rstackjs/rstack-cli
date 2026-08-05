@@ -104,6 +104,25 @@ test('still rejects staged files unsupported by rs fmt', () => {
   expect(`${result.stdout}\n${result.stderr}`).toContain('No supported files matched');
 });
 
+test('allows staged files unsupported by rs fmt with --ignore-unknown', () => {
+  writeProjectFile(
+    'rstack.config.ts',
+    `import { define } from 'rstack';
+
+define.staged({
+  '*': 'rs fmt --ignore-unknown',
+});
+`,
+  );
+  writeProjectFile('notes.unknown', 'plain text');
+  git(['add', '--', 'notes.unknown']);
+
+  const result = runStaged();
+
+  expect(result.status).toBe(0);
+  expect(`${result.stdout}\n${result.stderr}`).not.toContain('No supported files matched');
+});
+
 test('propagates rs fmt failures', () => {
   writeProjectFile('invalid.ts', 'const value = ;');
   git(['add', '--', 'invalid.ts']);

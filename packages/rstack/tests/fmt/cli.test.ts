@@ -22,6 +22,7 @@ test('uses write mode by default', () => {
     mode: 'write',
     patterns: [],
     ignorePaths: [],
+    ignoreUnknown: false,
     noErrorOnUnmatchedPattern: false,
     maxWorkers: undefined,
     help: false,
@@ -37,6 +38,7 @@ test.each([
     mode,
     patterns: [],
     ignorePaths: [],
+    ignoreUnknown: false,
     noErrorOnUnmatchedPattern: false,
     maxWorkers: undefined,
     help: false,
@@ -48,6 +50,7 @@ test('configures parallel worker count', () => {
     mode: 'write',
     patterns: [],
     ignorePaths: [],
+    ignoreUnknown: false,
     noErrorOnUnmatchedPattern: false,
     maxWorkers: 3,
     help: false,
@@ -70,6 +73,7 @@ test('preserves file paths and globs', () => {
     mode: 'check',
     patterns,
     ignorePaths: [],
+    ignoreUnknown: false,
     noErrorOnUnmatchedPattern: false,
     maxWorkers: undefined,
     help: false,
@@ -81,6 +85,7 @@ test('treats arguments after the terminator as paths', () => {
     mode: 'check',
     patterns: ['--write', '--help'],
     ignorePaths: [],
+    ignoreUnknown: false,
     noErrorOnUnmatchedPattern: false,
     maxWorkers: undefined,
     help: false,
@@ -102,11 +107,16 @@ test('parses --no-error-on-unmatched-pattern', () => {
   expect(parseFmtCLIArgs(['--no-error-on-unmatched-pattern']).noErrorOnUnmatchedPattern).toBe(true);
 });
 
+test.each(['--ignore-unknown', '--ignoreUnknown'])('parses %s', (option) => {
+  expect(parseFmtCLIArgs([option]).ignoreUnknown).toBe(true);
+});
+
 test('parses --stdin-filepath', () => {
   expect(parseFmtCLIArgs(['--stdin-filepath', 'src/index.ts'])).toEqual({
     mode: 'write',
     patterns: [],
     ignorePaths: [],
+    ignoreUnknown: false,
     noErrorOnUnmatchedPattern: false,
     maxWorkers: undefined,
     help: false,
@@ -119,6 +129,7 @@ test('accepts a worker count with --stdin-filepath', () => {
     mode: 'write',
     patterns: [],
     ignorePaths: [],
+    ignoreUnknown: false,
     noErrorOnUnmatchedPattern: false,
     maxWorkers: 2,
     help: false,

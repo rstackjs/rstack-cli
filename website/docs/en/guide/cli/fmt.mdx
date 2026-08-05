@@ -43,11 +43,11 @@ rs fmt . --check
 
 The command uses the following exit codes:
 
-| Code | Meaning                                                                                                                                                  |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0`  | All matched files are formatted; or no supported files matched, but [`--no-error-on-unmatched-pattern`](#--no-error-on-unmatched-pattern) was specified. |
-| `1`  | One or more matched files have formatting issues.                                                                                                        |
-| `2`  | `rs fmt` could not run or encountered a formatting error.                                                                                                |
+| Code | Meaning                                            |
+| ---- | -------------------------------------------------- |
+| `0`  | The command completed successfully.                |
+| `1`  | One or more files have formatting issues.          |
+| `2`  | The command could not run or encountered an error. |
 
 ### `-h, --help`
 
@@ -87,6 +87,18 @@ rs fmt --ignore-path .prettierignore --ignore-path config/format.ignore
 
 Each file acts as a separate ignore source. See [Ignore order](../formatting#ignore-order) for how these sources combine with `.gitignore`, default ignore rules, and `ignorePatterns`.
 
+### `--ignore-unknown`
+
+Ignore matched files when no parser can be inferred. This allows the command to exit successfully even when every matched file has an unknown type:
+
+```bash
+rs fmt --ignore-unknown '**/*'
+```
+
+This option does not suppress errors for unmatched paths or globs. Combine it with [`--no-error-on-unmatched-pattern`](#--no-error-on-unmatched-pattern) when an integration needs to tolerate both cases.
+
+When used with `--stdin-filepath`, unsupported input is skipped without writing output.
+
 ### `--list-different`
 
 Print the paths of unformatted files without the summary produced by `--check`. This is useful when another command needs to consume the output:
@@ -99,7 +111,7 @@ The option uses the same exit codes as `--check` and cannot be combined with `--
 
 ### `--no-error-on-unmatched-pattern`
 
-Exit successfully without diagnostics when no supported files match the provided paths or globs, including when all matching files are ignored:
+Exit successfully without diagnostics when no files match the provided paths or globs, including when all matching files are ignored:
 
 ```bash
 rs fmt --no-error-on-unmatched-pattern 'src/**/*.ts'

@@ -43,11 +43,11 @@ rs fmt . --check
 
 该命令使用以下退出状态码：
 
-| 状态码 | 含义                                                                                                                             |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| `0`    | 所有匹配的文件均已格式化；或未匹配到支持的文件，但指定了 [`--no-error-on-unmatched-pattern`](#--no-error-on-unmatched-pattern)。 |
-| `1`    | 一个或多个匹配的文件存在格式问题。                                                                                               |
-| `2`    | `rs fmt` 无法运行或在格式化过程中遇到错误。                                                                                      |
+| 状态码 | 含义                               |
+| ------ | ---------------------------------- |
+| `0`    | 命令执行成功。                     |
+| `1`    | 一个或多个文件存在格式问题。       |
+| `2`    | 命令无法运行或执行过程中遇到错误。 |
 
 ### `-h, --help`
 
@@ -87,6 +87,18 @@ rs fmt --ignore-path .prettierignore --ignore-path config/format.ignore
 
 每个文件都是独立的忽略来源。关于这些来源与 `.gitignore`、默认忽略规则和 `ignorePatterns` 的组合方式，请参考[忽略顺序](../formatting#ignore-order)。
 
+### `--ignore-unknown`
+
+忽略无法推断 parser 的匹配文件。即使所有匹配文件的类型均未知，该选项也可以让命令成功退出：
+
+```bash
+rs fmt --ignore-unknown '**/*'
+```
+
+此选项不会忽略未匹配路径或 glob 的错误。如果集成需要同时容忍这两种情况，可以将它与 [`--no-error-on-unmatched-pattern`](#--no-error-on-unmatched-pattern) 一起使用。
+
+与 `--stdin-filepath` 一起使用时，不支持的输入会被跳过，且不会输出内容。
+
 ### `--list-different`
 
 输出未格式化文件的路径，但不提供 `--check` 的汇总信息。需要将结果交给其他命令处理时，可以使用此选项：
@@ -99,7 +111,7 @@ rs fmt . --list-different
 
 ### `--no-error-on-unmatched-pattern`
 
-如果传入的路径或 glob 没有匹配任何支持的文件（包括所有匹配文件均被忽略的情况），则不输出诊断信息并成功退出：
+如果传入的路径或 glob 没有匹配任何文件（包括所有匹配文件均被忽略的情况），则不输出诊断信息并成功退出：
 
 ```bash
 rs fmt --no-error-on-unmatched-pattern 'src/**/*.ts'

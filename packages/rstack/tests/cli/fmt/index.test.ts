@@ -527,6 +527,14 @@ test('returns exit code 2 when no parser can be inferred for stdin', () => {
   expect(result.stderr).toContain('No parser could be inferred for "data.unknown".');
 });
 
+test('ignores stdin when no parser can be inferred with --ignore-unknown', () => {
+  const result = runFmtStdin(['--stdin-filepath', 'data.unknown', '--ignore-unknown'], 'value');
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe('');
+  expect(result.stderr).toBe('');
+});
+
 test('returns exit code 2 for stdin parse errors', () => {
   const result = runFmtStdin(['--stdin-filepath', 'index.ts'], 'const value = ;');
 
@@ -626,6 +634,30 @@ test('returns exit code 2 when all matched files are unsupported', () => {
     );
     expect(result.stderr).not.toContain('\n    at ');
   }
+});
+
+test('ignores unsupported files with --ignore-unknown', () => {
+  writeProjectFile('notes.unknown', 'plain text');
+
+  for (const modeArgs of [[], ['--check'], ['--list-different']]) {
+    const result = runFmt([...modeArgs, '--ignoreUnknown', 'notes.unknown']);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toBe(
+      modeArgs.includes('--check')
+        ? 'start   Checking formatting...\nsuccess No supported files to check.\n'
+        : '',
+    );
+    expect(result.stderr).toBe('');
+  }
+});
+
+test('does not treat unmatched patterns as unknown files', () => {
+  const result = runFmt(['--ignore-unknown', 'missing/**/*.unknown']);
+
+  expect(result.status).toBe(2);
+  expect(result.stdout).toBe('');
+  expect(result.stderr).toContain('No supported files matched "missing/**/*.unknown"');
 });
 
 test('does not treat unsupported files as unmatched patterns', () => {
