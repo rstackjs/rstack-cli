@@ -1,5 +1,5 @@
-import { parseArgs } from 'node:util';
 import { color, logger } from 'rslog';
+import { parseArgs } from '../cli/args.ts';
 import { installHooks } from './install.ts';
 
 const helpMessage = `Rstack v${RSTACK_VERSION}
@@ -24,7 +24,7 @@ export const runSetupCLI = (args: string[]): void => {
     strict: true,
   });
 
-  const hooksDirs = values['hooks-dir'];
+  const hooksDirs = values.hooksDir;
   if (hooksDirs && hooksDirs.length > 1) {
     throw new Error('The --hooks-dir option cannot be specified more than once.');
   }
