@@ -10,7 +10,6 @@ import type { ResolvedFmtConfig } from './types.ts';
  * contains only the additional defaults owned by `rs fmt`.
  */
 const defaultIgnoreNames = ['package-lock.json', 'pnpm-lock.yaml'];
-const defaultIgnoreSuffixes = defaultIgnoreNames.map((name) => `${path.sep}${name}`);
 
 type IgnoreMatcher = (filePath: string, isDirectory?: boolean) => boolean;
 
@@ -21,8 +20,11 @@ interface CreateIgnoreMatcherOptions {
   ignorePaths?: string[];
 }
 
-const createDefaultIgnoreMatcher = (): IgnoreMatcher => (filePath) =>
-  defaultIgnoreSuffixes.some((suffix) => filePath.endsWith(suffix));
+const createDefaultIgnoreMatcher = (): IgnoreMatcher => {
+  const suffixes = defaultIgnoreNames.map((name) => `${path.sep}${name}`);
+
+  return (filePath) => suffixes.some((suffix) => filePath.endsWith(suffix));
+};
 
 const createPatternMatcher = (rootPath: string, patterns: string): IgnoreMatcher => {
   const matcher = createIgnore({ allowRelativePaths: true }).add(patterns);
