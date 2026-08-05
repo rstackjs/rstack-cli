@@ -62,6 +62,10 @@ const createIgnoreMatcher = async ({
     config.rootPath,
     [...defaultIgnorePatterns, ...config.ignorePatterns].join('\n'),
   );
+  if (ignorePaths.length === 0) {
+    return configMatcher;
+  }
+
   const ignoreMatchers = await Promise.all(
     ignorePaths.map((ignorePath) => loadIgnoreMatcher(cwd, ignorePath)),
   );
