@@ -1,92 +1,53 @@
 ---
 name: rstack-cli-best-practices
-description: Guidance on using Rstack CLI, including `rs` commands, the `rstack.config.ts` file, and import paths from the `rstack` package. Use for Rstack CLI-related tasks.
+description: Guidance for Rstack CLI tasks. Use when running `rs` commands, editing `rstack.config.*`, using `rstack` package imports, or working with Rstack-powered apps, libraries, docs, tests, linting, formatting, Git hooks, staged files, and monorepos. Requires reading the version-matched documentation shipped in the installed `rstack` package before making changes.
 ---
 
 # Rstack CLI Best Practices
 
-Rstack CLI is the `rstack` package, exposed through the `rs` binaries. It provides one CLI, one config file, and a consistent workflow for the Rstack JavaScript toolchain.
+## Rstack: ALWAYS read installed docs before working
 
-It covers web app, library, docs, test, lint, formatting, Git hook, and staged-file workflows.
+Before any Rstack work, find and read the relevant Markdown documentation shipped with the
+installed `rstack` package. Model knowledge and summaries in this skill can be outdated; the
+installed documentation is the source of truth for the project's Rstack version.
 
-## Commands
+1. Resolve the documentation root from the project or workspace directory:
 
-Use `rs -h` for top-level help, and `rs <command> -h` for command help where supported.
+   ```sh
+   node -p "require('node:path').join(require('node:path').dirname(require.resolve('rstack/package.json')), 'dist/docs')"
+   ```
 
-| Command      | Purpose                          | Underlying tool | Config          |
-| ------------ | -------------------------------- | --------------- | --------------- |
-| `rs dev`     | Run the app dev server           | Rsbuild         | `define.app`    |
-| `rs build`   | Build the app for production     | Rsbuild         | `define.app`    |
-| `rs preview` | Preview the app production build | Rsbuild         | `define.app`    |
-| `rs lib`     | Build a library                  | Rslib           | `define.lib`    |
-| `rs doc`     | Serve or build docs              | Rspress         | `define.doc`    |
-| `rs test`    | Run tests                        | Rstest          | `define.test`   |
-| `rs lint`    | Lint code                        | Rslint          | `define.lint`   |
-| `rs fmt`     | Format code                      | Prettier        | `define.fmt`    |
-| `rs setup`   | Install project-local Git hooks  | None            | None            |
-| `rs staged`  | Run tasks on staged Git files    | lint-staged     | `define.staged` |
+   The usual location is `node_modules/rstack/dist/docs`.
 
-Key behavior:
+2. Read only the pages relevant to the task before proposing or making changes. If the correct
+   page is unclear, start with the documentation index and search the documentation root with
+   `rg -n "<keyword>" <docs-root>`.
 
-- Unless `define.test` already sets `extends`, `rs test` extends `define.app` through `@rstest/adapter-rsbuild` or falls back to `define.lib` through `@rstest/adapter-rslib`. The app config takes precedence when both are defined.
-- `rs doc` requires the optional `@rspress/core` dependency.
+3. For exact CLI flags and behavior, also run `rs -h` or `rs <command> -h` when supported.
 
-## rstack.config.ts
+If the package or bundled documentation cannot be resolved, verify that `rstack` is installed,
+report the installed version, and use CLI help plus the online Rstack documentation as a fallback.
+Do not guess from model memory.
 
-Rstack CLI loads `rstack.config.{ts,js,mts,mjs}` by default.
+## Documentation map
 
-Register config with `define.*`:
+These links target the usual project-local skill installation. If a link does not resolve, open
+the same relative path under the resolved documentation root.
 
-```ts
-import { define } from 'rstack';
-
-define.app({
-  // Rsbuild config for `rs dev`, `rs build`, and `rs preview`
-});
-
-define.test({
-  // Rstest config for `rs test`
-});
-```
-
-- `define.app(config)`: Rsbuild config for `rs dev`, `rs build`, and `rs preview`. Docs: https://rsbuild.rs/config/
-- `define.lib(config)`: Rslib config for `rs lib`; Docs: https://rslib.rs/config/
-- `define.doc(config)`: Rspress config for `rs doc`; Docs: https://rspress.rs/api/config/config-basic
-- `define.test(config)`: Rstest config for `rs test`; Docs: https://rstest.rs/config/
-- `define.lint(config)`: Rslint config for `rs lint`; Docs: https://rslint.rs/config/
-- `define.fmt(config)`: Formatting options for `rs fmt`.
-- `define.staged(config)`: lint-staged config for `rs staged`; accepts `Record<string, string | string[]>`.
-
-### Lazy Configuration
-
-Prefer async functions with dynamic imports for dependencies. Avoid top-level sync imports of heavy dependencies in `rstack.config.ts`.
-
-```ts
-import { define } from 'rstack';
-
-define.app(async () => {
-  const { pluginReact } = await import('@rsbuild/plugin-react');
-  return {
-    plugins: [pluginReact()],
-  };
-});
-```
-
-## Import Paths
-
-Prefer Rstack-exported paths:
-
-| Instead of                | Prefer                   |
-| ------------------------- | ------------------------ |
-| `@rsbuild/core`           | `rstack/app`             |
-| `@rslib/core`             | `rstack/lib`             |
-| `@rstest/core`            | `rstack/test`            |
-| `@rslint/core`            | `rstack/lint`            |
-| `@rsbuild/core/types`     | `rstack/types`           |
-| `@rslib/core/types`       | `rstack/types`           |
-| `@rstest/core/globals`    | `rstack/test/globals`    |
-| `@rstest/core/importMeta` | `rstack/test/importMeta` |
-
-## Git Hooks
-
-Use [`rs setup`](https://rstack.rs/guide/cli/setup) for project-local Git hooks, commonly with `rs staged` in a `pre-commit` hook.
+- [Overview](../../../node_modules/rstack/dist/docs/index.md)
+- [Quick start and command overview](../../../node_modules/rstack/dist/docs/guide/quick-start.md)
+- [Configuration](../../../node_modules/rstack/dist/docs/guide/configuration.md)
+- [API and import paths](../../../node_modules/rstack/dist/docs/guide/api-reference.md)
+- [Monorepos](../../../node_modules/rstack/dist/docs/guide/monorepo.md)
+- [Testing](../../../node_modules/rstack/dist/docs/guide/testing.md)
+- [Formatting](../../../node_modules/rstack/dist/docs/guide/formatting.md)
+- CLI commands: [dev](../../../node_modules/rstack/dist/docs/guide/cli/dev.md),
+  [build](../../../node_modules/rstack/dist/docs/guide/cli/build.md),
+  [preview](../../../node_modules/rstack/dist/docs/guide/cli/preview.md),
+  [lib](../../../node_modules/rstack/dist/docs/guide/cli/lib.md),
+  [doc](../../../node_modules/rstack/dist/docs/guide/cli/doc.md),
+  [test](../../../node_modules/rstack/dist/docs/guide/cli/test.md),
+  [lint](../../../node_modules/rstack/dist/docs/guide/cli/lint.md),
+  [fmt](../../../node_modules/rstack/dist/docs/guide/cli/fmt.md),
+  [setup](../../../node_modules/rstack/dist/docs/guide/cli/setup.md), and
+  [staged](../../../node_modules/rstack/dist/docs/guide/cli/staged.md)
