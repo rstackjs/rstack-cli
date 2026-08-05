@@ -5,6 +5,11 @@ description: Guidance for Rstack CLI work involving `rs` commands, `rstack.confi
 
 # Rstack CLI Best Practices
 
+Rstack CLI is the `rstack` package, exposed through the `rs` binaries. It provides one CLI, one
+config file, and a consistent workflow for the Rstack JavaScript toolchain.
+
+It covers web app, library, docs, test, lint, formatting, Git hook, and staged-file workflows.
+
 ## Rstack: ALWAYS read installed docs before working
 
 Before any Rstack work, find and read the relevant Markdown documentation shipped with the
