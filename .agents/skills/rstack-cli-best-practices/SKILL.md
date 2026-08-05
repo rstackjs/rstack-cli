@@ -1,6 +1,6 @@
 ---
 name: rstack-cli-best-practices
-description: Guidance for Rstack CLI work involving `rs` commands, `rstack.config.*`, package APIs, or Rstack-based projects and tooling. Requires reading the version-matched docs bundled with the installed `rstack` package first.
+description: Guidance for Rstack CLI work involving `rs` commands, `rstack.config.*`, package APIs, or Rstack-based projects and tooling.
 ---
 
 # Rstack CLI Best Practices
