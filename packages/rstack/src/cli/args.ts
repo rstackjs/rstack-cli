@@ -1,8 +1,17 @@
 import {
   parseArgs as nodeParseArgs,
-  type ParseArgsConfig,
+  type ParseArgsConfig as NodeParseArgsConfig,
+  type ParseArgsOptionDescriptor as NodeParseArgsOptionDescriptor,
   type ParseArgsOptionsConfig,
 } from 'node:util';
+
+type ParseArgsOptionDescriptor = Omit<NodeParseArgsOptionDescriptor, 'default'> & {
+  default?: never;
+};
+
+type ParseArgsConfig = Omit<NodeParseArgsConfig, 'options'> & {
+  options?: Record<string, ParseArgsOptionDescriptor>;
+};
 
 type CamelCase<Value extends string> = Value extends `${infer Head}-${infer Tail}`
   ? `${Head}${Capitalize<CamelCase<Tail>>}`
