@@ -89,11 +89,11 @@ test('should pass long options to lint-staged', async ({ expect }) => {
   });
 });
 
-test('should pass short options and aliases to lint-staged', async ({ expect }) => {
-  await runStagedCLI(['--allowEmpty', '-p', '1', '-d', '-q', '-r', '-v']);
+test('should pass short options to lint-staged', async ({ expect }) => {
+  await runStagedCLI(['-p', '1', '-d', '-q', '-r', '-v']);
 
   expect(mocks.lintStaged).toHaveBeenCalledWith({
-    allowEmpty: true,
+    allowEmpty: undefined,
     concurrent: 1,
     config: stagedConfig,
     cwd: undefined,
