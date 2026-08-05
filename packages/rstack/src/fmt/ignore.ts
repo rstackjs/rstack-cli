@@ -9,7 +9,7 @@ import type { ResolvedFmtConfig } from './types.ts';
  * Prettier already skips other generated lock files when it cannot infer a parser, so this list
  * contains only the additional defaults owned by `rs fmt`.
  */
-const defaultIgnorePatterns = ['package-lock.json', 'pnpm-lock.yaml'];
+const defaultIgnoreNames = ['package-lock.json', 'pnpm-lock.yaml'];
 
 type IgnoreMatcher = (filePath: string, isDirectory?: boolean) => boolean;
 
@@ -19,6 +19,12 @@ interface CreateIgnoreMatcherOptions {
   cwd: string;
   ignorePaths?: string[];
 }
+
+const createDefaultIgnoreMatcher = (): IgnoreMatcher => {
+  const suffixes = defaultIgnoreNames.map((name) => `${path.sep}${name}`);
+
+  return (filePath) => suffixes.some((suffix) => filePath.endsWith(suffix));
+};
 
 const createPatternMatcher = (rootPath: string, patterns: string): IgnoreMatcher => {
   const matcher = createIgnore({ allowRelativePaths: true }).add(patterns);
@@ -58,10 +64,12 @@ const createIgnoreMatcher = async ({
   cwd,
   ignorePaths = [],
 }: CreateIgnoreMatcherOptions): Promise<IgnoreMatcher> => {
-  const configMatcher = createPatternMatcher(
-    config.rootPath,
-    [...defaultIgnorePatterns, ...config.ignorePatterns].join('\n'),
-  );
+  const configMatcher = config.ignorePatterns.length
+    ? createPatternMatcher(
+        config.rootPath,
+        [...defaultIgnoreNames, ...config.ignorePatterns].join('\n'),
+      )
+    : createDefaultIgnoreMatcher();
   if (ignorePaths.length === 0) {
     return configMatcher;
   }
