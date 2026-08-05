@@ -19,6 +19,7 @@ test('discovers non-binary files in stable order and skips hard-ignored paths', 
     writeProjectFile(rootPath, '.jj/internal.js');
 
     const files = await discoverFmtPaths({ cwd: rootPath });
+    const filesWithNodeModules = await discoverFmtPaths({ cwd: rootPath, withNodeModules: true });
 
     expect(relativePaths(rootPath, files)).toEqual([
       'a.js',
@@ -26,9 +27,35 @@ test('discovers non-binary files in stable order and skips hard-ignored paths', 
       path.join('folder with spaces', 'c.ts'),
       'unknown.extension',
     ]);
+    expect(relativePaths(rootPath, filesWithNodeModules)).toEqual([
+      'a.js',
+      'b.ts',
+      path.join('folder with spaces', 'c.ts'),
+      path.join('node_modules', 'package', 'index.js'),
+      'unknown.extension',
+    ]);
     await expect(
       discoverFmtPaths({ cwd: rootPath, patterns: ['node_modules/package/index.js'] }),
     ).resolves.toEqual([]);
+    await expect(
+      discoverFmtPaths({
+        cwd: rootPath,
+        patterns: ['node_modules/package/index.js'],
+        withNodeModules: true,
+      }),
+    ).resolves.toEqual([path.join(rootPath, 'node_modules/package/index.js')]);
+  });
+});
+
+test('keeps node_modules excluded by gitignore when built-in exclusion is disabled', async () => {
+  await withTempProject(async (rootPath) => {
+    writeProjectFile(rootPath, '.gitignore', 'node_modules/\n');
+    writeProjectFile(rootPath, 'node_modules/package/index.js');
+    writeProjectFile(rootPath, 'index.js');
+
+    const files = await discoverFmtPaths({ cwd: rootPath, withNodeModules: true });
+
+    expect(relativePaths(rootPath, files)).toEqual(['.gitignore', 'index.js']);
   });
 });
 

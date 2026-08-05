@@ -149,6 +149,16 @@ Formatted output is written to stdout and diagnostics to stderr. If the input pa
 
 > `--stdin-filepath` cannot be combined with file arguments or with `--write`, `--check`, or `--list-different`.
 
+### `--with-node-modules`
+
+Process files inside `node_modules`, which `rs fmt` excludes by default:
+
+```bash
+rs fmt --with-node-modules node_modules/example/index.js
+```
+
+This option only disables the built-in `node_modules` exclusion. Directory and glob scans still follow `.gitignore`, while `ignorePatterns` and `--ignore-path` continue to apply to every input.
+
 ### `--write`
 
 Write formatted files in place. This is the default mode, so specifying `--write` is optional:

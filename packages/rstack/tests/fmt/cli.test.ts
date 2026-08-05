@@ -24,6 +24,7 @@ test('uses write mode by default', () => {
     ignorePaths: [],
     ignoreUnknown: false,
     noErrorOnUnmatchedPattern: false,
+    withNodeModules: false,
     maxWorkers: undefined,
     help: false,
   });
@@ -40,6 +41,7 @@ test.each([
     ignorePaths: [],
     ignoreUnknown: false,
     noErrorOnUnmatchedPattern: false,
+    withNodeModules: false,
     maxWorkers: undefined,
     help: false,
   });
@@ -52,6 +54,7 @@ test('configures parallel worker count', () => {
     ignorePaths: [],
     ignoreUnknown: false,
     noErrorOnUnmatchedPattern: false,
+    withNodeModules: false,
     maxWorkers: 3,
     help: false,
   });
@@ -75,6 +78,7 @@ test('preserves file paths and globs', () => {
     ignorePaths: [],
     ignoreUnknown: false,
     noErrorOnUnmatchedPattern: false,
+    withNodeModules: false,
     maxWorkers: undefined,
     help: false,
   });
@@ -87,6 +91,7 @@ test('treats arguments after the terminator as paths', () => {
     ignorePaths: [],
     ignoreUnknown: false,
     noErrorOnUnmatchedPattern: false,
+    withNodeModules: false,
     maxWorkers: undefined,
     help: false,
   });
@@ -111,6 +116,10 @@ test.each(['-u', '--ignore-unknown', '--ignoreUnknown'])('parses %s', (option) =
   expect(parseFmtCLIArgs([option]).ignoreUnknown).toBe(true);
 });
 
+test('parses --with-node-modules', () => {
+  expect(parseFmtCLIArgs(['--with-node-modules']).withNodeModules).toBe(true);
+});
+
 test('parses --stdin-filepath', () => {
   expect(parseFmtCLIArgs(['--stdin-filepath', 'src/index.ts'])).toEqual({
     mode: 'write',
@@ -118,6 +127,7 @@ test('parses --stdin-filepath', () => {
     ignorePaths: [],
     ignoreUnknown: false,
     noErrorOnUnmatchedPattern: false,
+    withNodeModules: false,
     maxWorkers: undefined,
     help: false,
     stdinFilepath: 'src/index.ts',
@@ -131,6 +141,7 @@ test('accepts a worker count with --stdin-filepath', () => {
     ignorePaths: [],
     ignoreUnknown: false,
     noErrorOnUnmatchedPattern: false,
+    withNodeModules: false,
     maxWorkers: 2,
     help: false,
     stdinFilepath: 'index.ts',

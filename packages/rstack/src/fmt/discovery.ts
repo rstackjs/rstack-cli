@@ -13,12 +13,14 @@ const discoverFmtFiles = async ({
   cwd,
   patterns,
   ignorePaths,
+  withNodeModules,
   config,
 }: DiscoverFmtFilesOptions): Promise<FmtFileRequest[]> => {
   const isIgnored = await createIgnoreMatcher({ config, cwd, ignorePaths });
   const candidates = await discoverFmtPaths({
     cwd,
     patterns,
+    withNodeModules,
     isDirectoryIgnored: (directoryPath) => isIgnored(directoryPath, true),
   });
   if (candidates.length === 0) {

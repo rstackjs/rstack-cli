@@ -149,6 +149,16 @@ cat src/index.ts | rs fmt --stdin-filepath src/index.ts
 
 > `--stdin-filepath` 不能与文件参数或 `--write`、`--check`、`--list-different` 同时使用。
 
+### `--with-node-modules`
+
+处理 `node_modules` 中的文件。默认情况下，`rs fmt` 会排除这些文件：
+
+```bash
+rs fmt --with-node-modules node_modules/example/index.js
+```
+
+此选项只会关闭内置的 `node_modules` 排除规则。目录和 glob 扫描仍然遵循 `.gitignore`，`ignorePatterns` 和 `--ignore-path` 也会继续作用于所有输入。
+
 ### `--write`
 
 将格式化结果写回文件。这是默认模式，因此可以省略 `--write`：
