@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { parseArgs } from 'node:util';
 import { color, logger } from 'rslog';
+import { parseArgs } from '../cli/args.ts';
 import { loadRstackConfig } from '../config.ts';
 import { resolveFmtConfig } from './config.ts';
 import { discoverFmtFiles } from './discovery.ts';
@@ -36,11 +36,7 @@ ${color.cyan('Options')}:
   --stdin-filepath <path>          Format stdin as if it were saved at <path>
   -h, --help                       Display this help message`;
 
-const parseMaxWorkers = (
-  kebabValue: string | undefined,
-  camelValue: string | undefined,
-): number | undefined => {
-  const value = kebabValue ?? camelValue;
+const parseMaxWorkers = (value: string | undefined): number | undefined => {
   if (value === undefined) {
     return undefined;
   }
@@ -60,33 +56,31 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       write: { type: 'boolean' },
       check: { type: 'boolean' },
       'list-different': { type: 'boolean' },
-      listDifferent: { type: 'boolean' },
       'ignore-path': { type: 'string', multiple: true },
-      ignorePath: { type: 'string', multiple: true },
       'no-error-on-unmatched-pattern': { type: 'boolean' },
-      noErrorOnUnmatchedPattern: { type: 'boolean' },
       'parallel-workers': { type: 'string' },
-      parallelWorkers: { type: 'string' },
       'stdin-filepath': { type: 'string' },
-      stdinFilepath: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
     allowPositionals: true,
     strict: true,
   });
 
-  const listDifferent = values['list-different'] || values.listDifferent;
-  const modes = [values.write, values.check, listDifferent].filter(Boolean);
+  const write = values.write;
+  const check = values.check;
+  const listDifferent = values.listDifferent;
+  const modes = [write, check, listDifferent].filter(Boolean);
   if (modes.length > 1) {
     throw new Error('The --write, --check, and --list-different options cannot be used together.');
   }
 
-  const mode = values.check ? 'check' : listDifferent ? 'list-different' : 'write';
-  const ignorePaths = [...(values['ignore-path'] ?? []), ...(values.ignorePath ?? [])];
-  const noErrorOnUnmatchedPattern =
-    values['no-error-on-unmatched-pattern'] ?? values.noErrorOnUnmatchedPattern ?? false;
-  const maxWorkers = parseMaxWorkers(values['parallel-workers'], values.parallelWorkers);
-  const stdinFilepath = values['stdin-filepath'] ?? values.stdinFilepath;
+  const mode = check ? 'check' : listDifferent ? 'list-different' : 'write';
+  const ignorePaths = values.ignorePath ?? [];
+  const noErrorOnUnmatchedPattern = values.noErrorOnUnmatchedPattern ?? false;
+  const parallelWorkers = values.parallelWorkers;
+  const maxWorkers = parseMaxWorkers(parallelWorkers);
+  const help = values.help ?? false;
+  const stdinFilepath = values.stdinFilepath;
 
   if (stdinFilepath !== undefined) {
     if (modes.length > 0) {
@@ -106,7 +100,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
     ignorePaths,
     noErrorOnUnmatchedPattern,
     maxWorkers,
-    help: values.help ?? false,
+    help,
     stdinFilepath,
   };
 };

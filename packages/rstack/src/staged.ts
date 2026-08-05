@@ -1,6 +1,6 @@
-import { parseArgs } from 'node:util';
 import lintStaged from 'lint-staged';
 import { color } from 'rslog';
+import { parseArgs } from './cli/args.ts';
 import { loadRstackConfig } from './config.ts';
 
 export type StagedSyncTaskGenerator = (stagedFileNames: readonly string[]) => string | string[];
@@ -44,7 +44,6 @@ export async function runStagedCLI(args: string[]): Promise<void> {
     args,
     options: {
       'allow-empty': { type: 'boolean' },
-      allowEmpty: { type: 'boolean' },
       concurrent: { type: 'string', short: 'p' },
       cwd: { type: 'string' },
       debug: { type: 'boolean', short: 'd' },
@@ -72,14 +71,14 @@ export async function runStagedCLI(args: string[]): Promise<void> {
   }
 
   const success = await lintStaged({
-    allowEmpty: values['allow-empty'] ?? values.allowEmpty,
+    allowEmpty: values.allowEmpty,
     concurrent: values.concurrent === undefined ? undefined : JSON.parse(values.concurrent),
     config: stagedConfig,
     cwd: values.cwd,
     debug: values.debug,
     quiet: values.quiet,
     relative: values.relative,
-    stash: values['no-stash'] ? false : undefined,
+    stash: values.noStash ? false : undefined,
     verbose: values.verbose,
   });
   if (!success) {

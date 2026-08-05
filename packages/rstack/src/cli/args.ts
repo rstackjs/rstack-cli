@@ -1,4 +1,73 @@
-import { parseArgs } from 'node:util';
+import {
+  parseArgs as nodeParseArgs,
+  type ParseArgsConfig,
+  type ParseArgsOptionsConfig,
+} from 'node:util';
+
+type CamelCase<Value extends string> = Value extends `${infer Head}-${infer Tail}`
+  ? `${Head}${Capitalize<CamelCase<Tail>>}`
+  : Value;
+
+type NodeParseArgsResult<Config extends ParseArgsConfig> = ReturnType<typeof nodeParseArgs<Config>>;
+
+type ParseArgsResult<Config extends ParseArgsConfig> = Omit<
+  NodeParseArgsResult<Config>,
+  'values'
+> & {
+  values: {
+    [
+      Name in keyof NodeParseArgsResult<Config>['values'] as CamelCase<Name & string>
+    ]: NodeParseArgsResult<Config>['values'][Name];
+  };
+};
+
+const KEBAB_CASE_REGEXP = /-([a-z])/g;
+
+const toCamelCase = (value: string): string =>
+  value.includes('-')
+    ? value.replace(KEBAB_CASE_REGEXP, (_, character: string) => character.toUpperCase())
+    : value;
+
+export function parseArgs<const Config extends ParseArgsConfig = ParseArgsConfig>(
+  config?: Config,
+): ParseArgsResult<Config> {
+  const options: ParseArgsOptionsConfig = {};
+  const optionNames: [originalName: string, camelName: string][] = [];
+
+  for (const [originalName, descriptor] of Object.entries(config?.options ?? {})) {
+    const camelName = toCamelCase(originalName);
+    optionNames.push([originalName, camelName]);
+    options[originalName] = descriptor;
+
+    if (camelName !== originalName) {
+      options[camelName] = descriptor;
+    }
+  }
+
+  const parsed = nodeParseArgs({
+    ...config,
+    options,
+  });
+  const values: Record<string, unknown> = {};
+
+  for (const [originalName, camelName] of optionNames) {
+    const originalValue = parsed.values[originalName];
+    const camelValue = camelName === originalName ? undefined : parsed.values[camelName];
+    const value =
+      Array.isArray(originalValue) && Array.isArray(camelValue)
+        ? [...originalValue, ...camelValue]
+        : (originalValue ?? camelValue);
+
+    if (value !== undefined) {
+      values[camelName] = value;
+    }
+  }
+
+  return {
+    ...parsed,
+    values,
+  } as unknown as ParseArgsResult<Config>;
+}
 
 type ParsedRstackArgs = {
   args: string[];
