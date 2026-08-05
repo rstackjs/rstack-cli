@@ -100,3 +100,5 @@ define.staged({
   '*.{json,md,mdx,css,html}': 'rs fmt',
 });
 ```
+
+When `rs staged` runs an `rs fmt` task, the formatter exits successfully if none of the provided paths match or if all matching files are ignored. Direct `rs fmt` commands remain strict; use [`--no-error-on-unmatched-pattern`](./fmt#--no-error-on-unmatched-pattern) to enable the same behavior in other integrations.

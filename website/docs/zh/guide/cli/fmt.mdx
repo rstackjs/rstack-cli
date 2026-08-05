@@ -107,6 +107,8 @@ rs fmt --no-error-on-unmatched-pattern 'src/**/*.ts'
 
 例如，pre-commit 脚本可能会始终运行 `rs fmt`，即使暂存的改动中没有支持的文件。此选项可让命令在这种情况下成功退出，避免阻止提交。
 
+> [`rs staged`](./staged) 会为其中的 `rs fmt` 任务自动启用此行为。
+
 ### `--parallel-workers <count>`
 
 将格式化 worker 的最大数量设置为正整数：

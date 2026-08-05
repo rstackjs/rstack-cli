@@ -70,6 +70,9 @@ export async function runStagedCLI(args: string[]): Promise<void> {
     );
   }
 
+  // Let child commands detect that they are running through `rs staged`.
+  process.env.RSTACK_STAGED = '1';
+
   const success = await lintStaged({
     allowEmpty: values.allowEmpty,
     concurrent: values.concurrent === undefined ? undefined : JSON.parse(values.concurrent),
