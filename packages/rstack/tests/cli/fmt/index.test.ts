@@ -640,7 +640,7 @@ test('ignores unsupported files with --ignore-unknown', () => {
   writeProjectFile('notes.unknown', 'plain text');
 
   for (const modeArgs of [[], ['--check'], ['--list-different']]) {
-    const result = runFmt([...modeArgs, '--ignoreUnknown', 'notes.unknown']);
+    const result = runFmt([...modeArgs, '--ignore-unknown', 'notes.unknown']);
 
     expect(result.status).toBe(0);
     expect(result.stdout).toBe(
@@ -650,6 +650,16 @@ test('ignores unsupported files with --ignore-unknown', () => {
     );
     expect(result.stderr).toBe('');
   }
+});
+
+test('supports -u as an alias for --ignore-unknown', () => {
+  writeProjectFile('notes.unknown', 'plain text');
+
+  const result = runFmt(['-u', 'notes.unknown']);
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe('');
+  expect(result.stderr).toBe('');
 });
 
 test('does not treat unmatched patterns as unknown files', () => {

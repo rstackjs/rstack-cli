@@ -32,7 +32,7 @@ ${color.cyan('Options')}:
   --check                          Check whether files are formatted
   --list-different                 Print paths of unformatted files
   --ignore-path <path>             Path to an additional ignore file (repeatable)
-  --ignore-unknown                 Ignore unknown files
+  -u, --ignore-unknown             Ignore unknown files
   --no-error-on-unmatched-pattern  Do not error when no files match
   --parallel-workers <count>       Number of parallel workers
   --stdin-filepath <path>          Format stdin as if it were saved at <path>
@@ -59,7 +59,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       check: { type: 'boolean' },
       'list-different': { type: 'boolean' },
       'ignore-path': { type: 'string', multiple: true },
-      'ignore-unknown': { type: 'boolean' },
+      'ignore-unknown': { type: 'boolean', short: 'u' },
       'no-error-on-unmatched-pattern': { type: 'boolean' },
       'parallel-workers': { type: 'string' },
       'stdin-filepath': { type: 'string' },

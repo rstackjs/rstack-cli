@@ -92,7 +92,13 @@ Each file acts as a separate ignore source. See [Ignore order](../formatting#ign
 Ignore matched files when no parser can be inferred. This allows the command to exit successfully even when every matched file has an unknown type:
 
 ```bash
-rs fmt --ignore-unknown '**/*'
+rs fmt --ignore-unknown
+```
+
+The short option `-u` is an alias for `--ignore-unknown`.
+
+```bash
+rs fmt -u
 ```
 
 This option does not suppress errors for unmatched paths or globs. Combine it with [`--no-error-on-unmatched-pattern`](#--no-error-on-unmatched-pattern) when an integration needs to tolerate both cases.
