@@ -1,6 +1,6 @@
 {
   "name": "rstack",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "repository": "https://github.com/rstackjs/rstack-cli",
   "license": "MIT",
   "type": "module",
