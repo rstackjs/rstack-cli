@@ -22,9 +22,12 @@ interface CreateIgnoreMatcherOptions {
 
 const createPatternMatcher = (rootPath: string, patterns: string): IgnoreMatcher => {
   const matcher = createIgnore({ allowRelativePaths: true }).add(patterns);
+  const rootPrefix = rootPath.endsWith(path.sep) ? rootPath : `${rootPath}${path.sep}`;
 
   return (filePath, isDirectory = false) => {
-    const relativePath = path.relative(rootPath, filePath);
+    const relativePath = filePath.startsWith(rootPrefix)
+      ? filePath.slice(rootPrefix.length)
+      : path.relative(rootPath, filePath);
     if (relativePath === '') {
       return false;
     }
