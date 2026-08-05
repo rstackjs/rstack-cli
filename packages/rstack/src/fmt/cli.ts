@@ -29,7 +29,7 @@ ${color.yellow('  $ rs fmt [options] [files/globs...]')}
 Format files with Prettier.
 
 ${color.cyan('Options')}:
-  --write                          Write formatted files in place (default)
+  -w, --write                      Write formatted files in place (default)
   --check                          Check whether files are formatted
   --list-different                 Print paths of unformatted files
   --ignore-path <path>             Path to an additional ignore file (repeatable)
@@ -57,7 +57,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   const { values, positionals } = parseArgs({
     args,
     options: {
-      write: { type: 'boolean' },
+      write: { type: 'boolean', short: 'w' },
       check: { type: 'boolean' },
       'list-different': { type: 'boolean' },
       'ignore-path': { type: 'string', multiple: true },

@@ -31,6 +31,7 @@ test('uses write mode by default', () => {
 });
 
 test.each([
+  ['-w', 'write'],
   ['--write', 'write'],
   ['--check', 'check'],
   ['--list-different', 'list-different'],
