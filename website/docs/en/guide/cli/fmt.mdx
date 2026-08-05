@@ -36,7 +36,7 @@ rs format
 Check whether files are formatted without changing them. The output lists files with formatting issues and includes a human-friendly summary, making this option useful in CI:
 
 ```bash
-rs fmt . --check
+rs fmt --check
 ```
 
 `--check` cannot be combined with `--write` or `--list-different`.
@@ -110,7 +110,13 @@ When used with `--stdin-filepath`, unsupported input is skipped without writing 
 Print the paths of unformatted files without the summary produced by `--check`. This is useful when another command needs to consume the output:
 
 ```bash
-rs fmt . --list-different
+rs fmt --list-different
+```
+
+The short option `-l` is an alias for `--list-different`:
+
+```bash
+rs fmt -l
 ```
 
 The option uses the same exit codes as `--check` and cannot be combined with `--write` or `--check`.
@@ -132,7 +138,7 @@ For example, a pre-commit script may always run `rs fmt`, even when the staged c
 Set the maximum number of formatting workers to a positive integer:
 
 ```bash
-rs fmt . --parallel-workers 4
+rs fmt --parallel-workers 4
 ```
 
 When this option is omitted, `rs fmt` automatically chooses up to eight workers based on the available CPU parallelism and the number of matched files. Set a lower value to limit CPU or memory usage in constrained environments.

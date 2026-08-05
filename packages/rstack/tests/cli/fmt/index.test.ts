@@ -337,12 +337,12 @@ test('checks formatting without writing files', () => {
   expect(formattedResult.stderr).toBe('');
 });
 
-test('lists only paths that differ', () => {
+test.each(['-l', '--list-different'])('lists only paths that differ with %s', (option) => {
   const source = 'const message="hello"';
   writeProjectFile('src/index.ts', source);
   writeProjectFile('src/formatted.ts', 'const formatted = true;\n');
 
-  const result = runFmt(['--list-different', 'src/*.ts']);
+  const result = runFmt([option, 'src/*.ts']);
 
   expect(result.status).toBe(1);
   expect(result.stdout).toBe('src/index.ts\n');
