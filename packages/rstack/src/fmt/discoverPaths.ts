@@ -3,7 +3,7 @@ import path from 'node:path';
 import ignore from 'ignore';
 import isBinaryPath from 'is-binary-path';
 import micromatch from 'micromatch';
-import readdir, { type Dirent } from 'tiny-readdir';
+import readdir, { type Dirent, type DirentLike } from 'tiny-readdir';
 
 const defaultIgnoredDirNames = new Set(['.git', '.sl', '.svn', '.hg', '.jj', 'node_modules']);
 
@@ -44,10 +44,6 @@ const toPosixPath = (filePath: string): string =>
 /** Supports both the legacy tiny-readdir type and Node.js 24 Dirent. */
 const getDirentParentPath = (dirent: Dirent): string =>
   (dirent as Dirent & { parentPath?: string }).parentPath ?? dirent.path;
-
-/** Mirrors the path passed to tiny-readdir's ignore callback. */
-const getDirentPath = (dirent: Dirent, parentPath: string): string =>
-  `${parentPath}${parentPath === path.sep ? '' : path.sep}${dirent.name}`;
 
 const hasBuiltInIgnoredSegment = (
   cwd: string,
@@ -218,18 +214,16 @@ const createTraversalOptions = (
   isIncluded?: (filePath: string) => boolean,
   isDirectoryIgnored?: (directoryPath: string) => boolean,
 ) => {
-  // tiny-readdir passes only a path to `ignore`, so retain the dirent type briefly.
-  const directories = new Set<string>();
-
   return {
     followSymlinks: false,
-    ignore: (targetPath: string) => {
-      const isDirectory = directories.delete(targetPath);
-      if (ignoredDirNames.has(path.basename(targetPath))) {
+    ignore: (targetPath: string, targetContext: DirentLike) => {
+      // With symlink following disabled, tiny-readdir always provides a Dirent here.
+      const dirent = targetContext as Dirent;
+      if (ignoredDirNames.has(dirent.name)) {
         return true;
       }
 
-      if (isDirectory) {
+      if (dirent.isDirectory()) {
         return gitIgnore.isIgnored(targetPath, true) || isDirectoryIgnored?.(targetPath) === true;
       }
 
@@ -244,9 +238,6 @@ const createTraversalOptions = (
       let hasGitIgnore = false;
 
       for (const dirent of dirents) {
-        if (dirent.isDirectory()) {
-          directories.add(getDirentPath(dirent, parentPath));
-        }
         if (dirent.name === '.gitignore') {
           hasGitIgnore = true;
         }
