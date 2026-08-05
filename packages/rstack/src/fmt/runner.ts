@@ -9,17 +9,23 @@ import type { FmtWorkerPool } from './workerPool.ts';
 
 /** Formats one file and reports whether its contents differ. */
 type FormatFile = FmtWorkerPool['formatFile'];
+type FmtFileOutcome = FmtFileResult | 'unchanged' | 'unsupported';
+
+interface FmtWorkerPoolResult {
+  files: FmtFileResult[];
+  processedFileCount: number;
+}
 
 /** Converts a formatter outcome into the shared per-file result. */
 const runFmtFile = async (
   file: FmtFileRequest,
   shouldWrite: boolean,
   formatFile: FormatFile,
-): Promise<FmtFileResult | undefined> => {
+): Promise<FmtFileOutcome> => {
   try {
     const result = await formatFile(file, shouldWrite);
-    if (result !== 'changed') {
-      return;
+    if (result === 'unchanged' || result === 'unsupported') {
+      return result;
     }
 
     return {
@@ -40,7 +46,7 @@ const runFmtFilesInWorkerPool = async (
   files: FmtFileRequest[],
   shouldWrite: boolean,
   maxWorkers?: number,
-): Promise<FmtFileResult[]> => {
+): Promise<FmtWorkerPoolResult> => {
   const { createFmtWorkerPool } = await import('./workerPool.ts');
   const workerPool = await createFmtWorkerPool(files.length, maxWorkers);
 
@@ -48,7 +54,21 @@ const runFmtFilesInWorkerPool = async (
     const results = await Promise.all(
       files.map((file) => runFmtFile(file, shouldWrite, workerPool.formatFile)),
     );
-    return results.filter((result): result is FmtFileResult => result !== undefined);
+    const processedFiles: FmtFileResult[] = [];
+    let processedFileCount = 0;
+
+    for (const result of results) {
+      if (result === 'unsupported') {
+        continue;
+      }
+
+      processedFileCount++;
+      if (result !== 'unchanged') {
+        processedFiles.push(result);
+      }
+    }
+
+    return { files: processedFiles, processedFileCount };
   } finally {
     await workerPool.terminate();
   }
@@ -77,12 +97,15 @@ const runFmtFiles = async ({
   maxWorkers,
 }: RunFmtFilesOptions): Promise<FmtRunResult> => {
   const shouldWrite = mode === 'write';
-  const results =
-    files.length === 0 ? [] : await runFmtFilesInWorkerPool(files, shouldWrite, maxWorkers);
+  const result =
+    files.length === 0
+      ? { files: [], processedFileCount: 0 }
+      : await runFmtFilesInWorkerPool(files, shouldWrite, maxWorkers);
 
   return {
-    files: results,
-    exitCode: getFmtExitCode(results),
+    ...result,
+    exitCode:
+      files.length > 0 && result.processedFileCount === 0 ? 2 : getFmtExitCode(result.files),
   };
 };
 

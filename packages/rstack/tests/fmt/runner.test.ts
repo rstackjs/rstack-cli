@@ -31,6 +31,7 @@ test('does not rewrite unchanged files', async () => {
     expect(result).toMatchObject({
       exitCode: 0,
       files: [],
+      processedFileCount: 1,
     });
     expect(statSync(filePath).mtimeMs).toBe(mtimeMs);
   });
@@ -46,6 +47,7 @@ test('writes changed files', async () => {
     expect(result).toMatchObject({
       exitCode: 0,
       files: [{ path: filePath, status: 'written' }],
+      processedFileCount: 1,
     });
     expect(readFileSync(filePath, 'utf8')).toBe('const value = 1;\n');
   });
@@ -75,6 +77,7 @@ for (const mode of ['check', 'list-different'] as const) {
       expect(result).toMatchObject({
         exitCode: 1,
         files: [{ path: filePath, status: 'different' }],
+        processedFileCount: 1,
       });
       expect(readFileSync(filePath, 'utf8')).toBe(source);
     });
@@ -96,6 +99,7 @@ test('continues after a file fails and gives errors exit-code precedence', async
         { path: invalidPath, status: 'error' },
         { path: validPath, status: 'different' },
       ],
+      processedFileCount: 2,
     });
     expect(readFileSync(validPath, 'utf8')).toBe('const value=1');
   });
@@ -113,7 +117,7 @@ test('omits unsupported files from the result', async () => {
       },
     ]);
 
-    expect(result).toMatchObject({ exitCode: 0, files: [] });
+    expect(result).toMatchObject({ exitCode: 2, files: [], processedFileCount: 0 });
     expect(readFileSync(filePath, 'utf8')).toBe('plain text');
   });
 });

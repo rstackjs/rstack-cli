@@ -610,3 +610,41 @@ test.each(['--no-error-on-unmatched-pattern', '--noErrorOnUnmatchedPattern'])(
     }
   },
 );
+
+test('counts only supported files', () => {
+  writeProjectFile('index.ts', 'const value = 1;\n');
+  writeProjectFile('notes.unknown', 'plain text');
+
+  const result = runFmt(['--check', 'index.ts', 'notes.unknown']);
+
+  expect(result.status).toBe(0);
+  expect(normalizeDuration(result.stdout)).toBe(
+    'start   Checking formatting...\nsuccess Checked 1 file in <duration>. No issues found.\n',
+  );
+  expect(result.stderr).toBe('');
+});
+
+test('returns exit code 2 when all matched files are unsupported', () => {
+  writeProjectFile('notes.unknown', 'plain text');
+
+  for (const modeArgs of [[], ['--check'], ['--list-different']]) {
+    const result = runFmt([...modeArgs, 'notes.unknown']);
+
+    expect(result.status).toBe(2);
+    expect(result.stdout).not.toContain('success');
+    expect(result.stderr).toContain(
+      'No supported files matched "notes.unknown", or all matching files were ignored.',
+    );
+    expect(result.stderr).not.toContain('\n    at ');
+  }
+});
+
+test('does not treat unsupported files as unmatched patterns', () => {
+  writeProjectFile('notes.unknown', 'plain text');
+
+  const result = runFmt(['--no-error-on-unmatched-pattern', 'notes.unknown']);
+
+  expect(result.status).toBe(2);
+  expect(result.stdout).toBe('');
+  expect(result.stderr).toContain('No supported files matched "notes.unknown"');
+});

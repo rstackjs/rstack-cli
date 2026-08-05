@@ -96,6 +96,8 @@ type FmtFileResult = SuccessfulFmtFileResult | FailedFmtFileResult;
 
 interface FmtRunResult {
   files: FmtFileResult[];
+  /** Number of processed files, excluding files with no supported parser. */
+  processedFileCount: number;
   /** Recommended CLI exit code. */
   exitCode: FmtExitCode;
 }
