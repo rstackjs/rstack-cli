@@ -17,9 +17,22 @@ const hookNames = [
   'pre-auto-gc',
 ];
 
+// Git for Windows runs hooks in a POSIX shell, where drive-letter paths need
+// their Git Bash form to avoid treating the drive colon as a PATH separator.
+const quoteShellPath = (value: string): string => {
+  const shellPath =
+    process.platform === 'win32'
+      ? value
+          .replaceAll('\\', '/')
+          .replace(/^([A-Za-z]):\//u, (_, drive: string) => `/${drive.toLowerCase()}/`)
+      : value;
+
+  return `'${shellPath.replaceAll("'", `'"'"'`)}'`;
+};
+
 // Generated shims live in `<hooks-directory>/_`. When a shim sources this
 // dispatcher, `$0` still points to the shim, so the user hook is one level up.
-const dispatcher = `#!/usr/bin/env sh
+const createDispatcher = (nodeExecutable: string): string => `#!/usr/bin/env sh
 
 name=$(basename "$0")
 dir=$(dirname "$(dirname "$0")")
@@ -33,7 +46,14 @@ init="\${XDG_CONFIG_HOME:-$HOME/.config}/rstack/hooks-init.sh"
 [ "\${RSTACK_HOOKS-}" = "0" ] && exit 0
 [ "\${RSTACK_HOOKS-}" = "2" ] && set -x
 
-export PATH="node_modules/.bin:$PATH"
+# Fall back to the Node.js executable that ran rs setup when GUI clients omit
+# it from PATH. Keep an existing Node.js environment ahead of this fallback.
+node_fallback=${quoteShellPath(nodeExecutable)}
+if ! command -v node >/dev/null 2>&1 && [ -x "$node_fallback" ]; then
+  PATH="\${PATH:+$PATH:}\${node_fallback%/*}"
+fi
+
+export PATH="node_modules/.bin\${PATH:+:$PATH}"
 
 code=0
 sh -e "$hook" "$@" || code=$?
@@ -49,8 +69,10 @@ const shim = `#!/usr/bin/env sh
 . "$(dirname "$0")/runner"
 `;
 
-export const createHookFiles = (): Record<string, string> => {
-  const files: Record<string, string> = { runner: dispatcher };
+export const createHookFiles = (
+  nodeExecutable: string = process.execPath,
+): Record<string, string> => {
+  const files: Record<string, string> = { runner: createDispatcher(nodeExecutable) };
 
   for (const name of hookNames) {
     files[name] = shim;
