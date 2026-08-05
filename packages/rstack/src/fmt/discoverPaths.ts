@@ -153,14 +153,13 @@ class GitIgnoreMatcher {
     return loading;
   }
 
-  #isDirectoryIgnored(
-    directoryPath: string,
-    relativePath = path.relative(this.#rootPath, directoryPath),
-  ): boolean {
+  #isDirectoryIgnored(directoryPath: string, relativePath?: string): boolean {
     const cached = this.#ignoredDirectories.get(directoryPath);
     if (cached !== undefined) {
       return cached;
     }
+
+    relativePath ??= path.relative(this.#rootPath, directoryPath);
 
     // Git cannot re-include a path below an ignored directory.
     const parentPath = path.dirname(directoryPath);
