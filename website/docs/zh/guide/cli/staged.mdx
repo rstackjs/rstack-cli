@@ -100,5 +100,3 @@ define.staged({
   '*.{json,md,mdx,css,html}': 'rs fmt',
 });
 ```
-
-当 `rs staged` 运行 `rs fmt` 任务时，如果传入的路径均未匹配或所有匹配文件均被忽略，formatter 会成功退出。直接运行 `rs fmt` 时仍保持严格行为；在其他集成中，可以通过 [`--no-error-on-unmatched-pattern`](./fmt#--no-error-on-unmatched-pattern) 启用相同行为。
