@@ -296,7 +296,7 @@ const classifyPatterns = async (
 
       const stats = await lstatSafe(filePath);
       if (stats?.isFile()) {
-        return { kind: 'file', value: filePath };
+        return isBinaryPath(filePath) ? undefined : { kind: 'file', value: filePath };
       }
       if (stats?.isDirectory()) {
         return { kind: 'directory', value: filePath };
@@ -436,10 +436,6 @@ const discoverFmtPaths = async ({
   const filePaths: string[] = [];
 
   for (const filePath of candidates) {
-    if (isBinaryPath(filePath)) {
-      continue;
-    }
-
     if (negativeGlobMatchers.length) {
       const relativePath = toPosixPath(path.relative(cwd, filePath));
       if (negativeGlobMatchers.some((matches) => matches(relativePath))) {
