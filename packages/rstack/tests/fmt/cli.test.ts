@@ -107,7 +107,7 @@ test('parses --no-error-on-unmatched-pattern', () => {
   expect(parseFmtCLIArgs(['--no-error-on-unmatched-pattern']).noErrorOnUnmatchedPattern).toBe(true);
 });
 
-test.each(['--ignore-unknown', '--ignoreUnknown'])('parses %s', (option) => {
+test.each(['-u', '--ignore-unknown', '--ignoreUnknown'])('parses %s', (option) => {
   expect(parseFmtCLIArgs([option]).ignoreUnknown).toBe(true);
 });
 

@@ -92,7 +92,13 @@ rs fmt --ignore-path .prettierignore --ignore-path config/format.ignore
 忽略无法推断 parser 的匹配文件。即使所有匹配文件的类型均未知，该选项也可以让命令成功退出：
 
 ```bash
-rs fmt --ignore-unknown '**/*'
+rs fmt --ignore-unknown
+```
+
+短选项 `-u` 是 `--ignore-unknown` 的别名。
+
+```bash
+rs fmt -u
 ```
 
 此选项不会忽略未匹配路径或 glob 的错误。如果集成需要同时容忍这两种情况，可以将它与 [`--no-error-on-unmatched-pattern`](#--no-error-on-unmatched-pattern) 一起使用。
