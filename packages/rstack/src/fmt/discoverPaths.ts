@@ -77,12 +77,14 @@ const findGitRoot = async (cwd: string): Promise<string> => {
 
 class GitIgnoreMatcher {
   readonly #rootPath: string;
+  readonly #rootPrefix: string;
   readonly #matchers = new Map<string, ReturnType<typeof ignore>>();
   readonly #loads = new Map<string, Promise<void>>();
   readonly #ignoredDirectories = new Map<string, boolean>();
 
   private constructor(rootPath: string) {
     this.#rootPath = rootPath;
+    this.#rootPrefix = rootPath.endsWith(path.sep) ? rootPath : `${rootPath}${path.sep}`;
   }
 
   static async create(cwd: string): Promise<GitIgnoreMatcher> {
@@ -120,7 +122,12 @@ class GitIgnoreMatcher {
       return false;
     }
 
-    const relativePath = path.relative(this.#rootPath, filePath);
+    const relativePath =
+      filePath === this.#rootPath
+        ? ''
+        : filePath.startsWith(this.#rootPrefix)
+          ? filePath.slice(this.#rootPrefix.length)
+          : path.relative(this.#rootPath, filePath);
     if (relativePath === '' || !isRelativePathInside(relativePath)) {
       return false;
     }
