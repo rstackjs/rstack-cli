@@ -12,6 +12,7 @@ interface ParsedFmtCLIArgs {
   mode: FmtMode;
   patterns: string[];
   ignorePaths: string[];
+  ignoreUnknown: boolean;
   noErrorOnUnmatchedPattern: boolean;
   maxWorkers?: number;
   help: boolean;
@@ -31,6 +32,7 @@ ${color.cyan('Options')}:
   --check                          Check whether files are formatted
   --list-different                 Print paths of unformatted files
   --ignore-path <path>             Path to an additional ignore file (repeatable)
+  --ignore-unknown                 Ignore unknown files
   --no-error-on-unmatched-pattern  Do not error when no files match
   --parallel-workers <count>       Number of parallel workers
   --stdin-filepath <path>          Format stdin as if it were saved at <path>
@@ -57,6 +59,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       check: { type: 'boolean' },
       'list-different': { type: 'boolean' },
       'ignore-path': { type: 'string', multiple: true },
+      'ignore-unknown': { type: 'boolean' },
       'no-error-on-unmatched-pattern': { type: 'boolean' },
       'parallel-workers': { type: 'string' },
       'stdin-filepath': { type: 'string' },
@@ -76,6 +79,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
 
   const mode = check ? 'check' : listDifferent ? 'list-different' : 'write';
   const ignorePaths = values.ignorePath ?? [];
+  const ignoreUnknown = values.ignoreUnknown ?? false;
   const noErrorOnUnmatchedPattern = values.noErrorOnUnmatchedPattern ?? false;
   const parallelWorkers = values.parallelWorkers;
   const maxWorkers = parseMaxWorkers(parallelWorkers);
@@ -98,6 +102,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
     mode,
     patterns: positionals,
     ignorePaths,
+    ignoreUnknown,
     noErrorOnUnmatchedPattern,
     maxWorkers,
     help,
@@ -228,6 +233,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
     const {
       help,
       ignorePaths,
+      ignoreUnknown,
       maxWorkers,
       mode,
       noErrorOnUnmatchedPattern,
@@ -248,6 +254,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
         filepath: stdinFilepath,
         cwd,
         ignorePaths,
+        ignoreUnknown,
         loadConfig: () => loadFmtConfig(cwd),
       });
       return;
@@ -282,6 +289,12 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
     });
 
     if (result.processedFileCount === 0) {
+      if (ignoreUnknown) {
+        if (mode === 'check') {
+          logger.success('No supported files to check.');
+        }
+        return;
+      }
       reportNoSupportedFiles(patterns);
       return;
     }

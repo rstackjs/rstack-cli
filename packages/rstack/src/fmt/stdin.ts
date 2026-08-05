@@ -11,6 +11,8 @@ interface RunFmtStdinOptions {
   cwd: string;
   /** Ignore files resolved from `cwd`. */
   ignorePaths?: string[];
+  /** Skip input when no parser can be inferred from `filepath`. */
+  ignoreUnknown?: boolean;
   /** Loads the project config; its failures surface only after stdin is drained. */
   loadConfig: () => Promise<ResolvedFmtConfig>;
 }
@@ -51,6 +53,7 @@ const runFmtStdin = async ({
   filepath,
   cwd,
   ignorePaths,
+  ignoreUnknown,
   loadConfig,
 }: RunFmtStdinOptions): Promise<void> => {
   const configPromise = loadConfig();
@@ -90,6 +93,9 @@ const runFmtStdin = async ({
   const result = await formatFmtSource(file, () => source);
 
   if (result.status === 'unsupported') {
+    if (ignoreUnknown) {
+      return;
+    }
     throw new Error(`No parser could be inferred for "${filepath}".`);
   }
 
