@@ -1,7 +1,16 @@
 {
   "name": "rstack",
   "version": "0.3.3",
-  "repository": "https://github.com/rstackjs/rstack-cli",
+  "description": "One CLI for JavaScript development, powered by Rstack.",
+  "homepage": "https://rstack.rs",
+  "bugs": {
+    "url": "https://github.com/rstackjs/rstack-cli/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rstackjs/rstack-cli.git",
+    "directory": "packages/rstack"
+  },
   "license": "MIT",
   "type": "module",
   "exports": {
