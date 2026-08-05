@@ -147,11 +147,19 @@ const formatFileCount = (count: number, isError = false): string => {
   return `${isError ? color.red(formattedCount) : formattedCount} ${count === 1 ? 'file' : 'files'}`;
 };
 
+const reportNoSupportedFiles = (patterns: string[]): void => {
+  const targets = (patterns.length ? patterns : ['.'])
+    .map((pattern) => color.cyan(JSON.stringify(pattern)))
+    .join(', ');
+  logger.error(`No supported files matched ${targets}, or all matching files were ignored.`);
+  process.exitCode = 2;
+};
+
 const logFmtResult = (
   result: FmtRunResult,
   mode: FmtMode,
   cwd: string,
-  matchedFileCount: number,
+  processedFileCount: number,
   durationSeconds: number,
 ): void => {
   let writtenCount = 0;
@@ -177,12 +185,12 @@ const logFmtResult = (
       return;
     }
 
-    const matchedFiles = formatFileCount(matchedFileCount);
+    const processedFiles = formatFileCount(processedFileCount);
     const time = prettyTime(durationSeconds);
     const message =
       writtenCount > 0
-        ? `Formatted ${formatCount(writtenCount)} of ${matchedFiles} in ${time}.`
-        : `Checked ${matchedFiles} in ${time}. No changes needed.`;
+        ? `Formatted ${formatCount(writtenCount)} of ${processedFiles} in ${time}.`
+        : `Checked ${processedFiles} in ${time}. No changes needed.`;
     logger[result.exitCode === 0 ? 'success' : 'info'](message);
     return;
   }
@@ -193,15 +201,15 @@ const logFmtResult = (
 
   if (differentCount > 0) {
     const differentFiles = formatFileCount(differentCount, true);
-    const matchedFiles = formatFileCount(matchedFileCount);
+    const processedFiles = formatFileCount(processedFileCount);
     const checkOption = color.cyan('--check');
     logger.error(
       `Formatting issues found in ${differentFiles}. Run without ${checkOption} to fix.`,
     );
-    logger.info(`Checked ${matchedFiles} in ${prettyTime(durationSeconds)}.`);
+    logger.info(`Checked ${processedFiles} in ${prettyTime(durationSeconds)}.`);
   } else if (result.exitCode === 0) {
     logger.success(
-      `Checked ${formatFileCount(matchedFileCount)} in ${prettyTime(durationSeconds)}. No issues found.`,
+      `Checked ${formatFileCount(processedFileCount)} in ${prettyTime(durationSeconds)}. No issues found.`,
     );
   }
 };
@@ -263,11 +271,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       if (noErrorOnUnmatchedPattern) {
         return;
       }
-      const targets = (patterns.length ? patterns : ['.'])
-        .map((pattern) => color.cyan(JSON.stringify(pattern)))
-        .join(', ');
-      logger.error(`No supported files matched ${targets}, or all matching files were ignored.`);
-      process.exitCode = 2;
+      reportNoSupportedFiles(patterns);
       return;
     }
 
@@ -281,8 +285,13 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       maxWorkers,
     });
 
+    if (result.processedFileCount === 0) {
+      reportNoSupportedFiles(patterns);
+      return;
+    }
+
     const durationSeconds = (performance.now() - startTime) / 1000;
-    logFmtResult(result, mode, cwd, files.length, durationSeconds);
+    logFmtResult(result, mode, cwd, result.processedFileCount, durationSeconds);
     process.exitCode = result.exitCode;
   } catch (error) {
     logger.error(error);

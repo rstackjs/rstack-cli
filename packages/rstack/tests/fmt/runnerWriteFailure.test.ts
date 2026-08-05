@@ -40,6 +40,7 @@ test('returns an error when a file write fails', async () => {
         error: { message: 'file write failed' },
       },
     ],
+    processedFileCount: 1,
   });
   expect(mocks.terminateCalls).toBe(1);
 });

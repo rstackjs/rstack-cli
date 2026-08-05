@@ -47,6 +47,7 @@ test('does not start the worker pool when there are no files', async () => {
   await expect(runFmtFiles({ files: [], mode: 'write' })).resolves.toMatchObject({
     files: [],
     exitCode: 0,
+    processedFileCount: 0,
   });
   expect(mocks.createFmtWorkerPoolCalls).toEqual([]);
 });
