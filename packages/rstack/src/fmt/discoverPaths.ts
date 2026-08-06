@@ -10,7 +10,15 @@ import {
   type RelativePathResolver,
 } from './pathHelpers.ts';
 
-const defaultIgnoredDirNames = new Set(['.git', '.sl', '.svn', '.hg', '.jj', 'node_modules']);
+const defaultIgnoredDirNames = new Set([
+  '.git',
+  '.sl',
+  '.svn',
+  '.hg',
+  '.jj',
+  '.rstack',
+  'node_modules',
+]);
 
 interface DiscoverFmtPathsOptions {
   /** Absolute directory used to resolve input paths. */
