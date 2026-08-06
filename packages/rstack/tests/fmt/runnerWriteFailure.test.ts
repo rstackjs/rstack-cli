@@ -8,6 +8,7 @@ const mocks = rs.hoisted(() => ({
 rs.mock('../../src/fmt/workerPool.ts', () => ({
   createFmtWorkerPool: () =>
     Promise.resolve({
+      workerCount: 1,
       formatFile: () => Promise.reject(new Error('file write failed')),
       terminate: () => {
         mocks.terminateCalls++;

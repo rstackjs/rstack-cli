@@ -16,6 +16,17 @@ interface FmtWorkerPoolResult {
   processedFileCount: number;
 }
 
+/** Benchmarks show stable scheduling gains only when at least eight workers share the queue. */
+const minPriorityWorkers = 8;
+
+/**
+ * Markdown parsing is consistently slower in representative repositories. Keep this signal
+ * narrow: parser overrides and file size can outweigh the extension, and deferring every JS/TS
+ * file could turn a large source file into the final straggler.
+ */
+const isMarkdown = (file: FmtFileRequest): boolean =>
+  file.path.endsWith('.md') || file.path.endsWith('.mdx');
+
 /** Converts a formatter outcome into the shared per-file result. */
 const runFmtFile = async (
   file: FmtFileRequest,
@@ -41,6 +52,30 @@ const runFmtFile = async (
   }
 };
 
+/** Starts slower Markdown parsers first while preserving order within both priority groups. */
+const runPriorityFmtFiles = async (
+  files: FmtFileRequest[],
+  shouldWrite: boolean,
+  formatFile: FormatFile,
+): Promise<FmtFileOutcome[]> => {
+  const priority: number[] = [];
+  const rest: number[] = [];
+
+  for (let index = 0; index < files.length; index++) {
+    (isMarkdown(files[index]) ? priority : rest).push(index);
+  }
+
+  const order = priority.concat(rest);
+  const outcomes = await Promise.all(
+    order.map((index) => runFmtFile(files[index], shouldWrite, formatFile)),
+  );
+  const results = new Array<FmtFileOutcome>(files.length);
+  for (let index = 0; index < order.length; index++) {
+    results[order[index]] = outcomes[index];
+  }
+  return results;
+};
+
 /** Processes files in a worker pool while preserving input order. */
 const runFmtFilesInWorkerPool = async (
   files: FmtFileRequest[],
@@ -51,9 +86,12 @@ const runFmtFilesInWorkerPool = async (
   const workerPool = await createFmtWorkerPool(files.length, maxWorkers);
 
   try {
-    const results = await Promise.all(
-      files.map((file) => runFmtFile(file, shouldWrite, workerPool.formatFile)),
-    );
+    const results =
+      workerPool.workerCount >= minPriorityWorkers
+        ? await runPriorityFmtFiles(files, shouldWrite, workerPool.formatFile)
+        : await Promise.all(
+            files.map((file) => runFmtFile(file, shouldWrite, workerPool.formatFile)),
+          );
     const processedFiles: FmtFileResult[] = [];
     let processedFileCount = 0;
 

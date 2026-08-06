@@ -7,6 +7,7 @@ import type { FmtFileRequest } from './types.ts';
 type FmtWorkerMethods = typeof import('./worker.ts');
 
 interface FmtWorkerPool {
+  readonly workerCount: number;
   formatFile: (
     file: FmtFileRequest,
     shouldWrite: boolean,
@@ -55,6 +56,7 @@ const createFmtWorkerPool = async (
   }
 
   return {
+    workerCount,
     formatFile: (file, shouldWrite) => pool.run({ file, shouldWrite }, { name: 'formatFile' }),
     terminate: () => pool.destroy(),
   };
