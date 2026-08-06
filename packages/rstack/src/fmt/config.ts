@@ -1,6 +1,6 @@
 import { dirname } from 'node:path';
 import micromatch from 'micromatch';
-import { createRelativePathResolver } from './relativePath.ts';
+import { createRelativePathResolver } from './pathHelpers.ts';
 import type {
   FmtConfig,
   FmtConfigDefinition,

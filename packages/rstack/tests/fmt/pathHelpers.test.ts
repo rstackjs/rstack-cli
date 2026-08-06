@@ -1,8 +1,12 @@
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
-import { createRelativePathResolver } from '../../src/fmt/relativePath.ts';
+import { createRelativePathResolver, toPosixPath } from '../../src/fmt/pathHelpers.ts';
 
 const rootPath = path.join(import.meta.dirname, 'project');
+
+test('converts platform paths to POSIX paths', () => {
+  expect(toPosixPath(path.join('src', 'index.ts'))).toBe('src/index.ts');
+});
 
 test('resolves paths relative to a fixed root', () => {
   const resolveRelativePath = createRelativePathResolver(rootPath);

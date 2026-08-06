@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import createIgnore from 'ignore';
-import { createRelativePathResolver } from './relativePath.ts';
+import { createRelativePathResolver } from './pathHelpers.ts';
 import type { ResolvedFmtConfig } from './types.ts';
 
 /**
