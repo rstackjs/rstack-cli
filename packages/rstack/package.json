@@ -18,6 +18,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./config": {
+      "types": "./dist/configExports.d.ts",
+      "default": "./dist/configExports.js"
+    },
     "./app": {
       "types": "./dist/app.d.ts",
       "default": "./dist/app.js"

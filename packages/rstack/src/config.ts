@@ -21,13 +21,13 @@ export type Configs = {
   staged?: StagedConfig;
 };
 
-type LoadedRstackConfig = {
+export type LoadedRstackConfig = {
   configs: Configs;
   filePath: string | null;
   dependencies: string[];
 };
 
-type LoadRstackConfigOptions = {
+export type LoadRstackConfigOptions = {
   /**
    * The path to the Rstack config file, can be a relative or absolute path.
    * If `configFilePath` is not provided, the config path set by the CLI is used.

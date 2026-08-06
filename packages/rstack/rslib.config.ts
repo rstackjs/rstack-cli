@@ -8,6 +8,7 @@ export default defineConfig({
   source: {
     entry: {
       index: './src/index.ts',
+      configExports: './src/configExports.ts',
       rsbuildConfig: './src/rsbuildConfig.ts',
       rslibConfig: './src/rslibConfig.ts',
       rslintConfig: './src/rslintConfig.ts',
