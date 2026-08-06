@@ -1,4 +1,5 @@
 import type { Config as PrettierConfig, Options as PrettierOptions } from 'prettier';
+import type { FmtCacheEntry } from './cacheStore.ts';
 
 /** Plugin objects cannot cross worker boundaries and are not planned for support. */
 type FmtPluginSpecifier = string | URL;
@@ -71,6 +72,23 @@ interface FmtFileRequest {
   options: ResolvedFmtOptions;
 }
 
+interface FmtCacheContext {
+  /** Persistent cache file to load and update. */
+  filePath: string;
+  /** Root used to create portable per-file cache keys. */
+  rootPath: string;
+}
+
+interface FmtFileCache {
+  entry: FmtCacheEntry | undefined;
+  optionsHash: string;
+}
+
+interface FmtWorkerResult {
+  status: 'changed' | 'unchanged' | 'unsupported';
+  cacheEntry?: FmtCacheEntry;
+}
+
 type FmtMode = 'write' | 'check' | 'list-different';
 type FmtExitCode = 0 | 1 | 2;
 
@@ -81,6 +99,8 @@ interface RunFmtFilesOptions {
   mode: FmtMode;
   /** Maximum number of formatting workers. */
   maxWorkers?: number;
+  /** Internal persistent cache context. Currently used only by check and list modes. */
+  cache?: FmtCacheContext;
 }
 
 interface SuccessfulFmtFileResult {
@@ -106,14 +126,17 @@ interface FmtRunResult {
 
 export type {
   DiscoverFmtFilesOptions,
+  FmtCacheContext,
   FmtConfig,
   FmtConfigDefinition,
   FmtExitCode,
   FmtFileResult,
   FmtFileRequest,
+  FmtFileCache,
   FmtMode,
   FmtPluginSpecifier,
   FmtRunResult,
+  FmtWorkerResult,
   ResolvedFmtConfig,
   ResolvedFmtOptions,
   RunFmtFilesOptions,

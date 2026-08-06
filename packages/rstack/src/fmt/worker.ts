@@ -1,39 +1,64 @@
 // Derived from @prettier/cli, see THIRD_PARTY_NOTICES.md
 
+import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { formatFmtSource } from './format.ts';
-import type { FmtFileRequest } from './types.ts';
-
-type FormatFileResult = 'changed' | 'unchanged' | 'unsupported';
+import type { FmtCacheEntry } from './cacheStore.ts';
+import type { FmtFileCache, FmtFileRequest, FmtWorkerResult } from './types.ts';
 
 interface FormatFileTask {
   file: FmtFileRequest;
   shouldWrite: boolean;
+  cache?: FmtFileCache;
 }
+
+const hashContent = (content: Uint8Array): string =>
+  createHash('sha256').update(content).digest('hex');
 
 /**
  * Use synchronous direct I/O inside the dedicated worker to avoid libuv
  * scheduling overhead. This prioritizes throughput over crash-safe replacement.
  */
-const formatFile = async ({ file, shouldWrite }: FormatFileTask): Promise<FormatFileResult> => {
-  const result = await formatFmtSource(file, () => readFileSync(file.path, 'utf8'));
+const formatFile = async ({
+  file,
+  shouldWrite,
+  cache,
+}: FormatFileTask): Promise<FmtWorkerResult> => {
+  let source: string | undefined;
+  let contentHash: string | undefined;
+
+  if (cache && !shouldWrite) {
+    const content = readFileSync(file.path);
+    contentHash = hashContent(content);
+    source = content.toString('utf8');
+
+    const { entry, optionsHash } = cache;
+    if (entry?.[0] === contentHash && entry[1] === optionsHash) {
+      return { status: entry[2] === 'clean' ? 'unchanged' : 'changed' };
+    }
+  }
+
+  const { formatFmtSource } = await import('./format.ts');
+  const result = await formatFmtSource(file, () => (source ??= readFileSync(file.path, 'utf8')));
   if (result.status === 'unsupported') {
-    return 'unsupported';
+    return { status: 'unsupported' };
   }
 
-  const { source, formatted } = result;
-  if (source === formatted) {
-    return 'unchanged';
+  const unchanged = result.source === result.formatted;
+
+  if (!unchanged && shouldWrite) {
+    writeFileSync(file.path, result.formatted, 'utf8');
   }
 
-  if (shouldWrite) {
-    writeFileSync(file.path, formatted, 'utf8');
+  const status = unchanged ? 'unchanged' : 'changed';
+  if (!cache || contentHash === undefined) {
+    return { status };
   }
 
-  return 'changed';
+  const cacheEntry: FmtCacheEntry = [contentHash, cache.optionsHash, unchanged ? 'clean' : 'dirty'];
+  return { status, cacheEntry };
 };
 
-/** Confirms that the worker module and its runtime dependencies are ready. */
+/** Confirms that the worker module is ready. Formatter dependencies load only on a cache miss. */
 const initializeFmtWorker = (): true => true;
 
 export { formatFile, initializeFmtWorker };

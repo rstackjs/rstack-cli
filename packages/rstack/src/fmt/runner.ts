@@ -1,4 +1,8 @@
+import { cacheNamespace, createCacheKeyResolver, createOptionsHasher } from './cacheIdentity.ts';
+import { loadFmtCacheStore } from './cacheStore.ts';
+import type { FmtCacheEntry, FmtCacheStore } from './cacheStore.ts';
 import type {
+  FmtFileCache,
   FmtExitCode,
   FmtFileRequest,
   FmtFileResult,
@@ -10,6 +14,18 @@ import type { FmtWorkerPool } from './workerPool.ts';
 /** Formats one file and reports whether its contents differ. */
 type FormatFile = FmtWorkerPool['formatFile'];
 type FmtFileOutcome = FmtFileResult | 'unchanged' | 'unsupported';
+
+interface FmtFileRun {
+  outcome: FmtFileOutcome;
+  key?: string;
+  entry?: FmtCacheEntry;
+}
+
+interface RunCache {
+  store: FmtCacheStore;
+  resolveKey: ReturnType<typeof createCacheKeyResolver>;
+  hashOptions: ReturnType<typeof createOptionsHasher>;
+}
 
 interface FmtWorkerPoolResult {
   files: FmtFileResult[];
@@ -32,22 +48,47 @@ const runFmtFile = async (
   file: FmtFileRequest,
   shouldWrite: boolean,
   formatFile: FormatFile,
-): Promise<FmtFileOutcome> => {
-  try {
-    const result = await formatFile(file, shouldWrite);
-    if (result === 'unchanged' || result === 'unsupported') {
-      return result;
-    }
+  cache?: RunCache,
+): Promise<FmtFileRun> => {
+  let key: string | undefined;
+  let fileCache: FmtFileCache | undefined;
 
-    return {
-      path: file.path,
-      status: shouldWrite ? 'written' : 'different',
-    };
+  if (cache) {
+    key = cache.resolveKey(file.path);
+    if (key !== undefined) {
+      const optionsHash = cache.hashOptions(file.options);
+      if (optionsHash === undefined) {
+        key = undefined;
+      } else {
+        fileCache = {
+          entry: cache.store.get(key),
+          optionsHash,
+        };
+      }
+    }
+  }
+
+  try {
+    const result = await formatFile(file, shouldWrite, fileCache);
+    const outcome: FmtFileOutcome =
+      result.status === 'changed'
+        ? {
+            path: file.path,
+            status: shouldWrite ? 'written' : 'different',
+          }
+        : result.status;
+
+    if (key !== undefined && result.cacheEntry) {
+      return { outcome, key, entry: result.cacheEntry };
+    }
+    return { outcome };
   } catch (error) {
     return {
-      path: file.path,
-      status: 'error',
-      error,
+      outcome: {
+        path: file.path,
+        status: 'error',
+        error,
+      },
     };
   }
 };
@@ -57,7 +98,8 @@ const runPriorityFmtFiles = async (
   files: FmtFileRequest[],
   shouldWrite: boolean,
   formatFile: FormatFile,
-): Promise<FmtFileOutcome[]> => {
+  cache?: RunCache,
+): Promise<FmtFileRun[]> => {
   const priority: number[] = [];
   const rest: number[] = [];
 
@@ -67,9 +109,9 @@ const runPriorityFmtFiles = async (
 
   const order = priority.concat(rest);
   const outcomes = await Promise.all(
-    order.map((index) => runFmtFile(files[index], shouldWrite, formatFile)),
+    order.map((index) => runFmtFile(files[index], shouldWrite, formatFile, cache)),
   );
-  const results = new Array<FmtFileOutcome>(files.length);
+  const results = new Array<FmtFileRun>(files.length);
   for (let index = 0; index < order.length; index++) {
     results[order[index]] = outcomes[index];
   }
@@ -81,6 +123,7 @@ const runFmtFilesInWorkerPool = async (
   files: FmtFileRequest[],
   shouldWrite: boolean,
   maxWorkers?: number,
+  cache?: RunCache,
 ): Promise<FmtWorkerPoolResult> => {
   const { createFmtWorkerPool } = await import('./workerPool.ts');
   const workerPool = await createFmtWorkerPool(files.length, maxWorkers);
@@ -88,21 +131,24 @@ const runFmtFilesInWorkerPool = async (
   try {
     const results =
       workerPool.workerCount >= minPriorityWorkers
-        ? await runPriorityFmtFiles(files, shouldWrite, workerPool.formatFile)
+        ? await runPriorityFmtFiles(files, shouldWrite, workerPool.formatFile, cache)
         : await Promise.all(
-            files.map((file) => runFmtFile(file, shouldWrite, workerPool.formatFile)),
+            files.map((file) => runFmtFile(file, shouldWrite, workerPool.formatFile, cache)),
           );
     const processedFiles: FmtFileResult[] = [];
     let processedFileCount = 0;
 
-    for (const result of results) {
-      if (result === 'unsupported') {
+    for (const { outcome, key, entry } of results) {
+      if (key !== undefined && entry) {
+        cache?.store.set(key, entry);
+      }
+      if (outcome === 'unsupported') {
         continue;
       }
 
       processedFileCount++;
-      if (result !== 'unchanged') {
-        processedFiles.push(result);
+      if (outcome !== 'unchanged') {
+        processedFiles.push(outcome);
       }
     }
 
@@ -133,12 +179,23 @@ const runFmtFiles = async ({
   files,
   mode,
   maxWorkers,
+  cache,
 }: RunFmtFilesOptions): Promise<FmtRunResult> => {
   const shouldWrite = mode === 'write';
+  let runCache: RunCache | undefined;
+  if (files.length > 0 && cache && !shouldWrite) {
+    runCache = {
+      store: await loadFmtCacheStore(cache.filePath, cacheNamespace),
+      resolveKey: createCacheKeyResolver(cache.rootPath),
+      hashOptions: createOptionsHasher(),
+    };
+  }
+
   const result =
     files.length === 0
       ? { files: [], processedFileCount: 0 }
-      : await runFmtFilesInWorkerPool(files, shouldWrite, maxWorkers);
+      : await runFmtFilesInWorkerPool(files, shouldWrite, maxWorkers, runCache);
+  await runCache?.store.save().catch(() => false);
 
   return {
     ...result,
