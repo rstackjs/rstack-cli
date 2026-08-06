@@ -47,6 +47,19 @@ test('applies config ignore patterns outside the config root', async () => {
   });
 });
 
+test('excludes .rstack from discovery', async () => {
+  await withTempProject(async (rootPath) => {
+    const cacheFile = writeProjectFile(rootPath, '.rstack/cache/fmt-v1.json', '{}');
+    writeProjectFile(rootPath, 'index.ts');
+
+    const discoveredFiles = await discover(rootPath);
+    const explicitFile = await discover(rootPath, [cacheFile]);
+
+    expect(relativePaths(rootPath, discoveredFiles)).toEqual(['index.ts']);
+    expect(explicitFile).toEqual([]);
+  });
+});
+
 test('keeps files re-included by a CLI ignore file during directory traversal', async () => {
   await withTempProject(async (rootPath) => {
     writeProjectFile(rootPath, '.prettierignore', 'generated/*\n!generated/keep.ts\n');
