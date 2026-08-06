@@ -24,6 +24,11 @@
   },
   {
     "type": "file",
+    "name": "migration",
+    "label": "迁移"
+  },
+  {
+    "type": "file",
     "name": "testing",
     "label": "测试"
   },
