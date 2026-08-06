@@ -1,5 +1,6 @@
-import { dirname, relative } from 'node:path';
+import { dirname } from 'node:path';
 import micromatch from 'micromatch';
+import { createRelativePathResolver } from './relativePath.ts';
 import type {
   FmtConfig,
   FmtConfigDefinition,
@@ -14,6 +15,7 @@ type ResolveFmtConfigOptions = {
 };
 
 type PathMatcher = (filePath: string) => boolean;
+type FmtOptionsResolver = (filePath: string) => ResolvedFmtOptions;
 
 const neverMatches: PathMatcher = () => false;
 
@@ -87,26 +89,30 @@ const normalizeFmtConfig = (config: FmtConfig | undefined, rootPath: string): Re
   };
 };
 
-/** Applies matching overrides to the shared formatter options. */
-const resolveFmtOptions = (filePath: string, config: ResolvedFmtConfig): ResolvedFmtOptions => {
+/** Creates a reusable resolver for applying per-file formatter overrides. */
+const createFmtOptionsResolver = (config: ResolvedFmtConfig): FmtOptionsResolver => {
   if (config.overrides.length === 0) {
-    return config.baseOptions;
+    return () => config.baseOptions;
   }
 
-  let options = config.baseOptions;
-  const relativeFilePath = relative(config.rootPath, filePath);
+  const resolveRelativePath = createRelativePathResolver(config.rootPath);
 
-  for (const override of config.overrides) {
-    if (!override.options || !override.matches(relativeFilePath)) {
-      continue;
-    }
-    if (options === config.baseOptions) {
-      options = { ...options };
-    }
-    Object.assign(options, override.options);
-  }
+  return (filePath) => {
+    let options = config.baseOptions;
+    const relativeFilePath = resolveRelativePath(filePath);
 
-  return options;
+    for (const override of config.overrides) {
+      if (!override.options || !override.matches(relativeFilePath)) {
+        continue;
+      }
+      if (options === config.baseOptions) {
+        options = { ...options };
+      }
+      Object.assign(options, override.options);
+    }
+
+    return options;
+  };
 };
 
 /** Resolves a formatter config definition and its project root. */
@@ -121,4 +127,5 @@ const resolveFmtConfig = async ({
   return normalizeFmtConfig(config, rootPath);
 };
 
-export { normalizeFmtConfig, resolveFmtConfig, resolveFmtOptions };
+export { createFmtOptionsResolver, normalizeFmtConfig, resolveFmtConfig };
+export type { FmtOptionsResolver };

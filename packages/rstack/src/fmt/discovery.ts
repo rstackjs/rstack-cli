@@ -1,11 +1,14 @@
-import { resolveFmtOptions } from './config.ts';
+import { createFmtOptionsResolver, type FmtOptionsResolver } from './config.ts';
 import { discoverFmtPaths } from './discoverPaths.ts';
 import { createIgnoreMatcher } from './ignore.ts';
-import type { DiscoverFmtFilesOptions, FmtFileRequest, ResolvedFmtConfig } from './types.ts';
+import type { DiscoverFmtFilesOptions, FmtFileRequest } from './types.ts';
 
-const createFileRequest = (filePath: string, config: ResolvedFmtConfig): FmtFileRequest => ({
+const createFileRequest = (
+  filePath: string,
+  resolveOptions: FmtOptionsResolver,
+): FmtFileRequest => ({
   path: filePath,
-  options: resolveFmtOptions(filePath, config),
+  options: resolveOptions(filePath),
 });
 
 /** Discovers worker-ready files without automatically reading Prettier config or ignore files. */
@@ -28,7 +31,8 @@ const discoverFmtFiles = async ({
   }
 
   const filePaths = candidates.filter((filePath) => !isIgnored(filePath));
-  const files = filePaths.map((filePath) => createFileRequest(filePath, config));
+  const resolveOptions = createFmtOptionsResolver(config);
+  const files = filePaths.map((filePath) => createFileRequest(filePath, resolveOptions));
   if (!files.some((file) => file.options.plugins?.length)) {
     return files;
   }

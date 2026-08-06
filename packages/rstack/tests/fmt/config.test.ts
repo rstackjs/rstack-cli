@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
-import { normalizeFmtConfig, resolveFmtOptions } from '../../src/fmt/config.ts';
+import { createFmtOptionsResolver, normalizeFmtConfig } from '../../src/fmt/config.ts';
 
 const rootPath = path.join(import.meta.dirname, 'project');
 
@@ -12,8 +12,9 @@ test('reuses base options when no override matches', () => {
     },
     rootPath,
   );
+  const resolveOptions = createFmtOptionsResolver(config);
 
-  expect(resolveFmtOptions(path.join(rootPath, 'index.js'), config)).toBe(config.baseOptions);
+  expect(resolveOptions(path.join(rootPath, 'index.js'))).toBe(config.baseOptions);
 });
 
 test('applies basename and path overrides in declaration order', () => {
@@ -38,12 +39,25 @@ test('applies basename and path overrides in declaration order', () => {
     },
     rootPath,
   );
+  const resolveOptions = createFmtOptionsResolver(config);
 
-  const options = resolveFmtOptions(path.join(rootPath, 'src/index.ts'), config);
-  const testOptions = resolveFmtOptions(path.join(rootPath, 'src/index.test.ts'), config);
+  const options = resolveOptions(path.join(rootPath, 'src/index.ts'));
+  const testOptions = resolveOptions(path.join(rootPath, 'src/index.test.ts'));
 
   expect(options).not.toBe(config.baseOptions);
   expect(options).toEqual({ semi: true, singleQuote: true, tabWidth: 4 });
   expect(testOptions).toEqual({ singleQuote: true });
   expect(config.baseOptions).toEqual({ singleQuote: false });
+});
+
+test('applies overrides outside the config root', () => {
+  const config = normalizeFmtConfig(
+    {
+      overrides: [{ files: '../shared/*.ts', options: { semi: false } }],
+    },
+    rootPath,
+  );
+  const resolveOptions = createFmtOptionsResolver(config);
+
+  expect(resolveOptions(path.join(rootPath, '../shared/index.ts'))).toEqual({ semi: false });
 });
