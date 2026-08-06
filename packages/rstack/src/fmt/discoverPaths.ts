@@ -38,6 +38,19 @@ const isRelativePathInside = (relativePath: string): boolean =>
 const isPathInside = (rootPath: string, filePath: string): boolean =>
   isRelativePathInside(path.relative(rootPath, filePath));
 
+type RelativePathResolver = (filePath: string) => string;
+
+const createRelativePathResolver = (rootPath: string): RelativePathResolver => {
+  const rootPrefix = rootPath.endsWith(path.sep) ? rootPath : `${rootPath}${path.sep}`;
+
+  return (filePath) =>
+    filePath === rootPath
+      ? ''
+      : filePath.startsWith(rootPrefix)
+        ? filePath.slice(rootPrefix.length)
+        : path.relative(rootPath, filePath);
+};
+
 const toPosixPath = (filePath: string): string =>
   path.sep === '\\' ? filePath.replaceAll('\\', '/') : filePath;
 
@@ -358,6 +371,7 @@ const discoverFmtPaths = async ({
   isDirectoryIgnored,
 }: DiscoverFmtPathsOptions): Promise<string[]> => {
   const patterns = inputPatterns?.length ? inputPatterns : ['.'];
+  const resolveRelativePath = createRelativePathResolver(cwd);
   const ignoredDirNames = withNodeModules
     ? new Set(defaultIgnoredDirNames)
     : defaultIgnoredDirNames;
@@ -401,7 +415,7 @@ const discoverFmtPaths = async ({
                 return true;
               }
 
-              const relativePath = toPosixPath(path.relative(cwd, filePath));
+              const relativePath = toPosixPath(resolveRelativePath(filePath));
               return globMatchers.some((matches) => matches(relativePath));
             };
 
@@ -428,7 +442,7 @@ const discoverFmtPaths = async ({
 
   for (const filePath of candidates) {
     if (negativeGlobMatchers.length) {
-      const relativePath = toPosixPath(path.relative(cwd, filePath));
+      const relativePath = toPosixPath(resolveRelativePath(filePath));
       if (negativeGlobMatchers.some((matches) => matches(relativePath))) {
         continue;
       }
