@@ -5,6 +5,7 @@ import { parseArgs } from '../cli/args.ts';
 import { loadRstackConfig } from '../config.ts';
 import { resolveFmtConfig } from './config.ts';
 import { discoverFmtFiles } from './discovery.ts';
+import { createRelativePathResolver } from './relativePath.ts';
 import { runFmtFiles } from './runner.ts';
 import type { FmtMode, FmtRunResult, ResolvedFmtConfig } from './types.ts';
 
@@ -115,9 +116,12 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   };
 };
 
-const getDisplayPath = (cwd: string, filePath: string): string => {
-  const relativePath = path.relative(cwd, filePath);
-  return path.sep === '\\' ? relativePath.replaceAll('\\', '/') : relativePath;
+const createDisplayPathResolver = (cwd: string): ((filePath: string) => string) => {
+  const resolveRelativePath = createRelativePathResolver(cwd);
+
+  return path.sep === '\\'
+    ? (filePath) => resolveRelativePath(filePath).replaceAll('\\', '/')
+    : resolveRelativePath;
 };
 
 const prettyTime = (seconds: number): string => {
@@ -168,6 +172,7 @@ const logFmtResult = (
 ): void => {
   let writtenCount = 0;
   let differentCount = 0;
+  const resolveDisplayPath = createDisplayPathResolver(cwd);
 
   for (const file of result.files) {
     if (file.status === 'written') {
@@ -175,7 +180,7 @@ const logFmtResult = (
       continue;
     }
 
-    const displayPath = getDisplayPath(cwd, file.path);
+    const displayPath = resolveDisplayPath(file.path);
     if (file.status === 'different') {
       differentCount++;
       logger[mode === 'check' ? 'error' : 'log'](displayPath);
