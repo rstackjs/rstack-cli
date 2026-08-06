@@ -139,28 +139,39 @@ test('lets explicit files bypass gitignore', async () => {
   });
 });
 
-test('prunes directories with an external ignore matcher', async () => {
+test('applies an external ignore matcher during traversal', async () => {
   await withTempProject(async (rootPath) => {
     writeProjectFile(rootPath, 'generated/nested/output.ts');
+    const ignoredFilePath = writeProjectFile(rootPath, 'src/ignored.ts');
     writeProjectFile(rootPath, 'src/index.ts');
-    const checkedDirectories: string[] = [];
+    const checkedPaths: { path: string; isDirectory: boolean }[] = [];
     const generatedPath = path.join(rootPath, 'generated');
-    const isDirectoryIgnored = (directoryPath: string): boolean => {
-      checkedDirectories.push(path.relative(rootPath, directoryPath));
-      return directoryPath === generatedPath;
+    const isIgnored = (filePath: string, isDirectory: boolean): boolean => {
+      checkedPaths.push({
+        path: path.relative(rootPath, filePath),
+        isDirectory,
+      });
+      return isDirectory ? filePath === generatedPath : filePath === ignoredFilePath;
     };
 
-    const files = await discoverFmtPaths({ cwd: rootPath, isDirectoryIgnored });
+    const files = await discoverFmtPaths({ cwd: rootPath, isIgnored });
     const ignoredRoot = await discoverFmtPaths({
       cwd: rootPath,
       patterns: ['generated'],
-      isDirectoryIgnored,
+      isIgnored,
     });
 
     expect(relativePaths(rootPath, files)).toEqual([path.join('src', 'index.ts')]);
     expect(ignoredRoot).toEqual([]);
-    expect(checkedDirectories).toContain('generated');
-    expect(checkedDirectories).not.toContain(path.join('generated', 'nested'));
+    expect(checkedPaths).toContainEqual({ path: 'generated', isDirectory: true });
+    expect(checkedPaths).toContainEqual({
+      path: path.join('src', 'ignored.ts'),
+      isDirectory: false,
+    });
+    expect(checkedPaths).not.toContainEqual({
+      path: path.join('generated', 'nested'),
+      isDirectory: true,
+    });
   });
 });
 
