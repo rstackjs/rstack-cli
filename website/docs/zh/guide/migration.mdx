@@ -1,0 +1,39 @@
+---
+description: '使用推荐的迁移 Skill，将现有项目迁移到 Rstack CLI。'
+---
+
+# 迁移到 Rstack CLI \{#migrate-to-rstack-cli}
+
+迁移现有项目时，推荐使用 `migrate-to-rstack-cli` Skill。该 Skill 会分析项目，并自动将仓库中使用的 Rstack 工具及 Prettier、Husky 等受支持工具迁移到 Rstack CLI。
+
+## 使用迁移 Skill \{#use-the-migration-skill}
+
+首先安装该 Skill：
+
+```bash
+npx skills add rstackjs/rstack-cli --skill migrate-to-rstack-cli
+```
+
+安装完成后，向 Coding Agent 发送以下 Prompt：
+
+```text
+使用 migrate-to-rstack-cli Skill 将当前项目迁移到 Rstack CLI。
+```
+
+## 支持的工具 \{#supported-tools}
+
+该 Skill 可以直接迁移以下独立工具：
+
+- **Rstack 工具链：**[Rsbuild](https://rsbuild.rs/zh/)、[Rslib](https://rslib.rs/zh/)、[Rstest](https://rstest.rs/zh/)、[Rslint](https://rslint.rs/) 和 [Rspress](https://rspress.rs/zh/)
+- **代码格式化：**[Prettier](https://github.com/prettier/prettier)
+- **暂存文件处理：**[lint-staged](https://github.com/lint-staged/lint-staged) 和 [nano-staged](https://github.com/usmanyunusov/nano-staged)
+- **Git hooks：**[Husky](https://github.com/typicode/husky) 和 [simple-git-hooks](https://github.com/toplenboren/simple-git-hooks)
+
+## 不支持的工具 \{#unsupported-tools}
+
+该 Skill 不会直接迁移上面列表之外的工具。如果项目使用以下工具，请先将其迁移到对应的 Rstack 工具，再运行 `migrate-to-rstack-cli` Skill：
+
+- **应用构建：**将 [webpack](https://rsbuild.rs/zh/guide/migration/webpack)、[Vite](https://rsbuild.rs/zh/guide/migration/vite)、[Create React App](https://rsbuild.rs/zh/guide/migration/cra) 或 [Vue CLI](https://rsbuild.rs/zh/guide/migration/vue-cli) 项目迁移到 Rsbuild。
+- **库构建：**将使用 [tsup](https://rslib.rs/zh/guide/migration/tsup) 或 [tsc](https://rslib.rs/zh/guide/migration/tsc) 构建的库迁移到 Rslib。
+- **测试：**将 [Jest](https://rstest.rs/zh/guide/migration/jest) 或 [Vitest](https://rstest.rs/zh/guide/migration/vitest) 项目迁移到 Rstest。
+- **代码检查：**参考 [Rslint 指南](https://rslint.rs/guide/)，将 ESLint 或其他代码检查工具迁移到 Rslint。

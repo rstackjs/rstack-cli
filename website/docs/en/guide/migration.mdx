@@ -1,0 +1,39 @@
+---
+description: 'Migrate an existing project to Rstack CLI with the recommended migration Skill.'
+---
+
+# Migrate to Rstack CLI
+
+To migrate an existing project, we recommend using the `migrate-to-rstack-cli` Skill. It inspects the project and automatically migrates supported tools used in the repository—including Rstack tools, Prettier, and Husky—to Rstack CLI.
+
+## Use the migration skill
+
+First, install the Skill:
+
+```bash
+npx skills add rstackjs/rstack-cli --skill migrate-to-rstack-cli
+```
+
+Then ask your coding agent to perform the migration with this prompt:
+
+```text
+Use the migrate-to-rstack-cli Skill to migrate this project to Rstack CLI.
+```
+
+## Supported tools
+
+The Skill can directly migrate the following standalone tools:
+
+- **Rstack toolchain:** [Rsbuild](https://rsbuild.rs/), [Rslib](https://rslib.rs/), [Rstest](https://rstest.rs/), [Rslint](https://rslint.rs/), and [Rspress](https://rspress.rs/)
+- **Code formatting:** [Prettier](https://github.com/prettier/prettier)
+- **Staged-file tasks:** [lint-staged](https://github.com/lint-staged/lint-staged) and [nano-staged](https://github.com/usmanyunusov/nano-staged)
+- **Git hooks:** [Husky](https://github.com/typicode/husky) and [simple-git-hooks](https://github.com/toplenboren/simple-git-hooks)
+
+## Unsupported tools
+
+The Skill does not directly migrate tools outside the list above. If your project uses any of the following tools, migrate it to the corresponding Rstack tool first, then run the `migrate-to-rstack-cli` Skill:
+
+- **Application builds:** Migrate [webpack](https://rsbuild.rs/guide/migration/webpack), [Vite](https://rsbuild.rs/guide/migration/vite), [Create React App](https://rsbuild.rs/guide/migration/cra), or [Vue CLI](https://rsbuild.rs/guide/migration/vue-cli) projects to Rsbuild.
+- **Library builds:** Migrate projects built with [tsup](https://rslib.rs/guide/migration/tsup) or [tsc](https://rslib.rs/guide/migration/tsc) to Rslib.
+- **Testing:** Migrate [Jest](https://rstest.rs/guide/migration/jest) or [Vitest](https://rstest.rs/guide/migration/vitest) projects to Rstest.
+- **Linting:** Follow the [Rslint guide](https://rslint.rs/guide/) to migrate ESLint or other linters to Rslint.
