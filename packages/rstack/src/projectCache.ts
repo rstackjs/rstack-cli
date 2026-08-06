@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const cacheGitignore = '*\n';
@@ -15,7 +15,7 @@ const ensureProjectCacheDir = async (rootPath: string): Promise<ProjectCacheResu
   const ignorePath = path.join(cachePath, '.gitignore');
 
   try {
-    if (readFileSync(ignorePath, 'utf8') === cacheGitignore) {
+    if ((await readFile(ignorePath, 'utf8')) === cacheGitignore) {
       return { status: 'available', path: cachePath };
     }
   } catch {
@@ -23,8 +23,8 @@ const ensureProjectCacheDir = async (rootPath: string): Promise<ProjectCacheResu
   }
 
   try {
-    mkdirSync(cachePath, { recursive: true });
-    writeFileSync(ignorePath, cacheGitignore);
+    await mkdir(cachePath, { recursive: true });
+    await writeFile(ignorePath, cacheGitignore);
     return { status: 'available', path: cachePath };
   } catch (error) {
     return { status: 'unavailable', path: cachePath, error };
