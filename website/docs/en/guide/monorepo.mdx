@@ -146,12 +146,8 @@ A library can define its build, test, and documentation configuration in one fil
 import { define } from 'rstack';
 
 define.lib({
-  lib: [
-    {
-      format: 'esm',
-      dts: true,
-    },
-  ],
+  dts: true,
+  format: 'esm',
 });
 
 define.test({

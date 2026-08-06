@@ -7,7 +7,6 @@ define.lib(() => {
   libConfigCalls += 1;
 
   return {
-    lib: [{}],
     source: {
       define: {
         RSTACK_INHERITED_CONFIG: JSON.stringify('lib'),

@@ -28,7 +28,7 @@ const getFmtWorkerUrl = (): URL => {
   const workerPath = new URL(import.meta.url).pathname.endsWith('.ts')
     ? '../../dist/fmtWorker.js'
     : './fmtWorker.js';
-  return new URL(workerPath, import.meta.url);
+  return new URL(/* rspackIgnore: true */ workerPath, import.meta.url);
 };
 
 /** Creates and starts every worker before formatting can begin. */
