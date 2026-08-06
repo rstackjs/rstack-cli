@@ -2,7 +2,8 @@
 import { define } from 'rstack';
 
 define.lib({
-  lib: [{ syntax: ['node 22'], dts: true }],
+  dts: true,
+  syntax: ['node 22'],
 });
 
 define.lint(async () => {

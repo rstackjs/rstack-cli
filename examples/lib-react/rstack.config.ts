@@ -4,12 +4,13 @@ import { define } from 'rstack';
 define.lib(async () => {
   const { pluginReact } = await import('@rsbuild/plugin-react');
   return {
+    bundle: false,
+    dts: true,
     source: {
       entry: {
         index: ['./src/**'],
       },
     },
-    lib: [{ bundle: false, dts: true }],
     output: {
       target: 'web',
     },

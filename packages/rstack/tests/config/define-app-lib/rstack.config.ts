@@ -9,7 +9,6 @@ define.app({
 });
 
 define.lib({
-  lib: [{}],
   source: {
     define: {
       RSTACK_INHERITED_CONFIG: JSON.stringify('lib'),

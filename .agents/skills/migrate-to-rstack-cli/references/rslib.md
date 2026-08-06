@@ -18,7 +18,7 @@ Read this reference when the project uses `@rslib/core`, `rslib.config.*`, `rsli
 import { define } from 'rstack';
 
 define.lib({
-  lib: [{ dts: true }],
+  dts: true,
 });
 ```
 

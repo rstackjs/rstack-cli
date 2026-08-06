@@ -4,7 +4,8 @@ import pkgJson from './package.json' with { type: 'json' };
 const fullyMinifiedChunks = /(?:fmt(?:Plugins)?|sortPackageJsonPlugin|staged)\.js$/;
 
 export default defineConfig({
-  lib: [{ syntax: 'es2023', dts: true }],
+  dts: true,
+  syntax: 'es2023',
   source: {
     entry: {
       index: './src/index.ts',
@@ -48,6 +49,18 @@ export default defineConfig({
           },
         },
       ],
+    },
+  },
+  tools: {
+    rspack: {
+      module: {
+        parser: {
+          javascript: {
+            // @rstest/adapter-rslib resolves extended tsconfig paths from a runtime base.
+            createRequire: false,
+          },
+        },
+      },
     },
   },
 });
