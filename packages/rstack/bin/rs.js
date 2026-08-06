@@ -7,6 +7,8 @@ const { enableCompileCache, constants } = nodeModule;
 if (enableCompileCache) {
   try {
     const { directory, status } = enableCompileCache();
+    // ALREADY_ENABLED returns the active version-specific cache directory.
+    // Passing it to workers would append another version directory.
     if (directory && status === constants.compileCacheStatus.ENABLED) {
       process.env.NODE_COMPILE_CACHE = directory;
     }
