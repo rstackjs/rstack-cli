@@ -4,6 +4,7 @@ import ignore from 'ignore';
 import isBinaryPath from 'is-binary-path';
 import micromatch from 'micromatch';
 import readdir, { type Dirent, type DirentLike } from 'tiny-readdir';
+import { createRelativePathResolver, type RelativePathResolver } from './relativePath.ts';
 
 const defaultIgnoredDirNames = new Set(['.git', '.sl', '.svn', '.hg', '.jj', 'node_modules']);
 
@@ -37,19 +38,6 @@ const isRelativePathInside = (relativePath: string): boolean =>
 
 const isPathInside = (rootPath: string, filePath: string): boolean =>
   isRelativePathInside(path.relative(rootPath, filePath));
-
-type RelativePathResolver = (filePath: string) => string;
-
-const createRelativePathResolver = (rootPath: string): RelativePathResolver => {
-  const rootPrefix = rootPath.endsWith(path.sep) ? rootPath : `${rootPath}${path.sep}`;
-
-  return (filePath) =>
-    filePath === rootPath
-      ? ''
-      : filePath.startsWith(rootPrefix)
-        ? filePath.slice(rootPrefix.length)
-        : path.relative(rootPath, filePath);
-};
 
 const toPosixPath = (filePath: string): string =>
   path.sep === '\\' ? filePath.replaceAll('\\', '/') : filePath;
@@ -86,14 +74,14 @@ const findGitRoot = async (cwd: string): Promise<string> => {
 
 class GitIgnoreMatcher {
   readonly #rootPath: string;
-  readonly #rootPrefix: string;
+  readonly #resolveRelativePath: RelativePathResolver;
   readonly #matchers = new Map<string, ReturnType<typeof ignore>>();
   readonly #loads = new Map<string, Promise<void>>();
   readonly #ignoredDirectories = new Map<string, boolean>();
 
   private constructor(rootPath: string) {
     this.#rootPath = rootPath;
-    this.#rootPrefix = rootPath.endsWith(path.sep) ? rootPath : `${rootPath}${path.sep}`;
+    this.#resolveRelativePath = createRelativePathResolver(rootPath);
   }
 
   static async create(cwd: string): Promise<GitIgnoreMatcher> {
@@ -103,11 +91,11 @@ class GitIgnoreMatcher {
   }
 
   async loadThrough(directoryPath: string): Promise<void> {
-    if (!isPathInside(this.#rootPath, directoryPath)) {
+    const relativePath = this.#resolveRelativePath(directoryPath);
+    if (!isRelativePathInside(relativePath)) {
       return;
     }
 
-    const relativePath = path.relative(this.#rootPath, directoryPath);
     const segments = relativePath ? relativePath.split(path.sep) : [];
     const loads = [this.#load(this.#rootPath)];
     let currentPath = this.#rootPath;
@@ -121,7 +109,7 @@ class GitIgnoreMatcher {
   }
 
   async load(directoryPath: string): Promise<void> {
-    if (isPathInside(this.#rootPath, directoryPath)) {
+    if (isRelativePathInside(this.#resolveRelativePath(directoryPath))) {
       await this.#load(directoryPath);
     }
   }
@@ -131,12 +119,7 @@ class GitIgnoreMatcher {
       return false;
     }
 
-    const relativePath =
-      filePath === this.#rootPath
-        ? ''
-        : filePath.startsWith(this.#rootPrefix)
-          ? filePath.slice(this.#rootPrefix.length)
-          : path.relative(this.#rootPath, filePath);
+    const relativePath = this.#resolveRelativePath(filePath);
     if (relativePath === '' || !isRelativePathInside(relativePath)) {
       return false;
     }
@@ -175,7 +158,7 @@ class GitIgnoreMatcher {
       return cached;
     }
 
-    relativePath ??= path.relative(this.#rootPath, directoryPath);
+    relativePath ??= this.#resolveRelativePath(directoryPath);
 
     // Git cannot re-include a path below an ignored directory.
     const parentPath = path.dirname(directoryPath);

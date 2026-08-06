@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import createIgnore from 'ignore';
+import { createRelativePathResolver } from './relativePath.ts';
 import type { ResolvedFmtConfig } from './types.ts';
 
 /**
@@ -28,12 +29,10 @@ const createDefaultIgnoreMatcher = (): IgnoreMatcher => {
 
 const createPatternMatcher = (rootPath: string, patterns: string): IgnoreMatcher => {
   const matcher = createIgnore({ allowRelativePaths: true }).add(patterns);
-  const rootPrefix = rootPath.endsWith(path.sep) ? rootPath : `${rootPath}${path.sep}`;
+  const resolveRelativePath = createRelativePathResolver(rootPath);
 
   return (filePath, isDirectory = false) => {
-    const relativePath = filePath.startsWith(rootPrefix)
-      ? filePath.slice(rootPrefix.length)
-      : path.relative(rootPath, filePath);
+    const relativePath = resolveRelativePath(filePath);
     if (relativePath === '') {
       return false;
     }
