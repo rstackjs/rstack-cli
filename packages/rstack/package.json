@@ -1,6 +1,6 @@
 {
   "name": "rstack",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "One CLI for JavaScript development, powered by Rstack.",
   "homepage": "https://rstack.rs",
   "bugs": {
