@@ -24,7 +24,7 @@ const discoverFmtFiles = async ({
     cwd,
     patterns,
     withNodeModules,
-    isDirectoryIgnored: (directoryPath) => isIgnored(directoryPath, true),
+    isIgnored,
   });
   if (candidates.length === 0) {
     return [];

@@ -18,8 +18,8 @@ interface DiscoverFmtPathsOptions {
   patterns?: string[];
   /** Whether files inside node_modules may be discovered. */
   withNodeModules?: boolean;
-  /** Returns whether a scanned directory can be pruned before traversal. */
-  isDirectoryIgnored?: (directoryPath: string) => boolean;
+  /** Returns whether a scanned path can be excluded during traversal. */
+  isIgnored?: (filePath: string, isDirectory: boolean) => boolean;
 }
 
 const isErrnoException = (error: unknown): error is NodeJS.ErrnoException =>
@@ -209,7 +209,7 @@ const createTraversalOptions = (
   gitIgnore: GitIgnoreMatcher,
   ignoredDirNames: ReadonlySet<string>,
   isIncluded?: (filePath: string) => boolean,
-  isDirectoryIgnored?: (directoryPath: string) => boolean,
+  isIgnored?: (filePath: string, isDirectory: boolean) => boolean,
 ) => {
   return {
     followSymlinks: false,
@@ -221,12 +221,16 @@ const createTraversalOptions = (
       }
 
       if (dirent.isDirectory()) {
-        return gitIgnore.isIgnored(targetPath, true) || isDirectoryIgnored?.(targetPath) === true;
+        return gitIgnore.isIgnored(targetPath, true) || isIgnored?.(targetPath, true) === true;
+      }
+
+      if (isIncluded !== undefined && !isIncluded(targetPath)) {
+        return true;
       }
 
       return (
+        isIgnored?.(targetPath, false) === true ||
         isBinaryPath(targetPath) ||
-        (isIncluded !== undefined && !isIncluded(targetPath)) ||
         gitIgnore.isIgnored(targetPath, false)
       );
     },
@@ -352,7 +356,7 @@ const discoverFmtPaths = async ({
   cwd,
   patterns: inputPatterns,
   withNodeModules = false,
-  isDirectoryIgnored,
+  isIgnored,
 }: DiscoverFmtPathsOptions): Promise<string[]> => {
   const patterns = inputPatterns?.length ? inputPatterns : ['.'];
   const resolveRelativePath = createRelativePathResolver(cwd);
@@ -385,7 +389,7 @@ const discoverFmtPaths = async ({
         }
 
         await gitIgnore.loadThrough(rootPath);
-        if (gitIgnore.isIgnored(rootPath, true) || isDirectoryIgnored?.(rootPath) === true) {
+        if (gitIgnore.isIgnored(rootPath, true) || isIgnored?.(rootPath, true) === true) {
           return [];
         }
 
@@ -406,7 +410,7 @@ const discoverFmtPaths = async ({
         return (
           await readdir(
             rootPath,
-            createTraversalOptions(gitIgnore, ignoredDirNames, isIncluded, isDirectoryIgnored),
+            createTraversalOptions(gitIgnore, ignoredDirNames, isIncluded, isIgnored),
           )
         ).files;
       }),
