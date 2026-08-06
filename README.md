@@ -59,7 +59,9 @@ bun add -d rstack
     "test": "rs test",
     "lint": "rs lint",
     "lib": "rs lib",
-    "doc": "rs doc"
+    "doc": "rs doc",
+    "format": "rs fmt",
+    "prepare": "rs setup"
   }
 }
 ```
@@ -74,6 +76,7 @@ pnpm test
 pnpm lint
 pnpm lib
 pnpm doc
+pnpm format
 ```
 
 ## Credits
