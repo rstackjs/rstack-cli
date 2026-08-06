@@ -76,6 +76,9 @@ catalogs:
     cspell-ban-words:
       specifier: ^0.0.4
       version: 0.0.4
+    fast-json-stable-stringify:
+      specifier: 2.1.0
+      version: 2.1.0
     happy-dom:
       specifier: ^20.11.1
       version: 20.11.1
@@ -367,6 +370,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.3
+      fast-json-stable-stringify:
+        specifier: 'catalog:'
+        version: 2.1.0
       ignore:
         specifier: 'catalog:'
         version: 7.0.6
@@ -1415,6 +1421,9 @@ packages:
 
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
+
+  fast-json-stable-stringify@2.1.0:
+    resolution: {integrity: sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==}
 
   fdir@6.5.0:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
@@ -3152,6 +3161,8 @@ snapshots:
       '@types/estree': 1.0.9
 
   extend@3.0.2: {}
+
+  fast-json-stable-stringify@2.1.0: {}
 
   fdir@6.5.0(picomatch@4.0.5):
     optionalDependencies:
