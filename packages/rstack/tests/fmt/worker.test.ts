@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { readFileSync } from 'node:fs';
 import { expect, test } from 'rstack/test';
 import { sha256 } from '../../src/fmt/cacheIdentity.ts';
@@ -70,5 +71,23 @@ test('returns cached states before resolving the parser', async () => {
         }),
       ).resolves.toEqual({ status });
     }
+  });
+});
+
+test('resolves parser support before reading on a cache miss', async () => {
+  await withTempProject(async (rootPath) => {
+    await expect(
+      formatFile({
+        file: {
+          path: path.join(rootPath, 'missing.unknown'),
+          options: {},
+        },
+        shouldWrite: false,
+        cache: {
+          entry: undefined,
+          optionsHash: 'options',
+        },
+      }),
+    ).resolves.toEqual({ status: 'unsupported' });
   });
 });

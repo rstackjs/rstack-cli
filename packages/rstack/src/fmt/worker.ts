@@ -25,20 +25,28 @@ const formatFile = async ({
 }: FormatFileTask): Promise<FmtWorkerResult> => {
   let source: string | undefined;
   let contentHash: string | undefined;
+  const fileCache = shouldWrite ? undefined : cache;
 
-  if (cache && !shouldWrite) {
+  const readSource = (): string => {
+    if (!fileCache) {
+      return readFileSync(file.path, 'utf8');
+    }
+
     const content = readFileSync(file.path);
     contentHash = hashContent(content);
-    source = content.toString('utf8');
+    return content.toString('utf8');
+  };
 
-    const { entry, optionsHash } = cache;
-    if (entry?.[0] === contentHash && entry[1] === optionsHash) {
+  if (fileCache?.entry && fileCache.entry[1] === fileCache.optionsHash) {
+    source = readSource();
+    const { entry } = fileCache;
+    if (entry[0] === contentHash) {
       return { status: entry[2] === 'clean' ? 'unchanged' : 'changed' };
     }
   }
 
   const { formatFmtSource } = await import('./format.ts');
-  const result = await formatFmtSource(file, () => (source ??= readFileSync(file.path, 'utf8')));
+  const result = await formatFmtSource(file, () => (source ??= readSource()));
   if (result.status === 'unsupported') {
     return { status: 'unsupported' };
   }
@@ -50,11 +58,15 @@ const formatFile = async ({
   }
 
   const status = unchanged ? 'unchanged' : 'changed';
-  if (!cache || contentHash === undefined) {
+  if (!fileCache || contentHash === undefined) {
     return { status };
   }
 
-  const cacheEntry: FmtCacheEntry = [contentHash, cache.optionsHash, unchanged ? 'clean' : 'dirty'];
+  const cacheEntry: FmtCacheEntry = [
+    contentHash,
+    fileCache.optionsHash,
+    unchanged ? 'clean' : 'dirty',
+  ];
   return { status, cacheEntry };
 };
 
