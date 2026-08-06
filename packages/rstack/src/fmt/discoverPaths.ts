@@ -4,7 +4,11 @@ import ignore from 'ignore';
 import isBinaryPath from 'is-binary-path';
 import micromatch from 'micromatch';
 import readdir, { type Dirent, type DirentLike } from 'tiny-readdir';
-import { createRelativePathResolver, type RelativePathResolver } from './relativePath.ts';
+import {
+  createRelativePathResolver,
+  toPosixPath,
+  type RelativePathResolver,
+} from './pathHelpers.ts';
 
 const defaultIgnoredDirNames = new Set(['.git', '.sl', '.svn', '.hg', '.jj', 'node_modules']);
 
@@ -38,9 +42,6 @@ const isRelativePathInside = (relativePath: string): boolean =>
 
 const isPathInside = (rootPath: string, filePath: string): boolean =>
   isRelativePathInside(path.relative(rootPath, filePath));
-
-const toPosixPath = (filePath: string): string =>
-  path.sep === '\\' ? filePath.replaceAll('\\', '/') : filePath;
 
 /** Supports both the legacy tiny-readdir type and Node.js 24 Dirent. */
 const getDirentParentPath = (dirent: Dirent): string =>

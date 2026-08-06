@@ -1,11 +1,10 @@
-import path from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { color, logger } from 'rslog';
 import { parseArgs } from '../cli/args.ts';
 import { loadRstackConfig } from '../config.ts';
 import { resolveFmtConfig } from './config.ts';
 import { discoverFmtFiles } from './discovery.ts';
-import { createRelativePathResolver } from './relativePath.ts';
+import { createRelativePathResolver, toPosixPath } from './pathHelpers.ts';
 import { runFmtFiles } from './runner.ts';
 import type { FmtMode, FmtRunResult, ResolvedFmtConfig } from './types.ts';
 
@@ -119,9 +118,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
 const createDisplayPathResolver = (cwd: string): ((filePath: string) => string) => {
   const resolveRelativePath = createRelativePathResolver(cwd);
 
-  return path.sep === '\\'
-    ? (filePath) => resolveRelativePath(filePath).replaceAll('\\', '/')
-    : resolveRelativePath;
+  return (filePath) => toPosixPath(resolveRelativePath(filePath));
 };
 
 const prettyTime = (seconds: number): string => {
