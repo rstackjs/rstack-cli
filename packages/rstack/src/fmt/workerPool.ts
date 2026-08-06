@@ -2,7 +2,7 @@
 
 import { availableParallelism } from 'node:os';
 import Tinypool from 'tinypool';
-import type { FmtFileRequest } from './types.ts';
+import type { FmtFileCache, FmtFileRequest } from './types.ts';
 
 type FmtWorkerMethods = typeof import('./worker.ts');
 
@@ -11,6 +11,7 @@ interface FmtWorkerPool {
   formatFile: (
     file: FmtFileRequest,
     shouldWrite: boolean,
+    cache?: FmtFileCache,
   ) => ReturnType<FmtWorkerMethods['formatFile']>;
   terminate: () => Promise<void>;
 }
@@ -57,7 +58,8 @@ const createFmtWorkerPool = async (
 
   return {
     workerCount,
-    formatFile: (file, shouldWrite) => pool.run({ file, shouldWrite }, { name: 'formatFile' }),
+    formatFile: (file, shouldWrite, cache) =>
+      pool.run({ file, shouldWrite, cache }, { name: 'formatFile' }),
     terminate: () => pool.destroy(),
   };
 };
