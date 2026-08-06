@@ -126,9 +126,10 @@ export const installHooks = ({
 
   const directory = path.join(cwd, resolvedDir, '_');
   const files = Object.entries(createHookFiles());
+  const hooksPathMatches = path.resolve(cwd, configuredHooksPath) === directory;
   // Skip all writes only when the config, generated content, and executable modes match.
   const unchanged =
-    path.resolve(cwd, configuredHooksPath) === directory &&
+    hooksPathMatches &&
     isCurrentFile(path.join(directory, '.gitignore'), gitignore) &&
     files.every(([name, content]) => isCurrentFile(path.join(directory, name), content, true));
 
@@ -149,6 +150,11 @@ export const installHooks = ({
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     return fail('write-failed', `Failed to write Git hook files: ${message}`);
+  }
+
+  // Avoid rewriting .git/config when only the generated files needed repair.
+  if (hooksPathMatches) {
+    return { status: 'installed', hooksPath };
   }
 
   // Point Git at the generated directory only after every runtime file is ready.

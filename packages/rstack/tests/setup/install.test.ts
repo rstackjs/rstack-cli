@@ -50,6 +50,18 @@ test.runIf(process.platform !== 'win32')('restores executable mode on existing s
   });
 });
 
+test('repairs generated files without rewriting an unchanged hooksPath', () => {
+  withRepository((cwd) => {
+    expect(installHooks({ cwd }).status).toBe('installed');
+    const runner = path.join(cwd, hooksPath, 'runner');
+    writeFileSync(runner, 'stale\n');
+    writeFileSync(path.join(cwd, '.git', 'config.lock'), 'locked');
+
+    expect(installHooks({ cwd })).toEqual({ status: 'installed', hooksPath });
+    expect(readFileSync(runner, 'utf8')).toBe(createHookFiles().runner);
+  });
+});
+
 test('skips non-Git directories without creating files', () => {
   withDirectory((cwd) => {
     expect(installHooks({ cwd })).toEqual({
