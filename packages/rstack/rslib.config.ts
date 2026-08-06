@@ -1,4 +1,5 @@
 import { defineConfig } from '@rslib/core';
+import prettierPkgJson from 'prettier/package.json' with { type: 'json' };
 import pkgJson from './package.json' with { type: 'json' };
 
 const fullyMinifiedChunks = /(?:fmt(?:Plugins)?|sortPackageJsonPlugin|staged)\.js$/;
@@ -22,6 +23,7 @@ export default defineConfig({
       fmtWorker: './src/fmt/worker.ts',
     },
     define: {
+      PRETTIER_VERSION: JSON.stringify(prettierPkgJson.version),
       RSTACK_VERSION: JSON.stringify(pkgJson.version),
     },
   },
