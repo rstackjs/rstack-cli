@@ -180,6 +180,8 @@ define.fmt({
 
 The default cache directory is `.rstack/cache/fmt` under the Rstack configuration root. When a command runs from a subdirectory, it continues to use the cache next to the resolved `rstack.config.*` file. Stdin formatting does not use this cache.
 
+Use [`--cache-location <path>`](./cli/fmt#--cache-location-path) to store the cache in a different directory. Relative paths are resolved from the current working directory. Custom directories are excluded from file discovery but are not automatically ignored by Git.
+
 Use [`--no-cache`](./cli/fmt#--no-cache) to run without reading, creating, or updating the cache:
 
 ```bash

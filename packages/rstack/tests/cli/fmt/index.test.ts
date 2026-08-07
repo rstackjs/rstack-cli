@@ -187,10 +187,18 @@ test.each([
 
 test('--no-cache bypasses cache reads and writes', () => {
   writeProjectFile('index.ts', 'const value=1');
+  writeProjectFile('custom-cache/v1.json', '{"value":true}');
 
-  const first = runFmt(['--no-cache', 'index.ts']);
+  const first = runFmt([
+    '--no-cache',
+    '--cache-location',
+    'custom-cache',
+    'index.ts',
+    'custom-cache/v1.json',
+  ]);
 
   expect(first.status).toBe(0);
+  expect(readProjectFile('custom-cache/v1.json')).toBe('{ "value": true }\n');
   expect(existsSync(path.join(projectPath, '.rstack'))).toBe(false);
 
   writeProjectFile('.rstack/cache/fmt-v1.json', 'stale');
@@ -201,6 +209,38 @@ test('--no-cache bypasses cache reads and writes', () => {
   expect(readProjectFile('index.ts')).toBe('const value = 2;\n');
   expect(readProjectFile('.rstack/cache/fmt-v1.json')).toBe('stale');
   expect(existsSync(path.join(projectPath, '.rstack/cache/.gitignore'))).toBe(false);
+});
+
+test.each(['relative', 'absolute'] as const)('uses a %s custom cache location', (kind) => {
+  const cacheDir = path.join(projectPath, 'custom-cache');
+  const cacheLocation = kind === 'relative' ? path.relative(projectPath, cacheDir) : cacheDir;
+  const cachePath = path.join(cacheDir, 'v1.json');
+  writeProjectFile('index.ts', 'const value = 1;\n');
+
+  const result = runFmt(['--cache-location', cacheLocation, 'index.ts']);
+
+  expect(result.status).toBe(0);
+  expect(JSON.parse(readFileSync(cachePath, 'utf8'))).toMatchObject({
+    version: 1,
+    files: {
+      'index.ts': [expect.any(String), expect.any(String), 'clean'],
+    },
+  });
+  expect(existsSync(path.join(projectPath, 'custom-cache/.gitignore'))).toBe(false);
+  expect(existsSync(path.join(projectPath, '.rstack'))).toBe(false);
+});
+
+test('excludes the custom cache directory from formatting', () => {
+  const cacheLocation = 'custom-cache';
+  writeProjectFile('index.ts', 'const value = 1;\n');
+  writeProjectFile('custom-cache/nested/ignored.ts', 'const value=2');
+  expect(runFmt(['--cache-location', cacheLocation, 'index.ts']).status).toBe(0);
+
+  const result = runFmt(['--cache-location', cacheLocation, '.']);
+
+  expect(result.status).toBe(0);
+  expectWriteSummary(result.stdout, 2, 0);
+  expect(readProjectFile('custom-cache/nested/ignored.ts')).toBe('const value=2');
 });
 
 test('uses an explicit config root cache from a subdirectory', () => {

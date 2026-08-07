@@ -13,6 +13,7 @@ import type { FmtMode, FmtRunResult, ResolvedFmtConfig } from './types.ts';
 
 interface ParsedFmtCLIArgs {
   cache: boolean;
+  cacheLocation?: string;
   mode: FmtMode;
   patterns: string[];
   ignorePaths: string[];
@@ -39,6 +40,7 @@ ${color.cyan('Options')}:
   --ignore-path <path>             Path to an additional ignore file (repeatable)
   -u, --ignore-unknown             Ignore unknown files
   --no-cache                       Disable the formatting cache
+  --cache-location <path>          Path to the formatting cache directory
   --no-error-on-unmatched-pattern  Do not error when no files match
   --with-node-modules              Process files inside node_modules
   --parallel-workers <count>       Number of parallel workers
@@ -68,6 +70,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       'ignore-path': { type: 'string', multiple: true },
       'ignore-unknown': { type: 'boolean', short: 'u' },
       'no-cache': { type: 'boolean' },
+      'cache-location': { type: 'string' },
       'no-error-on-unmatched-pattern': { type: 'boolean' },
       'with-node-modules': { type: 'boolean' },
       'parallel-workers': { type: 'string' },
@@ -88,6 +91,11 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
 
   const mode = check ? 'check' : listDifferent ? 'list-different' : 'write';
   const cache = !(values.noCache ?? false);
+  const cacheLocation = cache ? values.cacheLocation : undefined;
+  if (cacheLocation === '') {
+    throw new Error('The --cache-location option requires a path.');
+  }
+
   const ignorePaths = values.ignorePath ?? [];
   const ignoreUnknown = values.ignoreUnknown ?? false;
   const noErrorOnUnmatchedPattern = values.noErrorOnUnmatchedPattern ?? false;
@@ -111,6 +119,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
 
   return {
     cache,
+    cacheLocation,
     mode,
     patterns: positionals,
     ignorePaths,
@@ -247,6 +256,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
   try {
     const {
       cache,
+      cacheLocation,
       help,
       ignorePaths,
       ignoreUnknown,
@@ -277,11 +287,13 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       return;
     }
 
+    const cacheDirPath = cacheLocation ? path.resolve(cwd, cacheLocation) : undefined;
     const config = await loadFmtConfig(cwd);
     const files = await discoverFmtFiles({
       cwd,
       patterns,
       config,
+      excludedDirPath: cacheDirPath,
       ignorePaths,
       withNodeModules,
     });
@@ -297,7 +309,12 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
     }
 
     let cacheContext;
-    if (cache) {
+    if (cacheDirPath) {
+      cacheContext = {
+        filePath: path.join(cacheDirPath, fmtCacheFileName),
+        rootPath: config.rootPath,
+      };
+    } else if (cache) {
       const cacheDir = await ensureProjectCacheDir(config.rootPath);
       if (cacheDir.status === 'available') {
         cacheContext = {

@@ -127,6 +127,23 @@ test('parses --no-cache', () => {
   expect(parseFmtCLIArgs(['--no-cache']).cache).toBe(false);
 });
 
+test('parses --cache-location', () => {
+  expect(parseFmtCLIArgs(['--cache-location', '.cache/fmt']).cacheLocation).toBe('.cache/fmt');
+});
+
+test('--no-cache ignores --cache-location', () => {
+  expect(parseFmtCLIArgs(['--no-cache', '--cache-location='])).toMatchObject({
+    cache: false,
+    cacheLocation: undefined,
+  });
+});
+
+test('rejects an empty cache location', () => {
+  expect(() => parseFmtCLIArgs(['--cache-location='])).toThrow(
+    'The --cache-location option requires a path.',
+  );
+});
+
 test('parses --with-node-modules', () => {
   expect(parseFmtCLIArgs(['--with-node-modules']).withNodeModules).toBe(true);
 });
