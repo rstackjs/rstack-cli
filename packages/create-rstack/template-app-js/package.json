@@ -1,0 +1,14 @@
+{
+  "name": "rstack-app-js",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rs build",
+    "dev": "rs dev --open",
+    "preview": "rs preview"
+  },
+  "devDependencies": {
+    "rstack": "^0.3.5"
+  }
+}
