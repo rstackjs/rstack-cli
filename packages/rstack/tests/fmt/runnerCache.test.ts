@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync, utimesSync, writeFileSync } from 'node:fs';
+import { readFileSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { cacheNamespace, createOptionsHasher, sha256 } from '../../src/fmt/cacheIdentity.ts';
@@ -160,17 +160,67 @@ test('does not cache formatting errors', async () => {
   });
 });
 
-test('does not apply the cache in write mode yet', async () => {
+test('write persists clean results for misses and hits', async () => {
+  await withTempProject(async (rootPath) => {
+    const cleanPath = path.join(rootPath, 'clean.ts');
+    const dirtyPath = path.join(rootPath, 'dirty.ts');
+    const cache = createCache(rootPath);
+    writeFileSync(cleanPath, 'const clean = 1;\n');
+    writeFileSync(dirtyPath, 'const dirty=1');
+
+    const files = [createRequest(cleanPath), createRequest(dirtyPath)];
+    await expect(run(files, 'write', cache)).resolves.toMatchObject({
+      exitCode: 0,
+      files: [{ path: dirtyPath, status: 'written' }],
+      processedFileCount: 2,
+    });
+
+    const store = await loadFmtCacheStore(cache.filePath, cacheNamespace);
+    expect(store.get('clean.ts')).toEqual([
+      sha256(readFileSync(cleanPath)),
+      expect.any(String),
+      'clean',
+    ]);
+    expect(store.get('dirty.ts')).toEqual([
+      sha256(readFileSync(dirtyPath)),
+      expect.any(String),
+      'clean',
+    ]);
+
+    const timestamps = files.map((file) => statSync(file.path).mtimeMs);
+    await expect(run(files, 'write', cache)).resolves.toMatchObject({
+      exitCode: 0,
+      files: [],
+      processedFileCount: 2,
+    });
+    expect(files.map((file) => statSync(file.path).mtimeMs)).toEqual(timestamps);
+  });
+});
+
+test('write converts a dirty entry to clean', async () => {
   await withTempProject(async (rootPath) => {
     const filePath = path.join(rootPath, 'index.ts');
     const cache = createCache(rootPath);
+    const file = createRequest(filePath);
     writeFileSync(filePath, 'const value=1');
 
-    await expect(run([createRequest(filePath)], 'write', cache)).resolves.toMatchObject({
+    await run([file], 'check', cache);
+
+    await expect(run([file], 'write', cache)).resolves.toMatchObject({
       exitCode: 0,
       files: [{ path: filePath, status: 'written' }],
     });
     expect(readFileSync(filePath, 'utf8')).toBe('const value = 1;\n');
-    expect(existsSync(cache.filePath)).toBe(false);
+
+    const store = await loadFmtCacheStore(cache.filePath, cacheNamespace);
+    expect(store.get('index.ts')).toEqual([
+      sha256(readFileSync(filePath)),
+      expect.any(String),
+      'clean',
+    ]);
+    await expect(run([file], 'check', cache)).resolves.toMatchObject({
+      exitCode: 0,
+      files: [],
+    });
   });
 });

@@ -51,9 +51,10 @@ test('returns cached states before resolving the parser', async () => {
     const contentHash = sha256(source);
     const optionsHash = 'options';
 
-    for (const [state, status] of [
-      ['clean', 'unchanged'],
-      ['dirty', 'changed'],
+    for (const [state, shouldWrite, status] of [
+      ['clean', false, 'unchanged'],
+      ['dirty', false, 'changed'],
+      ['clean', true, 'unchanged'],
     ] as const) {
       await expect(
         formatFile({
@@ -63,7 +64,7 @@ test('returns cached states before resolving the parser', async () => {
               parser: 'unknown-parser',
             },
           },
-          shouldWrite: false,
+          shouldWrite,
           cache: {
             entry: [contentHash, optionsHash, state],
             optionsHash,

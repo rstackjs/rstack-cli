@@ -99,7 +99,7 @@ interface RunFmtFilesOptions {
   mode: FmtMode;
   /** Maximum number of formatting workers. */
   maxWorkers?: number;
-  /** Internal persistent cache context. Currently used only by check and list modes. */
+  /** Internal persistent cache context. */
   cache?: FmtCacheContext;
 }
 

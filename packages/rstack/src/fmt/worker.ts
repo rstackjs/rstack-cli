@@ -11,7 +11,7 @@ interface FormatFileTask {
   cache?: FmtFileCache;
 }
 
-const hashContent = (content: Uint8Array): string =>
+const hashContent = (content: string | Uint8Array): string =>
   createHash('sha256').update(content).digest('hex');
 
 /**
@@ -25,10 +25,9 @@ const formatFile = async ({
 }: FormatFileTask): Promise<FmtWorkerResult> => {
   let source: string | undefined;
   let contentHash: string | undefined;
-  const fileCache = shouldWrite ? undefined : cache;
 
-  const readSource = (): string => {
-    if (!fileCache) {
+  const readSource = (shouldHash = !shouldWrite): string => {
+    if (!cache || !shouldHash) {
       return readFileSync(file.path, 'utf8');
     }
 
@@ -37,10 +36,10 @@ const formatFile = async ({
     return content.toString('utf8');
   };
 
-  if (fileCache?.entry && fileCache.entry[1] === fileCache.optionsHash) {
-    source = readSource();
-    const { entry } = fileCache;
-    if (entry[0] === contentHash) {
+  if (cache?.entry && cache.entry[1] === cache.optionsHash) {
+    source = readSource(true);
+    const { entry } = cache;
+    if (entry[0] === contentHash && (!shouldWrite || entry[2] === 'clean')) {
       return { status: entry[2] === 'clean' ? 'unchanged' : 'changed' };
     }
   }
@@ -58,14 +57,18 @@ const formatFile = async ({
   }
 
   const status = unchanged ? 'unchanged' : 'changed';
-  if (!fileCache || contentHash === undefined) {
+  if (!cache) {
     return { status };
   }
 
+  const cacheHash =
+    shouldWrite && !unchanged
+      ? hashContent(result.formatted)
+      : (contentHash ?? hashContent(result.source));
   const cacheEntry: FmtCacheEntry = [
-    contentHash,
-    fileCache.optionsHash,
-    unchanged ? 'clean' : 'dirty',
+    cacheHash,
+    cache.optionsHash,
+    shouldWrite || unchanged ? 'clean' : 'dirty',
   ];
   return { status, cacheEntry };
 };
