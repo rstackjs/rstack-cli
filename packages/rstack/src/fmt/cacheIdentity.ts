@@ -10,6 +10,7 @@ declare const RSTACK_VERSION: string;
 
 type CacheKeyResolver = (filePath: string) => string | undefined;
 type OptionsHasher = (options: ResolvedFmtOptions) => string | undefined;
+type PluginFingerprints = ReadonlyMap<string, string>;
 
 const sha256 = (content: string | Uint8Array): string =>
   createHash('sha256').update(content).digest('hex');
@@ -28,7 +29,7 @@ const createCacheKeyResolver = (rootPath: string): CacheKeyResolver => {
 };
 
 /** Hashes final per-file options and memoizes option objects shared by many files. */
-const createOptionsHasher = (): OptionsHasher => {
+const createOptionsHasher = (pluginFingerprints?: PluginFingerprints): OptionsHasher => {
   const hashes = new WeakMap<ResolvedFmtOptions, string | null>();
 
   return (options) => {
@@ -39,10 +40,23 @@ const createOptionsHasher = (): OptionsHasher => {
 
     let hash: string | undefined;
     try {
-      // A resolved plugin path does not identify the plugin implementation.
-      if (!options.plugins?.length) {
-        hash = sha256(stableStringify(options));
+      const { plugins } = options;
+      let value = options;
+      if (plugins?.length) {
+        const fingerprints: string[] = [];
+        for (const plugin of plugins) {
+          const key =
+            plugin instanceof URL ? plugin.href : typeof plugin === 'string' ? plugin : undefined;
+          const fingerprint = key === undefined ? undefined : pluginFingerprints?.get(key);
+          if (fingerprint === undefined) {
+            hashes.set(options, null);
+            return undefined;
+          }
+          fingerprints.push(fingerprint);
+        }
+        value = { ...options, plugins: fingerprints };
       }
+      hash = sha256(stableStringify(value));
     } catch {
       // Circular or unreadable options cannot be cached.
     }

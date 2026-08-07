@@ -1,5 +1,6 @@
 import { readFileSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { expect, test } from 'rstack/test';
 import { cacheNamespace, createOptionsHasher, sha256 } from '../../src/fmt/cacheIdentity.ts';
 import { loadFmtCacheStore } from '../../src/fmt/cacheStore.ts';
@@ -10,7 +11,7 @@ import type {
   FmtMode,
   ResolvedFmtOptions,
 } from '../../src/fmt/types.ts';
-import { withTempProject } from './helpers.ts';
+import { withTempProject, writeProjectFile } from './helpers.ts';
 
 const createRequest = (
   filePath: string,
@@ -117,6 +118,54 @@ test('invalidates entries when final options change', async () => {
       createOptionsHasher()(changed.options),
       'dirty',
     ]);
+  });
+});
+
+test('caches only plugins with stable fingerprints', async () => {
+  await withTempProject(async (rootPath) => {
+    const filePath = writeProjectFile(rootPath, 'data.fixture', '{"value":true}');
+    const pluginEntry = writeProjectFile(
+      rootPath,
+      'node_modules/prettier-plugin-fixture/index.mjs',
+      `export default {
+  languages: [{ name: 'Fixture JSON', parsers: ['json'], extensions: ['.fixture'] }],
+};
+`,
+    );
+    const packageJsonPath = 'node_modules/prettier-plugin-fixture/package.json';
+    const writePackageJson = (version?: string) =>
+      writeProjectFile(
+        rootPath,
+        packageJsonPath,
+        JSON.stringify({
+          name: 'prettier-plugin-fixture',
+          exports: './index.mjs',
+          ...(version ? { version } : {}),
+        }),
+      );
+    const cache = createCache(rootPath);
+    const file = createRequest(filePath, { plugins: [pathToFileURL(pluginEntry).href] });
+
+    writePackageJson();
+    await run([file], 'check', cache);
+    expect((await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('data.fixture')).toBe(
+      undefined,
+    );
+
+    writePackageJson('1.0.0');
+    await run([file], 'check', cache);
+    const firstHash = (await loadFmtCacheStore(cache.filePath, cacheNamespace)).get(
+      'data.fixture',
+    )?.[1];
+    expect(firstHash).toHaveLength(64);
+
+    writePackageJson('2.0.0');
+    await run([file], 'check', cache);
+    const secondHash = (await loadFmtCacheStore(cache.filePath, cacheNamespace)).get(
+      'data.fixture',
+    )?.[1];
+    expect(secondHash).toHaveLength(64);
+    expect(secondHash).not.toBe(firstHash);
   });
 });
 
