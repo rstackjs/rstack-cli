@@ -23,6 +23,8 @@ npx create-rstack -d my-project -t app-ts
 
 - `app-js` - JavaScript application
 - `app-ts` - TypeScript application
+- `lib-js` - JavaScript Node.js library
+- `lib-ts` - TypeScript Node.js library
 
 ## Documentation
 
