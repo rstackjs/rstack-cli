@@ -133,6 +133,18 @@ rs fmt --no-cache
 
 缓存行为和清理方式请参考[缓存](../formatting#cache)。
 
+### `--cache-location <path>`
+
+将持久化缓存保存到自定义目录：
+
+```bash
+rs fmt --cache-location .cache/rs-fmt
+```
+
+相对路径基于当前工作目录解析，绝对路径则原样使用。目录会在需要时自动创建，并从文件发现中排除。与默认缓存位置不同，自定义目录不会自动生成 `.gitignore`；请将其排除在版本控制之外，或通过 CI 缓存配置进行管理。
+
+同时使用两个选项时，优先使用 `--no-cache`，且不会从文件发现中排除自定义目录。
+
 ### `--no-error-on-unmatched-pattern`
 
 如果传入的路径或 glob 没有匹配任何文件（包括所有匹配文件均被忽略的情况），则不输出诊断信息并成功退出：

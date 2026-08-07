@@ -133,6 +133,18 @@ Without this option, `rs fmt` stores cache data in `.rstack/cache/fmt` under the
 
 See [Cache](../formatting#cache) for cache behavior and cleanup guidance.
 
+### `--cache-location <path>`
+
+Store the persistent cache in a custom directory:
+
+```bash
+rs fmt --cache-location .cache/rs-fmt
+```
+
+Relative paths are resolved from the current working directory, while absolute paths are used as-is. The directory is created as needed and excluded from file discovery. Unlike the default cache location, a custom directory does not receive an automatic `.gitignore`; exclude it from version control or manage it through your CI cache configuration.
+
+When both options are provided, `--no-cache` takes precedence and the custom directory is not excluded from file discovery.
+
 ### `--no-error-on-unmatched-pattern`
 
 Exit successfully without diagnostics when no files match the provided paths or globs, including when all matching files are ignored:

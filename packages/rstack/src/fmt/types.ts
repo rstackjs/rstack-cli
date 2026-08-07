@@ -55,6 +55,8 @@ interface ResolvedFmtConfig {
 interface DiscoverFmtFilesOptions {
   /** Absolute directory used to resolve input paths. */
   cwd: string;
+  /** Absolute directory to exclude from formatting. */
+  excludedDirPath?: string;
   /** Files, directories, and positive or negative globs. Defaults to the current directory. */
   patterns?: string[];
   /** Ignore files resolved from `cwd`; each file's patterns are relative to its own directory. */

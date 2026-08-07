@@ -60,6 +60,30 @@ test('excludes .rstack from discovery', async () => {
   });
 });
 
+test('excludes a custom cache directory', async () => {
+  await withTempProject(async (rootPath) => {
+    const cacheDir = path.join(rootPath, 'custom-cache');
+    const cacheFile = writeProjectFile(rootPath, 'custom-cache/v1.json', '{}');
+    writeProjectFile(rootPath, 'custom-cache/nested/ignored.ts');
+    writeProjectFile(rootPath, 'index.ts');
+
+    const discoveredFiles = await discoverFmtFiles({
+      cwd: rootPath,
+      excludedDirPath: cacheDir,
+      config: normalizeFmtConfig(undefined, rootPath),
+    });
+    const explicitFile = await discoverFmtFiles({
+      cwd: rootPath,
+      excludedDirPath: cacheDir,
+      patterns: [cacheFile],
+      config: normalizeFmtConfig(undefined, rootPath),
+    });
+
+    expect(relativePaths(rootPath, discoveredFiles)).toEqual(['index.ts']);
+    expect(explicitFile).toEqual([]);
+  });
+});
+
 test('keeps files re-included by a CLI ignore file during directory traversal', async () => {
   await withTempProject(async (rootPath) => {
     writeProjectFile(rootPath, '.prettierignore', 'generated/*\n!generated/keep.ts\n');

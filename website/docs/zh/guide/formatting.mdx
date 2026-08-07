@@ -180,6 +180,8 @@ define.fmt({
 
 默认缓存目录位于 Rstack 配置根目录下的 `.rstack/cache/fmt`。从子目录运行命令时，仍会使用解析到的 `rstack.config.*` 文件旁的缓存。stdin 格式化不会使用该缓存。
 
+使用 [`--cache-location <path>`](./cli/fmt#--cache-location-path) 可以将缓存保存到其他目录。相对路径基于当前工作目录解析。自定义目录会从文件发现中排除，但不会被 Git 自动忽略。
+
 使用 [`--no-cache`](./cli/fmt#--no-cache) 可以在运行时跳过缓存读取、创建和更新：
 
 ```bash
