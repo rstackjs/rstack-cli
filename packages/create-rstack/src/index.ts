@@ -1,15 +1,18 @@
-import {
-  type Argv,
-  checkCancel,
-  create,
-  type ESLintTemplateName,
-  type RslintTemplateName,
-  select,
-} from '@rstackjs/create-toolkit';
+import { type Argv, checkCancel, create, select } from '@rstackjs/create-toolkit';
 import path from 'node:path';
 
 const getTemplateName = async ({ template }: Argv): Promise<string> => {
   if (typeof template === 'string') {
+    if (template === 'app' || template.startsWith('app-')) {
+      const [, framework = 'vanilla', language = 'js'] = template.split('-');
+
+      if (framework === 'js' || framework === 'ts') {
+        return `app-vanilla-${framework}`;
+      }
+
+      return `app-${framework}-${language}`;
+    }
+
     const [type, language = 'js'] = template.split('-');
     return `${type}-${language}`;
   }
@@ -24,6 +27,19 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
     }),
   );
 
+  const framework =
+    projectType === 'app'
+      ? checkCancel<string>(
+          await select({
+            message: 'Select framework',
+            options: [
+              { value: 'vanilla', label: 'Vanilla' },
+              { value: 'react', label: 'React' },
+            ],
+          }),
+        )
+      : undefined;
+
   const language = checkCancel<string>(
     await select({
       message: 'Select language',
@@ -34,21 +50,20 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
     }),
   );
 
-  return `${projectType}-${language}`;
+  return framework ? `${projectType}-${framework}-${language}` : `${projectType}-${language}`;
 };
-
-const mapESLintTemplate = (templateName: string): ESLintTemplateName =>
-  templateName.endsWith('-ts') ? 'vanilla-ts' : 'vanilla-js';
-
-const mapRslintTemplate = (templateName: string): RslintTemplateName =>
-  templateName.endsWith('-ts') ? 'vanilla-ts' : 'vanilla-js';
 
 await create({
   root: path.join(import.meta.dirname, '..'),
   name: 'rstack',
-  templates: ['app-js', 'app-ts', 'lib-js', 'lib-ts'],
+  templates: [
+    'app-vanilla-js',
+    'app-vanilla-ts',
+    'app-react-js',
+    'app-react-ts',
+    'lib-js',
+    'lib-ts',
+  ],
   builtinTools: [],
   getTemplateName,
-  mapESLintTemplate,
-  mapRslintTemplate,
 });

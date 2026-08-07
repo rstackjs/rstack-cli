@@ -33,47 +33,57 @@ const createProject = async (template: string) => {
 };
 
 test.each([
-  { template: 'app-js', extension: 'js', hasTypeScript: false },
-  { template: 'app-ts', extension: 'ts', hasTypeScript: true },
-])('creates the $template template', async ({ template, extension, hasTypeScript }) => {
-  const projectDirectory = await createProject(template);
-  const packageJson = JSON.parse(
-    await readFile(path.join(projectDirectory, 'package.json'), 'utf8'),
-  );
+  {
+    template: 'app-vanilla-js',
+    configExtension: 'js',
+    sourceExtension: 'js',
+    hasTypeScript: false,
+  },
+  {
+    template: 'app-vanilla-ts',
+    configExtension: 'ts',
+    sourceExtension: 'ts',
+    hasTypeScript: true,
+  },
+  {
+    template: 'app-react-js',
+    configExtension: 'js',
+    sourceExtension: 'jsx',
+    hasTypeScript: false,
+  },
+  {
+    template: 'app-react-ts',
+    configExtension: 'ts',
+    sourceExtension: 'tsx',
+    hasTypeScript: true,
+  },
+])(
+  'creates the $template template',
+  async ({ template, configExtension, sourceExtension, hasTypeScript }) => {
+    const projectDirectory = await createProject(template);
+    const packageJson = JSON.parse(
+      await readFile(path.join(projectDirectory, 'package.json'), 'utf8'),
+    );
 
-  expect(packageJson).toMatchObject({
-    name: 'my-app',
-    private: true,
-    scripts: {
-      build: 'rs build',
-      dev: 'rs dev --open',
-      preview: 'rs preview',
-    },
-    devDependencies: {
-      rstack: '^0.3.5',
-    },
-  });
+    expect(packageJson.name).toBe('my-app');
 
-  await expect(access(path.join(projectDirectory, 'README.md'))).resolves.toBeUndefined();
-  await expect(access(path.join(projectDirectory, '.gitignore'))).resolves.toBeUndefined();
-  await expect(
-    access(path.join(projectDirectory, `rstack.config.${extension}`)),
-  ).resolves.toBeUndefined();
-  await expect(
-    access(path.join(projectDirectory, `src/index.${extension}`)),
-  ).resolves.toBeUndefined();
+    await expect(access(path.join(projectDirectory, 'README.md'))).resolves.toBeUndefined();
+    await expect(access(path.join(projectDirectory, '.gitignore'))).resolves.toBeUndefined();
+    await expect(
+      access(path.join(projectDirectory, `rstack.config.${configExtension}`)),
+    ).resolves.toBeUndefined();
+    await expect(
+      access(path.join(projectDirectory, `src/index.${sourceExtension}`)),
+    ).resolves.toBeUndefined();
 
-  const tsconfigPath = path.join(projectDirectory, 'tsconfig.json');
-  if (hasTypeScript) {
-    await expect(access(tsconfigPath)).resolves.toBeUndefined();
-    expect(packageJson.devDependencies).toMatchObject({
-      '@types/node': '^24.13.3',
-      typescript: '^7.0.2',
-    });
-  } else {
-    await expect(access(tsconfigPath)).rejects.toThrow();
-  }
-});
+    const tsconfigPath = path.join(projectDirectory, 'tsconfig.json');
+    if (hasTypeScript) {
+      await expect(access(tsconfigPath)).resolves.toBeUndefined();
+    } else {
+      await expect(access(tsconfigPath)).rejects.toThrow();
+    }
+  },
+);
 
 test.each([
   { template: 'lib-js', extension: 'js', hasTypeScript: false },

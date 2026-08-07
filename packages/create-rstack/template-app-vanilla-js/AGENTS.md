@@ -1,0 +1,12 @@
+# AGENTS.md
+
+## Commands
+
+- `{{ packageManager }} run dev` - Start the development server
+- `{{ packageManager }} run build` - Build the app for production
+- `{{ packageManager }} run preview` - Preview the production build locally
+
+## Docs
+
+- Rsbuild: https://rsbuild.rs/llms.txt
+- Rspack: https://rspack.rs/llms.txt
