@@ -1,0 +1,52 @@
+{
+  "name": "create-rstack",
+  "version": "3.0.0",
+  "description": "Create a new Rstack project",
+  "homepage": "https://rstack.rs",
+  "bugs": {
+    "url": "https://github.com/rstackjs/rstack-cli/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rstackjs/rstack-cli.git",
+    "directory": "packages/create-rstack"
+  },
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "create-rstack": "./bin.js"
+  },
+  "files": [
+    "template-*/**",
+    "dist",
+    "bin.js"
+  ],
+  "scripts": {
+    "build": "rs lib",
+    "dev": "rs lib --watch",
+    "start": "node ./dist/index.js",
+    "test": "rs test"
+  },
+  "dependencies": {
+    "@rstackjs/create-toolkit": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "rstack": "workspace:*",
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
