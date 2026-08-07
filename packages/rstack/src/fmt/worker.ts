@@ -24,20 +24,26 @@ const formatFile = async ({
   cache,
 }: FormatFileTask): Promise<FmtWorkerResult> => {
   let source: string | undefined;
+  let sourceBuffer: Buffer | undefined;
   let contentHash: string | undefined;
 
   const readSource = (shouldHash = !shouldWrite): string => {
+    if (sourceBuffer !== undefined) {
+      return sourceBuffer.toString('utf8');
+    }
+
     if (!cache || !shouldHash) {
       return readFileSync(file.path, 'utf8');
     }
 
-    const content = readFileSync(file.path);
-    contentHash = hashContent(content);
-    return content.toString('utf8');
+    sourceBuffer = readFileSync(file.path);
+    contentHash = hashContent(sourceBuffer);
+    return sourceBuffer.toString('utf8');
   };
 
   if (cache?.entry && cache.entry[1] === cache.optionsHash) {
-    source = readSource(true);
+    sourceBuffer = readFileSync(file.path);
+    contentHash = hashContent(sourceBuffer);
     const { entry } = cache;
     if (entry[0] === contentHash && (!shouldWrite || entry[2] === 'clean')) {
       return { status: entry[2] === 'clean' ? 'unchanged' : 'changed' };
