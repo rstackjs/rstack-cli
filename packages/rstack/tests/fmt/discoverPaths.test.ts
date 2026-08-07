@@ -139,7 +139,7 @@ test('lets explicit files bypass gitignore', async () => {
   });
 });
 
-test('applies an external ignore matcher during traversal', async () => {
+test('applies an external ignore matcher to traversed and explicit paths', async () => {
   await withTempProject(async (rootPath) => {
     writeProjectFile(rootPath, 'generated/nested/output.ts');
     const ignoredFilePath = writeProjectFile(rootPath, 'src/ignored.ts');
@@ -160,9 +160,15 @@ test('applies an external ignore matcher during traversal', async () => {
       patterns: ['generated'],
       isIgnored,
     });
+    const explicitIgnoredFile = await discoverFmtPaths({
+      cwd: rootPath,
+      patterns: [ignoredFilePath],
+      isIgnored,
+    });
 
     expect(relativePaths(rootPath, files)).toEqual([path.join('src', 'index.ts')]);
     expect(ignoredRoot).toEqual([]);
+    expect(explicitIgnoredFile).toEqual([]);
     expect(checkedPaths).toContainEqual({ path: 'generated', isDirectory: true });
     expect(checkedPaths).toContainEqual({
       path: path.join('src', 'ignored.ts'),
