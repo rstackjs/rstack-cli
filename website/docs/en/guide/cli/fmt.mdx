@@ -121,6 +121,18 @@ rs fmt -l
 
 The option uses the same exit codes as `--check` and cannot be combined with `--write` or `--check`.
 
+### `--no-cache`
+
+Disable the persistent formatting cache for the current invocation:
+
+```bash
+rs fmt --no-cache
+```
+
+Without this option, `rs fmt` stores cache data in `.rstack/cache` under the Rstack configuration root. `--no-cache` prevents the command from reading, creating, or updating that cache. Stdin formatting never uses the persistent cache.
+
+See [Cache](../formatting#cache) for cache behavior and cleanup guidance.
+
 ### `--no-error-on-unmatched-pattern`
 
 Exit successfully without diagnostics when no files match the provided paths or globs, including when all matching files are ignored:

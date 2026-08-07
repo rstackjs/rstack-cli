@@ -121,6 +121,18 @@ rs fmt -l
 
 此选项与 `--check` 使用相同的退出状态码，且不能与 `--write` 或 `--check` 同时使用。
 
+### `--no-cache`
+
+在当前调用中关闭持久化格式化缓存：
+
+```bash
+rs fmt --no-cache
+```
+
+默认情况下，`rs fmt` 会将缓存数据保存在 Rstack 配置根目录下的 `.rstack/cache` 中。`--no-cache` 会阻止命令读取、创建或更新该缓存。stdin 格式化始终不会使用持久化缓存。
+
+缓存行为和清理方式请参考[缓存](../formatting#cache)。
+
 ### `--no-error-on-unmatched-pattern`
 
 如果传入的路径或 glob 没有匹配任何文件（包括所有匹配文件均被忽略的情况），则不输出诊断信息并成功退出：

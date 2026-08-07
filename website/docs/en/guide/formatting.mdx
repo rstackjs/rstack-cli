@@ -6,6 +6,7 @@ Rstack CLI includes a formatter built on [Prettier](https://prettier.io/). Compa
 
 - **Parallel formatting**: Files are formatted concurrently in a worker pool.
 - **Yuku parser**: The high-performance [Yuku](https://yuku.fyi/) parser is used by default for JavaScript, JSX, and TypeScript files.
+- **Persistent cache**: Content-based results let later runs skip formatting unchanged files.
 
 `rs fmt` supports Prettier options and plugins and adds built-in capabilities such as [sorting package.json fields](#sort-package-json).
 
@@ -172,6 +173,20 @@ define.fmt({
   ],
 });
 ```
+
+## Cache
+
+`rs fmt` uses a persistent cache by default for file-based `--write`, `--check`, and `--list-different` runs. Cache entries use file content and final formatting options, so changing either causes the file to be formatted again. Files that use custom Prettier plugins currently bypass the cache.
+
+The default cache file is `.rstack/cache/fmt-v1.json` under the Rstack configuration root. When a command runs from a subdirectory, it continues to use the cache next to the resolved `rstack.config.*` file. Stdin formatting does not use this cache.
+
+Use [`--no-cache`](./cli/fmt#--no-cache) to run without reading, creating, or updating the cache:
+
+```bash
+rs fmt --no-cache
+```
+
+You can safely delete `.rstack/cache` to clear cached results. Do not treat the entire `.rstack` directory as disposable because it may also contain user-maintained Git hook scripts.
 
 ## Prettier plugins
 

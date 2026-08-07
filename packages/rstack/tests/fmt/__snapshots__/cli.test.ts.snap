@@ -12,6 +12,7 @@ Options:
   -l, --list-different             Print paths of unformatted files
   --ignore-path <path>             Path to an additional ignore file (repeatable)
   -u, --ignore-unknown             Ignore unknown files
+  --no-cache                       Disable the formatting cache
   --no-error-on-unmatched-pattern  Do not error when no files match
   --with-node-modules              Process files inside node_modules
   --parallel-workers <count>       Number of parallel workers

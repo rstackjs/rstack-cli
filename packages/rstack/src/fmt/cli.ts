@@ -1,7 +1,10 @@
+import path from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { color, logger } from 'rslog';
 import { parseArgs } from '../cli/args.ts';
 import { loadRstackConfig } from '../config.ts';
+import { ensureProjectCacheDir } from '../projectCache.ts';
+import { fmtCacheFileName } from './cacheStore.ts';
 import { resolveFmtConfig } from './config.ts';
 import { discoverFmtFiles } from './discovery.ts';
 import { createRelativePathResolver, toPosixPath } from './pathHelpers.ts';
@@ -9,6 +12,7 @@ import { runFmtFiles } from './runner.ts';
 import type { FmtMode, FmtRunResult, ResolvedFmtConfig } from './types.ts';
 
 interface ParsedFmtCLIArgs {
+  cache: boolean;
   mode: FmtMode;
   patterns: string[];
   ignorePaths: string[];
@@ -34,6 +38,7 @@ ${color.cyan('Options')}:
   -l, --list-different             Print paths of unformatted files
   --ignore-path <path>             Path to an additional ignore file (repeatable)
   -u, --ignore-unknown             Ignore unknown files
+  --no-cache                       Disable the formatting cache
   --no-error-on-unmatched-pattern  Do not error when no files match
   --with-node-modules              Process files inside node_modules
   --parallel-workers <count>       Number of parallel workers
@@ -62,6 +67,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       'list-different': { type: 'boolean', short: 'l' },
       'ignore-path': { type: 'string', multiple: true },
       'ignore-unknown': { type: 'boolean', short: 'u' },
+      'no-cache': { type: 'boolean' },
       'no-error-on-unmatched-pattern': { type: 'boolean' },
       'with-node-modules': { type: 'boolean' },
       'parallel-workers': { type: 'string' },
@@ -81,6 +87,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   }
 
   const mode = check ? 'check' : listDifferent ? 'list-different' : 'write';
+  const cache = !(values.noCache ?? false);
   const ignorePaths = values.ignorePath ?? [];
   const ignoreUnknown = values.ignoreUnknown ?? false;
   const noErrorOnUnmatchedPattern = values.noErrorOnUnmatchedPattern ?? false;
@@ -103,6 +110,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   }
 
   return {
+    cache,
     mode,
     patterns: positionals,
     ignorePaths,
@@ -238,6 +246,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
   // exit code identifies "rs fmt refused to run".
   try {
     const {
+      cache,
       help,
       ignorePaths,
       ignoreUnknown,
@@ -287,6 +296,17 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       return;
     }
 
+    let cacheContext;
+    if (cache) {
+      const cacheDir = await ensureProjectCacheDir(config.rootPath);
+      if (cacheDir.status === 'available') {
+        cacheContext = {
+          filePath: path.join(cacheDir.path, fmtCacheFileName),
+          rootPath: config.rootPath,
+        };
+      }
+    }
+
     if (mode === 'check') {
       logger.start('Checking formatting...');
     }
@@ -295,6 +315,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       files,
       mode,
       maxWorkers,
+      cache: cacheContext,
     });
 
     if (result.processedFileCount === 0) {
