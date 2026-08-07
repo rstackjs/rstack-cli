@@ -170,17 +170,19 @@ test.each([
   ['list-different', ['--list-different']],
 ] as const)('uses the default cache in %s mode', (_, args) => {
   writeProjectFile('index.ts', 'const value = 1;\n');
+  writeProjectFile('.rstack/cache/fmt-v1.json', 'legacy');
 
   const result = runFmt([...args, 'index.ts']);
 
   expect(result.status).toBe(0);
   expect(readProjectFile('.rstack/cache/.gitignore')).toBe('*\n');
-  expect(JSON.parse(readProjectFile('.rstack/cache/fmt-v1.json'))).toMatchObject({
+  expect(JSON.parse(readProjectFile('.rstack/cache/fmt/v1.json'))).toMatchObject({
     version: 1,
     files: {
       'index.ts': [expect.any(String), expect.any(String), 'clean'],
     },
   });
+  expect(readProjectFile('.rstack/cache/fmt-v1.json')).toBe('legacy');
 });
 
 test('--no-cache bypasses cache reads and writes', () => {
@@ -209,9 +211,9 @@ test('uses an explicit config root cache from a subdirectory', () => {
 
   expect(result.status).toBe(0);
   expect(readProjectFile('packages/app/index.ts')).toBe('const value = 1;\n');
-  expect(existsSync(path.join(projectPath, '.rstack/cache/fmt-v1.json'))).toBe(true);
+  expect(existsSync(path.join(projectPath, '.rstack/cache/fmt/v1.json'))).toBe(true);
   expect(existsSync(path.join(appPath, '.rstack'))).toBe(false);
-  expect(JSON.parse(readProjectFile('.rstack/cache/fmt-v1.json'))).toMatchObject({
+  expect(JSON.parse(readProjectFile('.rstack/cache/fmt/v1.json'))).toMatchObject({
     files: {
       'packages/app/index.ts': [expect.any(String), expect.any(String), 'clean'],
     },
@@ -221,14 +223,14 @@ test('uses an explicit config root cache from a subdirectory', () => {
 test('recovers from a corrupted cache', () => {
   writeProjectFile('index.ts', 'const value = 1;\n');
   const first = runFmt(['--check', 'index.ts']);
-  writeProjectFile('.rstack/cache/fmt-v1.json', '{');
+  writeProjectFile('.rstack/cache/fmt/v1.json', '{');
 
   const second = runFmt(['--check', 'index.ts']);
 
   expect(second.status).toBe(0);
   expect(normalizeDuration(second.stdout)).toBe(normalizeDuration(first.stdout));
   expect(second.stderr).toBe(first.stderr);
-  expect(JSON.parse(readProjectFile('.rstack/cache/fmt-v1.json'))).toMatchObject({ version: 1 });
+  expect(JSON.parse(readProjectFile('.rstack/cache/fmt/v1.json'))).toMatchObject({ version: 1 });
 });
 
 test('formats without a writable cache directory', () => {

@@ -178,7 +178,7 @@ define.fmt({
 
 `rs fmt` 默认会在基于文件的 `--write`、`--check` 和 `--list-different` 调用中使用持久化缓存。缓存条目基于文件内容和最终格式化选项；任意一项发生变化时，文件都会重新格式化。使用自定义 Prettier 插件的文件目前会绕过缓存。
 
-默认缓存文件位于 Rstack 配置根目录下的 `.rstack/cache/fmt-v1.json`。从子目录运行命令时，仍会使用解析到的 `rstack.config.*` 文件旁的缓存。stdin 格式化不会使用该缓存。
+默认缓存目录位于 Rstack 配置根目录下的 `.rstack/cache/fmt`。从子目录运行命令时，仍会使用解析到的 `rstack.config.*` 文件旁的缓存。stdin 格式化不会使用该缓存。
 
 使用 [`--no-cache`](./cli/fmt#--no-cache) 可以在运行时跳过缓存读取、创建和更新：
 

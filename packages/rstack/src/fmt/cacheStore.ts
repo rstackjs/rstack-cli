@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const fmtCacheFileName = 'fmt-v1.json';
+const fmtCacheFileName = 'v1.json';
 const fmtCacheVersion = 1;
 
 type FmtCacheState = 'clean' | 'dirty';

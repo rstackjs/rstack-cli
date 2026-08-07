@@ -301,7 +301,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       const cacheDir = await ensureProjectCacheDir(config.rootPath);
       if (cacheDir.status === 'available') {
         cacheContext = {
-          filePath: path.join(cacheDir.path, fmtCacheFileName),
+          filePath: path.join(cacheDir.path, 'fmt', fmtCacheFileName),
           rootPath: config.rootPath,
         };
       }

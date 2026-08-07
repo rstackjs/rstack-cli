@@ -129,7 +129,7 @@ Disable the persistent formatting cache for the current invocation:
 rs fmt --no-cache
 ```
 
-Without this option, `rs fmt` stores cache data in `.rstack/cache` under the Rstack configuration root. `--no-cache` prevents the command from reading, creating, or updating that cache. Stdin formatting never uses the persistent cache.
+Without this option, `rs fmt` stores cache data in `.rstack/cache/fmt` under the Rstack configuration root. `--no-cache` prevents the command from reading, creating, or updating that cache. Stdin formatting never uses the persistent cache.
 
 See [Cache](../formatting#cache) for cache behavior and cleanup guidance.
 
