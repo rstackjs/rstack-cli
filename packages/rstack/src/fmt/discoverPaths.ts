@@ -26,7 +26,7 @@ interface DiscoverFmtPathsOptions {
   patterns?: string[];
   /** Whether files inside node_modules may be discovered. */
   withNodeModules?: boolean;
-  /** Returns whether a scanned path can be excluded during traversal. */
+  /** Returns whether a candidate path should be excluded. */
   isIgnored?: (filePath: string, isDirectory: boolean) => boolean;
 }
 
@@ -384,7 +384,9 @@ const discoverFmtPaths = async ({
   } = await classifyPatterns(cwd, patterns, ignoredDirNames);
   const directoryRoots = getOutermostPaths(directories);
   const globMatchers = globs.map((pattern) => micromatch.matcher(pattern, { dot: true }));
-  const candidates = new Set(explicitFiles);
+  const candidates = new Set(
+    isIgnored ? explicitFiles.filter((filePath) => !isIgnored(filePath, false)) : explicitFiles,
+  );
   const traversalRoots = getTraversalRoots(cwd, directoryRoots, globs);
 
   if (traversalRoots.length) {

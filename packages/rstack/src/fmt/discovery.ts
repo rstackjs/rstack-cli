@@ -32,17 +32,16 @@ const discoverFmtFiles = async ({
     ? (filePath: string, isDirectory = false) =>
         isExcluded(filePath) || isIgnored(filePath, isDirectory)
     : isIgnored;
-  const candidates = await discoverFmtPaths({
+  const filePaths = await discoverFmtPaths({
     cwd,
     patterns,
     withNodeModules,
     isIgnored: shouldIgnore,
   });
-  if (candidates.length === 0) {
+  if (filePaths.length === 0) {
     return [];
   }
 
-  const filePaths = candidates.filter((filePath) => !shouldIgnore(filePath));
   const resolveOptions = createFmtOptionsResolver(config);
   const files = filePaths.map((filePath) => createFileRequest(filePath, resolveOptions));
   if (!files.some((file) => file.options.plugins?.length)) {
