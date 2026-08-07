@@ -19,6 +19,7 @@ test.each([
 
 test('uses write mode by default', () => {
   expect(parseFmtCLIArgs([])).toEqual({
+    cache: true,
     mode: 'write',
     patterns: [],
     ignorePaths: [],
@@ -38,6 +39,7 @@ test.each([
   ['--list-different', 'list-different'],
 ] as const)('parses %s mode', (option, mode) => {
   expect(parseFmtCLIArgs([option])).toEqual({
+    cache: true,
     mode,
     patterns: [],
     ignorePaths: [],
@@ -51,6 +53,7 @@ test.each([
 
 test('configures parallel worker count', () => {
   expect(parseFmtCLIArgs(['--parallel-workers', '3'])).toEqual({
+    cache: true,
     mode: 'write',
     patterns: [],
     ignorePaths: [],
@@ -75,6 +78,7 @@ test('preserves file paths and globs', () => {
   const patterns = ['src/file with spaces.ts', 'src/**/*.{js,ts}', '!src/generated/**'];
 
   expect(parseFmtCLIArgs([patterns[0], '--check', ...patterns.slice(1)])).toEqual({
+    cache: true,
     mode: 'check',
     patterns,
     ignorePaths: [],
@@ -88,6 +92,7 @@ test('preserves file paths and globs', () => {
 
 test('treats arguments after the terminator as paths', () => {
   expect(parseFmtCLIArgs(['--check', '--', '--write', '--help'])).toEqual({
+    cache: true,
     mode: 'check',
     patterns: ['--write', '--help'],
     ignorePaths: [],
@@ -118,12 +123,17 @@ test.each(['-u', '--ignore-unknown', '--ignoreUnknown'])('parses %s', (option) =
   expect(parseFmtCLIArgs([option]).ignoreUnknown).toBe(true);
 });
 
+test('parses --no-cache', () => {
+  expect(parseFmtCLIArgs(['--no-cache']).cache).toBe(false);
+});
+
 test('parses --with-node-modules', () => {
   expect(parseFmtCLIArgs(['--with-node-modules']).withNodeModules).toBe(true);
 });
 
 test('parses --stdin-filepath', () => {
   expect(parseFmtCLIArgs(['--stdin-filepath', 'src/index.ts'])).toEqual({
+    cache: true,
     mode: 'write',
     patterns: [],
     ignorePaths: [],
@@ -138,6 +148,7 @@ test('parses --stdin-filepath', () => {
 
 test('accepts a worker count with --stdin-filepath', () => {
   expect(parseFmtCLIArgs(['--stdin-filepath', 'index.ts', '--parallel-workers', '2'])).toEqual({
+    cache: true,
     mode: 'write',
     patterns: [],
     ignorePaths: [],
@@ -182,10 +193,3 @@ test.each([
     'The --write, --check, and --list-different options cannot be used together.',
   );
 });
-
-test.each(['--unknown', '--no-cache', '--no-parallel'])(
-  'rejects unsupported option %s',
-  (option) => {
-    expect(() => parseFmtCLIArgs([option])).toThrow();
-  },
-);

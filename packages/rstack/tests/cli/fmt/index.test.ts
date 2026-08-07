@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach, expect, test } from 'rstack/test';
 import { RSTACK_BIN_PATH } from '#test-helpers';
@@ -33,19 +33,19 @@ const writeFixturePlugin = (): void => {
   );
 };
 
-const runCLI = (args: string[], input?: string) => {
+const runCLI = (args: string[], input?: string, cwd = projectPath) => {
   const env: NodeJS.ProcessEnv = { ...process.env, NO_COLOR: '1' };
   delete env.FORCE_COLOR;
 
   return spawnSync(process.execPath, [RSTACK_BIN_PATH, ...args], {
-    cwd: projectPath,
+    cwd,
     encoding: 'utf8',
     env,
     input,
   });
 };
 
-const runFmt = (args: string[] = []) => runCLI(['fmt', ...args]);
+const runFmt = (args: string[] = [], cwd = projectPath) => runCLI(['fmt', ...args], undefined, cwd);
 
 const runFmtStdin = (args: string[], input: string) => runCLI(['fmt', ...args], input);
 
@@ -162,6 +162,83 @@ test('summarizes write mode when no files change', () => {
   expect(result.status).toBe(0);
   expectWriteSummary(result.stdout, 1, 0);
   expect(result.stderr).toBe('');
+});
+
+test.each([
+  ['write', []],
+  ['check', ['--check']],
+  ['list-different', ['--list-different']],
+] as const)('uses the default cache in %s mode', (_, args) => {
+  writeProjectFile('index.ts', 'const value = 1;\n');
+
+  const result = runFmt([...args, 'index.ts']);
+
+  expect(result.status).toBe(0);
+  expect(readProjectFile('.rstack/cache/.gitignore')).toBe('*\n');
+  expect(JSON.parse(readProjectFile('.rstack/cache/fmt-v1.json'))).toMatchObject({
+    version: 1,
+    files: {
+      'index.ts': [expect.any(String), expect.any(String), 'clean'],
+    },
+  });
+});
+
+test('--no-cache bypasses cache reads and writes', () => {
+  writeProjectFile('index.ts', 'const value=1');
+
+  const first = runFmt(['--no-cache', 'index.ts']);
+
+  expect(first.status).toBe(0);
+  expect(existsSync(path.join(projectPath, '.rstack'))).toBe(false);
+
+  writeProjectFile('.rstack/cache/fmt-v1.json', 'stale');
+  writeProjectFile('index.ts', 'const value=2');
+  const second = runFmt(['--no-cache', 'index.ts']);
+
+  expect(second.status).toBe(0);
+  expect(readProjectFile('index.ts')).toBe('const value = 2;\n');
+  expect(readProjectFile('.rstack/cache/fmt-v1.json')).toBe('stale');
+  expect(existsSync(path.join(projectPath, '.rstack/cache/.gitignore'))).toBe(false);
+});
+
+test('uses an explicit config root cache from a subdirectory', () => {
+  const appPath = path.join(projectPath, 'packages/app');
+  writeProjectFile('packages/app/index.ts', 'const value=1');
+
+  const result = runFmt(['index.ts', '--config', '../../rstack.config.ts'], appPath);
+
+  expect(result.status).toBe(0);
+  expect(readProjectFile('packages/app/index.ts')).toBe('const value = 1;\n');
+  expect(existsSync(path.join(projectPath, '.rstack/cache/fmt-v1.json'))).toBe(true);
+  expect(existsSync(path.join(appPath, '.rstack'))).toBe(false);
+  expect(JSON.parse(readProjectFile('.rstack/cache/fmt-v1.json'))).toMatchObject({
+    files: {
+      'packages/app/index.ts': [expect.any(String), expect.any(String), 'clean'],
+    },
+  });
+});
+
+test('recovers from a corrupted cache', () => {
+  writeProjectFile('index.ts', 'const value = 1;\n');
+  const first = runFmt(['--check', 'index.ts']);
+  writeProjectFile('.rstack/cache/fmt-v1.json', '{');
+
+  const second = runFmt(['--check', 'index.ts']);
+
+  expect(second.status).toBe(0);
+  expect(normalizeDuration(second.stdout)).toBe(normalizeDuration(first.stdout));
+  expect(second.stderr).toBe(first.stderr);
+  expect(JSON.parse(readProjectFile('.rstack/cache/fmt-v1.json'))).toMatchObject({ version: 1 });
+});
+
+test('formats without a writable cache directory', () => {
+  writeProjectFile('.rstack', 'not a directory');
+  writeProjectFile('index.ts', 'const value=1');
+
+  const result = runFmt(['index.ts']);
+
+  expect(result.status).toBe(0);
+  expect(readProjectFile('index.ts')).toBe('const value = 1;\n');
 });
 
 test('does not sort package.json by default', () => {
@@ -461,6 +538,7 @@ test('formats stdin for the given filepath', () => {
   expect(result.status).toBe(0);
   expect(result.stdout).toBe('const message = "hello";\n');
   expect(result.stderr).toBe('');
+  expect(existsSync(path.join(projectPath, '.rstack'))).toBe(false);
 });
 
 test('applies define.fmt options and overrides to stdin', () => {
@@ -622,6 +700,7 @@ test('returns exit code 2 when no files match', () => {
     );
     expect(result.stderr).not.toContain('\n    at ');
   }
+  expect(existsSync(path.join(projectPath, '.rstack'))).toBe(false);
 });
 
 test('allows no files to match with --no-error-on-unmatched-pattern', () => {
