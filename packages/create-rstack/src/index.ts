@@ -37,6 +37,7 @@ await create({
   root: path.join(import.meta.dirname, '..'),
   name: 'rstack',
   templates: ['app-js', 'app-ts'],
+  builtinTools: [],
   getTemplateName,
   mapESLintTemplate,
   mapRslintTemplate,
