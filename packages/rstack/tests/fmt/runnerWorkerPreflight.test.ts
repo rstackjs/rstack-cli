@@ -1,5 +1,8 @@
 import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { beforeEach, expect, rs, test } from 'rstack/test';
+import { cacheNamespace, createOptionsHasher } from '../../src/fmt/cacheIdentity.ts';
+import { loadFmtCacheStore } from '../../src/fmt/cacheStore.ts';
 import { runFmtFiles } from '../../src/fmt/runner.ts';
 import type { FmtFileRequest } from '../../src/fmt/types.ts';
 import { withTempProject, writeProjectFile } from './helpers.ts';
@@ -50,4 +53,33 @@ test('does not start the worker pool when there are no files', async () => {
     processedFileCount: 0,
   });
   expect(mocks.createFmtWorkerPoolCalls).toEqual([]);
+});
+
+test('does not start the worker pool when every parser result is cached as unsupported', async () => {
+  await withTempProject(async (rootPath) => {
+    const filePath = writeProjectFile(rootPath, 'example.unknown', 'plain text');
+    const cachePath = path.join(rootPath, 'cache', 'fmt-v1.json');
+    const file: FmtFileRequest = { path: filePath, options: {} };
+    const optionsHash = createOptionsHasher()(file.options);
+    if (optionsHash === undefined) {
+      throw new Error('Expected cacheable formatter options.');
+    }
+
+    const store = await loadFmtCacheStore(cachePath, cacheNamespace);
+    store.set('example.unknown', [null, optionsHash, 'unsupported']);
+    await expect(store.save()).resolves.toBe(true);
+
+    await expect(
+      runFmtFiles({
+        files: [file],
+        mode: 'check',
+        cache: { filePath: cachePath, rootPath },
+      }),
+    ).resolves.toEqual({
+      exitCode: 2,
+      files: [],
+      processedFileCount: 0,
+    });
+    expect(mocks.createFmtWorkerPoolCalls).toEqual([]);
+  });
 });
