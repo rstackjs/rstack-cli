@@ -74,3 +74,32 @@ test.each([
     await expect(access(tsconfigPath)).rejects.toThrow();
   }
 });
+
+test.each([
+  { template: 'lib-js', extension: 'js', hasTypeScript: false },
+  { template: 'lib-ts', extension: 'ts', hasTypeScript: true },
+])('creates the $template template', async ({ template, extension, hasTypeScript }) => {
+  const projectDirectory = await createProject(template);
+  const packageJson = JSON.parse(
+    await readFile(path.join(projectDirectory, 'package.json'), 'utf8'),
+  );
+
+  expect(packageJson.name).toBe('my-app');
+
+  await expect(
+    access(path.join(projectDirectory, `rstack.config.${extension}`)),
+  ).resolves.toBeUndefined();
+  await expect(
+    access(path.join(projectDirectory, `src/index.${extension}`)),
+  ).resolves.toBeUndefined();
+  await expect(
+    access(path.join(projectDirectory, `tests/index.test.${extension}`)),
+  ).resolves.toBeUndefined();
+
+  const tsconfigPath = path.join(projectDirectory, 'tsconfig.json');
+  if (hasTypeScript) {
+    await expect(access(tsconfigPath)).resolves.toBeUndefined();
+  } else {
+    await expect(access(tsconfigPath)).rejects.toThrow();
+  }
+});

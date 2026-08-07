@@ -1,0 +1,30 @@
+{
+  "name": "rstack-lib-js",
+  "version": "0.0.0",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rs lib",
+    "dev": "rs lib --watch",
+    "test": "rs test",
+    "test:watch": "rs test --watch"
+  },
+  "devDependencies": {
+    "rstack": "^0.3.5"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -14,6 +14,16 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
     return `${type}-${language}`;
   }
 
+  const projectType = checkCancel<string>(
+    await select({
+      message: 'Select project type',
+      options: [
+        { value: 'app', label: 'Web Application' },
+        { value: 'lib', label: 'Library' },
+      ],
+    }),
+  );
+
   const language = checkCancel<string>(
     await select({
       message: 'Select language',
@@ -24,7 +34,7 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
     }),
   );
 
-  return `app-${language}`;
+  return `${projectType}-${language}`;
 };
 
 const mapESLintTemplate = (templateName: string): ESLintTemplateName =>
@@ -36,7 +46,7 @@ const mapRslintTemplate = (templateName: string): RslintTemplateName =>
 await create({
   root: path.join(import.meta.dirname, '..'),
   name: 'rstack',
-  templates: ['app-js', 'app-ts'],
+  templates: ['app-js', 'app-ts', 'lib-js', 'lib-ts'],
   builtinTools: [],
   getTemplateName,
   mapESLintTemplate,
