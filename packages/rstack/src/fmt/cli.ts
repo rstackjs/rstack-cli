@@ -288,6 +288,17 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
     }
 
     const cacheDirPath = cacheLocation ? path.resolve(cwd, cacheLocation) : undefined;
+    if (cacheDirPath) {
+      const cacheDirPrefix = cacheDirPath.endsWith(path.sep)
+        ? cacheDirPath
+        : `${cacheDirPath}${path.sep}`;
+      if (cwd === cacheDirPath || cwd.startsWith(cacheDirPrefix)) {
+        throw new Error(
+          'The --cache-location directory cannot be the current working directory or an ancestor.',
+        );
+      }
+    }
+
     const config = await loadFmtConfig(cwd);
     const files = await discoverFmtFiles({
       cwd,

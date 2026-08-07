@@ -230,6 +230,16 @@ test.each(['relative', 'absolute'] as const)('uses a %s custom cache location', 
   expect(existsSync(path.join(projectPath, '.rstack'))).toBe(false);
 });
 
+test.each(['.', '..'])('rejects a custom cache location at %s', (cacheLocation) => {
+  const result = runFmt(['--cache-location', cacheLocation, '.']);
+
+  expect(result.status).toBe(2);
+  expect(result.stdout).toBe('');
+  expect(result.stderr).toContain(
+    'The --cache-location directory cannot be the current working directory or an ancestor.',
+  );
+});
+
 test('excludes the custom cache directory from formatting', () => {
   const cacheLocation = 'custom-cache';
   writeProjectFile('index.ts', 'const value = 1;\n');
