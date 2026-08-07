@@ -13,16 +13,18 @@ npm create rstack@latest
 Using CLI flags:
 
 ```bash
-npx create-rstack --dir my-project --template app-ts
+npx create-rstack --dir my-project --template app-vanilla-ts
 
 # Using abbreviations
-npx create-rstack -d my-project -t app-ts
+npx create-rstack -d my-project -t app-vanilla-ts
 ```
 
 ## Templates
 
-- `app-js` - JavaScript application
-- `app-ts` - TypeScript application
+- `app-vanilla-js` - JavaScript Vanilla application
+- `app-vanilla-ts` - TypeScript Vanilla application
+- `app-react-js` - JavaScript React application
+- `app-react-ts` - TypeScript React application
 - `lib-js` - JavaScript Node.js library
 - `lib-ts` - TypeScript Node.js library
 
