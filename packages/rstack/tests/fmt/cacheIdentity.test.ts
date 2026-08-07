@@ -47,6 +47,16 @@ test('invalidates hashes when final formatter options change', () => {
   expect(new Set(hashes).size).toBe(hashes.length);
 });
 
+test('includes plugin fingerprints in option hashes', () => {
+  const plugin = pathToFileURL(path.resolve('plugin.mjs')).href;
+  const first = createOptionsHasher(new Map([[plugin, 'plugin@1']]));
+  const second = createOptionsHasher(new Map([[plugin, 'plugin@2']]));
+
+  expect(first({ plugins: [plugin] })).toHaveLength(64);
+  expect(first({ plugins: [new URL(plugin)] })).toBe(first({ plugins: [plugin] }));
+  expect(first({ plugins: [plugin] })).not.toBe(second({ plugins: [plugin] }));
+});
+
 test('bypasses user plugins and unserializable options', () => {
   const hashOptions = createOptionsHasher();
   const cyclic: Record<string, unknown> = {};

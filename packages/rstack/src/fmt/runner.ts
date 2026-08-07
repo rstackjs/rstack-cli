@@ -6,6 +6,7 @@ import type {
   FmtExitCode,
   FmtFileRequest,
   FmtFileResult,
+  FmtPluginSpecifier,
   FmtRunResult,
   RunFmtFilesOptions,
 } from './types.ts';
@@ -42,6 +43,43 @@ const minPriorityWorkers = 8;
  */
 const isMarkdown = (file: FmtFileRequest): boolean =>
   file.path.endsWith('.md') || file.path.endsWith('.mdx');
+
+/** Resolves each distinct plugin once before the synchronous per-file cache path. */
+const loadPluginFingerprints = async (
+  files: FmtFileRequest[],
+): Promise<Map<string, string> | undefined> => {
+  const plugins = new Map<string, FmtPluginSpecifier>();
+  for (const file of files) {
+    try {
+      for (const plugin of file.options.plugins ?? []) {
+        if (typeof plugin === 'string' || plugin instanceof URL) {
+          plugins.set(plugin instanceof URL ? plugin.href : plugin, plugin);
+        }
+      }
+    } catch {
+      // Unreadable options cannot be cached by the options hasher.
+    }
+  }
+  if (plugins.size === 0) {
+    return undefined;
+  }
+
+  const { createFingerprintResolver } = await import(
+    /* rspackChunkName: 'fmtPlugins' */
+    './plugins.ts'
+  );
+  const resolveFingerprint = createFingerprintResolver();
+  const entries = await Promise.all(
+    Array.from(plugins, async ([key, plugin]) => [key, await resolveFingerprint(plugin)] as const),
+  );
+  const fingerprints = new Map<string, string>();
+  for (const [key, fingerprint] of entries) {
+    if (fingerprint !== undefined) {
+      fingerprints.set(key, fingerprint);
+    }
+  }
+  return fingerprints;
+};
 
 /** Converts a formatter outcome into the shared per-file result. */
 const runFmtFile = async (
@@ -184,10 +222,14 @@ const runFmtFiles = async ({
   const shouldWrite = mode === 'write';
   let runCache: RunCache | undefined;
   if (files.length > 0 && cache) {
+    const [store, fingerprints] = await Promise.all([
+      loadFmtCacheStore(cache.filePath, cacheNamespace),
+      loadPluginFingerprints(files),
+    ]);
     runCache = {
-      store: await loadFmtCacheStore(cache.filePath, cacheNamespace),
+      store,
       resolveKey: createCacheKeyResolver(cache.rootPath),
-      hashOptions: createOptionsHasher(),
+      hashOptions: createOptionsHasher(fingerprints),
     };
   }
 
