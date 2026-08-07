@@ -183,7 +183,7 @@ const runFmtFiles = async ({
 }: RunFmtFilesOptions): Promise<FmtRunResult> => {
   const shouldWrite = mode === 'write';
   let runCache: RunCache | undefined;
-  if (files.length > 0 && cache && !shouldWrite) {
+  if (files.length > 0 && cache) {
     runCache = {
       store: await loadFmtCacheStore(cache.filePath, cacheNamespace),
       resolveKey: createCacheKeyResolver(cache.rootPath),
