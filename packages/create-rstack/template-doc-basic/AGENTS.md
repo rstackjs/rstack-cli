@@ -8,5 +8,6 @@
 
 ## Docs
 
+- Rstack: https://rstack.rs/llms.txt
 - Rspress: https://rspress.rs/llms.txt
 - Rsbuild: https://rsbuild.rs/llms.txt

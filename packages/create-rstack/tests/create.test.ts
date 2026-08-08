@@ -132,7 +132,7 @@ test('creates the doc-basic template', async () => {
   await expect(access(path.join(projectDirectory, 'tsconfig.json'))).resolves.toBeUndefined();
   await expect(access(path.join(projectDirectory, 'docs', 'index.md'))).resolves.toBeUndefined();
   await expect(
-    access(path.join(projectDirectory, 'docs', 'guide', 'start', 'getting-started.md')),
+    access(path.join(projectDirectory, 'docs', 'guide', 'start', 'introduction.md')),
   ).resolves.toBeUndefined();
 });
 
