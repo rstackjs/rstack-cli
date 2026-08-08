@@ -44,7 +44,26 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
   );
 
   if (projectType === 'doc') {
-    return 'doc-basic';
+    const documentationType = checkCancel<string>(
+      await select({
+        message: 'Choose documentation language setup',
+        initialValue: 'basic',
+        options: [
+          {
+            value: 'basic',
+            label: 'Single language',
+            hint: 'docs',
+          },
+          {
+            value: 'i18n',
+            label: 'Multilingual',
+            hint: 'docs/en, docs/zh',
+          },
+        ],
+      }),
+    );
+
+    return `doc-${documentationType}`;
   }
 
   const templateType = checkCancel<string>(
@@ -101,6 +120,7 @@ await create({
     'lib-solid-js',
     'lib-solid-ts',
     'doc-basic',
+    'doc-i18n',
   ],
   builtinTools: [],
   getTemplateName,
