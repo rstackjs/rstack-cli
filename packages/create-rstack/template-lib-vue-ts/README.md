@@ -1,0 +1,40 @@
+# Rstack library
+
+## Setup
+
+Install the dependencies:
+
+```bash
+{{ packageManager }} install
+```
+
+## Get started
+
+Build the library:
+
+```bash
+{{ packageManager }} run build
+```
+
+Build the library in watch mode:
+
+```bash
+{{ packageManager }} run dev
+```
+
+Run tests:
+
+```bash
+{{ packageManager }} run test
+```
+
+Run tests in watch mode:
+
+```bash
+{{ packageManager }} run test:watch
+```
+
+## Learn more
+
+- [Rstack documentation](https://rstack.rs)
+- [Rslib documentation](https://rslib.rs)
