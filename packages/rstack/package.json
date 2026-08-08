@@ -56,6 +56,8 @@
   },
   "files": [
     "bin",
+    "binding.cjs",
+    "binding.d.cts",
     "dist",
     "types",
     "THIRD_PARTY_NOTICES.md"
@@ -65,8 +67,7 @@
     "build:native": "napi build --platform --manifest-path ../../Cargo.toml --package rstack-binding --package-json-path package.json --output-dir . --js binding.cjs --dts binding.d.cts",
     "build:native:release": "napi build --platform --release --manifest-path ../../Cargo.toml --package rstack-binding --package-json-path package.json --output-dir . --js binding.cjs --dts binding.d.cts",
     "dev": "rslib -w",
-    "test": "rs test",
-    "test:native": "node --test tests/native-smoke.cjs"
+    "test": "rs test"
   },
   "dependencies": {
     "@rsbuild/core": "catalog:",
