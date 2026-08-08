@@ -1,0 +1,22 @@
+{
+  "name": "rstack-app-solid-js",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rs build",
+    "dev": "rs dev",
+    "format": "rs fmt",
+    "lint": "rs lint",
+    "preview": "rs preview",
+    "test": "rs test"
+  },
+  "dependencies": {
+    "solid-js": "^1.9.14"
+  },
+  "devDependencies": {
+    "@rsbuild/plugin-babel": "^2.0.1",
+    "@rsbuild/plugin-solid": "^1.2.2",
+    "rstack": "^0.3.5"
+  }
+}
