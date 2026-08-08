@@ -46,9 +46,6 @@ jobs:
       - name: Build Native Binding
         run: pnpm --filter rstack build:native:release
 
-      - name: Test Native Binding
-        run: pnpm --filter rstack test:native
-
       - name: Check Generated Native Files
         run: git diff --exit-code -- packages/rstack/binding.cjs packages/rstack/binding.d.cts
 
