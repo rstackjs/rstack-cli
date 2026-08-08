@@ -1,6 +1,7 @@
 import { cacheNamespace, createCacheKeyResolver, createOptionsHasher } from './cacheIdentity.ts';
 import { loadFmtCacheStore } from './cacheStore.ts';
 import type { FmtCacheEntry, FmtCacheStore } from './cacheStore.ts';
+import { hasDottedBasename } from './pathHelpers.ts';
 import type {
   FmtFileCache,
   FmtExitCode,
@@ -110,11 +111,16 @@ const createFmtFileRunTask = (file: FmtFileRequest, cache?: RunCache): FmtFileRu
   return { file, key, cache: fileCache };
 };
 
-const isCachedUnsupported = ({ cache }: FmtFileRunTask): boolean => {
+const isCachedUnsupported = ({ file, cache }: FmtFileRunTask): boolean => {
   if (!cache?.entry) {
     return false;
   }
-  return cache.entry[1] === cache.optionsHash && cache.entry[2] === 'unsupported';
+  return (
+    cache.entry[0] === null &&
+    cache.entry[1] === cache.optionsHash &&
+    cache.entry[2] === 'unsupported' &&
+    hasDottedBasename(file.path)
+  );
 };
 
 /** Converts a formatter outcome into the shared per-file result. */

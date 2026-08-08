@@ -8,7 +8,7 @@ const fmtCacheVersion = 1;
 type FmtCacheState = 'clean' | 'dirty' | 'unsupported';
 type FmtCacheEntry =
   | readonly [contentHash: string, optionsHash: string, state: 'clean' | 'dirty']
-  | readonly [contentHash: null, optionsHash: string, state: 'unsupported'];
+  | readonly [contentHash: string | null, optionsHash: string, state: 'unsupported'];
 
 interface FmtCacheFile {
   version: typeof fmtCacheVersion;
@@ -35,7 +35,9 @@ const parseCacheEntry = (value: unknown): FmtCacheEntry | undefined => {
   }
 
   if (value[2] === 'unsupported') {
-    return value[0] === null ? [null, value[1], value[2]] : undefined;
+    return value[0] === null || typeof value[0] === 'string'
+      ? [value[0], value[1], value[2]]
+      : undefined;
   }
   if (typeof value[0] !== 'string' || (value[2] !== 'clean' && value[2] !== 'dirty')) {
     return;
@@ -124,7 +126,9 @@ class FmtCacheStoreImpl implements FmtCacheStore {
     }
 
     this.#cache.files[filePath] =
-      entry[2] === 'unsupported' ? [null, entry[1], entry[2]] : [entry[0], entry[1], entry[2]];
+      entry[2] === 'unsupported'
+        ? [entry[0], entry[1], 'unsupported']
+        : [entry[0], entry[1], entry[2]];
     this.#changed = true;
   }
 

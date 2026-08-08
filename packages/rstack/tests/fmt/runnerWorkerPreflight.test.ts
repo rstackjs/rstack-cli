@@ -83,3 +83,28 @@ test('does not start the worker pool when every parser result is cached as unsup
     expect(mocks.createFmtWorkerPoolCalls).toEqual([]);
   });
 });
+
+test('starts the worker pool for a path-only unsupported entry on an extensionless file', async () => {
+  await withTempProject(async (rootPath) => {
+    const filePath = writeProjectFile(rootPath, 'script', 'plain text');
+    const cachePath = path.join(rootPath, 'cache', 'fmt-v1.json');
+    const file: FmtFileRequest = { path: filePath, options: {} };
+    const optionsHash = createOptionsHasher()(file.options);
+    if (optionsHash === undefined) {
+      throw new Error('Expected cacheable formatter options.');
+    }
+
+    const store = await loadFmtCacheStore(cachePath, cacheNamespace);
+    store.set('script', [null, optionsHash, 'unsupported']);
+    await expect(store.save()).resolves.toBe(true);
+
+    await expect(
+      runFmtFiles({
+        files: [file],
+        mode: 'check',
+        cache: { filePath: cachePath, rootPath },
+      }),
+    ).rejects.toThrow('worker startup failed');
+    expect(mocks.createFmtWorkerPoolCalls).toEqual([[1, undefined]]);
+  });
+});
