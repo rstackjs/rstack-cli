@@ -7,6 +7,7 @@ import { withTempProject } from './helpers.ts';
 const namespace = 'test-namespace';
 const firstEntry = ['content-a', 'options-a', 'clean'] as const;
 const secondEntry = ['content-b', 'options-b', 'dirty'] as const;
+const unsupportedEntry = [null, 'options-c', 'unsupported'] as const;
 
 const readCache = (filePath: string): FmtCacheFile =>
   JSON.parse(readFileSync(filePath, 'utf8')) as FmtCacheFile;
@@ -20,11 +21,13 @@ test('writes entries that can be loaded by another store', async () => {
     expect(existsSync(cachePath)).toBe(false);
 
     store.set('src/a.ts', firstEntry);
+    store.set('src/unknown.fixture', unsupportedEntry);
     expect(await store.save()).toBe(true);
     expect(await store.save()).toBe(false);
 
     const loaded = await loadFmtCacheStore(cachePath, namespace);
     expect(loaded.get('src/a.ts')).toEqual(firstEntry);
+    expect(loaded.get('src/unknown.fixture')).toEqual(unsupportedEntry);
   });
 });
 
@@ -67,6 +70,16 @@ test('discards invalid data and entries from another namespace', async () => {
         version: fmtCacheVersion,
         namespace,
         files: { 'src/a.ts': ['content', 'options', 'unknown'] },
+      }),
+      JSON.stringify({
+        version: fmtCacheVersion,
+        namespace,
+        files: { 'src/a.ts': ['content', 'options', 'unsupported'] },
+      }),
+      JSON.stringify({
+        version: fmtCacheVersion,
+        namespace,
+        files: { 'src/a.ts': [null, 'options', 'clean'] },
       }),
     ];
 

@@ -48,25 +48,28 @@ test('returns cached states before resolving the parser', async () => {
   await withTempProject(async (rootPath) => {
     const source = 'const value=1';
     const filePath = writeProjectFile(rootPath, 'example.ts', source);
+    const missingPath = path.join(rootPath, 'missing.unknown');
     const contentHash = sha256(source);
     const optionsHash = 'options';
 
-    for (const [state, shouldWrite, status] of [
-      ['clean', false, 'unchanged'],
-      ['dirty', false, 'changed'],
-      ['clean', true, 'unchanged'],
+    for (const [entry, targetPath, shouldWrite, status] of [
+      [[contentHash, optionsHash, 'clean'], filePath, false, 'unchanged'],
+      [[contentHash, optionsHash, 'dirty'], filePath, false, 'changed'],
+      [[contentHash, optionsHash, 'clean'], filePath, true, 'unchanged'],
+      [[null, optionsHash, 'unsupported'], missingPath, false, 'unsupported'],
+      [[null, optionsHash, 'unsupported'], missingPath, true, 'unsupported'],
     ] as const) {
       await expect(
         formatFile({
           file: {
-            path: filePath,
+            path: targetPath,
             options: {
               parser: 'unknown-parser',
             },
           },
           shouldWrite,
           cache: {
-            entry: [contentHash, optionsHash, state],
+            entry,
             optionsHash,
           },
         }),
@@ -89,6 +92,9 @@ test('resolves parser support before reading on a cache miss', async () => {
           optionsHash: 'options',
         },
       }),
-    ).resolves.toEqual({ status: 'unsupported' });
+    ).resolves.toEqual({
+      status: 'unsupported',
+      cacheEntry: [null, 'options', 'unsupported'],
+    });
   });
 });

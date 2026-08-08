@@ -42,9 +42,13 @@ const formatFile = async ({
   };
 
   if (cache?.entry && cache.entry[1] === cache.optionsHash) {
+    const { entry } = cache;
+    if (entry[2] === 'unsupported') {
+      return { status: 'unsupported' };
+    }
+
     sourceBuffer = readFileSync(file.path);
     contentHash = hashContent(sourceBuffer);
-    const { entry } = cache;
     if (entry[0] === contentHash && (!shouldWrite || entry[2] === 'clean')) {
       return { status: entry[2] === 'clean' ? 'unchanged' : 'changed' };
     }
@@ -53,7 +57,12 @@ const formatFile = async ({
   const { formatFmtSource } = await import('./format.ts');
   const result = await formatFmtSource(file, () => (source ??= readSource()));
   if (result.status === 'unsupported') {
-    return { status: 'unsupported' };
+    return cache
+      ? {
+          status: 'unsupported',
+          cacheEntry: [null, cache.optionsHash, 'unsupported'],
+        }
+      : { status: 'unsupported' };
   }
 
   const unchanged = result.source === result.formatted;

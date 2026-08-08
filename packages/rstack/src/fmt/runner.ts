@@ -22,6 +22,12 @@ interface FmtFileRun {
   entry?: FmtCacheEntry;
 }
 
+interface FmtFileRunTask {
+  file: FmtFileRequest;
+  key?: string;
+  cache?: FmtFileCache;
+}
+
 interface RunCache {
   store: FmtCacheStore;
   resolveKey: ReturnType<typeof createCacheKeyResolver>;
@@ -81,13 +87,8 @@ const loadPluginFingerprints = async (
   return fingerprints;
 };
 
-/** Converts a formatter outcome into the shared per-file result. */
-const runFmtFile = async (
-  file: FmtFileRequest,
-  shouldWrite: boolean,
-  formatFile: FormatFile,
-  cache?: RunCache,
-): Promise<FmtFileRun> => {
+/** Resolves the portable cache identity before work is dispatched. */
+const createFmtFileRunTask = (file: FmtFileRequest, cache?: RunCache): FmtFileRunTask => {
   let key: string | undefined;
   let fileCache: FmtFileCache | undefined;
 
@@ -106,8 +107,29 @@ const runFmtFile = async (
     }
   }
 
+  return { file, key, cache: fileCache };
+};
+
+const isCachedUnsupported = ({ cache }: FmtFileRunTask): boolean => {
+  if (!cache?.entry) {
+    return false;
+  }
+  return cache.entry[1] === cache.optionsHash && cache.entry[2] === 'unsupported';
+};
+
+/** Converts a formatter outcome into the shared per-file result. */
+const runFmtFile = async (
+  task: FmtFileRunTask,
+  shouldWrite: boolean,
+  formatFile: FormatFile,
+): Promise<FmtFileRun> => {
+  if (isCachedUnsupported(task)) {
+    return { outcome: 'unsupported' };
+  }
+
+  const { file, key, cache } = task;
   try {
-    const result = await formatFile(file, shouldWrite, fileCache);
+    const result = await formatFile(file, shouldWrite, cache);
     const outcome: FmtFileOutcome =
       result.status === 'changed'
         ? {
@@ -133,23 +155,22 @@ const runFmtFile = async (
 
 /** Starts slower Markdown parsers first while preserving order within both priority groups. */
 const runPriorityFmtFiles = async (
-  files: FmtFileRequest[],
+  tasks: FmtFileRunTask[],
   shouldWrite: boolean,
   formatFile: FormatFile,
-  cache?: RunCache,
 ): Promise<FmtFileRun[]> => {
   const priority: number[] = [];
   const rest: number[] = [];
 
-  for (let index = 0; index < files.length; index++) {
-    (isMarkdown(files[index]) ? priority : rest).push(index);
+  for (let index = 0; index < tasks.length; index++) {
+    (isMarkdown(tasks[index].file) ? priority : rest).push(index);
   }
 
   const order = priority.concat(rest);
   const outcomes = await Promise.all(
-    order.map((index) => runFmtFile(files[index], shouldWrite, formatFile, cache)),
+    order.map((index) => runFmtFile(tasks[index], shouldWrite, formatFile)),
   );
-  const results = new Array<FmtFileRun>(files.length);
+  const results = new Array<FmtFileRun>(tasks.length);
   for (let index = 0; index < order.length; index++) {
     results[order[index]] = outcomes[index];
   }
@@ -163,15 +184,24 @@ const runFmtFilesInWorkerPool = async (
   maxWorkers?: number,
   cache?: RunCache,
 ): Promise<FmtWorkerPoolResult> => {
+  const tasks = files.map((file) => createFmtFileRunTask(file, cache));
+  const pendingFileCount = tasks.reduce(
+    (count, task) => count + (isCachedUnsupported(task) ? 0 : 1),
+    0,
+  );
+  if (pendingFileCount === 0) {
+    return { files: [], processedFileCount: 0 };
+  }
+
   const { createFmtWorkerPool } = await import('./workerPool.ts');
-  const workerPool = await createFmtWorkerPool(files.length, maxWorkers);
+  const workerPool = await createFmtWorkerPool(pendingFileCount, maxWorkers);
 
   try {
     const results =
       workerPool.workerCount >= minPriorityWorkers
-        ? await runPriorityFmtFiles(files, shouldWrite, workerPool.formatFile, cache)
+        ? await runPriorityFmtFiles(tasks, shouldWrite, workerPool.formatFile)
         : await Promise.all(
-            files.map((file) => runFmtFile(file, shouldWrite, workerPool.formatFile, cache)),
+            tasks.map((task) => runFmtFile(task, shouldWrite, workerPool.formatFile)),
           );
     const processedFiles: FmtFileResult[] = [];
     let processedFileCount = 0;

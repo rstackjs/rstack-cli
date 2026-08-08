@@ -121,6 +121,40 @@ test('invalidates entries when final options change', async () => {
   });
 });
 
+test('caches unsupported parser results until final options change', async () => {
+  await withTempProject(async (rootPath) => {
+    const filePath = writeProjectFile(rootPath, 'data.unknown', '{"value":true}');
+    const cache = createCache(rootPath);
+    const unsupported = createRequest(filePath, {});
+
+    const first = await run([unsupported], 'check', cache);
+    expect(first).toEqual({
+      exitCode: 2,
+      files: [],
+      processedFileCount: 0,
+    });
+    expect((await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('data.unknown')).toEqual([
+      null,
+      createOptionsHasher()(unsupported.options),
+      'unsupported',
+    ]);
+
+    await expect(run([unsupported], 'check', cache)).resolves.toEqual(first);
+
+    const supported = createRequest(filePath, { parser: 'json' });
+    await expect(run([supported], 'check', cache)).resolves.toMatchObject({
+      exitCode: 1,
+      files: [{ path: filePath, status: 'different' }],
+      processedFileCount: 1,
+    });
+    expect((await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('data.unknown')).toEqual([
+      sha256(readFileSync(filePath)),
+      createOptionsHasher()(supported.options),
+      'dirty',
+    ]);
+  });
+});
+
 test('caches only plugins with stable fingerprints', async () => {
   await withTempProject(async (rootPath) => {
     const filePath = writeProjectFile(rootPath, 'data.fixture', '{"value":true}');
