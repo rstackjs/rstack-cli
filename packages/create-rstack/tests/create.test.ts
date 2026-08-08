@@ -37,53 +37,61 @@ test.each([
     template: 'app-vanilla-js',
     configExtension: 'js',
     sourceExtension: 'js',
+    testFile: 'dom.test.js',
     hasTypeScript: false,
   },
   {
     template: 'app-vanilla-ts',
     configExtension: 'ts',
     sourceExtension: 'ts',
+    testFile: 'dom.test.ts',
     hasTypeScript: true,
   },
   {
     template: 'app-react-js',
     configExtension: 'js',
     sourceExtension: 'jsx',
+    testFile: 'index.test.jsx',
     hasTypeScript: false,
   },
   {
     template: 'app-react-ts',
     configExtension: 'ts',
     sourceExtension: 'tsx',
+    testFile: 'index.test.tsx',
     hasTypeScript: true,
   },
   {
     template: 'app-vue-js',
     configExtension: 'js',
     sourceExtension: 'js',
+    testFile: 'index.test.js',
     hasTypeScript: false,
   },
   {
     template: 'app-vue-ts',
     configExtension: 'ts',
     sourceExtension: 'ts',
+    testFile: 'index.test.ts',
     hasTypeScript: true,
   },
   {
     template: 'app-solid-js',
     configExtension: 'js',
     sourceExtension: 'jsx',
+    testFile: 'index.test.jsx',
     hasTypeScript: false,
   },
   {
     template: 'app-solid-ts',
     configExtension: 'ts',
     sourceExtension: 'tsx',
+    testFile: 'index.test.tsx',
     hasTypeScript: true,
   },
 ])(
   'creates the $template template',
-  async ({ template, configExtension, sourceExtension, hasTypeScript }) => {
+  async ({ template, configExtension, sourceExtension, testFile, hasTypeScript }) => {
     const projectDirectory = await createProject(template);
     const packageJson = JSON.parse(
       await readFile(path.join(projectDirectory, 'package.json'), 'utf8'),
@@ -99,6 +107,7 @@ test.each([
     await expect(
       access(path.join(projectDirectory, `src/index.${sourceExtension}`)),
     ).resolves.toBeUndefined();
+    await expect(access(path.join(projectDirectory, 'tests', testFile))).resolves.toBeUndefined();
 
     const tsconfigPath = path.join(projectDirectory, 'tsconfig.json');
     if (hasTypeScript) {

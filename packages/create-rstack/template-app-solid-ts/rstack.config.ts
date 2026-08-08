@@ -16,7 +16,7 @@ define.app(async () => {
 });
 
 define.test({
-  // Configure Rstest
+  setupFiles: ['./tests/rstest.setup.ts'],
 });
 
 define.lint(async () => {
