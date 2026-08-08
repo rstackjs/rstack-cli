@@ -1,6 +1,6 @@
 // Derived from @prettier/cli, see THIRD_PARTY_NOTICES.md
 
-import { createHash } from 'node:crypto';
+import { hash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import type { FmtCacheEntry } from './cacheStore.ts';
 import type { FmtFileCache, FmtFileRequest, FmtWorkerResult } from './types.ts';
@@ -11,8 +11,7 @@ interface FormatFileTask {
   cache?: FmtFileCache;
 }
 
-const hashContent = (content: string | Uint8Array): string =>
-  createHash('sha256').update(content).digest('hex');
+const hashContent = (content: string | Uint8Array): string => hash('sha256', content, 'hex');
 
 /**
  * Use synchronous direct I/O inside the dedicated worker to avoid libuv
