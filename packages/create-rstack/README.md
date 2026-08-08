@@ -35,6 +35,8 @@ npx create-rstack -d my-project -t app-vanilla-ts
 - `lib-react-ts` - TypeScript React library
 - `lib-vue-js` - JavaScript Vue library
 - `lib-vue-ts` - TypeScript Vue library
+- `lib-solid-js` - JavaScript Solid library
+- `lib-solid-ts` - TypeScript Solid library
 
 ## Documentation
 

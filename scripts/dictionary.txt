@@ -23,6 +23,7 @@ rstackjs
 rstest
 shiki
 shikijs
+solidjs
 turborepo
 typicode
 worktank
