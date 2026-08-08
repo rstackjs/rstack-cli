@@ -122,6 +122,23 @@ test('applies nested gitignore rules with child negation', async () => {
   });
 });
 
+test('applies a nested gitignore without a root matcher', async () => {
+  await withTempProject(async (rootPath) => {
+    writeProjectFile(rootPath, 'src/.gitignore', '*.js\n');
+    writeProjectFile(rootPath, 'src/drop.js');
+    writeProjectFile(rootPath, 'src/keep.ts');
+    writeProjectFile(rootPath, 'root.js');
+
+    const files = await discoverFmtPaths({ cwd: rootPath });
+
+    expect(relativePaths(rootPath, files)).toEqual([
+      'root.js',
+      path.join('src', '.gitignore'),
+      path.join('src', 'keep.ts'),
+    ]);
+  });
+});
+
 test('lets explicit files bypass gitignore', async () => {
   await withTempProject(async (rootPath) => {
     writeProjectFile(rootPath, '.gitignore', '/generated/\n');

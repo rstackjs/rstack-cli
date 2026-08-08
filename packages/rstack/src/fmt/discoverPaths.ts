@@ -153,7 +153,8 @@ class GitIgnoreMatcher {
     // Ignore files may disappear or become unreadable during traversal.
     const loading = readFile(path.join(directoryPath, '.gitignore'), 'utf8')
       .then((content) => {
-        this.#matchers.set(directoryPath, ignore().add(content));
+        const relativePath = toPosixPath(this.#resolveRelativePath(directoryPath));
+        this.#matchers.set(relativePath, ignore().add(content));
       })
       .catch(() => undefined);
 
@@ -179,18 +180,19 @@ class GitIgnoreMatcher {
   }
 
   #matches(relativePath: string, isDirectory: boolean): boolean {
+    const pathFromRoot = toPosixPath(relativePath);
+
     // Most repositories only use a root `.gitignore`. Avoid checking every path
     // segment when no nested matcher can override its result.
-    const rootMatcher = this.#matchers.size === 1 ? this.#matchers.get(this.#rootPath) : undefined;
+    const rootMatcher = this.#matchers.size === 1 ? this.#matchers.get('') : undefined;
     if (rootMatcher) {
       // `ignore` expects POSIX separators and uses a trailing slash to distinguish directories.
-      const pathFromMatcher = toPosixPath(relativePath);
-      return rootMatcher.test(isDirectory ? `${pathFromMatcher}/` : pathFromMatcher).ignored;
+      return rootMatcher.test(isDirectory ? `${pathFromRoot}/` : pathFromRoot).ignored;
     }
 
-    const segments = relativePath.split(path.sep);
-    let directoryPath = this.#rootPath;
-    let pathFromMatcher = segments.join('/');
+    const segments = pathFromRoot.split('/');
+    let directoryPath = '';
+    let pathFromMatcher = pathFromRoot;
     let ignored = false;
 
     for (const segment of segments) {
@@ -205,7 +207,7 @@ class GitIgnoreMatcher {
         }
       }
 
-      directoryPath = path.join(directoryPath, segment);
+      directoryPath = directoryPath ? `${directoryPath}/${segment}` : segment;
       pathFromMatcher = pathFromMatcher.slice(segment.length + 1);
     }
 
