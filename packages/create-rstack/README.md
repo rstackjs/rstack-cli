@@ -25,6 +25,8 @@ npx create-rstack -d my-project -t app-vanilla-ts
 - `app-vanilla-ts` - TypeScript Vanilla application
 - `app-react-js` - JavaScript React application
 - `app-react-ts` - TypeScript React application
+- `app-preact-js` - JavaScript Preact application
+- `app-preact-ts` - TypeScript Preact application
 - `app-vue-js` - JavaScript Vue application
 - `app-vue-ts` - TypeScript Vue application
 - `app-svelte-js` - JavaScript Svelte application
