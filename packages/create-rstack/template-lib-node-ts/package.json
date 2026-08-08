@@ -1,5 +1,5 @@
 {
-  "name": "rstack-lib-ts",
+  "name": "rstack-lib-node-ts",
   "version": "0.0.0",
   "sideEffects": false,
   "type": "module",

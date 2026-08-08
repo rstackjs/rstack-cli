@@ -1,7 +1,6 @@
 {
-  "name": "rstack-lib-js",
+  "name": "rstack-lib-react-js",
   "version": "0.0.0",
-  "sideEffects": false,
   "type": "module",
   "exports": {
     ".": {
@@ -21,10 +20,19 @@
     "test:watch": "rs test --watch"
   },
   "devDependencies": {
+    "@rsbuild/plugin-react": "^2.1.0",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@types/react-dom": "^19.2.4",
+    "happy-dom": "^20.11.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "rstack": "^0.3.5"
   },
-  "engines": {
-    "node": ">=22.12.0"
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

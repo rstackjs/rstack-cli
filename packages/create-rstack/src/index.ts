@@ -13,6 +13,16 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
       return `app-${framework}-${language}`;
     }
 
+    if (template === 'lib' || template.startsWith('lib-')) {
+      const [, libraryType = 'node', language = 'js'] = template.split('-');
+
+      if (libraryType === 'js' || libraryType === 'ts') {
+        return `lib-node-${libraryType}`;
+      }
+
+      return `lib-${libraryType}-${language}`;
+    }
+
     const [type, language = 'js'] = template.split('-');
     return `${type}-${language}`;
   }
@@ -27,18 +37,21 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
     }),
   );
 
-  const framework =
-    projectType === 'app'
-      ? checkCancel<string>(
-          await select({
-            message: 'Select framework',
-            options: [
+  const templateType = checkCancel<string>(
+    await select({
+      message: projectType === 'app' ? 'Select framework' : 'Select library type',
+      options:
+        projectType === 'app'
+          ? [
               { value: 'vanilla', label: 'Vanilla' },
               { value: 'react', label: 'React' },
+            ]
+          : [
+              { value: 'node', label: 'Node.js' },
+              { value: 'react', label: 'React' },
             ],
-          }),
-        )
-      : undefined;
+    }),
+  );
 
   const language = checkCancel<string>(
     await select({
@@ -50,7 +63,7 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
     }),
   );
 
-  return framework ? `${projectType}-${framework}-${language}` : `${projectType}-${language}`;
+  return `${projectType}-${templateType}-${language}`;
 };
 
 await create({
@@ -61,8 +74,10 @@ await create({
     'app-vanilla-ts',
     'app-react-js',
     'app-react-ts',
-    'lib-js',
-    'lib-ts',
+    'lib-node-js',
+    'lib-node-ts',
+    'lib-react-js',
+    'lib-react-ts',
   ],
   builtinTools: [],
   getTemplateName,
