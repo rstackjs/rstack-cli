@@ -6,6 +6,7 @@
     "skipLibCheck": true,
     "types": ["rstack/types", "node"],
     "useDefineForClassFields": true,
+    "rootDir": "src",
 
     /* modules */
     "moduleDetection": "force",
