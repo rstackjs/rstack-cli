@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { hash } from 'node:crypto';
 import { isAbsolute } from 'node:path';
 import stableStringify from 'fast-json-stable-stringify';
 import { fmtCacheVersion } from './cacheStore.ts';
@@ -12,8 +12,7 @@ type CacheKeyResolver = (filePath: string) => string | undefined;
 type OptionsHasher = (options: ResolvedFmtOptions) => string | undefined;
 type PluginFingerprints = ReadonlyMap<string, string>;
 
-const sha256 = (content: string | Uint8Array): string =>
-  createHash('sha256').update(content).digest('hex');
+const sha256 = (content: string | Uint8Array): string => hash('sha256', content, 'hex');
 
 /** Identifies formatter behavior shared by all cache entries in this process. */
 const cacheNamespace: string = JSON.stringify([fmtCacheVersion, RSTACK_VERSION, PRETTIER_VERSION]);
