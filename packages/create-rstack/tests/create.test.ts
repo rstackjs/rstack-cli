@@ -118,6 +118,24 @@ test.each([
   },
 );
 
+test('creates the doc-basic template', async () => {
+  const projectDirectory = await createProject('doc-basic');
+  const packageJson = JSON.parse(
+    await readFile(path.join(projectDirectory, 'package.json'), 'utf8'),
+  );
+
+  expect(packageJson.name).toBe('my-app');
+
+  await expect(access(path.join(projectDirectory, 'README.md'))).resolves.toBeUndefined();
+  await expect(access(path.join(projectDirectory, '.gitignore'))).resolves.toBeUndefined();
+  await expect(access(path.join(projectDirectory, 'rstack.config.ts'))).resolves.toBeUndefined();
+  await expect(access(path.join(projectDirectory, 'tsconfig.json'))).resolves.toBeUndefined();
+  await expect(access(path.join(projectDirectory, 'docs', 'index.md'))).resolves.toBeUndefined();
+  await expect(
+    access(path.join(projectDirectory, 'docs', 'guide', 'start', 'getting-started.md')),
+  ).resolves.toBeUndefined();
+});
+
 test.each([
   {
     template: 'lib-node-js',

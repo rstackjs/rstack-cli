@@ -23,6 +23,11 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
       return `lib-${libraryType}-${language}`;
     }
 
+    if (template === 'doc' || template.startsWith('doc-')) {
+      const [, documentationType = 'basic'] = template.split('-');
+      return `doc-${documentationType}`;
+    }
+
     const [type, language = 'js'] = template.split('-');
     return `${type}-${language}`;
   }
@@ -33,9 +38,14 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
       options: [
         { value: 'app', label: 'Web Application' },
         { value: 'lib', label: 'Library' },
+        { value: 'doc', label: 'Documentation' },
       ],
     }),
   );
+
+  if (projectType === 'doc') {
+    return 'doc-basic';
+  }
 
   const templateType = checkCancel<string>(
     await select({
@@ -90,6 +100,7 @@ await create({
     'lib-vue-ts',
     'lib-solid-js',
     'lib-solid-ts',
+    'doc-basic',
   ],
   builtinTools: [],
   getTemplateName,
