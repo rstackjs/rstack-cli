@@ -1,2 +1,6 @@
 # Let GitHub languages ignores MDX files
 *.mdx linguist-documentation
+
+# NAPI-RS owns these generated files; keep regeneration deterministic on Windows.
+packages/rstack/binding.cjs text eol=lf
+packages/rstack/binding.d.cts text eol=lf

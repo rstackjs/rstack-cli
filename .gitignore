@@ -10,6 +10,12 @@ dist-*/
 test-results
 doc_build
 
+# Rust / NAPI-RS
+/target/
+/artifacts/
+/packages/rstack/*.node
+/packages/rstack/npm/
+
 # Temp files
 test-temp-*
 TODO.md

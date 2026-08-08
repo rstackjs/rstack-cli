@@ -19,6 +19,7 @@ export default {
     'coverage',
     'doc_build',
     'node_modules',
+    'packages/rstack/binding.cjs',
     'packages/rstack/THIRD_PARTY_NOTICES.md',
     'pnpm-lock.yaml',
   ],
