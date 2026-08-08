@@ -84,7 +84,7 @@ test('does not start the worker pool when every parser result is cached as unsup
   });
 });
 
-test('starts the worker pool for a path-only unsupported entry on an extensionless file', async () => {
+test('starts the worker pool for a path-only unsupported entry without an extension', async () => {
   await withTempProject(async (rootPath) => {
     const filePath = writeProjectFile(rootPath, 'script', 'plain text');
     const cachePath = path.join(rootPath, 'cache', 'fmt-v1.json');

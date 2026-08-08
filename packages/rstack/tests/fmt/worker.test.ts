@@ -48,7 +48,7 @@ test('returns cached states before resolving the parser', async () => {
   await withTempProject(async (rootPath) => {
     const source = 'const value=1';
     const filePath = writeProjectFile(rootPath, 'example.ts', source);
-    const extensionlessPath = writeProjectFile(rootPath, 'script', source);
+    const noExtensionPath = writeProjectFile(rootPath, 'script', source);
     const missingPath = path.join(rootPath, 'missing.unknown');
     const contentHash = sha256(source);
     const optionsHash = 'options';
@@ -57,8 +57,8 @@ test('returns cached states before resolving the parser', async () => {
       [[contentHash, optionsHash, 'clean'], filePath, false, 'unchanged'],
       [[contentHash, optionsHash, 'dirty'], filePath, false, 'changed'],
       [[contentHash, optionsHash, 'clean'], filePath, true, 'unchanged'],
-      [[contentHash, optionsHash, 'unsupported'], extensionlessPath, false, 'unsupported'],
-      [[contentHash, optionsHash, 'unsupported'], extensionlessPath, true, 'unsupported'],
+      [[contentHash, optionsHash, 'unsupported'], noExtensionPath, false, 'unsupported'],
+      [[contentHash, optionsHash, 'unsupported'], noExtensionPath, true, 'unsupported'],
       [[null, optionsHash, 'unsupported'], missingPath, false, 'unsupported'],
       [[null, optionsHash, 'unsupported'], missingPath, true, 'unsupported'],
     ] as const) {
@@ -81,7 +81,7 @@ test('returns cached states before resolving the parser', async () => {
   });
 });
 
-test('does not trust path-only unsupported entries for extensionless files', async () => {
+test('does not trust path-only unsupported entries for files without extensions', async () => {
   await withTempProject(async (rootPath) => {
     const filePath = writeProjectFile(rootPath, 'script', '#!/usr/bin/env node\nconst value=1');
 

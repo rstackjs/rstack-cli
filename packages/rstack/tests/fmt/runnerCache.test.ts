@@ -155,7 +155,7 @@ test('caches unsupported parser results until final options change', async () =>
   });
 });
 
-test('invalidates cached unsupported parser results when extensionless content changes', async () => {
+test('invalidates cached unsupported parser results when content changes without an extension', async () => {
   await withTempProject(async (rootPath) => {
     const filePath = writeProjectFile(rootPath, 'script', 'plain text\n');
     const cache = createCache(rootPath);
