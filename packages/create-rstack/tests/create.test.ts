@@ -122,6 +122,18 @@ test.each([
     sourceExtension: 'tsx',
     hasTypeScript: true,
   },
+  {
+    template: 'lib-vue-js',
+    configExtension: 'js',
+    sourceExtension: 'js',
+    hasTypeScript: false,
+  },
+  {
+    template: 'lib-vue-ts',
+    configExtension: 'ts',
+    sourceExtension: 'ts',
+    hasTypeScript: true,
+  },
 ])(
   'creates the $template template',
   async ({ template, configExtension, sourceExtension, hasTypeScript }) => {
