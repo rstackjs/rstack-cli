@@ -46,6 +46,7 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
               { value: 'vanilla', label: 'Vanilla' },
               { value: 'react', label: 'React' },
               { value: 'vue', label: 'Vue' },
+              { value: 'solid', label: 'Solid' },
             ]
           : [
               { value: 'node', label: 'Node.js' },
@@ -78,6 +79,8 @@ await create({
     'app-react-ts',
     'app-vue-js',
     'app-vue-ts',
+    'app-solid-js',
+    'app-solid-ts',
     'lib-node-js',
     'lib-node-ts',
     'lib-react-js',

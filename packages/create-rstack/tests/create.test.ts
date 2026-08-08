@@ -69,6 +69,18 @@ test.each([
     sourceExtension: 'ts',
     hasTypeScript: true,
   },
+  {
+    template: 'app-solid-js',
+    configExtension: 'js',
+    sourceExtension: 'jsx',
+    hasTypeScript: false,
+  },
+  {
+    template: 'app-solid-ts',
+    configExtension: 'ts',
+    sourceExtension: 'tsx',
+    hasTypeScript: true,
+  },
 ])(
   'creates the $template template',
   async ({ template, configExtension, sourceExtension, hasTypeScript }) => {
