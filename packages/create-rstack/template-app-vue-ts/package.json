@@ -1,0 +1,24 @@
+{
+  "name": "rstack-app-vue-ts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vue-tsc && rs build",
+    "dev": "rs dev",
+    "format": "rs fmt",
+    "lint": "rs lint",
+    "preview": "rs preview",
+    "test": "rs test"
+  },
+  "dependencies": {
+    "vue": "^3.5.40"
+  },
+  "devDependencies": {
+    "@rsbuild/plugin-vue": "^2.0.1",
+    "@types/node": "^24.13.3",
+    "rstack": "^0.3.5",
+    "typescript": "^6.0.3",
+    "vue-tsc": "^3.3.9"
+  }
+}
