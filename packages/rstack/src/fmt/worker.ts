@@ -3,6 +3,7 @@
 import { hash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import type { FmtCacheEntry } from './cacheStore.ts';
+import { hasDottedBasename } from './pathHelpers.ts';
 import type { FmtFileCache, FmtFileRequest, FmtWorkerResult } from './types.ts';
 
 interface FormatFileTask {
@@ -43,13 +44,23 @@ const formatFile = async ({
   if (cache?.entry && cache.entry[1] === cache.optionsHash) {
     const { entry } = cache;
     if (entry[2] === 'unsupported') {
-      return { status: 'unsupported' };
-    }
-
-    sourceBuffer = readFileSync(file.path);
-    contentHash = hashContent(sourceBuffer);
-    if (entry[0] === contentHash && (!shouldWrite || entry[2] === 'clean')) {
-      return { status: entry[2] === 'clean' ? 'unchanged' : 'changed' };
+      if (entry[0] === null) {
+        if (hasDottedBasename(file.path)) {
+          return { status: 'unsupported' };
+        }
+      } else {
+        sourceBuffer = readFileSync(file.path);
+        contentHash = hashContent(sourceBuffer);
+        if (entry[0] === contentHash) {
+          return { status: 'unsupported' };
+        }
+      }
+    } else {
+      sourceBuffer = readFileSync(file.path);
+      contentHash = hashContent(sourceBuffer);
+      if (entry[0] === contentHash && (!shouldWrite || entry[2] === 'clean')) {
+        return { status: entry[2] === 'clean' ? 'unchanged' : 'changed' };
+      }
     }
   }
 
@@ -59,7 +70,13 @@ const formatFile = async ({
     return cache
       ? {
           status: 'unsupported',
-          cacheEntry: [null, cache.optionsHash, 'unsupported'],
+          cacheEntry: [
+            hasDottedBasename(file.path)
+              ? null
+              : (contentHash ?? hashContent(sourceBuffer ?? readFileSync(file.path))),
+            cache.optionsHash,
+            'unsupported',
+          ],
         }
       : { status: 'unsupported' };
   }

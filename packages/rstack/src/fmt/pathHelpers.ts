@@ -16,5 +16,8 @@ const createRelativePathResolver = (rootPath: string): RelativePathResolver => {
         : path.relative(rootPath, filePath);
 };
 
-export { createRelativePathResolver, toPosixPath };
+/** Prettier only inspects a file's shebang when its basename contains no dot. */
+const hasDottedBasename = (filePath: string): boolean => path.basename(filePath).includes('.');
+
+export { createRelativePathResolver, hasDottedBasename, toPosixPath };
 export type { RelativePathResolver };

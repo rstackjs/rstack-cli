@@ -155,6 +155,40 @@ test('caches unsupported parser results until final options change', async () =>
   });
 });
 
+test('invalidates cached unsupported parser results when content changes without an extension', async () => {
+  await withTempProject(async (rootPath) => {
+    const filePath = writeProjectFile(rootPath, 'script', 'plain text\n');
+    const cache = createCache(rootPath);
+    const file = createRequest(filePath, {});
+
+    const first = await run([file], 'check', cache);
+    expect(first).toEqual({
+      exitCode: 2,
+      files: [],
+      processedFileCount: 0,
+    });
+    expect((await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('script')).toEqual([
+      sha256(readFileSync(filePath)),
+      createOptionsHasher()(file.options),
+      'unsupported',
+    ]);
+
+    await expect(run([file], 'check', cache)).resolves.toEqual(first);
+
+    writeFileSync(filePath, '#!/usr/bin/env node\nconst value=1');
+    await expect(run([file], 'check', cache)).resolves.toMatchObject({
+      exitCode: 1,
+      files: [{ path: filePath, status: 'different' }],
+      processedFileCount: 1,
+    });
+    expect((await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('script')).toEqual([
+      sha256(readFileSync(filePath)),
+      createOptionsHasher()(file.options),
+      'dirty',
+    ]);
+  });
+});
+
 test('caches only plugins with stable fingerprints', async () => {
   await withTempProject(async (rootPath) => {
     const filePath = writeProjectFile(rootPath, 'data.fixture', '{"value":true}');
