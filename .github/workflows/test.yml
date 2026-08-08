@@ -40,5 +40,17 @@ jobs:
       - name: Build Packages
         run: node --run build
 
+      - name: Run Rust Tests
+        run: cargo test --workspace --locked
+
+      - name: Build Native Binding
+        run: pnpm --filter rstack build:native:release
+
+      - name: Test Native Binding
+        run: pnpm --filter rstack test:native
+
+      - name: Check Generated Native Files
+        run: git diff --exit-code -- packages/rstack/binding.cjs packages/rstack/binding.d.cts
+
       - name: Run Test
         run: node --run test

@@ -40,6 +40,7 @@ define.lint(async () => {
 });
 
 define.fmt({
+  ignorePatterns: ['packages/rstack/binding.cjs', 'packages/rstack/binding.d.cts'],
   printWidth: 100,
   singleQuote: true,
   sortPackageJson: true,

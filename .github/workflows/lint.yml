@@ -37,6 +37,12 @@ jobs:
       - name: Build Packages
         run: node --run build
 
+      - name: Check Rust Format
+        run: cargo fmt --all -- --check
+
+      - name: Lint Rust
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
       - name: Lint
         run: node --run lint
 

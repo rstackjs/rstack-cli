@@ -62,8 +62,11 @@
   ],
   "scripts": {
     "build": "rslib",
+    "build:native": "napi build --platform --manifest-path ../../Cargo.toml --package rstack-binding --package-json-path package.json --output-dir . --js binding.cjs --dts binding.d.cts",
+    "build:native:release": "napi build --platform --release --manifest-path ../../Cargo.toml --package rstack-binding --package-json-path package.json --output-dir . --js binding.cjs --dts binding.d.cts",
     "dev": "rslib -w",
-    "test": "rs test"
+    "test": "rs test",
+    "test:native": "node --test tests/native-smoke.cjs"
   },
   "dependencies": {
     "@rsbuild/core": "catalog:",
@@ -75,6 +78,7 @@
     "yuku-parser": "catalog:"
   },
   "devDependencies": {
+    "@napi-rs/cli": "catalog:",
     "@rspress/core": "catalog:",
     "@rstackjs/load-config": "catalog:",
     "@rstackjs/test-utils": "catalog:",
@@ -107,5 +111,10 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
+  },
+  "napi": {
+    "binaryName": "rstack",
+    "packageName": "@rstackjs/binding",
+    "targets": []
   }
 }

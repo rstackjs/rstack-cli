@@ -12,6 +12,7 @@ catalogMode: prefer
 cleanupUnusedCatalogs: true
 
 catalog:
+  '@napi-rs/cli': '^3.8.2'
   '@rsbuild/core': '~2.1.10'
   '@rsbuild/plugin-react': '^2.1.0'
   '@rsbuild/plugin-sass': '^2.0.1'
