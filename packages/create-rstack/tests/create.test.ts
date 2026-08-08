@@ -76,6 +76,20 @@ test.each([
     hasTypeScript: true,
   },
   {
+    template: 'app-svelte-js',
+    configExtension: 'js',
+    sourceExtension: 'js',
+    testFile: 'index.test.js',
+    hasTypeScript: false,
+  },
+  {
+    template: 'app-svelte-ts',
+    configExtension: 'ts',
+    sourceExtension: 'ts',
+    testFile: 'index.test.ts',
+    hasTypeScript: true,
+  },
+  {
     template: 'app-solid-js',
     configExtension: 'js',
     sourceExtension: 'jsx',
