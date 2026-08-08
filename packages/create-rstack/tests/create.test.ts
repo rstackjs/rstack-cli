@@ -136,6 +136,23 @@ test('creates the doc-basic template', async () => {
   ).resolves.toBeUndefined();
 });
 
+test('creates the doc-i18n template', async () => {
+  const projectDirectory = await createProject('doc-i18n');
+  const packageJson = JSON.parse(
+    await readFile(path.join(projectDirectory, 'package.json'), 'utf8'),
+  );
+
+  expect(packageJson.name).toBe('my-app');
+
+  await expect(access(path.join(projectDirectory, 'rstack.config.ts'))).resolves.toBeUndefined();
+  await expect(
+    access(path.join(projectDirectory, 'docs', 'en', 'index.md')),
+  ).resolves.toBeUndefined();
+  await expect(
+    access(path.join(projectDirectory, 'docs', 'zh', 'index.md')),
+  ).resolves.toBeUndefined();
+});
+
 test.each([
   {
     template: 'lib-node-js',
