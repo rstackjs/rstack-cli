@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "rs build",
-    "dev": "rs dev --open",
-    "preview": "rs preview"
+    "dev": "rs dev",
+    "format": "rs fmt",
+    "lint": "rs lint",
+    "preview": "rs preview",
+    "test": "rs test"
   },
   "devDependencies": {
     "rstack": "^0.3.5"

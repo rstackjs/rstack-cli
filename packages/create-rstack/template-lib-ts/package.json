@@ -17,6 +17,8 @@
   "scripts": {
     "build": "rs lib",
     "dev": "rs lib --watch",
+    "format": "rs fmt",
+    "lint": "rs lint",
     "test": "rs test",
     "test:watch": "rs test --watch"
   },

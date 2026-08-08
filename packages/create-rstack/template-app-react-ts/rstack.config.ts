@@ -8,3 +8,18 @@ define.app(async () => {
     plugins: [pluginReact()],
   };
 });
+
+define.test({
+  // Configure Rstest
+});
+
+define.lint(async () => {
+  const { js, ts, reactPlugin, reactHooksPlugin } = await import('rstack/lint');
+
+  return [
+    js.configs.recommended,
+    ts.configs.recommended,
+    reactPlugin.configs.recommended,
+    reactHooksPlugin.configs.recommended,
+  ];
+});
