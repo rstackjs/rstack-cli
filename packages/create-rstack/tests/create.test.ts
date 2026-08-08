@@ -62,6 +62,20 @@ test.each([
     hasTypeScript: true,
   },
   {
+    template: 'app-preact-js',
+    configExtension: 'js',
+    sourceExtension: 'jsx',
+    testFile: 'index.test.jsx',
+    hasTypeScript: false,
+  },
+  {
+    template: 'app-preact-ts',
+    configExtension: 'ts',
+    sourceExtension: 'tsx',
+    testFile: 'index.test.tsx',
+    hasTypeScript: true,
+  },
+  {
     template: 'app-vue-js',
     configExtension: 'js',
     sourceExtension: 'js',
