@@ -16,6 +16,7 @@
   ],
   "scripts": {
     "build": "rs lib",
+    "check": "rs lint --type-check && rs fmt --check",
     "dev": "rs lib --watch",
     "format": "rs fmt",
     "lint": "rs lint",

@@ -41,6 +41,14 @@ define.lint(async () => {
 
 define.fmt({
   ignorePatterns: ['packages/rstack/binding.cjs', 'packages/rstack/binding.d.cts'],
+  overrides: [
+    {
+      files: 'packages/create-rstack/template-*/**/*',
+      options: {
+        printWidth: 80,
+      },
+    },
+  ],
   printWidth: 100,
   singleQuote: true,
   sortPackageJson: true,

@@ -15,6 +15,7 @@
   ],
   "scripts": {
     "build": "rs lib && vue-tsc",
+    "check": "rs lint && rs fmt --check",
     "dev": "rs lib --watch",
     "format": "rs fmt",
     "lint": "rs lint",

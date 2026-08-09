@@ -21,4 +21,5 @@ define.lint(async () => {
 
 define.fmt({
   plugins: ['prettier-plugin-svelte'],
+  singleQuote: true,
 });

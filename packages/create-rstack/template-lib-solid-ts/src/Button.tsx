@@ -26,7 +26,8 @@ export interface ButtonProps {
 }
 
 export function Button(props: ButtonProps) {
-  const mode = () => (props.primary ? 'demo-button--primary' : 'demo-button--secondary');
+  const mode = () =>
+    props.primary ? 'demo-button--primary' : 'demo-button--secondary';
   const size = () => props.size ?? 'medium';
 
   return (

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "svelte-check && rs build",
+    "check": "rs lint && rs fmt --check",
     "dev": "rs dev",
     "format": "rs fmt",
     "lint": "rs lint",

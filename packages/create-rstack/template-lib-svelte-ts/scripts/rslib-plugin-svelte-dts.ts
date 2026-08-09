@@ -5,9 +5,12 @@ import { emitDts, type EmitDtsConfig } from 'svelte2tsx';
 
 type SvelteDtsPluginOptions = Partial<EmitDtsConfig>;
 
-const resolveProjectPath = (rootPath: string, path: string): string => resolve(rootPath, path);
+const resolveProjectPath = (rootPath: string, path: string): string =>
+  resolve(rootPath, path);
 
-export function svelteDtsPlugin(options: SvelteDtsPluginOptions = {}): RsbuildPlugin {
+export function svelteDtsPlugin(
+  options: SvelteDtsPluginOptions = {},
+): RsbuildPlugin {
   return {
     name: 'rslib-plugin-svelte-dts',
     setup(api) {
@@ -16,15 +19,23 @@ export function svelteDtsPlugin(options: SvelteDtsPluginOptions = {}): RsbuildPl
           api.logger.start('generating declaration files...');
         }
 
-        const { declarationDir = './dist', libRoot = './src', tsconfig } = options;
+        const {
+          declarationDir = './dist',
+          libRoot = './src',
+          tsconfig,
+        } = options;
         const rootPath = api.context.rootPath;
         const tsconfigPath = resolveProjectPath(
           rootPath,
-          tsconfig ?? api.getNormalizedConfig().source.tsconfigPath ?? './tsconfig.json',
+          tsconfig ??
+            api.getNormalizedConfig().source.tsconfigPath ??
+            './tsconfig.json',
         );
         const svelteShimsPath = options.svelteShimsPath
           ? resolveProjectPath(rootPath, options.svelteShimsPath)
-          : fileURLToPath(import.meta.resolve('svelte2tsx/svelte-shims-v4.d.ts'));
+          : fileURLToPath(
+              import.meta.resolve('svelte2tsx/svelte-shims-v4.d.ts'),
+            );
 
         try {
           await emitDts({
@@ -36,7 +47,9 @@ export function svelteDtsPlugin(options: SvelteDtsPluginOptions = {}): RsbuildPl
 
           api.logger.ready('declaration files generated with svelte2tsx.');
         } catch (error) {
-          api.logger.error('Failed to generate declaration files with svelte2tsx.');
+          api.logger.error(
+            'Failed to generate declaration files with svelte2tsx.',
+          );
           api.logger.error(error);
           throw error;
         }

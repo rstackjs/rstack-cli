@@ -25,3 +25,7 @@ define.lint(async () => {
 
   return [js.configs.recommended];
 });
+
+define.fmt({
+  singleQuote: true,
+});
