@@ -90,6 +90,20 @@ test.each([
     hasTypeScript: true,
   },
   {
+    template: 'app-lit-js',
+    configExtension: 'js',
+    sourceExtension: 'js',
+    testFile: 'index.test.js',
+    hasTypeScript: false,
+  },
+  {
+    template: 'app-lit-ts',
+    configExtension: 'ts',
+    sourceExtension: 'ts',
+    testFile: 'index.test.ts',
+    hasTypeScript: true,
+  },
+  {
     template: 'app-svelte-js',
     configExtension: 'js',
     sourceExtension: 'js',
