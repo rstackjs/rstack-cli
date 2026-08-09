@@ -1,5 +1,6 @@
 # Custom Dictionary Words
 applypatch
+clippy
 dirents
 errexit
 extglob
