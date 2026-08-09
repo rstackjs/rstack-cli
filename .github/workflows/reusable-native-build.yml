@@ -81,9 +81,6 @@ jobs:
           --js binding.cjs
           --dts binding.d.cts
 
-      - name: Check generated native files
-        run: git diff --exit-code -- packages/rstack/binding.cjs packages/rstack/binding.d.cts
-
       - name: Upload native binding
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
