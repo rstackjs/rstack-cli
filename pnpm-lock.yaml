@@ -89,8 +89,8 @@ catalogs:
       specifier: ^20.11.1
       version: 20.11.1
     heading-case:
-      specifier: ^1.1.4
-      version: 1.1.4
+      specifier: ^1.1.5
+      version: 1.1.5
     ignore:
       specifier: 7.0.6
       version: 7.0.6
@@ -152,7 +152,7 @@ importers:
         version: 0.0.4
       heading-case:
         specifier: 'catalog:'
-        version: 1.1.4
+        version: 1.1.5
       prettier:
         specifier: 'catalog:'
         version: 3.9.6
@@ -2121,8 +2121,8 @@ packages:
   hastscript@9.0.1:
     resolution: {integrity: sha512-g7df9rMFX/SPi34tyGCyUBREQoKkapwdY/T04Qn9TDWfHhAYt4/I0gMVirzK5wEzeUqIjEB+LXC/ypb7Aqno5w==}
 
-  heading-case@1.1.4:
-    resolution: {integrity: sha512-UwPg0xcqLrmd6kSW93kxjy4FMqcb0o97IoTUy+TMvjCF8mJvi6X0h733DEaJO/Ch9h9dOyv0I0ckGoSsuUp9KA==}
+  heading-case@1.1.5:
+    resolution: {integrity: sha512-dVZmEJLF5vK2IV3LLpEWgyy0wbe4W+vsUzuHy6KE440IClTXR5GIGDGwiawHqCqunsqos4nvOBpnLGUrUv3BUg==}
     hasBin: true
 
   hookable@6.1.1:
@@ -4490,7 +4490,7 @@ snapshots:
       property-information: 7.2.0
       space-separated-tokens: 2.0.2
 
-  heading-case@1.1.4: {}
+  heading-case@1.1.5: {}
 
   hookable@6.1.1: {}
 
