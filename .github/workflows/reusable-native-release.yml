@@ -1,0 +1,33 @@
+name: Reusable Native Release
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-latest
+            filename: rstack.linux-x64-gnu.node
+          - target: aarch64-unknown-linux-gnu
+            runner: ubuntu-latest
+            filename: rstack.linux-arm64-gnu.node
+          - target: x86_64-pc-windows-msvc
+            runner: windows-latest
+            filename: rstack.win32-x64-msvc.node
+          - target: aarch64-apple-darwin
+            runner: macos-latest
+            filename: rstack.darwin-arm64.node
+    uses: ./.github/workflows/reusable-native-build.yml
+    with:
+      target: ${{ matrix.target }}
+      runner: ${{ matrix.runner }}
+      filename: ${{ matrix.filename }}
