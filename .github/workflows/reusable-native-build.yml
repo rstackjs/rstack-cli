@@ -15,11 +15,6 @@ on:
         description: Expected NAPI-RS binary filename
         required: true
         type: string
-      use_napi_cross:
-        description: Build with the NAPI-RS cross toolchain
-        default: false
-        required: false
-        type: boolean
 
 permissions:
   contents: read
@@ -52,34 +47,67 @@ jobs:
         shell: bash
         run: rustup target add "$RUST_TARGET"
 
-      - name: Build native binding with NAPI-RS cross toolchain
-        if: inputs.use_napi_cross
+      - name: Setup Zig
+        if: contains(inputs.target, 'musl')
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: 0.14.1
+
+      - name: Install cargo-zigbuild
+        if: contains(inputs.target, 'musl')
+        uses: taiki-e/install-action@6c6fd71fe4fb72c3697d269963d0e15df8adedad # v2.85.10
+        with:
+          tool: cargo-zigbuild@0.23.0
+
+      - name: Install RISC-V GNU toolchain
+        if: inputs.target == 'riscv64gc-unknown-linux-gnu'
         shell: bash
-        working-directory: packages/rstack
-        run: >-
-          pnpm exec napi build --platform --release
-          --target "$RUST_TARGET"
-          --manifest-path ../../Cargo.toml
-          --package rstack-binding
-          --package-json-path package.json
-          --output-dir .
-          --js binding.cjs
-          --dts binding.d.cts
-          --use-napi-cross
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes gcc-riscv64-linux-gnu
 
       - name: Build native binding
-        if: ${{ !inputs.use_napi_cross }}
         shell: bash
         working-directory: packages/rstack
-        run: >-
-          pnpm exec napi build --platform --release
-          --target "$RUST_TARGET"
-          --manifest-path ../../Cargo.toml
-          --package rstack-binding
-          --package-json-path package.json
-          --output-dir .
-          --js binding.cjs
-          --dts binding.d.cts
+        run: |
+          args=(
+            build
+            --platform
+            --release
+            --target "$RUST_TARGET"
+            --manifest-path ../../Cargo.toml
+            --package rstack-binding
+            --output-dir .
+            --js binding.cjs
+            --dts binding.d.cts
+          )
+
+          case "$RUST_TARGET" in
+            x86_64-unknown-linux-gnu | aarch64-unknown-linux-gnu | \
+              powerpc64le-unknown-linux-gnu | s390x-unknown-linux-gnu)
+              args+=(--use-napi-cross)
+              ;;
+            x86_64-unknown-linux-musl | aarch64-unknown-linux-musl | \
+              riscv64gc-unknown-linux-musl)
+              args+=(--cross-compile)
+              ;;
+            aarch64-apple-darwin | x86_64-apple-darwin)
+              export MACOSX_DEPLOYMENT_TARGET=11.0
+              ;;
+            i686-pc-windows-msvc)
+              export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=32
+              export CARGO_PROFILE_RELEASE_LTO=false
+              ;;
+            riscv64gc-unknown-linux-gnu | x86_64-pc-windows-msvc | \
+              aarch64-pc-windows-msvc)
+              ;;
+            *)
+              echo "Unsupported native target: $RUST_TARGET" >&2
+              exit 1
+              ;;
+          esac
+
+          pnpm exec napi "${args[@]}"
 
       - name: Upload native binding
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
