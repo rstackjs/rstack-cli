@@ -5,6 +5,7 @@
 - Use repo Node.js/pnpm versions (`package.json`)
 - `pnpm` workspace; shared deps in `pnpm-workspace.yaml` catalogs
 - TypeScript, Rsbuild/Rslib/Rstest/Rslint, Prettier
+- Rust/Cargo workspace with a NAPI-RS binding under `crates/`
 
 ## Commands
 
@@ -24,12 +25,19 @@ pnpm check:spell
 
 # focused work
 pnpm --filter rstack build
+pnpm --filter rstack build:native
 pnpm --filter rstack test
 ```
 
 ## Testing
 
-- Run `pnpm build` once before `pnpm test` command
+- Run `pnpm build` and `pnpm --filter rstack build:native` before `pnpm test`
+
+## Native
+
+- Follow `crates/AGENTS.md` for Rust changes
+- Keep the JS bridge lazy; use the generated loader directly
+- Regenerate binding files with `build:native`
 
 ## Documentation
 
@@ -39,7 +47,8 @@ pnpm --filter rstack test
 ## Project structure
 
 ```text
-packages/rstack/       # CLI package
-examples/*             # example projects
-scripts/               # repo tooling
+crates/                 # Rust crates
+packages/rstack/        # CLI package and private native bridge
+examples/*              # example projects
+scripts/                # repo tooling
 ```
