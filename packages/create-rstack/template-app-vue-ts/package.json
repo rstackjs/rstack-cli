@@ -20,7 +20,6 @@
   "devDependencies": {
     "@rsbuild/plugin-vue": "^2.0.1",
     "@testing-library/jest-dom": "^7.0.0",
-    "@testing-library/vue": "^8.1.0",
     "@types/node": "^24.13.3",
     "@vue/test-utils": "^2.4.11",
     "happy-dom": "^20.11.1",
