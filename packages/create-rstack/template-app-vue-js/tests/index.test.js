@@ -1,8 +1,8 @@
 import { expect, test } from 'rstack/test';
-import { render, screen } from '@testing-library/vue';
+import { mount } from '@vue/test-utils';
 import App from '../src/App.vue';
 
 test('renders the main page', () => {
-  render(App);
-  expect(screen.getByText('Rstack with Vue')).toBeInTheDocument();
+  const wrapper = mount(App);
+  expect(wrapper.element).toHaveTextContent('Rstack with Vue');
 });
