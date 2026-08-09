@@ -17,6 +17,9 @@ npx create-rstack --dir my-project --template app-vanilla-ts
 
 # Using abbreviations
 npx create-rstack -d my-project -t app-vanilla-ts
+
+# Skip Git initialization
+npx create-rstack --dir my-project --template app-vanilla-ts --no-git
 ```
 
 ## Templates

@@ -135,5 +135,6 @@ await create({
     'doc-i18n',
   ],
   builtinTools: [],
+  git: !process.argv.includes('--no-git'),
   getTemplateName,
 });
