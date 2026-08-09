@@ -31,3 +31,44 @@ jobs:
       target: ${{ matrix.target }}
       runner: ${{ matrix.runner }}
       filename: ${{ matrix.filename }}
+
+  assemble:
+    name: Assemble native packages
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24.18.0
+          package-manager-cache: false
+
+      - name: Install Pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          run_install: true
+
+      - name: Download native bindings
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: native-*
+          path: artifacts
+
+      - name: Assemble native packages
+        run: |
+          pnpm --dir packages/rstack package:native
+          pnpm --dir packages/rstack exec napi artifacts --config-path napi.json --output-dir ../../artifacts
+
+      - name: Check native packages
+        run: pnpm --dir packages/rstack exec napi pre-publish --config-path napi.json --dry-run --no-gh-release
+
+      - name: Upload native packages
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: native-packages
+          path: packages/rstack/npm
+          if-no-files-found: error
+          retention-days: 1
