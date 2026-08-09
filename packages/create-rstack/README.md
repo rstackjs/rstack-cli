@@ -29,6 +29,8 @@ npx create-rstack -d my-project -t app-vanilla-ts
 - `app-preact-ts` - TypeScript Preact application
 - `app-vue-js` - JavaScript Vue application
 - `app-vue-ts` - TypeScript Vue application
+- `app-lit-js` - JavaScript Lit application
+- `app-lit-ts` - TypeScript Lit application
 - `app-svelte-js` - JavaScript Svelte application
 - `app-svelte-ts` - TypeScript Svelte application
 - `app-solid-js` - JavaScript Solid application
