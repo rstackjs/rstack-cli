@@ -9,6 +9,17 @@ const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, '..');
 const binPath = path.join(packageRoot, 'bin.js');
 const tempDirectories: string[] = [];
+const jsCheckScript = 'rs lint && rs fmt --check';
+const tsCheckScript = 'rs lint --type-check && rs fmt --check';
+const templatesWithoutTypeCheck = new Set([
+  'app-svelte-ts',
+  'app-vue-ts',
+  'lib-svelte-ts',
+  'lib-vue-ts',
+]);
+
+const getCheckScript = (template: string, hasTypeScript: boolean): string =>
+  hasTypeScript && !templatesWithoutTypeCheck.has(template) ? tsCheckScript : jsCheckScript;
 
 afterEach(async () => {
   await Promise.all(
@@ -140,6 +151,7 @@ test.each([
     );
 
     expect(packageJson.name).toBe('my-app');
+    expect(packageJson.scripts.check).toBe(getCheckScript(template, hasTypeScript));
 
     await expect(access(path.join(projectDirectory, 'README.md'))).resolves.toBeUndefined();
     await expect(access(path.join(projectDirectory, '.gitignore'))).resolves.toBeUndefined();
@@ -167,6 +179,7 @@ test('creates the doc-basic template', async () => {
   );
 
   expect(packageJson.name).toBe('my-app');
+  expect(packageJson.scripts.check).toBe(tsCheckScript);
 
   await expect(access(path.join(projectDirectory, 'README.md'))).resolves.toBeUndefined();
   await expect(access(path.join(projectDirectory, '.gitignore'))).resolves.toBeUndefined();
@@ -185,6 +198,7 @@ test('creates the doc-i18n template', async () => {
   );
 
   expect(packageJson.name).toBe('my-app');
+  expect(packageJson.scripts.check).toBe(tsCheckScript);
 
   await expect(access(path.join(projectDirectory, 'rstack.config.ts'))).resolves.toBeUndefined();
   await expect(
@@ -265,6 +279,7 @@ test.each([
     );
 
     expect(packageJson.name).toBe('my-app');
+    expect(packageJson.scripts.check).toBe(getCheckScript(template, hasTypeScript));
 
     await expect(
       access(path.join(projectDirectory, `rstack.config.${configExtension}`)),

@@ -1,6 +1,12 @@
 import './button.css';
 
-export const Button = ({ primary = false, size = 'medium', backgroundColor, label, ...props }) => {
+export const Button = ({
+  primary = false,
+  size = 'medium',
+  backgroundColor,
+  label,
+  ...props
+}) => {
   const mode = primary ? 'demo-button--primary' : 'demo-button--secondary';
   return (
     <button

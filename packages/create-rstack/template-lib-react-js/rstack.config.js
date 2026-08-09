@@ -32,3 +32,7 @@ define.lint(async () => {
     reactHooksPlugin.configs.recommended,
   ];
 });
+
+define.fmt({
+  singleQuote: true,
+});

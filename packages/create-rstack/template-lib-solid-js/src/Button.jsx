@@ -1,7 +1,8 @@
 import './button.css';
 
 export function Button(props) {
-  const mode = () => (props.primary ? 'demo-button--primary' : 'demo-button--secondary');
+  const mode = () =>
+    props.primary ? 'demo-button--primary' : 'demo-button--secondary';
   const size = () => props.size ?? 'medium';
 
   return (

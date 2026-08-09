@@ -18,7 +18,9 @@ const {
   onClick = undefined,
 } = defineProps<Props>();
 
-const mode = computed(() => (primary ? 'demo-button--primary' : 'demo-button--secondary'));
+const mode = computed(() =>
+  primary ? 'demo-button--primary' : 'demo-button--secondary',
+);
 </script>
 
 <template>
