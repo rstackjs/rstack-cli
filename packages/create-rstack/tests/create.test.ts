@@ -21,6 +21,20 @@ const templatesWithoutTypeCheck = new Set([
 const getCheckScript = (template: string, hasTypeScript: boolean): string =>
   hasTypeScript && !templatesWithoutTypeCheck.has(template) ? tsCheckScript : jsCheckScript;
 
+const expectStagedSetup = async (
+  projectDirectory: string,
+  configExtension: string,
+  scripts: Record<string, string>,
+): Promise<void> => {
+  expect(scripts.prepare).toBe('rs setup');
+  expect(
+    await readFile(path.join(projectDirectory, '.rstack', 'hooks', 'pre-commit'), 'utf8'),
+  ).toBe('rs staged\n');
+  expect(
+    await readFile(path.join(projectDirectory, `rstack.config.${configExtension}`), 'utf8'),
+  ).toContain('define.staged({');
+};
+
 afterEach(async () => {
   await Promise.all(
     tempDirectories.splice(0).map((directory) => rm(directory, { recursive: true, force: true })),
@@ -152,6 +166,7 @@ test.each([
 
     expect(packageJson.name).toBe('my-app');
     expect(packageJson.scripts.check).toBe(getCheckScript(template, hasTypeScript));
+    await expectStagedSetup(projectDirectory, configExtension, packageJson.scripts);
 
     await expect(access(path.join(projectDirectory, 'README.md'))).resolves.toBeUndefined();
     await expect(access(path.join(projectDirectory, '.gitignore'))).resolves.toBeUndefined();
@@ -180,6 +195,7 @@ test('creates the doc-basic template', async () => {
 
   expect(packageJson.name).toBe('my-app');
   expect(packageJson.scripts.check).toBe(tsCheckScript);
+  await expectStagedSetup(projectDirectory, 'ts', packageJson.scripts);
 
   await expect(access(path.join(projectDirectory, 'README.md'))).resolves.toBeUndefined();
   await expect(access(path.join(projectDirectory, '.gitignore'))).resolves.toBeUndefined();
@@ -199,6 +215,7 @@ test('creates the doc-i18n template', async () => {
 
   expect(packageJson.name).toBe('my-app');
   expect(packageJson.scripts.check).toBe(tsCheckScript);
+  await expectStagedSetup(projectDirectory, 'ts', packageJson.scripts);
 
   await expect(access(path.join(projectDirectory, 'rstack.config.ts'))).resolves.toBeUndefined();
   await expect(
@@ -280,6 +297,7 @@ test.each([
 
     expect(packageJson.name).toBe('my-app');
     expect(packageJson.scripts.check).toBe(getCheckScript(template, hasTypeScript));
+    await expectStagedSetup(projectDirectory, configExtension, packageJson.scripts);
 
     await expect(
       access(path.join(projectDirectory, `rstack.config.${configExtension}`)),
