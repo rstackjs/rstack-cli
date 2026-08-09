@@ -64,9 +64,10 @@
   ],
   "scripts": {
     "build": "rslib",
-    "build:native": "napi build --platform --manifest-path ../../Cargo.toml --package rstack-binding --package-json-path package.json --output-dir . --js binding.cjs --dts binding.d.cts",
-    "build:native:release": "napi build --platform --release --manifest-path ../../Cargo.toml --package rstack-binding --package-json-path package.json --output-dir . --js binding.cjs --dts binding.d.cts",
+    "build:native": "napi build --config-path napi.json --platform --manifest-path ../../Cargo.toml --package rstack-binding --package-json-path package.json --output-dir . --js binding.cjs --dts binding.d.cts",
+    "build:native:release": "napi build --config-path napi.json --platform --release --manifest-path ../../Cargo.toml --package rstack-binding --package-json-path package.json --output-dir . --js binding.cjs --dts binding.d.cts",
     "dev": "rslib -w",
+    "package:native": "napi create-npm-dirs --config-path napi.json",
     "test": "rs test"
   },
   "dependencies": {
@@ -112,24 +113,5 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
-  },
-  "napi": {
-    "binaryName": "rstack",
-    "packageName": "@rstackjs/binding",
-    "targets": [
-      "x86_64-unknown-linux-gnu",
-      "aarch64-unknown-linux-gnu",
-      "x86_64-pc-windows-msvc",
-      "aarch64-apple-darwin",
-      "powerpc64le-unknown-linux-gnu",
-      "s390x-unknown-linux-gnu",
-      "aarch64-pc-windows-msvc",
-      "x86_64-apple-darwin",
-      "x86_64-unknown-linux-musl",
-      "riscv64gc-unknown-linux-gnu",
-      "aarch64-unknown-linux-musl",
-      "riscv64gc-unknown-linux-musl",
-      "i686-pc-windows-msvc"
-    ]
   }
 }

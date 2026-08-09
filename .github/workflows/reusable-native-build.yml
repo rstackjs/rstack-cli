@@ -72,6 +72,7 @@ jobs:
         run: |
           args=(
             build
+            --config-path napi.json
             --platform
             --release
             --target "$RUST_TARGET"
