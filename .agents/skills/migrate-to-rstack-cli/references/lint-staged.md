@@ -10,8 +10,9 @@ If staged tasks invoke Prettier, also read [prettier.md](prettier.md).
 
 1. Replace staged-file script invocations with `rs staged`.
 2. Move the staged-file config into `define.staged` in `rstack.config.*`.
-3. Remove the old manifest key or config file.
-4. Remove the direct staged-file dependency only when no script, config, or programmatic API still uses it.
+3. Preserve previous behavior. Separate code tasks that lint and format from format-only tasks.
+4. Remove the old manifest key or config file.
+5. Remove the direct staged-file dependency only when no script, config, or programmatic API still uses it.
 
 ## Config Pattern
 
@@ -19,8 +20,8 @@ If staged tasks invoke Prettier, also read [prettier.md](prettier.md).
 import { define } from 'rstack';
 
 define.staged({
-  '*.{ts,tsx,js,jsx}': ['rs lint --fix', 'rs fmt'],
-  '*.{json,md}': 'rs fmt',
+  '*.{js,jsx,ts,tsx,mjs,cjs}': ['rs lint', 'rs fmt'],
+  '*.{json,jsonc,md,mdx,css,html,yml,yaml}': 'rs fmt',
 });
 ```
 

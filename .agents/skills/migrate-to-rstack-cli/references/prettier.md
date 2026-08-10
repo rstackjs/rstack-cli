@@ -17,6 +17,8 @@ Read this reference when the project uses the `prettier` CLI or API, `package.js
 
 `rs fmt` ignores `package-lock.json` and `pnpm-lock.yaml` by default. Drop redundant ignore entries during migration, but keep intentional negations.
 
+Rstack creates `.rstack/cache/.gitignore` by default. Do not list `.rstack/cache` in the root `.gitignore`; add explicit rules only for custom cache paths.
+
 `rs fmt` does not read Prettier configuration files, `.prettierignore`, or `.editorconfig`.
 
 Keep `.editorconfig` when editors or other tools use it. Keep Prettier when application code uses APIs such as `prettier.format()`; `rs fmt` is not a drop-in replacement for the programmatic API.
