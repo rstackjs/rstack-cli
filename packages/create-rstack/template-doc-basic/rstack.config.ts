@@ -21,8 +21,3 @@ define.lint(async () => {
 define.fmt({
   singleQuote: true,
 });
-
-define.staged({
-  '*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}': ['rs lint --fix', 'rs fmt'],
-  '*.{json,jsonc,md,mdx,css,html,yml,yaml}': 'rs fmt',
-});

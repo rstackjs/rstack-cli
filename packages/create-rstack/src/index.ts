@@ -1,5 +1,14 @@
-import { type Argv, checkCancel, create, select } from '@rstackjs/create-toolkit';
+import {
+  type Argv,
+  type GitResolvedContext,
+  checkCancel,
+  create,
+  select,
+} from '@rstackjs/create-toolkit';
+import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+
+const packageRoot = path.join(import.meta.dirname, '..');
 
 const getTemplateName = async ({ template }: Argv): Promise<string> => {
   if (typeof template === 'string') {
@@ -103,8 +112,61 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
   return `${projectType}-${templateType}-${language}`;
 };
 
+const getStagedConfig = (templateName: string): string => {
+  const scriptExtensions = ['js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs', 'mts', 'cts'];
+  const formatExtensions = ['json', 'jsonc', 'md', 'mdx', 'css', 'html', 'yml', 'yaml'];
+  const componentExtensions = ['svelte', 'vue'];
+  const templateFormatExtensions = [
+    ...formatExtensions,
+    ...componentExtensions.filter((extension) => templateName.includes(extension)),
+  ];
+
+  return [
+    '',
+    'define.staged({',
+    `  '*.{${scriptExtensions.join(',')}}': ['rs lint --fix', 'rs fmt'],`,
+    `  '*.{${templateFormatExtensions.join(',')}}': 'rs fmt',`,
+    '});',
+    '',
+  ].join('\n');
+};
+
+const injectStagedSetup = async ({
+  templateName,
+  distFolder,
+  gitEnabled,
+  isGitRoot,
+}: GitResolvedContext): Promise<void> => {
+  if (!gitEnabled || !isGitRoot) {
+    return;
+  }
+
+  const configExtension = templateName.endsWith('-js') ? 'js' : 'ts';
+  const packageJsonPath = path.join(distFolder, 'package.json');
+  const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8')) as {
+    scripts: Record<string, string>;
+  };
+
+  packageJson.scripts = Object.fromEntries(
+    Object.entries({ ...packageJson.scripts, prepare: 'rs setup' }).sort(([left], [right]) =>
+      left.localeCompare(right),
+    ),
+  );
+
+  const hooksDirectory = path.join(distFolder, '.rstack', 'hooks');
+  await mkdir(hooksDirectory, { recursive: true });
+  await Promise.all([
+    writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`),
+    appendFile(
+      path.join(distFolder, `rstack.config.${configExtension}`),
+      getStagedConfig(templateName),
+    ),
+    writeFile(path.join(hooksDirectory, 'pre-commit'), 'rs staged\n'),
+  ]);
+};
+
 await create({
-  root: path.join(import.meta.dirname, '..'),
+  root: packageRoot,
   name: 'rstack',
   templates: [
     'app-vanilla-js',
@@ -136,4 +198,5 @@ await create({
   ],
   builtinTools: [],
   getTemplateName,
+  onGitResolved: injectStagedSetup,
 });

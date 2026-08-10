@@ -9,7 +9,6 @@
     "dev": "rs dev",
     "format": "rs fmt",
     "lint": "rs lint",
-    "prepare": "rs setup",
     "preview": "rs preview",
     "test": "rs test",
     "test:watch": "rs test --watch"

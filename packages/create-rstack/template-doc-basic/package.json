@@ -9,7 +9,6 @@
     "dev": "rs doc",
     "format": "rs fmt",
     "lint": "rs lint",
-    "prepare": "rs setup",
     "preview": "rs doc preview"
   },
   "devDependencies": {
