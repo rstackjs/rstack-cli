@@ -64,5 +64,5 @@ const createFmtWorkerPool = async (
   };
 };
 
-export { createFmtWorkerPool, getFmtWorkerCount };
+export { createFmtWorkerPool };
 export type { FmtWorkerPool };

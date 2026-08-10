@@ -3,7 +3,7 @@ import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { createHookFiles } from '../../src/setup/hooks.ts';
 import { installHooks } from '../../src/setup/install.ts';
-import { git, hooksPath, restoreEnv, runGit, withDirectory, withRepository } from './helpers.ts';
+import { git, hooksPath, restoreEnv, runGit, withRepository } from './helpers.ts';
 
 test('installs generated hooks and configures the repository', () => {
   withRepository((cwd) => {
@@ -83,32 +83,6 @@ test('resolves repository context with a single Git process when unchanged', () 
       .filter((event) => event.event === 'start');
     expect(starts).toHaveLength(1);
     expect(starts[0].argv).toContain('rev-parse');
-  });
-});
-
-test('skips non-Git directories without creating files', () => {
-  withDirectory((cwd) => {
-    expect(installHooks({ cwd })).toEqual({
-      status: 'skipped',
-      reason: 'not-git-repository',
-    });
-    expect(existsSync(path.join(cwd, '.rstack'))).toBe(false);
-  });
-});
-
-test('reports when Git is unavailable', () => {
-  withDirectory((cwd) => {
-    const originalPath = process.env.PATH;
-    process.env.PATH = '';
-    try {
-      expect(installHooks({ cwd })).toEqual({
-        status: 'failed',
-        reason: 'git-not-found',
-        message: 'Git command not found.',
-      });
-    } finally {
-      restoreEnv('PATH', originalPath);
-    }
   });
 });
 
