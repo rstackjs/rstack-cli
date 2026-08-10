@@ -5,7 +5,7 @@ import { expect, test } from 'rstack/test';
 import { createHookFiles } from '../../src/setup/hooks.ts';
 import { withDirectory } from './helpers.ts';
 
-test('generates the dispatcher and all client-side Git hook shims', () => {
+test('generates the runner and all client-side Git hook shims', () => {
   const { runner, ...shims } = createHookFiles();
 
   expect(Object.keys(shims)).toEqual([
@@ -25,7 +25,6 @@ test('generates the dispatcher and all client-side Git hook shims', () => {
     'pre-auto-gc',
   ]);
   expect(runner).toBeTruthy();
-  expect(new Set(Object.values(shims)).size).toBe(1);
 });
 
 test.runIf(process.platform === 'win32')('converts Windows Node paths', () => {

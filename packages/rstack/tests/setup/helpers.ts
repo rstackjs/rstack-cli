@@ -70,6 +70,9 @@ export const writeInit = (cwd: string, content: string): void => {
 export const runHook = (cwd: string, value?: string): SpawnSyncReturns<string> =>
   git(cwd, ['hook', 'run', 'pre-commit'], hookEnv(cwd, value));
 
+export const runGitHook = (cwd: string, name: string, args: string[]): SpawnSyncReturns<string> =>
+  git(cwd, ['hook', 'run', name, '--', ...args], hookEnv(cwd));
+
 export const withRepository = (callback: (cwd: string) => void): void =>
   withDirectory((cwd) => {
     const globalConfig = process.env.GIT_CONFIG_GLOBAL;
