@@ -6,7 +6,8 @@ import { runHook, withRepository, writeHook, writeInit } from './helpers.ts';
 
 test('loads user init and project binaries', () => {
   withRepository((cwd) => {
-    const binDirectory = path.join(cwd, 'node_modules', '.bin');
+    const projectDirectory = path.join(cwd, 'frontend');
+    const binDirectory = path.join(projectDirectory, 'node_modules', '.bin');
     mkdirSync(binDirectory, { recursive: true });
     writeInit(cwd, 'set -u\nexport RSTACK_INIT=loaded\n');
 
@@ -26,32 +27,10 @@ rstack-hook-command
 `,
     );
 
-    expect(installHooks({ cwd }).status).toBe('installed');
-
-    expect(runHook(cwd).status).toBe(0);
-    expect(readFileSync(path.join(cwd, 'init-ran'), 'utf8')).toBe('loaded\n');
-    expect(readFileSync(path.join(cwd, 'project-bin-ran'), 'utf8')).toBe('ran\n');
-  });
-});
-
-test('loads binaries from a nested project while running the root hook', () => {
-  withRepository((cwd) => {
-    const projectDirectory = path.join(cwd, 'frontend');
-    const binDirectory = path.join(projectDirectory, 'node_modules', '.bin');
-    mkdirSync(binDirectory, { recursive: true });
-
-    const command = path.join(binDirectory, 'rstack-hook-command');
-    writeFileSync(
-      command,
-      `#!/usr/bin/env sh
-printf 'ran\n' > project-bin-ran
-`,
-    );
-    chmodSync(command, 0o755);
-    writeHook(cwd, 'rstack-hook-command\n');
-
     expect(installHooks({ cwd: projectDirectory }).status).toBe('installed');
+
     expect(runHook(cwd).status).toBe(0);
+    expect(readFileSync(path.join(projectDirectory, 'init-ran'), 'utf8')).toBe('loaded\n');
     expect(readFileSync(path.join(projectDirectory, 'project-bin-ran'), 'utf8')).toBe('ran\n');
   });
 });

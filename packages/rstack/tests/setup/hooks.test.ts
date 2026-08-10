@@ -43,8 +43,7 @@ test.runIf(process.platform !== 'win32')('preserves backslashes in POSIX Node pa
 
 test.runIf(process.platform !== 'win32')('runs generated hooks', () => {
   withDirectory((directory) => {
-    const hooksDir = "hooks with ' quotes";
-    const hooksDirectory = path.join(directory, hooksDir);
+    const hooksDirectory = path.join(directory, "hooks with ' quotes");
     const generatedDirectory = path.join(hooksDirectory, '_');
     const generatedHook = path.join(generatedDirectory, 'pre-commit');
     const userHook = path.join(hooksDirectory, 'pre-commit');
