@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter './packages/**' build",
+    "build": "pnpm --filter \"./packages/**\" build",
     "check:format": "rs fmt --check",
     "check:spell": "pnpm dlx cspell && heading-case",
     "doc": "pnpm --dir website dev",
@@ -14,7 +14,7 @@
     "lint": "rs lint --type-check",
     "prepare": "node scripts/rs.js setup",
     "release:prepare": "node scripts/prepare-release.js",
-    "test": "pnpm --filter './packages/**' test"
+    "test": "pnpm --filter \"./packages/**\" test"
   },
   "devDependencies": {
     "@types/node": "catalog:",
