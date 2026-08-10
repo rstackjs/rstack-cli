@@ -27,10 +27,10 @@
     "@testing-library/jest-dom": "^7.0.0",
     "@types/node": "^24.13.3",
     "@vue/test-utils": "^2.4.11",
-    "happy-dom": "^20.11.1",
+    "happy-dom": "^20.11.2",
     "rstack": "^0.4.0",
     "typescript": "^6.0.3",
-    "vue": "^3.5.40",
+    "vue": "^3.5.41",
     "vue-tsc": "^3.3.9"
   },
   "peerDependencies": {
