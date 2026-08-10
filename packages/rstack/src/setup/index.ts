@@ -10,7 +10,7 @@ ${color.yellow('  $ rs setup [options]')}
 Install Git hooks in the current repository.
 
 ${color.cyan('Options')}:
-  --hooks-dir <path>  Specify hooks directory relative to the current directory
+  --hooks-dir <path>  Specify hooks directory relative to the Git repository root
   -h, --help          Display this help message`;
 
 export const runSetupCLI = (args: string[]): void => {
@@ -43,6 +43,11 @@ export const runSetupCLI = (args: string[]): void => {
   }
 
   if (result.status === 'skipped') {
+    if (result.message) {
+      logger.warn(`Git hooks setup skipped: ${color.yellow(result.message)}.`);
+      return;
+    }
+
     const reason =
       result.reason === 'disabled' ? 'disabled by RSTACK_HOOKS' : 'not a Git repository';
     logger.info(`Git hooks setup skipped: ${color.yellow(reason)}.`);

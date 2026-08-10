@@ -43,7 +43,8 @@ test.runIf(process.platform !== 'win32')('preserves backslashes in POSIX Node pa
 
 test.runIf(process.platform !== 'win32')('runs generated hooks', () => {
   withDirectory((directory) => {
-    const hooksDirectory = path.join(directory, "hooks with ' quotes");
+    const hooksDir = "hooks with ' quotes";
+    const hooksDirectory = path.join(directory, hooksDir);
     const generatedDirectory = path.join(hooksDirectory, '_');
     const generatedHook = path.join(generatedDirectory, 'pre-commit');
     const userHook = path.join(hooksDirectory, 'pre-commit');
@@ -58,10 +59,11 @@ test.runIf(process.platform !== 'win32')('runs generated hooks', () => {
     };
 
     mkdirSync(generatedDirectory, { recursive: true });
+    writeFileSync(path.join(generatedDirectory, '.owner'), '.\n');
     writeFileSync(path.join(generatedDirectory, 'runner'), files.runner);
     writeFileSync(generatedHook, files['pre-commit']);
 
-    expect(spawnSync('sh', [generatedHook], { env }).status).toBe(0);
+    expect(spawnSync('sh', [generatedHook], { cwd: directory, env }).status).toBe(0);
 
     writeFileSync(
       userHook,
@@ -70,6 +72,7 @@ printf '%s\\n' "$1|$input"
 `,
     );
     const result = spawnSync('sh', [generatedHook, 'argument with spaces'], {
+      cwd: directory,
       encoding: 'utf8',
       env,
       input: 'standard input\n',
@@ -84,7 +87,11 @@ printf '%s\\n' "$1|$input"
 printf 'unreachable\\n'
 `,
     );
-    const errexitResult = spawnSync('sh', [generatedHook], { encoding: 'utf8', env });
+    const errexitResult = spawnSync('sh', [generatedHook], {
+      cwd: directory,
+      encoding: 'utf8',
+      env,
+    });
 
     expect(errexitResult.status).toBe(1);
     expect(errexitResult.stdout).toBe('Rstack - pre-commit hook failed (code 1)\n');
@@ -95,13 +102,21 @@ printf 'unreachable\\n'
     symlinkSync('/bin/sh', path.join(runtimeDirectory, 'sh'));
     symlinkSync('/bin/sh', fallbackNode);
 
-    const fallbackResult = spawnSync('sh', [generatedHook], { encoding: 'utf8', env });
+    const fallbackResult = spawnSync('sh', [generatedHook], {
+      cwd: directory,
+      encoding: 'utf8',
+      env,
+    });
     expect(fallbackResult.stdout).toBe(`${fallbackNode}\n`);
 
     const activeNode = path.join(runtimeDirectory, 'node');
     symlinkSync('/bin/sh', activeNode);
 
-    const activeResult = spawnSync('sh', [generatedHook], { encoding: 'utf8', env });
+    const activeResult = spawnSync('sh', [generatedHook], {
+      cwd: directory,
+      encoding: 'utf8',
+      env,
+    });
     expect(activeResult.stdout).toBe(`${activeNode}\n`);
   });
 });

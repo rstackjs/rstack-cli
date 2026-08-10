@@ -51,11 +51,13 @@ test('displays setup help', ({ execCli, expect }) => {
   expect(execCli('setup -h', { cwd })).toBe(output);
   expect(output).toContain('Usage:\n  $ rs setup [options]');
   expect(output).toContain('--hooks-dir <path>');
+  expect(output).not.toContain('--force');
   expect(output).toContain('-h, --help');
 });
 
 test('rejects unknown setup options', ({ execCli, expect }) => {
   expect(() => execCli('setup --unknown', { cwd })).toThrow();
+  expect(() => execCli('setup --force', { cwd })).toThrow();
 });
 
 test('reports missing and repeated hooks directory options', ({ expect }) => {
@@ -76,7 +78,7 @@ test('rejects invalid hooks directory options', ({ expect }) => {
   const absolute = runSetup(['--hooks-dir', path.join(cwd, 'hooks')]);
   expect(absolute.status).toBe(1);
   expect(absolute.stderr).toContain(
-    'Git hooks directory must be relative to the current directory.',
+    'Git hooks directory must be relative to the Git repository root.',
   );
 
   const parent = runSetup(['--hooks-dir', '../hooks']);
@@ -96,14 +98,33 @@ test('installs hooks silently without loading Rstack config', ({ execCli, expect
   expect(execCli('setup', { cwd, env })).toBe('');
 });
 
-test('installs a custom hooks directory from a nested project', ({ execCli, expect }) => {
+test('installs a root-relative custom hooks directory from a nested project', ({
+  execCli,
+  expect,
+}) => {
   initRepository();
   const projectDirectory = path.join(cwd, 'frontend');
   mkdirSync(projectDirectory);
 
   expect(execCli('setup --hooks-dir "custom hooks"', { cwd: projectDirectory, env })).toBe('');
-  expect(git(['config', '--local', '--get', 'core.hooksPath'])).toBe('frontend/custom hooks/_');
-  expect(existsSync(path.join(projectDirectory, 'custom hooks', '_', 'runner'))).toBe(true);
+  expect(git(['config', '--local', '--get', 'core.hooksPath'])).toBe('custom hooks/_');
+  expect(existsSync(path.join(cwd, 'custom hooks', '_', 'runner'))).toBe(true);
+  expect(existsSync(path.join(projectDirectory, 'custom hooks'))).toBe(false);
+});
+
+test('reports a different project owner without replacing it', ({ execCli, expect }) => {
+  initRepository();
+  const frontend = path.join(cwd, 'frontend');
+  const docs = path.join(cwd, 'docs');
+  mkdirSync(frontend);
+  mkdirSync(docs);
+
+  expect(execCli('setup', { cwd: frontend, env })).toBe('');
+  const conflict = runSetup([], docs);
+  expect(conflict.status).toBe(0);
+  expect(`${conflict.stdout}${conflict.stderr}`).toContain(
+    'Git hooks are already managed by Rstack project "frontend"',
+  );
 });
 
 test('skips non-Git directories without creating files', ({ execCli, expect }) => {
