@@ -1,0 +1,81 @@
+---
+description: '通过 Agent Skills、llms.txt、Markdown 文档和 AGENTS.md，配合 Coding Agent 使用 Rstack CLI。'
+---
+
+import { PackageManagerTabs } from '@rspress/core/theme';
+
+# AI
+
+为了帮助 Coding Agent 理解 Rstack CLI 的命令、配置和最佳实践，Rstack CLI 提供了以下资源：
+
+- [AGENTS.md](#agentsmd)
+- [Agent Skills](#agent-skills)
+- [llms.txt](#llmstxt)
+- [Markdown 文档](#markdown-docs)
+
+## AGENTS.md
+
+使用 [create-rstack](https://www.npmjs.com/package/create-rstack) 创建的项目会包含一个遵循 [`AGENTS.md`](https://agents.md/) 规范的文件，为 Coding Agent 提供使用 Rstack CLI 所需的关键上下文。
+
+你也可以将以下内容复制到自己的 `AGENTS.md` 中：
+
+```markdown wrapCode title="AGENTS.md"
+This project uses Rstack CLI as its JavaScript toolchain.
+
+- Before working with `rs` commands, `rstack.config.*` files, or imports from `rstack`, start with `node_modules/rstack/dist/docs/llms.txt`, then read only the linked pages relevant to the task.
+- For command details, use `rs -h` or `rs <command> -h`.
+- If the local documentation is unavailable, use https://rstack.rs/llms.txt and `rs <command> -h`.
+```
+
+这段内容与 [rstack-cli-best-practices](#rstack-cli-best-practices) Skill 作用相似，都能指导 Coding Agent 使用 Rstack CLI 并查找相关文档。将其添加到 `AGENTS.md` 或安装该 Skill，任选其一即可。
+
+## Agent Skills
+
+Rstack CLI 提供面向特定领域的 Agent Skills，帮助 Coding Agent 更准确地提供建议并执行相关任务。
+
+### rstack-cli-best-practices
+
+[rstack-cli-best-practices](https://github.com/rstackjs/rstack-cli/tree/main/.agents/skills/rstack-cli-best-practices) Skill 提供 Rstack CLI 的使用指南和最佳实践。
+
+使用 [skills](https://www.npmjs.com/package/skills) 包安装该 Skill：
+
+<PackageManagerTabs
+  command="skills add rstackjs/rstack-cli --skill rstack-cli-best-practices"
+  dlx
+/>
+
+### migrate-to-rstack-cli
+
+[migrate-to-rstack-cli](https://github.com/rstackjs/rstack-cli/tree/main/.agents/skills/migrate-to-rstack-cli) Skill 可以将使用独立 Rstack 工具及相关开发工具的项目迁移到 Rstack CLI。
+
+迁移现有项目时，安装该 Skill：
+
+<PackageManagerTabs command="skills add rstackjs/rstack-cli --skill migrate-to-rstack-cli" dlx />
+
+支持的工具和迁移说明请参阅[迁移到 Rstack CLI](./migration)。
+
+## llms.txt
+
+[llms.txt](https://llmstxt.org/) 是一种帮助 LLM 发现和使用项目文档的标准规范。Rstack CLI 文档站提供了以下文件：
+
+- [llms.txt](https://rstack.rs/zh/llms.txt)：结构化索引文件，包含每篇文档的标题、链接和描述。
+
+```text
+https://rstack.rs/zh/llms.txt
+```
+
+- [llms-full.txt](https://rstack.rs/zh/llms-full.txt)：包含所有文档完整内容的单个文件。
+
+```text
+https://rstack.rs/zh/llms-full.txt
+```
+
+当 Agent 可以按需跟随链接并只加载与任务相关的页面时，使用 `llms.txt`。当 Agent 需要在同一上下文中读取完整文档，并且可以接受更多 token 消耗时，使用 `llms-full.txt`。
+
+## Markdown 文档 \{#markdown-docs}
+
+Rstack CLI 的每篇文档都有对应的 `.md` 纯文本版本，可以直接提供给 Agent。在任意文档页面的标题下方使用「复制 Markdown」或「复制 Markdown 链接」，即可复制文档内容或 URL。
+
+```text
+https://rstack.rs/zh/guide/quick-start.md
+```

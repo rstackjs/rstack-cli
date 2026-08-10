@@ -1,0 +1,81 @@
+---
+description: 'Use Rstack CLI with coding agents through Agent Skills, llms.txt, Markdown docs, and AGENTS.md.'
+---
+
+import { PackageManagerTabs } from '@rspress/core/theme';
+
+# AI
+
+To help coding agents understand Rstack CLI commands, configuration, and best practices, Rstack CLI provides the following resources:
+
+- [AGENTS.md](#agentsmd)
+- [Agent Skills](#agent-skills)
+- [llms.txt](#llmstxt)
+- [Markdown docs](#markdown-docs)
+
+## AGENTS.md
+
+Projects created with [create-rstack](https://www.npmjs.com/package/create-rstack) include an [`AGENTS.md`](https://agents.md/) file that gives coding agents the key context for working with Rstack CLI.
+
+You can also copy the following content into your own `AGENTS.md`:
+
+```markdown wrapCode title="AGENTS.md"
+This project uses Rstack CLI as its JavaScript toolchain.
+
+- Before working with `rs` commands, `rstack.config.*` files, or imports from `rstack`, start with `node_modules/rstack/dist/docs/llms.txt`, then read only the linked pages relevant to the task.
+- For command details, use `rs -h` or `rs <command> -h`.
+- If the local documentation is unavailable, use https://rstack.rs/llms.txt and `rs <command> -h`.
+```
+
+This content serves a similar purpose to the [rstack-cli-best-practices](#rstack-cli-best-practices) Skill, helping coding agents use Rstack CLI and find relevant documentation. Add it to `AGENTS.md` or install the Skill; either is sufficient.
+
+## Agent Skills
+
+Rstack CLI provides domain-specific Agent Skills that help coding agents give more accurate guidance and perform relevant tasks.
+
+### rstack-cli-best-practices
+
+The [rstack-cli-best-practices](https://github.com/rstackjs/rstack-cli/tree/main/.agents/skills/rstack-cli-best-practices) Skill provides guidance and best practices for using Rstack CLI.
+
+Install it with the [skills](https://www.npmjs.com/package/skills) package:
+
+<PackageManagerTabs
+  command="skills add rstackjs/rstack-cli --skill rstack-cli-best-practices"
+  dlx
+/>
+
+### migrate-to-rstack-cli
+
+The [migrate-to-rstack-cli](https://github.com/rstackjs/rstack-cli/tree/main/.agents/skills/migrate-to-rstack-cli) Skill migrates projects from standalone Rstack tools and related development tools to Rstack CLI.
+
+To migrate an existing project, install the Skill:
+
+<PackageManagerTabs command="skills add rstackjs/rstack-cli --skill migrate-to-rstack-cli" dlx />
+
+For supported tools and migration instructions, see [Migrate to Rstack CLI](./migration).
+
+## llms.txt
+
+[llms.txt](https://llmstxt.org/) is a standard that helps LLMs discover and use project documentation. The Rstack CLI documentation site provides the following files:
+
+- [llms.txt](https://rstack.rs/llms.txt): A structured index containing the title, link, and description of each documentation page.
+
+```text
+https://rstack.rs/llms.txt
+```
+
+- [llms-full.txt](https://rstack.rs/llms-full.txt): A single file containing the full content of all documentation pages.
+
+```text
+https://rstack.rs/llms-full.txt
+```
+
+Use `llms.txt` when the agent can follow links and load only the pages relevant to a task. Use `llms-full.txt` when the agent needs the complete documentation in one context and the larger token cost is acceptable.
+
+## Markdown docs
+
+Every Rstack CLI documentation page has a corresponding `.md` plain-text version that can be provided directly to an agent. On any documentation page, use “Copy Markdown” or “Copy Markdown Link” under the title to copy its content or URL.
+
+```text
+https://rstack.rs/guide/quick-start.md
+```
