@@ -25,7 +25,7 @@ export const execCli: ExecCli = (command, options = {}) => {
   const { logHelper, ...execOptions } = options;
 
   try {
-    const output = execSync(`${RSTACK_BIN_PATH} ${command}`, {
+    const output = execSync(`"${process.execPath}" "${RSTACK_BIN_PATH}" ${command}`, {
       stdio: 'pipe',
       ...execOptions,
       env: {
