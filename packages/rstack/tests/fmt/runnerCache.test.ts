@@ -5,26 +5,13 @@ import { expect, test } from 'rstack/test';
 import { cacheNamespace, createOptionsHasher, sha256 } from '../../src/fmt/cacheIdentity.ts';
 import { loadFmtCacheStore } from '../../src/fmt/cacheStore.ts';
 import { runFmtFiles } from '../../src/fmt/runner.ts';
-import type {
-  FmtCacheContext,
-  FmtFileRequest,
-  FmtMode,
-  ResolvedFmtOptions,
-} from '../../src/fmt/types.ts';
-import { withTempProject, writeProjectFile } from './helpers.ts';
-
-const createRequest = (
-  filePath: string,
-  options: ResolvedFmtOptions = { parser: 'typescript' },
-): FmtFileRequest => ({
-  path: filePath,
-  options,
-});
-
-const createCache = (rootPath: string): FmtCacheContext => ({
-  filePath: path.join(rootPath, 'cache', 'fmt-v1.json'),
-  rootPath,
-});
+import type { FmtCacheContext, FmtFileRequest, FmtMode } from '../../src/fmt/types.ts';
+import {
+  createFmtCacheContext,
+  createFmtRequest,
+  withTempProject,
+  writeProjectFile,
+} from './helpers.ts';
 
 const run = (files: FmtFileRequest[], mode: FmtMode, cache: FmtCacheContext) =>
   runFmtFiles({ files, mode, cache });
@@ -34,11 +21,11 @@ for (const mode of ['check', 'list-different'] as const) {
     await withTempProject(async (rootPath) => {
       const cleanPath = path.join(rootPath, 'clean.ts');
       const dirtyPath = path.join(rootPath, 'dirty.ts');
-      const cache = createCache(rootPath);
+      const cache = createFmtCacheContext(rootPath);
       writeFileSync(cleanPath, 'const clean = 1;\n');
       writeFileSync(dirtyPath, 'const dirty=1');
 
-      const files = [createRequest(cleanPath), createRequest(dirtyPath)];
+      const files = [createFmtRequest(cleanPath), createFmtRequest(dirtyPath)];
       const first = await run(files, mode, cache);
 
       expect(first).toMatchObject({
@@ -67,14 +54,14 @@ for (const mode of ['check', 'list-different'] as const) {
 test('uses content hashes instead of file metadata', async () => {
   await withTempProject(async (rootPath) => {
     const filePath = path.join(rootPath, 'index.ts');
-    const cache = createCache(rootPath);
+    const cache = createFmtCacheContext(rootPath);
     const timestamp = new Date('2020-01-01T00:00:00.000Z');
     const clean = 'const value = 1;\n';
     const dirty = 'const value=  1;\n';
     writeFileSync(filePath, clean);
     utimesSync(filePath, timestamp, timestamp);
 
-    await run([createRequest(filePath)], 'check', cache);
+    await run([createFmtRequest(filePath)], 'check', cache);
     const firstStore = await loadFmtCacheStore(cache.filePath, cacheNamespace);
     const firstEntry = firstStore.get('index.ts');
 
@@ -85,7 +72,7 @@ test('uses content hashes instead of file metadata', async () => {
       size: Buffer.byteLength(clean),
     });
 
-    await expect(run([createRequest(filePath)], 'check', cache)).resolves.toMatchObject({
+    await expect(run([createFmtRequest(filePath)], 'check', cache)).resolves.toMatchObject({
       exitCode: 1,
       files: [{ path: filePath, status: 'different' }],
     });
@@ -100,13 +87,13 @@ test('uses content hashes instead of file metadata', async () => {
 test('invalidates entries when final options change', async () => {
   await withTempProject(async (rootPath) => {
     const filePath = path.join(rootPath, 'index.ts');
-    const cache = createCache(rootPath);
+    const cache = createFmtCacheContext(rootPath);
     writeFileSync(filePath, 'const value = "text";\n');
 
-    const initial = createRequest(filePath, { parser: 'typescript', singleQuote: false });
+    const initial = createFmtRequest(filePath, { parser: 'typescript', singleQuote: false });
     await run([initial], 'check', cache);
 
-    const changed = createRequest(filePath, { parser: 'typescript', singleQuote: true });
+    const changed = createFmtRequest(filePath, { parser: 'typescript', singleQuote: true });
     await expect(run([changed], 'check', cache)).resolves.toMatchObject({
       exitCode: 1,
       files: [{ path: filePath, status: 'different' }],
@@ -124,8 +111,8 @@ test('invalidates entries when final options change', async () => {
 test('caches unsupported parser results until final options change', async () => {
   await withTempProject(async (rootPath) => {
     const filePath = writeProjectFile(rootPath, 'data.unknown', '{"value":true}');
-    const cache = createCache(rootPath);
-    const unsupported = createRequest(filePath, {});
+    const cache = createFmtCacheContext(rootPath);
+    const unsupported = createFmtRequest(filePath, {});
 
     const first = await run([unsupported], 'check', cache);
     expect(first).toEqual({
@@ -141,7 +128,7 @@ test('caches unsupported parser results until final options change', async () =>
 
     await expect(run([unsupported], 'check', cache)).resolves.toEqual(first);
 
-    const supported = createRequest(filePath, { parser: 'json' });
+    const supported = createFmtRequest(filePath, { parser: 'json' });
     await expect(run([supported], 'check', cache)).resolves.toMatchObject({
       exitCode: 1,
       files: [{ path: filePath, status: 'different' }],
@@ -158,8 +145,8 @@ test('caches unsupported parser results until final options change', async () =>
 test('invalidates cached unsupported parser results when content changes without an extension', async () => {
   await withTempProject(async (rootPath) => {
     const filePath = writeProjectFile(rootPath, 'script', 'plain text\n');
-    const cache = createCache(rootPath);
-    const file = createRequest(filePath, {});
+    const cache = createFmtCacheContext(rootPath);
+    const file = createFmtRequest(filePath, {});
 
     const first = await run([file], 'check', cache);
     expect(first).toEqual({
@@ -211,8 +198,8 @@ test('caches only plugins with stable fingerprints', async () => {
           ...(version ? { version } : {}),
         }),
       );
-    const cache = createCache(rootPath);
-    const file = createRequest(filePath, { plugins: [pathToFileURL(pluginEntry).href] });
+    const cache = createFmtCacheContext(rootPath);
+    const file = createFmtRequest(filePath, { plugins: [pathToFileURL(pluginEntry).href] });
 
     writePackageJson();
     await run([file], 'check', cache);
@@ -241,16 +228,16 @@ test('preserves entries outside the formatted subset', async () => {
   await withTempProject(async (rootPath) => {
     const firstPath = path.join(rootPath, 'first.ts');
     const secondPath = path.join(rootPath, 'second.ts');
-    const cache = createCache(rootPath);
+    const cache = createFmtCacheContext(rootPath);
     writeFileSync(firstPath, 'const first = 1;\n');
     writeFileSync(secondPath, 'const second = 2;\n');
 
-    await run([createRequest(firstPath), createRequest(secondPath)], 'check', cache);
+    await run([createFmtRequest(firstPath), createFmtRequest(secondPath)], 'check', cache);
     const firstStore = await loadFmtCacheStore(cache.filePath, cacheNamespace);
     const secondEntry = firstStore.get('second.ts');
 
     writeFileSync(firstPath, 'const first=1');
-    await run([createRequest(firstPath)], 'check', cache);
+    await run([createFmtRequest(firstPath)], 'check', cache);
 
     const secondStore = await loadFmtCacheStore(cache.filePath, cacheNamespace);
     expect(secondStore.get('second.ts')).toEqual(secondEntry);
@@ -261,12 +248,12 @@ test('does not cache formatting errors', async () => {
   await withTempProject(async (rootPath) => {
     const validPath = path.join(rootPath, 'valid.ts');
     const invalidPath = path.join(rootPath, 'invalid.ts');
-    const cache = createCache(rootPath);
+    const cache = createFmtCacheContext(rootPath);
     writeFileSync(validPath, 'const valid = 1;\n');
     writeFileSync(invalidPath, 'const invalid = ;');
 
-    await run([createRequest(validPath)], 'check', cache);
-    await expect(run([createRequest(invalidPath)], 'check', cache)).resolves.toMatchObject({
+    await run([createFmtRequest(validPath)], 'check', cache);
+    await expect(run([createFmtRequest(invalidPath)], 'check', cache)).resolves.toMatchObject({
       exitCode: 2,
       files: [{ path: invalidPath, status: 'error' }],
     });
@@ -281,11 +268,11 @@ test('write persists clean results for misses and hits', async () => {
   await withTempProject(async (rootPath) => {
     const cleanPath = path.join(rootPath, 'clean.ts');
     const dirtyPath = path.join(rootPath, 'dirty.ts');
-    const cache = createCache(rootPath);
+    const cache = createFmtCacheContext(rootPath);
     writeFileSync(cleanPath, 'const clean = 1;\n');
     writeFileSync(dirtyPath, 'const dirty=1');
 
-    const files = [createRequest(cleanPath), createRequest(dirtyPath)];
+    const files = [createFmtRequest(cleanPath), createFmtRequest(dirtyPath)];
     await expect(run(files, 'write', cache)).resolves.toMatchObject({
       exitCode: 0,
       files: [{ path: dirtyPath, status: 'written' }],
@@ -317,8 +304,8 @@ test('write persists clean results for misses and hits', async () => {
 test('write converts a dirty entry to clean', async () => {
   await withTempProject(async (rootPath) => {
     const filePath = path.join(rootPath, 'index.ts');
-    const cache = createCache(rootPath);
-    const file = createRequest(filePath);
+    const cache = createFmtCacheContext(rootPath);
+    const file = createFmtRequest(filePath);
     writeFileSync(filePath, 'const value=1');
 
     await run([file], 'check', cache);

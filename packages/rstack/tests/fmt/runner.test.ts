@@ -3,14 +3,7 @@ import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { runFmtFiles } from '../../src/fmt/runner.ts';
 import type { FmtFileRequest, FmtMode } from '../../src/fmt/types.ts';
-import { withTempProject } from './helpers.ts';
-
-const createRequest = (filePath: string): FmtFileRequest => ({
-  path: filePath,
-  options: {
-    parser: 'typescript',
-  },
-});
+import { createFmtRequest, withTempProject } from './helpers.ts';
 
 const run = (files: FmtFileRequest[], mode: FmtMode = 'write') =>
   runFmtFiles({
@@ -26,7 +19,7 @@ test('does not rewrite unchanged files', async () => {
     utimesSync(filePath, timestamp, timestamp);
     const mtimeMs = statSync(filePath).mtimeMs;
 
-    const result = await run([createRequest(filePath)]);
+    const result = await run([createFmtRequest(filePath)]);
 
     expect(result).toMatchObject({
       exitCode: 0,
@@ -42,7 +35,7 @@ test('writes changed files', async () => {
     const filePath = path.join(rootPath, 'changed.ts');
     writeFileSync(filePath, 'const value=1');
 
-    const result = await run([createRequest(filePath)]);
+    const result = await run([createFmtRequest(filePath)]);
 
     expect(result).toMatchObject({
       exitCode: 0,
@@ -59,7 +52,7 @@ test.runIf(process.platform !== 'win32')('preserves file mode when writing', asy
     writeFileSync(filePath, 'const value=1');
     chmodSync(filePath, 0o744);
 
-    await run([createRequest(filePath)]);
+    await run([createFmtRequest(filePath)]);
 
     expect(statSync(filePath).mode & 0o777).toBe(0o744);
   });
@@ -72,7 +65,7 @@ for (const mode of ['check', 'list-different'] as const) {
       const source = 'const value=1';
       writeFileSync(filePath, source);
 
-      const result = await run([createRequest(filePath)], mode);
+      const result = await run([createFmtRequest(filePath)], mode);
 
       expect(result).toMatchObject({
         exitCode: 1,
@@ -91,7 +84,7 @@ test('continues after a file fails and gives errors exit-code precedence', async
     writeFileSync(invalidPath, 'const value = ;');
     writeFileSync(validPath, 'const value=1');
 
-    const result = await run([createRequest(invalidPath), createRequest(validPath)], 'check');
+    const result = await run([createFmtRequest(invalidPath), createFmtRequest(validPath)], 'check');
 
     expect(result).toMatchObject({
       exitCode: 2,
