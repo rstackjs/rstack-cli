@@ -12,7 +12,7 @@ catalogMode: prefer
 cleanupUnusedCatalogs: true
 
 catalog:
-  '@napi-rs/cli': '^3.8.2'
+  '@napi-rs/cli': '^3.8.3'
   '@rsbuild/core': '~2.1.10'
   '@rsbuild/plugin-react': '^2.1.0'
   '@rsbuild/plugin-sass': '^2.0.1'
@@ -25,9 +25,9 @@ catalog:
   '@rstackjs/create-toolkit': '2.2.2'
   '@rstackjs/load-config': ^0.1.2
   '@rstackjs/test-utils': ^0.2.0
-  '@rstest/adapter-rsbuild': '~0.11.5'
-  '@rstest/adapter-rslib': '~0.11.5'
-  '@rstest/core': '~0.11.5'
+  '@rstest/adapter-rsbuild': '~0.11.6'
+  '@rstest/adapter-rslib': '~0.11.6'
+  '@rstest/core': '~0.11.6'
   '@testing-library/dom': '^10.4.1'
   '@testing-library/jest-dom': '^7.0.0'
   '@testing-library/react': '^16.3.2'
@@ -35,10 +35,10 @@ catalog:
   '@types/node': '^24.13.3'
   '@types/react': '^19.2.18'
   '@types/react-dom': '^19.2.4'
-  '@shikijs/transformers': '^4.4.1'
+  '@shikijs/transformers': '^4.4.2'
   'cspell-ban-words': '^0.0.4'
   'fast-json-stable-stringify': '2.1.0'
-  'happy-dom': '^20.11.1'
+  'happy-dom': '^20.11.2'
   'heading-case': '^1.1.5'
   ignore: 7.0.6
   'import-meta-resolve': '4.2.0'
@@ -55,7 +55,7 @@ catalog:
   tinypool: '2.1.0'
   tiny-readdir: 3.1.1
   'typescript': '^7.0.2'
-  yuku-parser: '0.8.3'
+  yuku-parser: '0.8.4'
 
 dedupePeers: true
 
