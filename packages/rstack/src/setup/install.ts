@@ -1,13 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import {
-  chmodSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  statSync,
-  writeFileSync,
-} from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { createHookFiles, hookNames } from './hooks.ts';
 
@@ -193,10 +185,6 @@ const claimOwner = (
 
   if (owner) {
     return owner === project ? undefined : ownerConflict(owner);
-  }
-
-  if (readdirSync(directory).some((entry) => entry !== '.gitignore')) {
-    return directoryConflict(gitRoot, directory);
   }
 
   try {
