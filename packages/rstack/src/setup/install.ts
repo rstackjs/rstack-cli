@@ -46,9 +46,6 @@ type GitContext = {
   projectPath: string;
 };
 
-type GeneratedDirectoryState =
-  { kind: 'empty' } | { kind: 'foreign' } | { kind: 'owned'; project: string };
-
 const fail = (reason: string, message: string): FailedInstallResult => ({
   status: 'failed',
   reason,
@@ -116,42 +113,32 @@ const resolveGitContext = (cwd: string): GitContext | InstallResult => {
 
   const [
     insideWorkTree = '',
-    gitRoot,
-    repositoryPrefix,
-    gitCommonDirectory,
-    effectiveHooksDirectory,
+    gitRoot = '',
+    repositoryPrefix = '',
+    gitCommonDirectory = '',
+    effectiveHooksDirectory = '',
   ] = removeLineEnding(repository.stdout).split(/\r?\n/u);
 
+  if (insideWorkTree !== 'true') {
+    return skip('not-git-repository');
+  }
+
   if (repository.status !== 0) {
-    if (insideWorkTree.trim() === 'true') {
-      return fail(
-        'git-command-failed',
-        `Failed to resolve the Git repository paths: ${repository.stderr.trim()}`,
-      );
-    }
-    return skip('not-git-repository');
+    return fail(
+      'git-command-failed',
+      `Failed to resolve the Git repository paths: ${repository.stderr.trim()}`,
+    );
   }
 
-  if (insideWorkTree.trim() !== 'true') {
-    return skip('not-git-repository');
-  }
-
-  if (
-    gitRoot === undefined ||
-    repositoryPrefix === undefined ||
-    gitCommonDirectory === undefined ||
-    effectiveHooksDirectory === undefined
-  ) {
+  if (!gitRoot || !gitCommonDirectory || !effectiveHooksDirectory) {
     return fail('git-command-failed', 'Failed to resolve the Git repository paths.');
   }
-
-  const normalizedPrefix = repositoryPrefix.replaceAll('\\', '/').replace(/\/$/u, '');
 
   return {
     defaultHooksDirectory: path.join(gitCommonDirectory, 'hooks'),
     effectiveHooksDirectory,
     gitRoot,
-    projectPath: normalizedPrefix || '.',
+    projectPath: repositoryPrefix.replaceAll('\\', '/').replace(/\/$/u, '') || '.',
   };
 };
 
@@ -170,29 +157,16 @@ const isCurrentFile = (filePath: string, content: string, executable = false): b
 const isSamePath = (first: string, second: string): boolean =>
   path.resolve(first) === path.resolve(second);
 
-const ownerContent = (project: string): string => `${project}\n`;
-
-const readGeneratedDirectoryState = (directory: string): GeneratedDirectoryState => {
-  let entries: string[];
+const readOwner = (directory: string): string | undefined => {
   try {
-    entries = readdirSync(directory);
+    const content = readFileSync(path.join(directory, ownerFileName), 'utf8');
+    const owner = removeLineEnding(content);
+    return content === `${owner}\n` && owner.length > 0 && !/[\r\n]/u.test(owner)
+      ? owner
+      : undefined;
   } catch {
-    return { kind: 'empty' };
+    return undefined;
   }
-
-  if (entries.includes(ownerFileName)) {
-    try {
-      const content = readFileSync(path.join(directory, ownerFileName), 'utf8');
-      const project = removeLineEnding(content);
-      return content === ownerContent(project) && project.length > 0 && !/[\r\n]/u.test(project)
-        ? { kind: 'owned', project }
-        : { kind: 'foreign' };
-    } catch {
-      return { kind: 'foreign' };
-    }
-  }
-
-  return entries.every((entry) => entry === '.gitignore') ? { kind: 'empty' } : { kind: 'foreign' };
 };
 
 const displayPath = (gitRoot: string, filePath: string): string => {
@@ -215,37 +189,30 @@ const claimOwner = (
   project: string,
 ): SkippedInstallResult | undefined => {
   const ownerPath = path.join(directory, ownerFileName);
-  const content = ownerContent(project);
-  const state = readGeneratedDirectoryState(directory);
+  const owner = readOwner(directory);
 
-  if (state.kind === 'owned' && state.project !== project) {
-    return ownerConflict(state.project);
+  if (owner) {
+    return owner === project ? undefined : ownerConflict(owner);
   }
-  if (state.kind === 'foreign') {
+
+  if (readdirSync(directory).some((entry) => entry !== '.gitignore')) {
     return directoryConflict(gitRoot, directory);
-  }
-
-  if (state.kind === 'owned') {
-    return undefined;
   }
 
   try {
     // Exclusive creation makes concurrent prepare scripts agree on one owner.
-    writeFileSync(ownerPath, content, { flag: 'wx' });
+    writeFileSync(ownerPath, `${project}\n`, { flag: 'wx' });
   } catch (error) {
     const code = error instanceof Error && 'code' in error ? error.code : undefined;
     if (code !== 'EEXIST') {
       throw error;
     }
 
-    const concurrentState = readGeneratedDirectoryState(directory);
-    if (concurrentState.kind === 'owned' && concurrentState.project === project) {
-      return undefined;
+    const concurrentOwner = readOwner(directory);
+    if (!concurrentOwner) {
+      return directoryConflict(gitRoot, directory);
     }
-    if (concurrentState.kind === 'owned') {
-      return ownerConflict(concurrentState.project);
-    }
-    return directoryConflict(gitRoot, directory);
+    return concurrentOwner === project ? undefined : ownerConflict(concurrentOwner);
   }
 
   return undefined;
@@ -280,16 +247,15 @@ export const installHooks = ({
   const usesDefaultHooks = isSamePath(effectiveHooksDirectory, defaultHooksDirectory);
 
   if (!hooksPathMatches && !usesDefaultHooks) {
-    const activeState = readGeneratedDirectoryState(effectiveHooksDirectory);
-    if (activeState.kind === 'owned') {
-      if (activeState.project !== projectPath) {
-        return ownerConflict(activeState.project);
-      }
-    } else {
+    const activeOwner = readOwner(effectiveHooksDirectory);
+    if (!activeOwner) {
       return skip(
         'hooks-path-conflict',
         `Git hooks are already configured at "${displayPath(gitRoot, effectiveHooksDirectory)}"`,
       );
+    }
+    if (activeOwner !== projectPath) {
+      return ownerConflict(activeOwner);
     }
   }
 
@@ -304,23 +270,20 @@ export const installHooks = ({
   }
 
   const files = Object.entries(createHookFiles());
-  const expectedOwner = ownerContent(projectPath);
-  // Skip all writes only when the config, owner, generated content, and executable modes match.
-  const unchanged =
-    hooksPathMatches &&
-    isCurrentFile(path.join(directory, ownerFileName), expectedOwner) &&
-    isCurrentFile(path.join(directory, '.gitignore'), gitignore) &&
-    files.every(([name, content]) => isCurrentFile(path.join(directory, name), content, true));
-
-  if (unchanged) {
-    return { status: 'unchanged', hooksPath };
-  }
-
   try {
     mkdirSync(directory, { recursive: true });
     const ownerResult = claimOwner(directory, gitRoot, projectPath);
     if (ownerResult) {
       return ownerResult;
+    }
+
+    // Skip generated file writes when their content and executable modes match.
+    const unchanged =
+      hooksPathMatches &&
+      isCurrentFile(path.join(directory, '.gitignore'), gitignore) &&
+      files.every(([name, content]) => isCurrentFile(path.join(directory, name), content, true));
+    if (unchanged) {
+      return { status: 'unchanged', hooksPath };
     }
 
     writeFileSync(path.join(directory, '.gitignore'), gitignore);
