@@ -35,7 +35,7 @@ rstack-hook-command
   });
 });
 
-test('preserves file arguments for hooks owned by a nested project', () => {
+test('preserves cwd-sensitive hook arguments for a nested project', () => {
   withRepository((cwd) => {
     const projectDirectory = path.join(cwd, 'frontend');
     const messagePath = '.git/COMMIT_EDITMSG';
@@ -52,6 +52,16 @@ test('preserves file arguments for hooks owned by a nested project', () => {
         stderr: 'commit message\n',
       });
     }
+
+    mkdirSync(path.join(cwd, 'remote.git'));
+    writeFileSync(
+      path.join(cwd, '.rstack', 'hooks', 'pre-push'),
+      '[ -d "$2" ] || [ "$2" = "git@example.com:repo.git" ]\n',
+    );
+
+    for (const remote of ['remote.git', 'git@example.com:repo.git']) {
+      expect(runGitHook(cwd, 'pre-push', ['origin', remote]).status).toBe(0);
+    }
   });
 });
 
@@ -67,5 +77,8 @@ test('skips user hooks when disabled by the environment or init', () => {
 
     expect(runHook(cwd).status).toBe(0);
     expect(existsSync(path.join(cwd, 'hook-ran'))).toBe(false);
+
+    writeFileSync(path.join(cwd, '.rstack', 'hooks', 'commit-msg'), 'exit 1\n');
+    expect(runGitHook(cwd, 'commit-msg', []).status).toBe(0);
   });
 });
