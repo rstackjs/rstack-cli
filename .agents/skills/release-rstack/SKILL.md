@@ -19,14 +19,16 @@ If the version is missing, ask for it before making changes.
 
 3. Create and switch to `release/v<version>` from the clean default-branch HEAD.
 
-4. Update only the `version` field in `packages/rstack/package.json` to `<version>`.
+4. Update the `version` field in `packages/rstack/package.json` to `<version>`.
 
-5. Review the diff and confirm it contains exactly the one version-field change above.
+5. Run `pnpm --filter rstack build:native` to regenerate `packages/rstack/binding.cjs` and `packages/rstack/binding.d.cts` for the new version. Do not edit generated binding files manually.
 
-6. Create a commit with this exact message: `release: v<version>`.
+6. Review the diff and confirm it contains only the version-field change and regenerated binding files above.
 
-7. Push the branch to `origin`. Recheck that the branch being pushed is `release/v<version>` and never push the default branch directly.
+7. Create a commit with this exact message: `release: v<version>`.
 
-8. Create a pull request against the default branch. In Codex, use the GitHub connector/plugin; use another available GitHub workflow only when the connector is unavailable. Use `release: v<version>` as the PR title.
+8. Push the branch to `origin`. Recheck that the branch being pushed is `release/v<version>` and never push the default branch directly.
+
+9. Create a pull request against the default branch. In Codex, use the GitHub connector/plugin; use another available GitHub workflow only when the connector is unavailable. Use `release: v<version>` as the PR title.
 
 Return the pull request URL.
