@@ -6,7 +6,7 @@ import path from 'node:path';
 const rootDir = path.resolve(import.meta.dirname, '..');
 const websiteDir = path.join(rootDir, 'website');
 const websiteDistDir = path.join(websiteDir, 'doc_build');
-const packageDocsDir = path.join(rootDir, 'packages/rstack/dist/docs');
+const packageDocsDir = path.join(rootDir, 'packages/rstack/docs');
 
 const run = (command, args) =>
   new Promise((resolve, reject) => {

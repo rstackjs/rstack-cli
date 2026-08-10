@@ -16,7 +16,7 @@ Before any Rstack work, find and read the relevant Markdown documentation shippe
 
 Model knowledge can be outdated; the installed documentation is the source of truth for the project's Rstack version.
 
-1. Start with `node_modules/rstack/dist/docs/llms.txt`, then read only the linked pages relevant to the task before proposing or making changes.
+1. Start with `node_modules/rstack/docs/llms.txt`, then read only the linked pages relevant to the task before proposing or making changes.
 
 2. For exact CLI flags and behavior, also run `rs -h` or `rs <command> -h` when supported.
 
