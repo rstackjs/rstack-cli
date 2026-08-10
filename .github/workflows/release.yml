@@ -99,7 +99,7 @@ jobs:
           NPM_TAG: ${{ inputs.npm_tag }}
         run: |
           for package_dir in packages/rstack/npm/*; do
-            pnpm stage publish "$package_dir" --tag "$NPM_TAG" --no-git-checks
+            pnpm publish "$package_dir" --tag "$NPM_TAG" --no-git-checks
           done
 
           pnpm --filter './packages/*' -r stage publish --tag "$NPM_TAG" --no-git-checks
