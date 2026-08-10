@@ -54,6 +54,21 @@ if ! command -v node >/dev/null 2>&1 && [ -x "$rs_node_fallback" ]; then
   PATH="\${PATH:+$PATH:}\${rs_node_fallback%/*}"
 fi
 
+# Keep message file paths valid after changing to the owning project.
+case "$rs_name" in
+  *-msg)
+    [ -n "\${1-}" ] || exit 1
+    case "$1" in
+      /*|[A-Za-z]:/*) ;;
+      *)
+        rs_file=$1
+        shift
+        set -- "$rs_root/$rs_file" "$@"
+        ;;
+    esac
+    ;;
+esac
+
 cd "$rs_root/$rs_project_path" || exit 1
 export PATH="node_modules/.bin\${PATH:+:$PATH}"
 

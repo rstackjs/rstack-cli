@@ -2,7 +2,7 @@ import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'n
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { installHooks } from '../../src/setup/install.ts';
-import { runHook, withRepository, writeHook, writeInit } from './helpers.ts';
+import { runGitHook, runHook, withRepository, writeHook, writeInit } from './helpers.ts';
 
 test('loads user init and project binaries', () => {
   withRepository((cwd) => {
@@ -32,6 +32,26 @@ rstack-hook-command
     expect(runHook(cwd).status).toBe(0);
     expect(readFileSync(path.join(projectDirectory, 'init-ran'), 'utf8')).toBe('loaded\n');
     expect(readFileSync(path.join(projectDirectory, 'project-bin-ran'), 'utf8')).toBe('ran\n');
+  });
+});
+
+test('preserves file arguments for hooks owned by a nested project', () => {
+  withRepository((cwd) => {
+    const projectDirectory = path.join(cwd, 'frontend');
+    const messagePath = '.git/COMMIT_EDITMSG';
+    mkdirSync(projectDirectory);
+    writeFileSync(path.join(cwd, messagePath), 'commit message\n');
+
+    expect(installHooks({ cwd: projectDirectory }).status).toBe('installed');
+
+    for (const name of ['applypatch-msg', 'commit-msg', 'prepare-commit-msg']) {
+      writeFileSync(path.join(cwd, '.rstack', 'hooks', name), 'cat "$1"\n');
+
+      expect(runGitHook(cwd, name, [messagePath])).toMatchObject({
+        status: 0,
+        stderr: 'commit message\n',
+      });
+    }
   });
 });
 

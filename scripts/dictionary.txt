@@ -3,7 +3,9 @@ applypatch
 cdpath
 clippy
 dirents
+editmsg
 errexit
+esac
 extglob
 fnames
 huskyrc
