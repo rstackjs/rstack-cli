@@ -31,14 +31,14 @@ test('generates the dispatcher and all client-side Git hook shims', () => {
 test.runIf(process.platform === 'win32')('converts Windows Node paths', () => {
   const { runner } = createHookFiles(String.raw`C:\Program Files\nodejs\node.exe`);
 
-  expect(runner).toContain("node_fallback='/c/Program Files/nodejs/node.exe'");
+  expect(runner).toContain("rs_node_fallback='/c/Program Files/nodejs/node.exe'");
 });
 
 test.runIf(process.platform !== 'win32')('preserves backslashes in POSIX Node paths', () => {
   const nodeExecutable = String.raw`/opt/node\24/bin/node`;
   const { runner } = createHookFiles(nodeExecutable);
 
-  expect(runner).toContain(`node_fallback='${nodeExecutable}'`);
+  expect(runner).toContain(`rs_node_fallback='${nodeExecutable}'`);
 });
 
 test.runIf(process.platform !== 'win32')('runs generated hooks', () => {

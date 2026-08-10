@@ -182,8 +182,9 @@ const readGeneratedDirectoryState = (directory: string): GeneratedDirectoryState
 
   if (entries.includes(ownerFileName)) {
     try {
-      const project = removeLineEnding(readFileSync(path.join(directory, ownerFileName), 'utf8'));
-      return project.length > 0 && !project.includes('\n') && !project.includes('\r')
+      const content = readFileSync(path.join(directory, ownerFileName), 'utf8');
+      const project = removeLineEnding(content);
+      return content === ownerContent(project) && project.length > 0 && !/[\r\n]/u.test(project)
         ? { kind: 'owned', project }
         : { kind: 'foreign' };
     } catch {
@@ -225,7 +226,6 @@ const claimOwner = (
   }
 
   if (state.kind === 'owned') {
-    writeFileSync(ownerPath, content);
     return undefined;
   }
 

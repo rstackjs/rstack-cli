@@ -63,6 +63,37 @@ test('repairs generated files without rewriting an unchanged hooksPath', () => {
   });
 });
 
+test.runIf(process.platform !== 'win32')('repairs files without rewriting the owner', () => {
+  withRepository((cwd) => {
+    expect(installHooks({ cwd }).status).toBe('installed');
+    const directory = path.join(cwd, hooksPath);
+    const owner = path.join(directory, '.owner');
+    writeFileSync(path.join(directory, 'runner'), 'stale\n');
+    chmodSync(owner, 0o444);
+
+    try {
+      expect(installHooks({ cwd })).toEqual({ status: 'installed', hooksPath });
+    } finally {
+      chmodSync(owner, 0o644);
+    }
+  });
+});
+
+test('does not claim an owner file without a trailing newline', () => {
+  withRepository((cwd) => {
+    const directory = path.join(cwd, hooksPath);
+    const owner = path.join(directory, '.owner');
+    mkdirSync(directory, { recursive: true });
+    writeFileSync(owner, '.');
+
+    expect(installHooks({ cwd })).toMatchObject({
+      status: 'skipped',
+      reason: 'hooks-directory-conflict',
+    });
+    expect(readFileSync(owner, 'utf8')).toBe('.');
+  });
+});
+
 test('resolves repository context with a single Git process when unchanged', () => {
   withRepository((cwd) => {
     expect(installHooks({ cwd }).status).toBe('installed');
