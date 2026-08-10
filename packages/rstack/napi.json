@@ -1,6 +1,6 @@
 {
   "binaryName": "rstack",
-  "packageName": "@rstackjs/binding",
+  "packageName": "@rstackjs/cli",
   "targets": [
     "x86_64-unknown-linux-gnu",
     "aarch64-unknown-linux-gnu",
