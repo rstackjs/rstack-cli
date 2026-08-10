@@ -1,0 +1,3 @@
+# Isolate generated native packages from the root workspace while enabling recursive publish.
+packages:
+  - '*'

@@ -15,7 +15,11 @@ doc_build
 /target/
 /artifacts/
 /packages/rstack/*.node
-/packages/rstack/npm/
+
+# Native packages are generated
+/packages/rstack/npm/*
+# Keep only the publish workspace manifest
+!/packages/rstack/npm/pnpm-workspace.yaml
 
 # Temp files
 test-temp-*
