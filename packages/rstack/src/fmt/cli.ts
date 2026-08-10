@@ -366,5 +366,4 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
   }
 };
 
-export { fmtHelpMessage, parseFmtCLIArgs, prettyTime, runFmtCLI };
-export type { ParsedFmtCLIArgs };
+export { runFmtCLI };

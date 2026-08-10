@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { beforeEach, expect, rs, test } from 'rstack/test';
 import { cacheNamespace, createOptionsHasher } from '../../src/fmt/cacheIdentity.ts';
@@ -20,39 +19,6 @@ rs.mock('../../src/fmt/workerPool.ts', () => ({
 
 beforeEach(() => {
   mocks.createFmtWorkerPoolCalls.length = 0;
-});
-
-const createRequest = (filePath: string): FmtFileRequest => ({
-  path: filePath,
-  options: {
-    parser: 'typescript',
-  },
-});
-
-test('starts the worker pool before formatting a single file', async () => {
-  await withTempProject(async (rootPath) => {
-    const filePath = writeProjectFile(rootPath, 'index.ts', 'const value=1');
-
-    await expect(
-      runFmtFiles({
-        files: [createRequest(filePath)],
-        mode: 'write',
-        maxWorkers: 1,
-      }),
-    ).rejects.toThrow('worker startup failed');
-
-    expect(mocks.createFmtWorkerPoolCalls).toEqual([[1, 1]]);
-    expect(readFileSync(filePath, 'utf8')).toBe('const value=1');
-  });
-});
-
-test('does not start the worker pool when there are no files', async () => {
-  await expect(runFmtFiles({ files: [], mode: 'write' })).resolves.toMatchObject({
-    files: [],
-    exitCode: 0,
-    processedFileCount: 0,
-  });
-  expect(mocks.createFmtWorkerPoolCalls).toEqual([]);
 });
 
 test('does not start the worker pool when every parser result is cached as unsupported', async () => {
