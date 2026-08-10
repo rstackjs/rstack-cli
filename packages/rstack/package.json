@@ -59,6 +59,7 @@
     "binding.cjs",
     "binding.d.cts",
     "dist",
+    "docs",
     "types",
     "THIRD_PARTY_NOTICES.md"
   ],
