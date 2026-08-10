@@ -164,7 +164,7 @@ rs staged
 
 一个 Git 仓库只能有一个 hooks owner。只有负责管理 hooks 的项目应在 `prepare` 脚本中调用 `rs setup`。其他项目调用时会收到警告并跳过。
 
-如需更换 owner，请先从原项目的 `prepare` 脚本中移除 `rs setup`，删除生成的 `_` 目录，再从新项目运行 `rs setup`。与 `_` 同级的 hook 脚本会被保留。
+如需更换 owner，请先从原项目的 `prepare` 脚本中移除 `rs setup`，删除生成的 `_` 目录，再从新项目运行 `rs setup`。
 
 ## 移除 hooks \{#remove-hooks}
 
