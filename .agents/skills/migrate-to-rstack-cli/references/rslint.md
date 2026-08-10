@@ -36,4 +36,4 @@ If a script also runs Prettier, migrate its formatting command as described in [
 
 ## Validate
 
-Run the non-writing lint script.
+Run lint without writes. If Rstack upgrades Rslint, preserve the pre-migration lint baseline: disable newly enabled rules instead of changing source code, unless code changes are requested.

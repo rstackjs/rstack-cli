@@ -10,6 +10,8 @@ Migrate [Husky](https://typicode.github.io/husky/) or [simple-git-hooks](https:/
 4. Ensure the `prepare` script in the root `package.json` runs `rs setup`, adding it if necessary. Remove the old installer invocation from any lifecycle script while preserving other commands. Use `--hooks-dir` consistently when choosing a custom directory.
 5. Run the updated lifecycle script, exercise the migrated hooks, and remove the old dependency and configuration only after behavior matches.
 
+`rs setup` creates `.rstack/hooks/_/.gitignore`. Do not list `.rstack/hooks/_` in the root `.gitignore`.
+
 ## Husky
 
 1. Locate the source hooks:
@@ -42,7 +44,7 @@ pnpm test
 3. Replace the simple-git-hooks lifecycle command with `rs setup`, preserving other chained commands.
 4. Replace `SKIP_INSTALL_SIMPLE_GIT_HOOKS=1` and `SKIP_SIMPLE_GIT_HOOKS=1` usage with `RSTACK_HOOKS=0`. Move required commands from the file referenced by `SIMPLE_GIT_HOOKS_RC` to the Rstack user initialization file, with user permission.
 5. Do not run the simple-git-hooks uninstall script after `rs setup`; it follows the current `core.hooksPath` and can delete Rstack's generated hook shims.
-6. After validation, remove the simple-git-hooks dependency, configuration, and installer command. Remove old generated hook files only after confirming their ownership and exact paths.
+6. After validation, remove the simple-git-hooks dependency, config, installer, and stale package-manager metadata such as pnpm `allowBuilds`. Remove old generated hook files only after confirming their ownership and paths.
 
 For example, migrate:
 

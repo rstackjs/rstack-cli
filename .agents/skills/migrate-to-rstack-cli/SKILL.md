@@ -24,15 +24,15 @@ Read every matching reference before editing. Load only the tools present in the
 
 1. Inspect manifests, workspace catalogs, lock files, scripts, standalone configs, ignore files, Git hooks, TypeScript `types`, and source imports.
 2. Read the matching references and inventory behavior that must survive: config functions, CLI arguments, plugins, presets, adapters, custom config paths, and chained commands.
-3. Check the latest `rstack` version and inspect its Node.js engine and underlying tool versions. Resolve plugin and adapter peer ranges first; upgrade incompatible extensions or stop when no compatible version exists. Add `rstack` using the repository's existing package manager and version convention, usually as a development dependency.
+3. Check the latest `rstack` release, Node.js engine, underlying tool versions, and relevant peer ranges. Upgrade incompatible plugins or adapters; stop if no compatible version exists. Ensure development and CI use supported Node.js versions, but do not narrow a published package's runtime `engines` solely to satisfy Rstack. Add `rstack` as a development dependency with the existing package manager.
 4. If a matching reference uses a `define.*` registration, create `rstack.config.ts` and move the standalone configuration into it.
 5. Rewrite commands and imports as directed by the references.
-6. Search again for old direct imports, binaries, config paths, manifest entries, and type references. Remove only entries with no remaining direct or runtime use and no unresolved peer compatibility requirement.
+6. Search again for old imports, binaries, config paths, manifest entries, package-manager metadata, and type references. Remove an item only after ruling out direct or runtime use and unresolved peer constraints.
 7. Delete a standalone config only after its behavior is represented in `rstack.config.*`.
 8. Refresh the lockfile with the repository's package manager. Confirm the expected tool version changes and resolve peer dependency warnings.
-9. Run the repository's existing migrated scripts and required checks. Compare generated artifacts or runtime behavior where relevant.
+9. Run migrated scripts and required repository checks. Compare generated artifacts or runtime behavior where relevant. After any follow-up changes, rerun the relevant checks against the final code.
 
-The underlying Rsbuild, Rslib, Rstest, Rslint, and Prettier packages remain transitive dependencies of `rstack`. Do not require their names to disappear from the lockfile; require obsolete direct manifest entries and imports to disappear.
+Rsbuild, Rslib, Rstest, Rslint, and Prettier remain transitive `rstack` dependencies. Remove obsolete direct dependencies and imports from the migrated scope; do not expect their names to disappear from the lockfile.
 
 ## Configuration Rules
 
