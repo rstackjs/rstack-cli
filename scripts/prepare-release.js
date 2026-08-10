@@ -7,7 +7,6 @@ const rootDir = path.resolve(import.meta.dirname, '..');
 const websiteDir = path.join(rootDir, 'website');
 const websiteDistDir = path.join(websiteDir, 'doc_build');
 const packageDocsDir = path.join(rootDir, 'packages/rstack/docs');
-const legacyPackageDocsDir = path.join(rootDir, 'packages/rstack/dist/docs');
 
 const run = (command, args) =>
   new Promise((resolve, reject) => {
@@ -64,10 +63,7 @@ if (markdownFiles.length === 0) {
   throw new Error(`No English Markdown files found in ${websiteDistDir}.`);
 }
 
-await Promise.all([
-  rm(packageDocsDir, { recursive: true, force: true }),
-  rm(legacyPackageDocsDir, { recursive: true, force: true }),
-]);
+await rm(packageDocsDir, { recursive: true, force: true });
 
 for (const relativePath of markdownFiles) {
   const destination = path.join(packageDocsDir, relativePath);
