@@ -14,7 +14,7 @@
     "lint": "rs lint --type-check",
     "prepare": "node scripts/rs.js setup",
     "release:prepare": "node scripts/prepare-release.js",
-    "test": "pnpm --filter \"./packages/**\" test"
+    "test": "pnpm --parallel --filter \"./packages/**\" test"
   },
   "devDependencies": {
     "@types/node": "catalog:",
