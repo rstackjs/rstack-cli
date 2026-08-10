@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { access, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -35,27 +35,78 @@ const expectStagedSetup = async (
   ).toContain('define.staged({');
 };
 
+const expectNoStagedSetup = async (
+  projectDirectory: string,
+  configExtension: string,
+  scripts: Record<string, string>,
+): Promise<void> => {
+  expect(scripts.prepare).toBeUndefined();
+  await expect(
+    access(path.join(projectDirectory, '.rstack', 'hooks', 'pre-commit')),
+  ).rejects.toThrow();
+  expect(
+    await readFile(path.join(projectDirectory, `rstack.config.${configExtension}`), 'utf8'),
+  ).not.toContain('define.staged({');
+};
+
 afterEach(async () => {
   await Promise.all(
     tempDirectories.splice(0).map((directory) => rm(directory, { recursive: true, force: true })),
   );
 });
 
-const createProject = async (template: string) => {
+const createProject = async (
+  template: string,
+  {
+    args = [],
+    initializeGitIn,
+  }: {
+    args?: string[];
+    initializeGitIn?: 'parent' | 'project';
+  } = {},
+) => {
   const tempDirectory = await mkdtemp(path.join(tmpdir(), 'create-rstack-'));
   const projectDirectory = path.join(tempDirectory, 'my-app');
   tempDirectories.push(tempDirectory);
 
-  await execFileAsync(process.execPath, [binPath, projectDirectory, '--template', template], {
-    cwd: tempDirectory,
-    env: {
-      ...process.env,
-      npm_config_user_agent: 'pnpm/11.20.0',
+  if (initializeGitIn) {
+    const gitDirectory = initializeGitIn === 'project' ? projectDirectory : tempDirectory;
+    await mkdir(gitDirectory, { recursive: true });
+    await execFileAsync('git', ['init', '--quiet'], { cwd: gitDirectory });
+  }
+
+  await execFileAsync(
+    process.execPath,
+    [binPath, projectDirectory, '--template', template, ...args],
+    {
+      cwd: tempDirectory,
+      env: {
+        ...process.env,
+        npm_config_user_agent: 'pnpm/11.20.0',
+      },
     },
-  });
+  );
 
   return projectDirectory;
 };
+
+test.each([
+  {
+    scenario: 'Git initialization is disabled',
+    options: { args: ['--no-git'], initializeGitIn: 'project' as const },
+  },
+  {
+    scenario: 'the project is inside an existing Git repository',
+    options: { initializeGitIn: 'parent' as const },
+  },
+])('omits staged setup when $scenario', async ({ options }) => {
+  const projectDirectory = await createProject('app-vanilla-ts', options);
+  const packageJson = JSON.parse(
+    await readFile(path.join(projectDirectory, 'package.json'), 'utf8'),
+  );
+
+  await expectNoStagedSetup(projectDirectory, 'ts', packageJson.scripts);
+});
 
 test.each([
   {

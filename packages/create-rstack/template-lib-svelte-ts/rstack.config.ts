@@ -33,8 +33,3 @@ define.fmt({
   plugins: ['prettier-plugin-svelte'],
   singleQuote: true,
 });
-
-define.staged({
-  '*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}': ['rs lint --fix', 'rs fmt'],
-  '*.{json,jsonc,md,mdx,css,html,yml,yaml,svelte}': 'rs fmt',
-});

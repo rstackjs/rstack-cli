@@ -20,7 +20,6 @@
     "dev": "rs lib --watch",
     "format": "rs fmt",
     "lint": "rs lint",
-    "prepare": "rs setup",
     "test": "rs test",
     "test:watch": "rs test --watch"
   },
