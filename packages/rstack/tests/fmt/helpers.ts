@@ -1,5 +1,20 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { fmtCacheFileName } from '../../src/fmt/cacheStore.ts';
+import type { FmtCacheContext, FmtFileRequest, ResolvedFmtOptions } from '../../src/fmt/types.ts';
+
+export const createFmtRequest = (
+  filePath: string,
+  options: ResolvedFmtOptions = { parser: 'typescript' },
+): FmtFileRequest => ({
+  path: filePath,
+  options,
+});
+
+export const createFmtCacheContext = (rootPath: string): FmtCacheContext => ({
+  filePath: path.join(rootPath, '.rstack', 'cache', 'fmt', fmtCacheFileName),
+  rootPath,
+});
 
 export const withTempProject = async (
   callback: (rootPath: string) => Promise<void>,

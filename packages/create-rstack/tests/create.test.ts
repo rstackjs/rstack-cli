@@ -18,8 +18,72 @@ const templatesWithoutTypeCheck = new Set([
   'lib-vue-ts',
 ]);
 
+type ProjectPackage = {
+  name: string;
+  scripts: Record<string, string>;
+};
+
+type SourceTemplate = {
+  template: string;
+  sourceExtension: string;
+  testFile: string;
+};
+
+const sourceTemplates: SourceTemplate[] = [
+  { template: 'app-vanilla-js', sourceExtension: 'js', testFile: 'dom.test.js' },
+  { template: 'app-vanilla-ts', sourceExtension: 'ts', testFile: 'dom.test.ts' },
+  { template: 'app-react-js', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
+  { template: 'app-react-ts', sourceExtension: 'tsx', testFile: 'index.test.tsx' },
+  { template: 'app-preact-js', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
+  { template: 'app-preact-ts', sourceExtension: 'tsx', testFile: 'index.test.tsx' },
+  { template: 'app-vue-js', sourceExtension: 'js', testFile: 'index.test.js' },
+  { template: 'app-vue-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
+  { template: 'app-lit-js', sourceExtension: 'js', testFile: 'index.test.js' },
+  { template: 'app-lit-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
+  { template: 'app-svelte-js', sourceExtension: 'js', testFile: 'index.test.js' },
+  { template: 'app-svelte-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
+  { template: 'app-solid-js', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
+  { template: 'app-solid-ts', sourceExtension: 'tsx', testFile: 'index.test.tsx' },
+  { template: 'lib-node-js', sourceExtension: 'js', testFile: 'index.test.js' },
+  { template: 'lib-node-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
+  { template: 'lib-react-js', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
+  { template: 'lib-react-ts', sourceExtension: 'tsx', testFile: 'index.test.tsx' },
+  { template: 'lib-vue-js', sourceExtension: 'js', testFile: 'index.test.js' },
+  { template: 'lib-vue-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
+  { template: 'lib-svelte-js', sourceExtension: 'js', testFile: 'index.test.js' },
+  { template: 'lib-svelte-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
+  { template: 'lib-solid-js', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
+  { template: 'lib-solid-ts', sourceExtension: 'tsx', testFile: 'index.test.tsx' },
+];
+
+const docTemplates = [
+  {
+    template: 'doc-basic',
+    files: [
+      'README.md',
+      '.gitignore',
+      'rstack.config.ts',
+      'docs/index.md',
+      'docs/guide/start/introduction.md',
+    ],
+  },
+  {
+    template: 'doc-i18n',
+    files: ['rstack.config.ts', 'docs/en/index.md', 'docs/zh/index.md'],
+  },
+];
+
 const getCheckScript = (template: string, hasTypeScript: boolean): string =>
   hasTypeScript && !templatesWithoutTypeCheck.has(template) ? tsCheckScript : jsCheckScript;
+
+const readProjectPackage = async (projectDirectory: string): Promise<ProjectPackage> =>
+  JSON.parse(await readFile(path.join(projectDirectory, 'package.json'), 'utf8')) as ProjectPackage;
+
+const expectFiles = async (projectDirectory: string, files: string[]): Promise<void> => {
+  for (const file of files) {
+    await expect(access(path.join(projectDirectory, file))).resolves.toBeUndefined();
+  }
+};
 
 const expectStagedSetup = async (
   projectDirectory: string,
@@ -47,6 +111,26 @@ const expectNoStagedSetup = async (
   expect(
     await readFile(path.join(projectDirectory, `rstack.config.${configExtension}`), 'utf8'),
   ).not.toContain('define.staged({');
+};
+
+const expectProjectSetup = async (
+  projectDirectory: string,
+  template: string,
+  configExtension: string,
+  hasTypeScript: boolean,
+): Promise<void> => {
+  const packageJson = await readProjectPackage(projectDirectory);
+
+  expect(packageJson.name).toBe('my-app');
+  expect(packageJson.scripts.check).toBe(getCheckScript(template, hasTypeScript));
+  await expectStagedSetup(projectDirectory, configExtension, packageJson.scripts);
+
+  const tsconfig = access(path.join(projectDirectory, 'tsconfig.json'));
+  if (hasTypeScript) {
+    await expect(tsconfig).resolves.toBeUndefined();
+  } else {
+    await expect(tsconfig).rejects.toThrow();
+  }
 };
 
 afterEach(async () => {
@@ -101,270 +185,35 @@ test.each([
   },
 ])('omits staged setup when $scenario', async ({ options }) => {
   const projectDirectory = await createProject('app-vanilla-ts', options);
-  const packageJson = JSON.parse(
-    await readFile(path.join(projectDirectory, 'package.json'), 'utf8'),
-  );
+  const packageJson = await readProjectPackage(projectDirectory);
 
   await expectNoStagedSetup(projectDirectory, 'ts', packageJson.scripts);
 });
 
-test.each([
-  {
-    template: 'app-vanilla-js',
-    configExtension: 'js',
-    sourceExtension: 'js',
-    testFile: 'dom.test.js',
-    hasTypeScript: false,
-  },
-  {
-    template: 'app-vanilla-ts',
-    configExtension: 'ts',
-    sourceExtension: 'ts',
-    testFile: 'dom.test.ts',
-    hasTypeScript: true,
-  },
-  {
-    template: 'app-react-js',
-    configExtension: 'js',
-    sourceExtension: 'jsx',
-    testFile: 'index.test.jsx',
-    hasTypeScript: false,
-  },
-  {
-    template: 'app-react-ts',
-    configExtension: 'ts',
-    sourceExtension: 'tsx',
-    testFile: 'index.test.tsx',
-    hasTypeScript: true,
-  },
-  {
-    template: 'app-preact-js',
-    configExtension: 'js',
-    sourceExtension: 'jsx',
-    testFile: 'index.test.jsx',
-    hasTypeScript: false,
-  },
-  {
-    template: 'app-preact-ts',
-    configExtension: 'ts',
-    sourceExtension: 'tsx',
-    testFile: 'index.test.tsx',
-    hasTypeScript: true,
-  },
-  {
-    template: 'app-vue-js',
-    configExtension: 'js',
-    sourceExtension: 'js',
-    testFile: 'index.test.js',
-    hasTypeScript: false,
-  },
-  {
-    template: 'app-vue-ts',
-    configExtension: 'ts',
-    sourceExtension: 'ts',
-    testFile: 'index.test.ts',
-    hasTypeScript: true,
-  },
-  {
-    template: 'app-lit-js',
-    configExtension: 'js',
-    sourceExtension: 'js',
-    testFile: 'index.test.js',
-    hasTypeScript: false,
-  },
-  {
-    template: 'app-lit-ts',
-    configExtension: 'ts',
-    sourceExtension: 'ts',
-    testFile: 'index.test.ts',
-    hasTypeScript: true,
-  },
-  {
-    template: 'app-svelte-js',
-    configExtension: 'js',
-    sourceExtension: 'js',
-    testFile: 'index.test.js',
-    hasTypeScript: false,
-  },
-  {
-    template: 'app-svelte-ts',
-    configExtension: 'ts',
-    sourceExtension: 'ts',
-    testFile: 'index.test.ts',
-    hasTypeScript: true,
-  },
-  {
-    template: 'app-solid-js',
-    configExtension: 'js',
-    sourceExtension: 'jsx',
-    testFile: 'index.test.jsx',
-    hasTypeScript: false,
-  },
-  {
-    template: 'app-solid-ts',
-    configExtension: 'ts',
-    sourceExtension: 'tsx',
-    testFile: 'index.test.tsx',
-    hasTypeScript: true,
-  },
-])(
+test.each(sourceTemplates)(
   'creates the $template template',
-  async ({ template, configExtension, sourceExtension, testFile, hasTypeScript }) => {
+  async ({ template, sourceExtension, testFile }) => {
+    const hasTypeScript = template.endsWith('-ts');
+    const configExtension = hasTypeScript ? 'ts' : 'js';
     const projectDirectory = await createProject(template);
-    const packageJson = JSON.parse(
-      await readFile(path.join(projectDirectory, 'package.json'), 'utf8'),
-    );
+    const files = [
+      `rstack.config.${configExtension}`,
+      `src/index.${sourceExtension}`,
+      `tests/${testFile}`,
+    ];
 
-    expect(packageJson.name).toBe('my-app');
-    expect(packageJson.scripts.check).toBe(getCheckScript(template, hasTypeScript));
-    await expectStagedSetup(projectDirectory, configExtension, packageJson.scripts);
-
-    await expect(access(path.join(projectDirectory, 'README.md'))).resolves.toBeUndefined();
-    await expect(access(path.join(projectDirectory, '.gitignore'))).resolves.toBeUndefined();
-    await expect(
-      access(path.join(projectDirectory, `rstack.config.${configExtension}`)),
-    ).resolves.toBeUndefined();
-    await expect(
-      access(path.join(projectDirectory, `src/index.${sourceExtension}`)),
-    ).resolves.toBeUndefined();
-    await expect(access(path.join(projectDirectory, 'tests', testFile))).resolves.toBeUndefined();
-
-    const tsconfigPath = path.join(projectDirectory, 'tsconfig.json');
-    if (hasTypeScript) {
-      await expect(access(tsconfigPath)).resolves.toBeUndefined();
-    } else {
-      await expect(access(tsconfigPath)).rejects.toThrow();
+    if (template.startsWith('app-')) {
+      files.push('README.md', '.gitignore');
     }
+
+    await expectProjectSetup(projectDirectory, template, configExtension, hasTypeScript);
+    await expectFiles(projectDirectory, files);
   },
 );
 
-test('creates the doc-basic template', async () => {
-  const projectDirectory = await createProject('doc-basic');
-  const packageJson = JSON.parse(
-    await readFile(path.join(projectDirectory, 'package.json'), 'utf8'),
-  );
+test.each(docTemplates)('creates the $template template', async ({ template, files }) => {
+  const projectDirectory = await createProject(template);
 
-  expect(packageJson.name).toBe('my-app');
-  expect(packageJson.scripts.check).toBe(tsCheckScript);
-  await expectStagedSetup(projectDirectory, 'ts', packageJson.scripts);
-
-  await expect(access(path.join(projectDirectory, 'README.md'))).resolves.toBeUndefined();
-  await expect(access(path.join(projectDirectory, '.gitignore'))).resolves.toBeUndefined();
-  await expect(access(path.join(projectDirectory, 'rstack.config.ts'))).resolves.toBeUndefined();
-  await expect(access(path.join(projectDirectory, 'tsconfig.json'))).resolves.toBeUndefined();
-  await expect(access(path.join(projectDirectory, 'docs', 'index.md'))).resolves.toBeUndefined();
-  await expect(
-    access(path.join(projectDirectory, 'docs', 'guide', 'start', 'introduction.md')),
-  ).resolves.toBeUndefined();
+  await expectProjectSetup(projectDirectory, template, 'ts', true);
+  await expectFiles(projectDirectory, files);
 });
-
-test('creates the doc-i18n template', async () => {
-  const projectDirectory = await createProject('doc-i18n');
-  const packageJson = JSON.parse(
-    await readFile(path.join(projectDirectory, 'package.json'), 'utf8'),
-  );
-
-  expect(packageJson.name).toBe('my-app');
-  expect(packageJson.scripts.check).toBe(tsCheckScript);
-  await expectStagedSetup(projectDirectory, 'ts', packageJson.scripts);
-
-  await expect(access(path.join(projectDirectory, 'rstack.config.ts'))).resolves.toBeUndefined();
-  await expect(
-    access(path.join(projectDirectory, 'docs', 'en', 'index.md')),
-  ).resolves.toBeUndefined();
-  await expect(
-    access(path.join(projectDirectory, 'docs', 'zh', 'index.md')),
-  ).resolves.toBeUndefined();
-});
-
-test.each([
-  {
-    template: 'lib-node-js',
-    configExtension: 'js',
-    sourceExtension: 'js',
-    hasTypeScript: false,
-  },
-  {
-    template: 'lib-node-ts',
-    configExtension: 'ts',
-    sourceExtension: 'ts',
-    hasTypeScript: true,
-  },
-  {
-    template: 'lib-react-js',
-    configExtension: 'js',
-    sourceExtension: 'jsx',
-    hasTypeScript: false,
-  },
-  {
-    template: 'lib-react-ts',
-    configExtension: 'ts',
-    sourceExtension: 'tsx',
-    hasTypeScript: true,
-  },
-  {
-    template: 'lib-vue-js',
-    configExtension: 'js',
-    sourceExtension: 'js',
-    hasTypeScript: false,
-  },
-  {
-    template: 'lib-vue-ts',
-    configExtension: 'ts',
-    sourceExtension: 'ts',
-    hasTypeScript: true,
-  },
-  {
-    template: 'lib-svelte-js',
-    configExtension: 'js',
-    sourceExtension: 'js',
-    hasTypeScript: false,
-  },
-  {
-    template: 'lib-svelte-ts',
-    configExtension: 'ts',
-    sourceExtension: 'ts',
-    hasTypeScript: true,
-  },
-  {
-    template: 'lib-solid-js',
-    configExtension: 'js',
-    sourceExtension: 'jsx',
-    hasTypeScript: false,
-  },
-  {
-    template: 'lib-solid-ts',
-    configExtension: 'ts',
-    sourceExtension: 'tsx',
-    hasTypeScript: true,
-  },
-])(
-  'creates the $template template',
-  async ({ template, configExtension, sourceExtension, hasTypeScript }) => {
-    const projectDirectory = await createProject(template);
-    const packageJson = JSON.parse(
-      await readFile(path.join(projectDirectory, 'package.json'), 'utf8'),
-    );
-
-    expect(packageJson.name).toBe('my-app');
-    expect(packageJson.scripts.check).toBe(getCheckScript(template, hasTypeScript));
-    await expectStagedSetup(projectDirectory, configExtension, packageJson.scripts);
-
-    await expect(
-      access(path.join(projectDirectory, `rstack.config.${configExtension}`)),
-    ).resolves.toBeUndefined();
-    await expect(
-      access(path.join(projectDirectory, `src/index.${sourceExtension}`)),
-    ).resolves.toBeUndefined();
-    await expect(
-      access(path.join(projectDirectory, `tests/index.test.${sourceExtension}`)),
-    ).resolves.toBeUndefined();
-
-    const tsconfigPath = path.join(projectDirectory, 'tsconfig.json');
-    if (hasTypeScript) {
-      await expect(access(tsconfigPath)).resolves.toBeUndefined();
-    } else {
-      await expect(access(tsconfigPath)).rejects.toThrow();
-    }
-  },
-);
