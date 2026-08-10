@@ -6,7 +6,8 @@ import { runHook, withRepository, writeHook, writeInit } from './helpers.ts';
 
 test('loads user init and project binaries', () => {
   withRepository((cwd) => {
-    const binDirectory = path.join(cwd, 'node_modules', '.bin');
+    const projectDirectory = path.join(cwd, 'frontend');
+    const binDirectory = path.join(projectDirectory, 'node_modules', '.bin');
     mkdirSync(binDirectory, { recursive: true });
     writeInit(cwd, 'set -u\nexport RSTACK_INIT=loaded\n');
 
@@ -26,11 +27,11 @@ rstack-hook-command
 `,
     );
 
-    expect(installHooks({ cwd }).status).toBe('installed');
+    expect(installHooks({ cwd: projectDirectory }).status).toBe('installed');
 
     expect(runHook(cwd).status).toBe(0);
-    expect(readFileSync(path.join(cwd, 'init-ran'), 'utf8')).toBe('loaded\n');
-    expect(readFileSync(path.join(cwd, 'project-bin-ran'), 'utf8')).toBe('ran\n');
+    expect(readFileSync(path.join(projectDirectory, 'init-ran'), 'utf8')).toBe('loaded\n');
+    expect(readFileSync(path.join(projectDirectory, 'project-bin-ran'), 'utf8')).toBe('ran\n');
   });
 });
 

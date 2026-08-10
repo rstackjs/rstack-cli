@@ -12,6 +12,7 @@ test('installs generated hooks and configures the repository', () => {
 
     const directory = path.join(cwd, hooksPath);
     expect(readFileSync(path.join(directory, '.gitignore'), 'utf8')).toBe('*\n');
+    expect(readFileSync(path.join(directory, '.owner'), 'utf8')).toBe('.\n');
     expect(runGit(cwd, ['status', '--short', '--untracked-files=all'])).toBe('');
 
     for (const [name, content] of Object.entries(createHookFiles())) {
@@ -59,6 +60,29 @@ test('repairs generated files without rewriting an unchanged hooksPath', () => {
 
     expect(installHooks({ cwd })).toEqual({ status: 'installed', hooksPath });
     expect(readFileSync(runner, 'utf8')).toBe(createHookFiles().runner);
+  });
+});
+
+test('resolves repository context with a single Git process when unchanged', () => {
+  withRepository((cwd) => {
+    expect(installHooks({ cwd }).status).toBe('installed');
+    const tracePath = path.join(cwd, 'git-trace.json');
+    const originalTrace = process.env.GIT_TRACE2_EVENT;
+    process.env.GIT_TRACE2_EVENT = tracePath;
+
+    try {
+      expect(installHooks({ cwd })).toEqual({ status: 'unchanged', hooksPath });
+    } finally {
+      restoreEnv('GIT_TRACE2_EVENT', originalTrace);
+    }
+
+    const starts = readFileSync(tracePath, 'utf8')
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line))
+      .filter((event) => event.event === 'start');
+    expect(starts).toHaveLength(1);
+    expect(starts[0].argv).toContain('rev-parse');
   });
 });
 
@@ -110,5 +134,33 @@ test('reports Git configuration failures without changing hooksPath', () => {
     });
     expect(git(cwd, ['config', '--local', '--get', 'core.hooksPath']).status).toBe(1);
     expect(existsSync(path.join(cwd, hooksPath, 'runner'))).toBe(true);
+  });
+});
+
+test('does not replace another Git hooks path', () => {
+  withRepository((cwd) => {
+    runGit(cwd, ['config', '--local', 'core.hooksPath', '.husky/_']);
+
+    expect(installHooks({ cwd })).toMatchObject({
+      status: 'skipped',
+      reason: 'hooks-path-conflict',
+    });
+    expect(runGit(cwd, ['config', '--local', '--get', 'core.hooksPath'])).toBe('.husky/_');
+    expect(existsSync(path.join(cwd, hooksPath))).toBe(false);
+  });
+});
+
+test('does not bypass existing Git hooks', () => {
+  withRepository((cwd) => {
+    const existingHook = path.join(cwd, '.git', 'hooks', 'pre-commit');
+    writeFileSync(existingHook, '#!/usr/bin/env sh\n');
+
+    expect(installHooks({ cwd })).toEqual({
+      status: 'skipped',
+      reason: 'existing-git-hooks',
+      message: 'existing Git hooks were found: pre-commit',
+    });
+    expect(git(cwd, ['config', '--local', '--get', 'core.hooksPath']).status).toBe(1);
+    expect(readFileSync(existingHook, 'utf8')).toBe('#!/usr/bin/env sh\n');
   });
 });

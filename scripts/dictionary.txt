@@ -1,5 +1,6 @@
 # Custom Dictionary Words
 applypatch
+cdpath
 clippy
 dirents
 errexit
@@ -29,4 +30,5 @@ solidjs
 turborepo
 typicode
 worktank
+worktree
 yuku

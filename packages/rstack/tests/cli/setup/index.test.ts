@@ -76,7 +76,7 @@ test('rejects invalid hooks directory options', ({ expect }) => {
   const absolute = runSetup(['--hooks-dir', path.join(cwd, 'hooks')]);
   expect(absolute.status).toBe(1);
   expect(absolute.stderr).toContain(
-    'Git hooks directory must be relative to the current directory.',
+    'Git hooks directory must be relative to the Git repository root.',
   );
 
   const parent = runSetup(['--hooks-dir', '../hooks']);
@@ -96,14 +96,22 @@ test('installs hooks silently without loading Rstack config', ({ execCli, expect
   expect(execCli('setup', { cwd, env })).toBe('');
 });
 
-test('installs a custom hooks directory from a nested project', ({ execCli, expect }) => {
+test('installs root-relative hooks and reports owner conflicts', ({ execCli, expect }) => {
   initRepository();
-  const projectDirectory = path.join(cwd, 'frontend');
-  mkdirSync(projectDirectory);
+  const frontend = path.join(cwd, 'frontend');
+  const docs = path.join(cwd, 'docs');
+  mkdirSync(frontend);
+  mkdirSync(docs);
 
-  expect(execCli('setup --hooks-dir "custom hooks"', { cwd: projectDirectory, env })).toBe('');
-  expect(git(['config', '--local', '--get', 'core.hooksPath'])).toBe('frontend/custom hooks/_');
-  expect(existsSync(path.join(projectDirectory, 'custom hooks', '_', 'runner'))).toBe(true);
+  expect(execCli('setup --hooks-dir "custom hooks"', { cwd: frontend, env })).toBe('');
+  expect(git(['config', '--local', '--get', 'core.hooksPath'])).toBe('custom hooks/_');
+  expect(existsSync(path.join(cwd, 'custom hooks', '_', 'runner'))).toBe(true);
+
+  const conflict = runSetup(['--hooks-dir', 'custom hooks'], docs);
+  expect(conflict.status).toBe(0);
+  expect(`${conflict.stdout}${conflict.stderr}`).toContain(
+    'Git hooks are already managed by Rstack project "frontend"',
+  );
 });
 
 test('skips non-Git directories without creating files', ({ execCli, expect }) => {

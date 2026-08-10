@@ -22,52 +22,43 @@ test('installs a custom hooks directory from the Git root and runs its hook', ()
   });
 });
 
-test('installs the default hooks directory from a nested project', () => {
+test('installs repository-level hooks from a nested project', () => {
   withRepository((cwd) => {
     const projectDirectory = path.join(cwd, 'frontend');
-    const nestedHooksPath = `frontend/${hooksPath}`;
     mkdirSync(projectDirectory);
-    writeHook(
-      projectDirectory,
-      `printf 'root\\n' > nested-hook-cwd
-cd frontend
-printf 'nested\\n' > nested-hook-ran
-`,
-    );
+    writeHook(cwd, "printf 'ran\\n' > nested-hook-ran\n");
 
     expect(installHooks({ cwd: projectDirectory })).toEqual({
       status: 'installed',
-      hooksPath: nestedHooksPath,
+      hooksPath,
     });
     expect(installHooks({ cwd: projectDirectory })).toEqual({
       status: 'unchanged',
-      hooksPath: nestedHooksPath,
+      hooksPath,
     });
-    expect(runGit(cwd, ['config', '--local', '--get', 'core.hooksPath'])).toBe(nestedHooksPath);
-    expect(existsSync(path.join(projectDirectory, hooksPath, 'runner'))).toBe(true);
+    expect(runGit(cwd, ['config', '--local', '--get', 'core.hooksPath'])).toBe(hooksPath);
+    expect(existsSync(path.join(cwd, hooksPath, 'runner'))).toBe(true);
+    expect(readFileSync(path.join(cwd, hooksPath, '.owner'), 'utf8')).toBe('frontend\n');
 
     expect(runHook(cwd).status).toBe(0);
-    expect(readFileSync(path.join(cwd, 'nested-hook-cwd'), 'utf8')).toBe('root\n');
-    expect(readFileSync(path.join(projectDirectory, 'nested-hook-ran'), 'utf8')).toBe('nested\n');
+    expect(readFileSync(path.join(projectDirectory, 'nested-hook-ran'), 'utf8')).toBe('ran\n');
   });
 });
 
-test('installs a custom hooks directory from a nested project', () => {
+test('installs a root-relative custom hooks directory from a nested project', () => {
   withRepository((cwd) => {
     const projectDirectory = path.join(cwd, 'frontend app');
     mkdirSync(projectDirectory);
 
     expect(installHooks({ cwd: projectDirectory, hooksDir: 'config\\hooks' })).toEqual({
       status: 'installed',
-      hooksPath: 'frontend app/config/hooks/_',
+      hooksPath: 'config/hooks/_',
     });
     expect(installHooks({ cwd: projectDirectory, hooksDir: 'config\\hooks' })).toEqual({
       status: 'unchanged',
-      hooksPath: 'frontend app/config/hooks/_',
+      hooksPath: 'config/hooks/_',
     });
-    expect(runGit(cwd, ['config', '--local', '--get', 'core.hooksPath'])).toBe(
-      'frontend app/config/hooks/_',
-    );
-    expect(existsSync(path.join(projectDirectory, 'config', 'hooks', '_', 'runner'))).toBe(true);
+    expect(runGit(cwd, ['config', '--local', '--get', 'core.hooksPath'])).toBe('config/hooks/_');
+    expect(existsSync(path.join(cwd, 'config', 'hooks', '_', 'runner'))).toBe(true);
   });
 });
