@@ -26,6 +26,33 @@ jobs:
           - target: aarch64-apple-darwin
             runner: macos-latest
             filename: rstack.darwin-arm64.node
+          - target: powerpc64le-unknown-linux-gnu
+            runner: ubuntu-latest
+            filename: rstack.linux-ppc64-gnu.node
+          - target: s390x-unknown-linux-gnu
+            runner: ubuntu-latest
+            filename: rstack.linux-s390x-gnu.node
+          - target: aarch64-pc-windows-msvc
+            runner: windows-latest
+            filename: rstack.win32-arm64-msvc.node
+          - target: x86_64-apple-darwin
+            runner: macos-latest
+            filename: rstack.darwin-x64.node
+          - target: x86_64-unknown-linux-musl
+            runner: ubuntu-latest
+            filename: rstack.linux-x64-musl.node
+          - target: riscv64gc-unknown-linux-gnu
+            runner: ubuntu-latest
+            filename: rstack.linux-riscv64-gnu.node
+          - target: aarch64-unknown-linux-musl
+            runner: ubuntu-latest
+            filename: rstack.linux-arm64-musl.node
+          - target: riscv64gc-unknown-linux-musl
+            runner: ubuntu-latest
+            filename: rstack.linux-riscv64-musl.node
+          - target: i686-pc-windows-msvc
+            runner: windows-latest
+            filename: rstack.win32-ia32-msvc.node
     uses: ./.github/workflows/reusable-native-build.yml
     with:
       target: ${{ matrix.target }}
