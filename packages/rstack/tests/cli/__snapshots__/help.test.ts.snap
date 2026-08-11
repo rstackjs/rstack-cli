@@ -35,6 +35,74 @@ Options:
 "
 `;
 
+exports[`displays lib build help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs lib build [options]
+
+Build the library for production
+
+Options:
+  -w, --watch          Enable watch mode and rebuild on changes
+  --dts                Emit declaration files (use --no-dts to disable)
+  -c, --config <path>  Specify Rstack config file path
+  -h, --help           Display this help message
+"
+`;
+
+exports[`displays lib help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs lib [command] [options]
+
+Commands:
+  build    Build the library for production (default)
+  inspect  Inspect Rslib, Rsbuild, and Rspack configs
+  mf-dev   Start Rsbuild dev server for Module Federation
+
+For command-specific options, run:
+  $ rs lib <command> -h
+
+Options:
+  -w, --watch          Enable watch mode and rebuild on changes
+  --dts                Emit declaration files (use --no-dts to disable)
+  -c, --config <path>  Specify Rstack config file path
+  -h, --help           Display this help message
+"
+`;
+
+exports[`displays lib inspect help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs lib inspect [options]
+
+Inspect Rslib, Rsbuild, and Rspack configs
+
+Options:
+  --output <path>      Set the output path for inspection results (default: .rsbuild)
+  --verbose            Show complete function definitions in output
+  -c, --config <path>  Specify Rstack config file path
+  -h, --help           Display this help message
+"
+`;
+
+exports[`displays lib mf-dev help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs lib mf-dev [options]
+
+Start Rsbuild dev server for Module Federation
+
+Options:
+  -c, --config <path>  Specify Rstack config file path
+  -h, --help           Display this help message
+"
+`;
+
 exports[`displays preview help 1`] = `
 "Rstack v<version>
 

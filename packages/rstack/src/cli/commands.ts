@@ -110,6 +110,84 @@ const renderPreviewHelp = (): string =>
     ],
   });
 
+const renderLibHelp = (): string =>
+  renderHelp({
+    usage: 'rs lib [command] [options]',
+    sections: [
+      {
+        title: 'Commands',
+        items: [
+          ['build', 'Build the library for production (default)'],
+          ['inspect', 'Inspect Rslib, Rsbuild, and Rspack configs'],
+          ['mf-dev', 'Start Rsbuild dev server for Module Federation'],
+        ],
+      },
+      {
+        content: `For command-specific options, run:
+  $ rs lib <command> -h`,
+        dim: true,
+      },
+      {
+        title: 'Options',
+        items: [
+          ['-w, --watch', 'Enable watch mode and rebuild on changes'],
+          ['--dts', 'Emit declaration files (use --no-dts to disable)'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
+const renderLibBuildHelp = (): string =>
+  renderHelp({
+    usage: 'rs lib build [options]',
+    description: 'Build the library for production',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['-w, --watch', 'Enable watch mode and rebuild on changes'],
+          ['--dts', 'Emit declaration files (use --no-dts to disable)'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
+const renderLibInspectHelp = (): string =>
+  renderHelp({
+    usage: 'rs lib inspect [options]',
+    description: 'Inspect Rslib, Rsbuild, and Rspack configs',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['--output <path>', 'Set the output path for inspection results (default: .rsbuild)'],
+          ['--verbose', 'Show complete function definitions in output'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
+const renderLibMfDevHelp = (): string =>
+  renderHelp({
+    usage: 'rs lib mf-dev [options]',
+    description: 'Start Rsbuild dev server for Module Federation',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
 async function runRsbuildCLI(args: string[]): Promise<void> {
   if (hasHelpFlag(args)) {
     switch (args[0]) {
@@ -147,6 +225,23 @@ async function runRstestCLI(args: string[]): Promise<void> {
 }
 
 async function runRslibCLI(args: string[]): Promise<void> {
+  if (hasHelpFlag(args)) {
+    switch (args[0]) {
+      case 'build':
+        console.log(renderLibBuildHelp());
+        return;
+      case 'inspect':
+        console.log(renderLibInspectHelp());
+        return;
+      case 'mf-dev':
+        console.log(renderLibMfDevHelp());
+        return;
+      default:
+        console.log(renderLibHelp());
+        return;
+    }
+  }
+
   const argv = [
     process.execPath,
     'rslib',
