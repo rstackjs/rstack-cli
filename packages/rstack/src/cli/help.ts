@@ -22,6 +22,13 @@ export type HelpDefinition = {
   sections?: readonly HelpSection[];
 };
 
+export const hasHelpFlag = (args: readonly string[]): boolean => {
+  const end = args.indexOf('--');
+  const flags = end === -1 ? args : args.slice(0, end);
+
+  return flags.some((flag) => flag === '-h' || flag === '--help');
+};
+
 const renderItems = (items: readonly HelpItem[]): string => {
   const labelWidth = items.reduce((width, [label]) => Math.max(width, label.length), 0);
 

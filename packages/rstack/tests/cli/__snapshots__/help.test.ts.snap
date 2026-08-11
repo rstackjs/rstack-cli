@@ -1,5 +1,58 @@
 // Rstest Snapshot v1
 
+exports[`displays build help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs build [options]
+
+Build the app for production
+
+Options:
+  -w, --watch          Enable watch mode to automatically rebuild on file changes
+  --dist-path <dir>    Set the root directory of output files
+  --source-map         Enable source map
+  -c, --config <path>  Specify Rstack config file path
+  -h, --help           Display this help message
+"
+`;
+
+exports[`displays dev help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs dev [options]
+
+Run the app dev server
+
+Options:
+  -o, --open [url]     Open the page in browser on startup
+  --port <port>        Set the port number for the server
+  --strict-port        Exit if the specified port is already in use
+  --host [host]        Set the host that the server listens to
+  -c, --config <path>  Specify Rstack config file path
+  -h, --help           Display this help message
+"
+`;
+
+exports[`displays preview help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs preview [options]
+
+Preview the app production build
+
+Options:
+  -o, --open [url]     Open the page in browser on startup
+  --port <port>        Set the port number for the server
+  --strict-port        Exit if the specified port is already in use
+  --host [host]        Set the host that the server listens to
+  -c, --config <path>  Specify Rstack config file path
+  -h, --help           Display this help message
+"
+`;
+
 exports[`displays top-level help 1`] = `
 "Rstack v<version>
 
