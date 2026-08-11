@@ -20,7 +20,7 @@ ${color.cyan('Commands')}:
   doc          Serve or build docs
   fmt, format  Format code
   lint         Lint code
-  check        Run static checks
+  check        Run static checks, including linting and formatting
   test         Run tests
   staged       Run tasks on staged Git files
   setup        Install Git hooks
@@ -38,7 +38,7 @@ const checkHelpMessage = `Rstack v${RSTACK_VERSION}
 ${color.cyan('Usage')}:
 ${color.yellow('  $ rs check [options]')}
 
-Run static checks.
+Run static checks, including linting and formatting.
 
 ${color.cyan('Options')}:
   --type-check  Enable TypeScript type checking
