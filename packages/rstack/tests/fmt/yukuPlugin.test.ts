@@ -7,9 +7,9 @@ const formatWithYuku = (
   options: Options & { parser: 'yuku' | 'yuku-ts' },
 ): Promise<string> =>
   format(source, {
-    filepath: `example.${options.parser === 'yuku' ? 'js' : 'ts'}`,
     plugins: [yukuPlugin],
     ...options,
+    filepath: options.filepath ?? `example.${options.parser === 'yuku' ? 'js' : 'ts'}`,
   });
 
 test('exposes the same JavaScript and TypeScript language mappings as the official plugin', async () => {
@@ -33,6 +33,39 @@ test('exposes the same JavaScript and TypeScript language mappings as the offici
     { ignored: false, inferredParser: 'yuku-ts' },
   ]);
 });
+
+test('parses JSX in JavaScript files', async () => {
+  await expect(
+    formatWithYuku('const view=<Component/>', {
+      filepath: 'example.js',
+      parser: 'yuku',
+    }),
+  ).resolves.toBe('const view = <Component />;\n');
+});
+
+test.each(['example.ts', 'example.mts', 'example.cts'])(
+  'uses the TypeScript grammar for %s',
+  async (filepath) => {
+    await expect(
+      formatWithYuku('const view=<Component/>', {
+        filepath,
+        parser: 'yuku-ts',
+      }),
+    ).rejects.toThrow();
+  },
+);
+
+test.each(['example.d.ts', 'example.d.mts', 'example.d.cts'])(
+  'uses the declaration grammar for %s',
+  async (filepath) => {
+    await expect(
+      formatWithYuku('export function value() { return 1; }', {
+        filepath,
+        parser: 'yuku-ts',
+      }),
+    ).rejects.toThrow('An implementation cannot be declared in ambient contexts');
+  },
+);
 
 test.each([
   {
