@@ -700,4 +700,5 @@ if (!nativeBinding) {
 }
 
 module.exports = nativeBinding
+module.exports.GitIgnoreMatcher = nativeBinding.GitIgnoreMatcher
 module.exports.IgnoreMatcher = nativeBinding.IgnoreMatcher

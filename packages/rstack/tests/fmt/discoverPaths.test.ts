@@ -122,6 +122,18 @@ test('applies nested gitignore rules with child negation', async () => {
   });
 });
 
+test('does not extend a nested directory negation to its files', async () => {
+  await withTempProject(async (rootPath) => {
+    writeProjectFile(rootPath, '.gitignore', 'debug/\n');
+    writeProjectFile(rootPath, 'scripts/.gitignore', '!debug\n');
+    writeProjectFile(rootPath, 'scripts/debug/launch.mjs');
+
+    const files = await discoverFmtPaths({ cwd: rootPath, patterns: ['**/*.mjs'] });
+
+    expect(files).toEqual([]);
+  });
+});
+
 test('applies a nested gitignore without a root matcher', async () => {
   await withTempProject(async (rootPath) => {
     writeProjectFile(rootPath, 'src/.gitignore', '*.js\n');
@@ -136,6 +148,20 @@ test('applies a nested gitignore without a root matcher', async () => {
       path.join('src', '.gitignore'),
       path.join('src', 'keep.ts'),
     ]);
+  });
+});
+
+test('keeps valid nested gitignore rules around normalized and malformed lines', async () => {
+  await withTempProject(async (rootPath) => {
+    writeProjectFile(rootPath, '.gitignore', '\uFEFF*.js\r\nmalformed\\\r\n');
+    writeProjectFile(rootPath, 'src/.gitignore', '!keep.js\r\n');
+    writeProjectFile(rootPath, 'src/keep.js');
+    writeProjectFile(rootPath, 'src/drop.js');
+    writeProjectFile(rootPath, 'visible.ts');
+
+    const files = await discoverFmtPaths({ cwd: rootPath, patterns: ['**/*.{js,ts}'] });
+
+    expect(relativePaths(rootPath, files)).toEqual([path.join('src', 'keep.js'), 'visible.ts']);
   });
 });
 
