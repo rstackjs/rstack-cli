@@ -44,7 +44,7 @@ test('parses JSX in JavaScript files', async () => {
 });
 
 test.each(['example.ts', 'example.mts', 'example.cts'])(
-  'uses the TypeScript grammar for %s',
+  'rejects JSX syntax in %s',
   async (filepath) => {
     await expect(
       formatWithYuku('const view=<Component/>', {
@@ -56,7 +56,7 @@ test.each(['example.ts', 'example.mts', 'example.cts'])(
 );
 
 test.each(['example.d.ts', 'example.d.mts', 'example.d.cts'])(
-  'uses the declaration grammar for %s',
+  'rejects function implementations in %s',
   async (filepath) => {
     await expect(
       formatWithYuku('export function value() { return 1; }', {
