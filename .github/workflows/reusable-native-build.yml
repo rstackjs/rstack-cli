@@ -109,7 +109,7 @@ jobs:
               ;;
           esac
 
-          args+=(-- --config ../../.cargo/release.toml)
+          args+=(-- --config "target.'cfg(all())'.rustflags = ['-Zlocation-detail=none']")
           pnpm exec napi "${args[@]}"
 
       - name: Upload native binding

@@ -1,3 +1,0 @@
-# Remove source locations from release panic metadata to reduce binary size.
-[target.'cfg(all())']
-rustflags = ["-Zlocation-detail=none"]
