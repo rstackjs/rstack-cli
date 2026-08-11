@@ -10,35 +10,55 @@ import path from 'node:path';
 
 const packageRoot = path.join(import.meta.dirname, '..');
 
+const templateNameMap = {
+  'app-vanilla': 'app-vanilla-js',
+  'app-vanilla-ts': 'app-vanilla-ts',
+  'app-react': 'app-react-js',
+  'app-react-ts': 'app-react-ts',
+  'app-preact': 'app-preact-js',
+  'app-preact-ts': 'app-preact-ts',
+  'app-vue': 'app-vue-js',
+  'app-vue-ts': 'app-vue-ts',
+  'app-lit': 'app-lit-js',
+  'app-lit-ts': 'app-lit-ts',
+  'app-svelte': 'app-svelte-js',
+  'app-svelte-ts': 'app-svelte-ts',
+  'app-solid': 'app-solid-js',
+  'app-solid-ts': 'app-solid-ts',
+  'lib-node': 'lib-node-js',
+  'lib-node-ts': 'lib-node-ts',
+  'lib-react': 'lib-react-js',
+  'lib-react-ts': 'lib-react-ts',
+  'lib-vue': 'lib-vue-js',
+  'lib-vue-ts': 'lib-vue-ts',
+  'lib-svelte': 'lib-svelte-js',
+  'lib-svelte-ts': 'lib-svelte-ts',
+  'lib-solid': 'lib-solid-js',
+  'lib-solid-ts': 'lib-solid-ts',
+  doc: 'doc-basic',
+  'doc-i18n': 'doc-i18n',
+} as const;
+
+type TemplateName = keyof typeof templateNameMap;
+
+const isTemplateName = (template: string): template is TemplateName =>
+  Object.hasOwn(templateNameMap, template);
+
+const resolveTemplateName = (template: string): string => {
+  if (!isTemplateName(template)) {
+    throw new Error(`Invalid input: template "${template}" not found.`);
+  }
+
+  return templateNameMap[template];
+};
+
 const getTemplateName = async ({ template }: Argv): Promise<string> => {
   if (typeof template === 'string') {
-    if (template === 'app' || template.startsWith('app-')) {
-      const [, framework = 'vanilla', language = 'js'] = template.split('-');
-
-      if (framework === 'js' || framework === 'ts') {
-        return `app-vanilla-${framework}`;
-      }
-
-      return `app-${framework}-${language}`;
+    if (/^(?:app|lib|doc)(?:-|$)/u.test(template)) {
+      return resolveTemplateName(template);
     }
 
-    if (template === 'lib' || template.startsWith('lib-')) {
-      const [, libraryType = 'node', language = 'js'] = template.split('-');
-
-      if (libraryType === 'js' || libraryType === 'ts') {
-        return `lib-node-${libraryType}`;
-      }
-
-      return `lib-${libraryType}-${language}`;
-    }
-
-    if (template === 'doc' || template.startsWith('doc-')) {
-      const [, documentationType = 'basic'] = template.split('-');
-      return `doc-${documentationType}`;
-    }
-
-    const [type, language = 'js'] = template.split('-');
-    return `${type}-${language}`;
+    return template;
   }
 
   const projectType = checkCancel<string>(
@@ -72,7 +92,7 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
       }),
     );
 
-    return `doc-${documentationType}`;
+    return resolveTemplateName(documentationType === 'basic' ? 'doc' : 'doc-i18n');
   }
 
   const templateType = checkCancel<string>(
@@ -109,7 +129,8 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
     }),
   );
 
-  return `${projectType}-${templateType}-${language}`;
+  const templateName = `${projectType}-${templateType}${language === 'ts' ? '-ts' : ''}`;
+  return resolveTemplateName(templateName);
 };
 
 const getStagedConfig = (templateName: string): string => {
@@ -168,34 +189,7 @@ const injectStagedSetup = async ({
 await create({
   root: packageRoot,
   name: 'rstack',
-  templates: [
-    'app-vanilla-js',
-    'app-vanilla-ts',
-    'app-react-js',
-    'app-react-ts',
-    'app-preact-js',
-    'app-preact-ts',
-    'app-vue-js',
-    'app-vue-ts',
-    'app-lit-js',
-    'app-lit-ts',
-    'app-svelte-js',
-    'app-svelte-ts',
-    'app-solid-js',
-    'app-solid-ts',
-    'lib-node-js',
-    'lib-node-ts',
-    'lib-react-js',
-    'lib-react-ts',
-    'lib-vue-js',
-    'lib-vue-ts',
-    'lib-svelte-js',
-    'lib-svelte-ts',
-    'lib-solid-js',
-    'lib-solid-ts',
-    'doc-basic',
-    'doc-i18n',
-  ],
+  templates: Object.keys(templateNameMap),
   builtinTools: [],
   getTemplateName,
   onGitResolved: injectStagedSetup,
