@@ -1,4 +1,5 @@
 [toolchain]
-channel = "1.97.1"
+# Required by the release-only -Zlocation-detail=none flag.
+channel = "nightly-2026-04-16"
 components = ["clippy", "rustfmt"]
 profile = "minimal"

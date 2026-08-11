@@ -67,7 +67,7 @@
     "build": "rslib",
     "build:native": "napi build --config-path napi.json --platform --manifest-path ../../Cargo.toml --package rstack-binding --package-json-path package.json --output-dir . --js binding.cjs --dts binding.d.cts",
     "build:native:ci": "napi build --config-path napi.json --platform --profile ci --manifest-path ../../Cargo.toml --package rstack-binding --package-json-path package.json --output-dir . --js binding.cjs --dts binding.d.cts",
-    "build:native:release": "napi build --config-path napi.json --platform --release --manifest-path ../../Cargo.toml --package rstack-binding --package-json-path package.json --output-dir . --js binding.cjs --dts binding.d.cts",
+    "build:native:release": "napi build --config-path napi.json --platform --release --manifest-path ../../Cargo.toml --package rstack-binding --package-json-path package.json --output-dir . --js binding.cjs --dts binding.d.cts -- --config ../../.cargo/release.toml",
     "dev": "rslib -w",
     "package:native": "napi create-npm-dirs --config-path napi.json",
     "test": "rs test"
