@@ -43,6 +43,9 @@ jobs:
       - name: Lint Rust
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
 
+      - name: Build Native Binding
+        run: pnpm --filter rstack build:native
+
       - name: Lint
         run: node --run lint
 
