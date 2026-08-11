@@ -10,6 +10,7 @@ extglob
 fnames
 huskyrc
 indentable
+jsonline
 llms
 napi
 noformat
