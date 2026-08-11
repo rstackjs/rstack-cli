@@ -109,6 +109,8 @@ jobs:
               ;;
           esac
 
+          # Omit panic source locations to reduce the release binary size.
+          args+=(-- --config ../../.cargo/release.toml)
           pnpm exec napi "${args[@]}"
 
       - name: Upload native binding
