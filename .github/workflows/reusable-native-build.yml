@@ -96,6 +96,7 @@ jobs:
               export MACOSX_DEPLOYMENT_TARGET=11.0
               ;;
             i686-pc-windows-msvc)
+              # Reduce peak link time and memory usage for the constrained 32-bit target.
               export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=32
               export CARGO_PROFILE_RELEASE_LTO=false
               ;;

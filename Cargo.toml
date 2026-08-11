@@ -16,6 +16,34 @@ napi-derive = "3.6.2"
 pathdiff = "0.2.3"
 rstack-ignore = { path = "crates/rstack-ignore" }
 
+# Local development: 16 codegen units are sufficient for this small workspace while preserving
+# parallel compilation and full debugging support.
+[profile.dev]
+codegen-units = 16
+debug = 2
+incremental = true
+panic = "unwind"
+split-debuginfo = "unpacked"
+
+# CI: 256 codegen units favor clean-build parallelism, while disabling cross-crate LTO avoids the
+# release-only linking cost.
+[profile.ci]
+codegen-units = 256
+debug = false
+incremental = false
+inherits = "release"
+lto = false
+opt-level = 2
+# Cargo tests require unwinding, so keep the CI native build consistent.
+panic = "unwind"
+strip = false
+
+# Release: one codegen unit and fat LTO maximize optimization; abort prevents unwinding across the
+# NAPI FFI boundary.
 [profile.release]
-lto = true
-strip = "symbols"
+codegen-units = 1
+debug = false
+lto = "fat"
+opt-level = 3
+panic = "abort"
+strip = true
