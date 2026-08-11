@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "pnpm --filter \"./packages/**\" build",
-    "check:format": "rs fmt --check",
+    "check": "rs check --type-check",
     "check:spell": "pnpm dlx cspell && heading-case",
     "doc": "pnpm --dir website dev",
     "doc:build": "node --run build && pnpm --dir website build",
