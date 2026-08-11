@@ -1,3 +1,7 @@
+---
+description: '在 Monorepo 中配置共享的 Rstack 检查、格式化、暂存文件任务和项目工作流。'
+---
+
 # Monorepo
 
 本指南介绍如何在 Monorepo 中使用 Rstack CLI，以及如何让它与 [Turborepo](https://turborepo.com/docs)、[Nx](https://nx.dev/docs/getting-started/intro) 等任务编排工具协同工作。
@@ -65,9 +69,9 @@ define.staged({
 {
   "private": true,
   "scripts": {
-    "lint": "rs lint",
+    "check": "rs check --type-check",
     "format": "rs fmt",
-    "check:format": "rs fmt --check",
+    "lint": "rs lint",
     "staged": "rs staged"
   }
 }
