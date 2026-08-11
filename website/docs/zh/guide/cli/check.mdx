@@ -1,0 +1,53 @@
+---
+description: '同时运行 lint 和格式检查，并可选启用 TypeScript 类型检查。'
+---
+
+# check
+
+`rs check` 命令可统一运行当前项目的 lint、格式和可选的 TypeScript 类型检查。默认情况下，它会先运行 [`rs lint`](./lint)，再运行 [`rs fmt --check`](./fmt#--check)。
+
+## 用法 \{#usage}
+
+```bash
+rs check [options]
+```
+
+## 检查内容 \{#checks}
+
+运行 `rs check` 等同于：
+
+```bash
+rs lint && rs fmt --check
+```
+
+各项检查会按顺序运行。如果 lint 失败，`rs check` 会停止运行，不再检查格式。只有所有已启用的检查均通过时，该命令才会成功退出。
+
+## 选项 \{#options}
+
+### `--type-check`
+
+在 lint 过程中启用 TypeScript 类型检查：
+
+```bash
+rs check --type-check
+```
+
+该命令等同于：
+
+```bash
+rs lint --type-check && rs fmt --check
+```
+
+省略此选项时，不会运行类型检查。
+
+### `-h, --help`
+
+显示命令用法和选项信息，但不运行检查：
+
+```bash
+rs check --help
+```
+
+## 配置 \{#configuration}
+
+`rs check` 没有独立的 `define.check()` 配置。它会使用 [`define.lint()`](../configuration#define-lint) 中的 lint 配置，以及 [`define.fmt()`](../configuration#define-fmt) 中的格式化配置。

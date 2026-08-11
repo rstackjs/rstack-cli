@@ -1,3 +1,7 @@
+---
+description: 'Configure shared Rstack checks, formatting, staged tasks, and project workflows in a monorepo.'
+---
+
 # Monorepo
 
 This guide explains how to use Rstack CLI in a monorepo, including how it works with task orchestrators such as [Turborepo](https://turborepo.com/docs) and [Nx](https://nx.dev/docs/getting-started/intro).
@@ -65,9 +69,9 @@ Expose these tasks through scripts in the root `package.json`:
 {
   "private": true,
   "scripts": {
-    "lint": "rs lint",
+    "check": "rs check --type-check",
     "format": "rs fmt",
-    "check:format": "rs fmt --check",
+    "lint": "rs lint",
     "staged": "rs staged"
   }
 }

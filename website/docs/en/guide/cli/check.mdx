@@ -1,0 +1,53 @@
+---
+description: 'Run linting and formatting checks together, with optional TypeScript type checking.'
+---
+
+# check
+
+The `rs check` command combines linting, formatting, and optional TypeScript type checking for the current project. By default, it runs [`rs lint`](./lint) followed by [`rs fmt --check`](./fmt#--check).
+
+## Usage
+
+```bash
+rs check [options]
+```
+
+## Checks
+
+Running `rs check` is equivalent to:
+
+```bash
+rs lint && rs fmt --check
+```
+
+Checks run sequentially. If linting fails, `rs check` stops without running the formatting check. The command exits successfully only when every enabled check passes.
+
+## Options
+
+### `--type-check`
+
+Enable TypeScript type checking as part of linting:
+
+```bash
+rs check --type-check
+```
+
+This is equivalent to:
+
+```bash
+rs lint --type-check && rs fmt --check
+```
+
+Type checking is disabled when this option is omitted.
+
+### `-h, --help`
+
+Display usage and option information without running checks:
+
+```bash
+rs check --help
+```
+
+## Configuration
+
+`rs check` has no separate `define.check()` configuration. It uses the linting configuration from [`define.lint()`](../configuration#define-lint) and the formatting configuration from [`define.fmt()`](../configuration#define-fmt).
