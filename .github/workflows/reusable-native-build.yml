@@ -110,7 +110,7 @@ jobs:
           esac
 
           # Omit panic source locations to reduce the release binary size.
-          args+=(-- --config "target.'cfg(all())'.rustflags = ['-Zlocation-detail=none']")
+          args+=(-- --config ../../.cargo/release.toml)
           pnpm exec napi "${args[@]}"
 
       - name: Upload native binding
