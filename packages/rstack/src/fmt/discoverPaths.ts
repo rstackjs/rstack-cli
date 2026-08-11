@@ -1,9 +1,10 @@
 import { lstat, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import ignore from 'ignore';
 import isBinaryPath from 'is-binary-path';
 import micromatch from 'micromatch';
 import readdir, { type Dirent, type DirentLike } from 'tiny-readdir';
+import type { GitIgnoreMatcher as NativeGitIgnoreMatcher } from '../../binding.cjs';
+import { loadNativeBinding } from '../native/index.ts';
 import {
   createRelativePathResolver,
   toPosixPath,
@@ -19,6 +20,9 @@ const defaultIgnoredDirNames = new Set([
   '.rstack',
   'node_modules',
 ]);
+
+const gitIgnored = Symbol('gitIgnored');
+type GitIgnoreDirent = Dirent & { [gitIgnored]?: true };
 
 interface DiscoverFmtPathsOptions {
   /** Absolute directory used to resolve input paths. */
@@ -81,20 +85,21 @@ const findGitRoot = async (cwd: string): Promise<string> => {
   }
 };
 
-class GitIgnoreMatcher {
+/** Loads repository ignore files while Rust owns their compiled matching state. */
+class GitIgnoreFiles {
   readonly #rootPath: string;
   readonly #resolveRelativePath: RelativePathResolver;
-  readonly #matchers = new Map<string, ReturnType<typeof ignore>>();
   readonly #loads = new Map<string, Promise<void>>();
-  readonly #ignoredDirectories = new Map<string, boolean>();
+  #matcher: NativeGitIgnoreMatcher | undefined;
+  #hasRules = false;
 
   private constructor(rootPath: string) {
     this.#rootPath = rootPath;
     this.#resolveRelativePath = createRelativePathResolver(rootPath);
   }
 
-  static async create(cwd: string): Promise<GitIgnoreMatcher> {
-    const matcher = new GitIgnoreMatcher(await findGitRoot(cwd));
+  static async create(cwd: string): Promise<GitIgnoreFiles> {
+    const matcher = new GitIgnoreFiles(await findGitRoot(cwd));
     await matcher.loadThrough(cwd);
     return matcher;
   }
@@ -124,7 +129,7 @@ class GitIgnoreMatcher {
   }
 
   isIgnored(filePath: string, isDirectory: boolean): boolean {
-    if (this.#matchers.size === 0) {
+    if (!this.#hasRules) {
       return false;
     }
 
@@ -133,15 +138,47 @@ class GitIgnoreMatcher {
       return false;
     }
 
-    if (isDirectory) {
-      return this.#isDirectoryIgnored(filePath, relativePath);
+    return this.#matcher!.isIgnored(toPosixPath(relativePath), isDirectory);
+  }
+
+  /** Matches one directory's entries in a single native call. */
+  matchDirents(parentPath: string, dirents: Dirent[]): boolean | number | Uint8Array | undefined {
+    if (!this.#hasRules || dirents.length === 0) {
+      return;
     }
 
-    const parentPath = path.dirname(filePath);
-    return (
-      (parentPath !== this.#rootPath && this.#isDirectoryIgnored(parentPath)) ||
-      this.#matches(relativePath, false)
-    );
+    const relativeParentPath = this.#resolveRelativePath(parentPath);
+    if (!isRelativePathInside(relativeParentPath)) {
+      return;
+    }
+
+    const relativeParent = toPosixPath(relativeParentPath);
+
+    if (dirents.length === 1) {
+      const dirent = dirents[0];
+      return this.#matcher!.isIgnoredChild(relativeParent, dirent.name, dirent.isDirectory());
+    }
+
+    const names = new Array<string>(dirents.length);
+
+    if (dirents.length <= 32) {
+      let directoryMask = 0;
+      for (let index = 0; index < dirents.length; index++) {
+        const dirent = dirents[index];
+        names[index] = dirent.name;
+        directoryMask |= Number(dirent.isDirectory()) << index;
+      }
+      return this.#matcher!.isIgnoredBatchMask(relativeParent, names, directoryMask >>> 0);
+    }
+
+    const directoryFlags = new Uint8Array(dirents.length);
+    for (let index = 0; index < dirents.length; index++) {
+      const dirent = dirents[index];
+      names[index] = dirent.name;
+      directoryFlags[index] = Number(dirent.isDirectory());
+    }
+
+    return this.#matcher!.isIgnoredBatch(relativeParent, names, directoryFlags);
   }
 
   #load(directoryPath: string): Promise<void> {
@@ -154,69 +191,18 @@ class GitIgnoreMatcher {
     const loading = readFile(path.join(directoryPath, '.gitignore'), 'utf8')
       .then((content) => {
         const relativePath = toPosixPath(this.#resolveRelativePath(directoryPath));
-        this.#matchers.set(relativePath, ignore().add(content));
+        this.#matcher ??= new (loadNativeBinding().GitIgnoreMatcher)();
+        this.#hasRules = this.#matcher.addSource(relativePath, content);
       })
       .catch(() => undefined);
 
     this.#loads.set(directoryPath, loading);
     return loading;
   }
-
-  #isDirectoryIgnored(directoryPath: string, relativePath?: string): boolean {
-    const cached = this.#ignoredDirectories.get(directoryPath);
-    if (cached !== undefined) {
-      return cached;
-    }
-
-    relativePath ??= this.#resolveRelativePath(directoryPath);
-
-    // Git cannot re-include a path below an ignored directory.
-    const parentPath = path.dirname(directoryPath);
-    const ignored =
-      (parentPath !== this.#rootPath && this.#isDirectoryIgnored(parentPath)) ||
-      this.#matches(relativePath, true);
-    this.#ignoredDirectories.set(directoryPath, ignored);
-    return ignored;
-  }
-
-  #matches(relativePath: string, isDirectory: boolean): boolean {
-    const pathFromRoot = toPosixPath(relativePath);
-
-    // Most repositories only use a root `.gitignore`. Avoid checking every path
-    // segment when no nested matcher can override its result.
-    const rootMatcher = this.#matchers.size === 1 ? this.#matchers.get('') : undefined;
-    if (rootMatcher) {
-      // `ignore` expects POSIX separators and uses a trailing slash to distinguish directories.
-      return rootMatcher.test(isDirectory ? `${pathFromRoot}/` : pathFromRoot).ignored;
-    }
-
-    const segments = pathFromRoot.split('/');
-    let directoryPath = '';
-    let pathFromMatcher = pathFromRoot;
-    let ignored = false;
-
-    for (const segment of segments) {
-      const matcher = this.#matchers.get(directoryPath);
-      if (matcher) {
-        const result = matcher.test(isDirectory ? `${pathFromMatcher}/` : pathFromMatcher);
-
-        if (result.ignored) {
-          ignored = true;
-        } else if (result.unignored) {
-          ignored = false;
-        }
-      }
-
-      directoryPath = directoryPath ? `${directoryPath}/${segment}` : segment;
-      pathFromMatcher = pathFromMatcher.slice(segment.length + 1);
-    }
-
-    return ignored;
-  }
 }
 
 const createTraversalOptions = (
-  gitIgnore: GitIgnoreMatcher,
+  gitIgnore: GitIgnoreFiles,
   ignoredDirNames: ReadonlySet<string>,
   isIncluded?: (filePath: string) => boolean,
   isIgnored?: (filePath: string, isDirectory: boolean) => boolean,
@@ -231,7 +217,9 @@ const createTraversalOptions = (
       }
 
       if (dirent.isDirectory()) {
-        return gitIgnore.isIgnored(targetPath, true) || isIgnored?.(targetPath, true) === true;
+        return (
+          (dirent as GitIgnoreDirent)[gitIgnored] === true || isIgnored?.(targetPath, true) === true
+        );
       }
 
       if (isIncluded !== undefined && !isIncluded(targetPath)) {
@@ -241,7 +229,7 @@ const createTraversalOptions = (
       return (
         isIgnored?.(targetPath, false) === true ||
         isBinaryPath(targetPath) ||
-        gitIgnore.isIgnored(targetPath, false)
+        (dirent as GitIgnoreDirent)[gitIgnored] === true
       );
     },
     onDirents: async (dirents: Dirent[]) => {
@@ -256,6 +244,25 @@ const createTraversalOptions = (
 
       if (hasGitIgnore) {
         await gitIgnore.load(parentPath);
+      }
+
+      const ignored = gitIgnore.matchDirents(parentPath, dirents);
+      if (typeof ignored === 'boolean') {
+        if (ignored) {
+          (dirents[0] as GitIgnoreDirent)[gitIgnored] = true;
+        }
+      } else if (typeof ignored === 'number') {
+        for (let index = 0; index < dirents.length; index++) {
+          if (ignored & (1 << index)) {
+            (dirents[index] as GitIgnoreDirent)[gitIgnored] = true;
+          }
+        }
+      } else if (ignored) {
+        for (let index = 0; index < ignored.length; index++) {
+          if (ignored[index] === 1) {
+            (dirents[index] as GitIgnoreDirent)[gitIgnored] = true;
+          }
+        }
       }
 
       return undefined;
@@ -392,7 +399,7 @@ const discoverFmtPaths = async ({
   const traversalRoots = getTraversalRoots(cwd, directoryRoots, globs);
 
   if (traversalRoots.length) {
-    const gitIgnore = await GitIgnoreMatcher.create(cwd);
+    const gitIgnore = await GitIgnoreFiles.create(cwd);
     const results = await Promise.all(
       traversalRoots.map(async (rootPath) => {
         const stats = await lstatSafe(rootPath);
