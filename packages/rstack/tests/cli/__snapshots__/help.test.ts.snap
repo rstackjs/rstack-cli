@@ -121,6 +121,127 @@ Options:
 "
 `;
 
+exports[`displays test help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs test [command] [...filters] [options]
+
+Commands:
+  [...filters]          Run tests (default)
+  run [...filters]      Run tests once
+  watch [...filters]    Run tests in watch mode
+  list [...filters]     List matching tests
+  merge-reports [path]  Merge blob reports
+  init [project]        Initialize Rstest configuration
+
+For command-specific options, run:
+  $ rs test <command> -h
+
+Options:
+  -w, --watch                        Enable watch mode
+  -u, --update                       Update snapshot files
+  --coverage                         Enable code coverage
+  --project <name>                   Filter test projects by name
+  -t, --test-name-pattern <pattern>  Run tests with names matching the pattern
+  -c, --config <path>                Specify Rstack config file path
+  -h, --help                         Display this help message
+"
+`;
+
+exports[`displays test init help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs test init [project] [options]
+
+Initialize Rstest configuration
+
+Options:
+  --yes       Use default options without prompts
+  -h, --help  Display this help message
+"
+`;
+
+exports[`displays test list help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs test list [...filters] [options]
+
+List matching tests
+
+Options:
+  --related                          List tests related to source files
+  --changed [commit]                 List tests related to changed files
+  --files-only                       List matching test files only
+  --json [path]                      Print JSON or write it to a file
+  --include-suites                   Include test suites
+  --print-location                   Print test locations
+  --summary                          Print a summary
+  --project <name>                   Filter test projects by name
+  -t, --test-name-pattern <pattern>  List tests with names matching the pattern
+  -c, --config <path>                Specify Rstack config file path
+  -h, --help                         Display this help message
+"
+`;
+
+exports[`displays test merge-reports help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs test merge-reports [path] [options]
+
+Merge blob reports
+
+Options:
+  --coverage                      Generate coverage reports
+  --reporters, --reporter <name>  Specify test reporters
+  --cleanup                       Remove blob reports after merging
+  -c, --config <path>             Specify Rstack config file path
+  -h, --help                      Display this help message
+"
+`;
+
+exports[`displays test run help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs test run [...filters] [options]
+
+Run tests once
+
+Options:
+  --related                          Run tests related to source files
+  --changed [commit]                 Run tests related to changed files
+  --shard <index/count>              Split tests into shards
+  -u, --update                       Update snapshot files
+  --coverage                         Enable code coverage
+  --project <name>                   Filter test projects by name
+  -t, --test-name-pattern <pattern>  Run tests with names matching the pattern
+  -c, --config <path>                Specify Rstack config file path
+  -h, --help                         Display this help message
+"
+`;
+
+exports[`displays test watch help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs test watch [...filters] [options]
+
+Run tests in watch mode
+
+Options:
+  -u, --update                       Update snapshot files
+  --coverage                         Enable code coverage
+  --project <name>                   Filter test projects by name
+  -t, --test-name-pattern <pattern>  Run tests with names matching the pattern
+  -c, --config <path>                Specify Rstack config file path
+  -h, --help                         Display this help message
+"
+`;
+
 exports[`displays top-level help 1`] = `
 "Rstack v<version>
 
