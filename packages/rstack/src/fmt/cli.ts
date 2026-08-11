@@ -335,7 +335,9 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       }
     }
 
-    if (mode === 'check') {
+    if (mode === 'write') {
+      logger.start('Formatting...');
+    } else if (mode === 'check') {
       logger.start('Checking formatting...');
     }
 
@@ -350,6 +352,8 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       if (ignoreUnknown) {
         if (mode === 'check') {
           logger.success('No supported files to check.');
+        } else if (mode === 'write') {
+          logger.success('No supported files to format.');
         }
         return;
       }

@@ -34,7 +34,7 @@ export const expectWriteSummary = (
   const message = writtenCount
     ? `Formatted ${writtenCount} of ${matchedFileCount} ${files} in <duration>.`
     : `Checked ${matchedFileCount} ${files} in <duration>. No changes needed.`;
-  expect(normalizeDuration(output)).toBe(`success ${message}\n`);
+  expect(normalizeDuration(output)).toBe(`start   Formatting...\nsuccess ${message}\n`);
 };
 
 export const setupFmtTest = (): FmtTestHarness => {

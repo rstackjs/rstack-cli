@@ -137,7 +137,7 @@ test('returns exit code 2 for formatting errors', () => {
   const result = runFmt(['index.ts']);
 
   expect(result.status).toBe(2);
-  expect(result.stdout).toBe('');
+  expect(result.stdout).toBe('start   Formatting...\n');
   expect(result.stderr).toContain('error   index.ts: SyntaxError:');
 });
 
@@ -148,7 +148,9 @@ test('reports partial writes when formatting fails', () => {
   const result = runFmt(['valid.ts', 'invalid.ts']);
 
   expect(result.status).toBe(2);
-  expect(normalizeDuration(result.stdout)).toBe('info    Formatted 1 of 2 files in <duration>.\n');
+  expect(normalizeDuration(result.stdout)).toBe(
+    'start   Formatting...\ninfo    Formatted 1 of 2 files in <duration>.\n',
+  );
   expect(result.stderr).toContain('error   invalid.ts: SyntaxError:');
   expect(readProjectFile('valid.ts')).toBe('const value = true;\n');
   expect(readProjectFile('invalid.ts')).toBe('const invalid = ;');

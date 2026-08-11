@@ -62,11 +62,12 @@ test('ignores unsupported files with --ignore-unknown', () => {
     const result = runFmt([...modeArgs, '--ignore-unknown', 'notes.unknown']);
 
     expect(result.status).toBe(0);
-    expect(result.stdout).toBe(
-      modeArgs.includes('--check')
-        ? 'start   Checking formatting...\nsuccess No supported files to check.\n'
-        : '',
-    );
+    const expectedStdout = modeArgs.includes('--check')
+      ? 'start   Checking formatting...\nsuccess No supported files to check.\n'
+      : modeArgs.includes('--list-different')
+        ? ''
+        : 'start   Formatting...\nsuccess No supported files to format.\n';
+    expect(result.stdout).toBe(expectedStdout);
     expect(result.stderr).toBe('');
   }
 });
@@ -77,7 +78,7 @@ test('supports -u as an alias for --ignore-unknown', () => {
   const result = runFmt(['-u', 'notes.unknown']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('');
+  expect(result.stdout).toBe('start   Formatting...\nsuccess No supported files to format.\n');
   expect(result.stderr).toBe('');
 });
 
@@ -95,6 +96,6 @@ test('does not treat unsupported files as unmatched patterns', () => {
   const result = runFmt(['--no-error-on-unmatched-pattern', 'notes.unknown']);
 
   expect(result.status).toBe(2);
-  expect(result.stdout).toBe('');
+  expect(result.stdout).toBe('start   Formatting...\n');
   expect(result.stderr).toContain('No supported files matched "notes.unknown"');
 });
