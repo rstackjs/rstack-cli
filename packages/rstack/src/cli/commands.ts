@@ -110,6 +110,139 @@ const renderPreviewHelp = (): string =>
     ],
   });
 
+const renderTestHelp = (): string =>
+  renderHelp({
+    usage: 'rs test [command] [...filters] [options]',
+    sections: [
+      {
+        title: 'Commands',
+        items: [
+          ['[...filters]', 'Run tests (default)'],
+          ['run [...filters]', 'Run tests once'],
+          ['watch [...filters]', 'Run tests in watch mode'],
+          ['list [...filters]', 'List matching tests'],
+          ['merge-reports [path]', 'Merge blob reports'],
+          ['init [project]', 'Initialize Rstest configuration'],
+        ],
+      },
+      {
+        content: `For command-specific options, run:
+  $ rs test <command> -h`,
+        dim: true,
+      },
+      {
+        title: 'Options',
+        items: [
+          ['-w, --watch', 'Enable watch mode'],
+          ['-u, --update', 'Update snapshot files'],
+          ['--coverage', 'Enable code coverage'],
+          ['--project <name>', 'Filter test projects by name'],
+          ['-t, --test-name-pattern <pattern>', 'Run tests with names matching the pattern'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
+const renderTestRunHelp = (): string =>
+  renderHelp({
+    usage: 'rs test run [...filters] [options]',
+    description: 'Run tests once',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['--related', 'Run tests related to source files'],
+          ['--changed [commit]', 'Run tests related to changed files'],
+          ['--shard <index/count>', 'Split tests into shards'],
+          ['-u, --update', 'Update snapshot files'],
+          ['--coverage', 'Enable code coverage'],
+          ['--project <name>', 'Filter test projects by name'],
+          ['-t, --test-name-pattern <pattern>', 'Run tests with names matching the pattern'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
+const renderTestWatchHelp = (): string =>
+  renderHelp({
+    usage: 'rs test watch [...filters] [options]',
+    description: 'Run tests in watch mode',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['-u, --update', 'Update snapshot files'],
+          ['--coverage', 'Enable code coverage'],
+          ['--project <name>', 'Filter test projects by name'],
+          ['-t, --test-name-pattern <pattern>', 'Run tests with names matching the pattern'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
+const renderTestListHelp = (): string =>
+  renderHelp({
+    usage: 'rs test list [...filters] [options]',
+    description: 'List matching tests',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['--related', 'List tests related to source files'],
+          ['--changed [commit]', 'List tests related to changed files'],
+          ['--files-only', 'List matching test files only'],
+          ['--json [path]', 'Print JSON or write it to a file'],
+          ['--include-suites', 'Include test suites'],
+          ['--print-location', 'Print test locations'],
+          ['--summary', 'Print a summary'],
+          ['--project <name>', 'Filter test projects by name'],
+          ['-t, --test-name-pattern <pattern>', 'List tests with names matching the pattern'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
+const renderTestMergeReportsHelp = (): string =>
+  renderHelp({
+    usage: 'rs test merge-reports [path] [options]',
+    description: 'Merge blob reports',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['--coverage', 'Generate coverage reports'],
+          ['--reporters, --reporter <name>', 'Specify test reporters'],
+          ['--cleanup', 'Remove blob reports after merging'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
+const renderTestInitHelp = (): string =>
+  renderHelp({
+    usage: 'rs test init [project] [options]',
+    description: 'Initialize Rstest configuration',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['--yes', 'Use default options without prompts'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
 const renderLibHelp = (): string =>
   renderHelp({
     usage: 'rs lib [command] [options]',
@@ -214,6 +347,29 @@ async function runRsbuildCLI(args: string[]): Promise<void> {
 }
 
 async function runRstestCLI(args: string[]): Promise<void> {
+  if (hasHelpFlag(args)) {
+    switch (args[0]) {
+      case 'run':
+        console.log(renderTestRunHelp());
+        return;
+      case 'watch':
+        console.log(renderTestWatchHelp());
+        return;
+      case 'list':
+        console.log(renderTestListHelp());
+        return;
+      case 'merge-reports':
+        console.log(renderTestMergeReportsHelp());
+        return;
+      case 'init':
+        console.log(renderTestInitHelp());
+        return;
+      default:
+        console.log(renderTestHelp());
+        return;
+    }
+  }
+
   const argv = [
     process.execPath,
     'rstest',
