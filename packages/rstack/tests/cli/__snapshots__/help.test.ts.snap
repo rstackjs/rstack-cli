@@ -1,0 +1,30 @@
+// Rstest Snapshot v1
+
+exports[`displays top-level help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs [command] [...options]
+
+Commands:
+  dev          Run the app dev server
+  build        Build the app for production
+  preview      Preview the app production build
+  lib          Build library
+  doc          Serve or build docs
+  fmt, format  Format code
+  lint         Lint code
+  check        Run static checks, including lint and format
+  test         Run tests
+  staged       Run tasks on staged Git files
+  setup        Install Git hooks
+
+For command-specific options, run:
+  $ rs <command> -h
+
+Options:
+  -c, --config <path>  Specify Rstack config file path
+  -h, --help           Display this help message
+  -v, --version        Display version number
+"
+`;

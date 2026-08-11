@@ -6,7 +6,7 @@ exports[`displays check help without loading config 1`] = `
 Usage:
   $ rs check [options]
 
-Run static checks, including linting and formatting.
+Run static checks, including lint and format
 
 Options:
   --type-check  Enable TypeScript type checking

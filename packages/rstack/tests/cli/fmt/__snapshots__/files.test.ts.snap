@@ -1,0 +1,25 @@
+// Rstest Snapshot v1
+
+exports[`displays fmt help without loading config 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs fmt [options] [files/globs...]
+
+Format code
+
+Options:
+  -w, --write                      Write formatted files in place (default)
+  --check                          Check whether files are formatted
+  -l, --list-different             Print paths of unformatted files
+  --ignore-path <path>             Path to an additional ignore file (repeatable)
+  -u, --ignore-unknown             Ignore unknown files
+  --no-cache                       Disable the formatting cache
+  --cache-location <path>          Path to the formatting cache directory
+  --no-error-on-unmatched-pattern  Do not error when no files match
+  --with-node-modules              Process files inside node_modules
+  --parallel-workers <count>       Number of parallel workers
+  --stdin-filepath <path>          Format stdin as if it were saved at <path>
+  -h, --help                       Display this help message
+"
+`;

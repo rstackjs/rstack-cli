@@ -1,48 +1,58 @@
 import { join } from 'node:path';
-import { color } from 'rslog';
 import { getConfigState } from '../config.ts';
 import { insertConfigArg, parseArgs, parseCliArgs } from './args.ts';
+import { renderHelp } from './help.ts';
 
-declare global {
-  const RSTACK_VERSION: string;
-}
+const renderRootHelp = (): string =>
+  renderHelp({
+    usage: 'rs [command] [...options]',
+    sections: [
+      {
+        title: 'Commands',
+        items: [
+          ['dev', 'Run the app dev server'],
+          ['build', 'Build the app for production'],
+          ['preview', 'Preview the app production build'],
+          ['lib', 'Build library'],
+          ['doc', 'Serve or build docs'],
+          ['fmt, format', 'Format code'],
+          ['lint', 'Lint code'],
+          ['check', 'Run static checks, including lint and format'],
+          ['test', 'Run tests'],
+          ['staged', 'Run tasks on staged Git files'],
+          ['setup', 'Install Git hooks'],
+        ],
+      },
+      {
+        content: `For command-specific options, run:
+  $ rs <command> -h`,
+        dim: true,
+      },
+      {
+        title: 'Options',
+        items: [
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+          ['-v, --version', 'Display version number'],
+        ],
+      },
+    ],
+  });
 
-const helpMessage = `Rstack v${RSTACK_VERSION}
-
-${color.cyan('Usage')}:
-${color.yellow('  $ rs [command] [...options]')}
-
-${color.cyan('Commands')}:
-  dev          Run the app dev server
-  build        Build the app for production
-  preview      Preview the app production build
-  lib          Build library
-  doc          Serve or build docs
-  fmt, format  Format code
-  lint         Lint code
-  check        Run static checks, including linting and formatting
-  test         Run tests
-  staged       Run tasks on staged Git files
-  setup        Install Git hooks
-
-${color.dim(`For command-specific options, run:
-  $ rs <command> -h`)}
-
-${color.cyan('Options')}:
-  -c, --config <path>       Specify Rstack config file path
-  -h, --help                Display this help message
-  -v, --version             Display version number`;
-
-const checkHelpMessage = `Rstack v${RSTACK_VERSION}
-
-${color.cyan('Usage')}:
-${color.yellow('  $ rs check [options]')}
-
-Run static checks, including linting and formatting.
-
-${color.cyan('Options')}:
-  --type-check  Enable TypeScript type checking
-  -h, --help    Display this help message`;
+const renderCheckHelp = (): string =>
+  renderHelp({
+    usage: 'rs check [options]',
+    description: 'Run static checks, including lint and format',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['--type-check', 'Enable TypeScript type checking'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
 
 async function runRsbuildCLI(args: string[]): Promise<void> {
   const argv = [
@@ -130,7 +140,7 @@ async function runCheckCLI(args: string[]): Promise<void> {
   });
 
   if (values.help) {
-    console.log(checkHelpMessage);
+    console.log(renderCheckHelp());
     return;
   }
 
@@ -153,7 +163,7 @@ export async function setupCommands(): Promise<void> {
   getConfigState().configPath = configPath;
 
   if (!command || command === '-h' || command === '--help') {
-    console.log(helpMessage);
+    console.log(renderRootHelp());
     return;
   }
 

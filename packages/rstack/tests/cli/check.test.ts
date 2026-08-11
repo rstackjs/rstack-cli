@@ -1,4 +1,5 @@
 import { expect, test } from 'rstack/test';
+import { normalizeHelpOutput } from '#test-helpers';
 import { setupFmtTest } from './fmt/helpers.ts';
 
 const { runCLI, writeProjectFile } = setupFmtTest();
@@ -24,7 +25,7 @@ test('displays check help without loading config', () => {
 
   const result = runCheck(['--help']);
 
-  expect(result.stdout.replace(/^Rstack v.+/u, 'Rstack v<version>')).toMatchSnapshot();
+  expect(normalizeHelpOutput(result.stdout)).toMatchSnapshot();
 });
 
 test('runs lint followed by a formatting check', () => {

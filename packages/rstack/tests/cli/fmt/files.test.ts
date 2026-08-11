@@ -1,4 +1,5 @@
 import { expect, test } from 'rstack/test';
+import { normalizeHelpOutput } from '#test-helpers';
 import { expectWriteSummary, normalizeDuration, setupFmtTest } from './helpers.ts';
 
 const { readProjectFile, runCLI, runFmt, writeProjectFile } = setupFmtTest();
@@ -6,13 +7,10 @@ const { readProjectFile, runCLI, runFmt, writeProjectFile } = setupFmtTest();
 test('displays fmt help without loading config', () => {
   writeProjectFile('rstack.config.ts', 'throw new Error("must not load");\n');
 
-  const topLevel = runCLI(['--help']);
   const fmt = runFmt(['--help']);
 
-  expect(topLevel.status).toBe(0);
-  expect(topLevel.stdout).toContain('fmt, format  Format code');
   expect(fmt.status).toBe(0);
-  expect(fmt.stdout).toContain('Usage:\n  $ rs fmt [options] [files/globs...]');
+  expect(normalizeHelpOutput(fmt.stdout)).toMatchSnapshot();
   expect(fmt.stderr).toBe('');
 });
 

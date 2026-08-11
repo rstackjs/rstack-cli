@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach } from 'rstack/test';
-import { RSTACK_BIN_PATH, test } from '#test-helpers';
+import { normalizeHelpOutput, RSTACK_BIN_PATH, test } from '#test-helpers';
 
 const hooksPath = '.rstack/hooks/_';
 
@@ -44,14 +44,10 @@ afterEach(() => {
 });
 
 test('displays setup help', ({ execCli, expect }) => {
-  expect(execCli('--help', { cwd })).toMatch(/setup\s+Install Git hooks/);
-
   const output = execCli('setup --help', { cwd });
 
   expect(execCli('setup -h', { cwd })).toBe(output);
-  expect(output).toContain('Usage:\n  $ rs setup [options]');
-  expect(output).toContain('--hooks-dir <path>');
-  expect(output).toContain('-h, --help');
+  expect(normalizeHelpOutput(output)).toMatchSnapshot();
 });
 
 test('rejects unknown setup options', ({ execCli, expect }) => {
