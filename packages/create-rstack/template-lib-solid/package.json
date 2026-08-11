@@ -1,9 +1,10 @@
 {
-  "name": "rstack-lib-vue-js",
+  "name": "rstack-lib-solid",
   "version": "0.0.0",
   "type": "module",
   "exports": {
     ".": {
+      "solid": "./dist/index.jsx",
       "default": "./dist/index.js"
     }
   },
@@ -21,15 +22,16 @@
     "test:watch": "rs test --watch"
   },
   "devDependencies": {
-    "@rsbuild/plugin-vue": "^2.0.1",
+    "@rsbuild/plugin-babel": "^2.0.1",
+    "@rsbuild/plugin-solid": "^1.2.2",
+    "@solidjs/testing-library": "^0.8.10",
     "@testing-library/jest-dom": "^7.0.0",
-    "@vue/test-utils": "^2.4.11",
     "happy-dom": "^20.11.2",
     "rstack": "^0.4.0",
-    "vue": "^3.5.41"
+    "solid-js": "^1.9.14"
   },
   "peerDependencies": {
-    "vue": ">=3.2.0"
+    "solid-js": ">=1.8.0"
   },
   "publishConfig": {
     "access": "public"

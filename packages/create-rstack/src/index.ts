@@ -5,51 +5,46 @@ import {
   create,
   select,
 } from '@rstackjs/create-toolkit';
-import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const packageRoot = path.join(import.meta.dirname, '..');
 
-const templateNameMap = {
-  'app-vanilla': 'app-vanilla-js',
-  'app-vanilla-ts': 'app-vanilla-ts',
-  'app-react': 'app-react-js',
-  'app-react-ts': 'app-react-ts',
-  'app-preact': 'app-preact-js',
-  'app-preact-ts': 'app-preact-ts',
-  'app-vue': 'app-vue-js',
-  'app-vue-ts': 'app-vue-ts',
-  'app-lit': 'app-lit-js',
-  'app-lit-ts': 'app-lit-ts',
-  'app-svelte': 'app-svelte-js',
-  'app-svelte-ts': 'app-svelte-ts',
-  'app-solid': 'app-solid-js',
-  'app-solid-ts': 'app-solid-ts',
-  'lib-node': 'lib-node-js',
-  'lib-node-ts': 'lib-node-ts',
-  'lib-react': 'lib-react-js',
-  'lib-react-ts': 'lib-react-ts',
-  'lib-vue': 'lib-vue-js',
-  'lib-vue-ts': 'lib-vue-ts',
-  'lib-svelte': 'lib-svelte-js',
-  'lib-svelte-ts': 'lib-svelte-ts',
-  'lib-solid': 'lib-solid-js',
-  'lib-solid-ts': 'lib-solid-ts',
-  doc: 'doc-basic',
-  'doc-i18n': 'doc-i18n',
-} as const;
-
-type TemplateName = keyof typeof templateNameMap;
-
-const isTemplateName = (template: string): template is TemplateName =>
-  Object.hasOwn(templateNameMap, template);
+const templateNames = [
+  'app-vanilla',
+  'app-vanilla-ts',
+  'app-react',
+  'app-react-ts',
+  'app-preact',
+  'app-preact-ts',
+  'app-vue',
+  'app-vue-ts',
+  'app-lit',
+  'app-lit-ts',
+  'app-svelte',
+  'app-svelte-ts',
+  'app-solid',
+  'app-solid-ts',
+  'lib-node',
+  'lib-node-ts',
+  'lib-react',
+  'lib-react-ts',
+  'lib-vue',
+  'lib-vue-ts',
+  'lib-svelte',
+  'lib-svelte-ts',
+  'lib-solid',
+  'lib-solid-ts',
+  'doc',
+  'doc-i18n',
+];
 
 const resolveTemplateName = (template: string): string => {
-  if (!isTemplateName(template)) {
+  if (!templateNames.includes(template)) {
     throw new Error(`Invalid input: template "${template}" not found.`);
   }
 
-  return templateNameMap[template];
+  return template;
 };
 
 const getTemplateName = async ({ template }: Argv): Promise<string> => {
@@ -162,7 +157,10 @@ const injectStagedSetup = async ({
     return;
   }
 
-  const configExtension = templateName.endsWith('-js') ? 'js' : 'ts';
+  const configExtension = await access(path.join(distFolder, 'rstack.config.ts')).then(
+    () => 'ts',
+    () => 'js',
+  );
   const packageJsonPath = path.join(distFolder, 'package.json');
   const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8')) as {
     scripts: Record<string, string>;
@@ -189,7 +187,7 @@ const injectStagedSetup = async ({
 await create({
   root: packageRoot,
   name: 'rstack',
-  templates: Object.keys(templateNameMap),
+  templates: templateNames,
   builtinTools: [],
   getTemplateName,
   onGitResolved: injectStagedSetup,

@@ -1,5 +1,5 @@
 {
-  "name": "rstack-app-react-js",
+  "name": "rstack-app-vanilla",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -13,15 +13,9 @@
     "test": "rs test",
     "test:watch": "rs test --watch"
   },
-  "dependencies": {
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
-  },
   "devDependencies": {
-    "@rsbuild/plugin-react": "^2.1.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.0",
-    "@testing-library/react": "^16.3.2",
     "happy-dom": "^20.11.2",
     "rstack": "^0.4.0"
   }

@@ -1,7 +1,6 @@
 {
-  "name": "rstack-lib-node-js",
+  "name": "rstack-lib-svelte",
   "version": "0.0.0",
-  "sideEffects": false,
   "type": "module",
   "exports": {
     ".": {
@@ -22,10 +21,14 @@
     "test:watch": "rs test --watch"
   },
   "devDependencies": {
-    "rstack": "^0.4.0"
+    "@rsbuild/plugin-svelte": "^2.0.1",
+    "happy-dom": "^20.11.2",
+    "prettier-plugin-svelte": "^4.1.1",
+    "rstack": "^0.4.0",
+    "svelte": "^5.56.8"
   },
-  "engines": {
-    "node": ">=22.12.0"
+  "peerDependencies": {
+    "svelte": "^5.0.0"
   },
   "publishConfig": {
     "access": "public"
