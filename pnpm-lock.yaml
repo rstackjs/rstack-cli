@@ -38,8 +38,8 @@ catalogs:
       specifier: 1.14.7
       version: 1.14.7
     '@rstackjs/create-toolkit':
-      specifier: 2.2.2
-      version: 2.2.2
+      specifier: 2.2.3
+      version: 2.2.3
     '@rstackjs/load-config':
       specifier: ^0.1.2
       version: 0.1.2
@@ -335,7 +335,7 @@ importers:
     dependencies:
       '@rstackjs/create-toolkit':
         specifier: 'catalog:'
-        version: 2.2.2
+        version: 2.2.3
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -1434,8 +1434,8 @@ packages:
       '@rspress/core':
         optional: true
 
-  '@rstackjs/create-toolkit@2.2.2':
-    resolution: {integrity: sha512-0TDePC6+jwow0WoCWDdxBAazDO2HoW6acblMLNgBRAZOk8IKzVN35aXWxyHka3vJP0+zBQppLo9nVGdaFepnRw==}
+  '@rstackjs/create-toolkit@2.2.3':
+    resolution: {integrity: sha512-0I1U/BGGLXBkvE+C9oDKYfmg1wjFMHCPQlG2BJF+f41kL0BmXZaQMa/m515lo8Q349otqyAEam4A5BMuxetTVw==}
     engines: {node: ^20.19.0 || >=22.12.0}
 
   '@rstackjs/load-config@0.1.2':
@@ -3843,7 +3843,7 @@ snapshots:
     optionalDependencies:
       '@rspress/core': 2.0.19(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
 
-  '@rstackjs/create-toolkit@2.2.2': {}
+  '@rstackjs/create-toolkit@2.2.3': {}
 
   '@rstackjs/load-config@0.1.2': {}
 
