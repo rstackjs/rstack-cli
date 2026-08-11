@@ -1,12 +1,12 @@
 ---
-description: 'Install Rstack CLI, add project scripts, and configure the Rstack JavaScript toolchain.'
+description: 'Create a Rstack project or add Rstack CLI to an existing project and configure the Rstack JavaScript toolchain.'
 ---
 
 # Quick start
 
 import { PackageManagerTabs } from '@rspress/core/theme';
 
-Rstack CLI brings the Rstack toolchain together with one CLI and one configuration file. This guide adds Rstack to an existing project and introduces the available workflows.
+Rstack CLI brings the Rstack toolchain together with one CLI and one configuration file. This guide shows how to create a new Rstack project or add Rstack to an existing project, and introduces the available workflows.
 
 ## Environment preparation
 
@@ -23,6 +23,95 @@ Use one of the following installation guides to set up a runtime:
 Rstack requires Node.js 22.12.0 or higher when using Node.js as the runtime.
 
 :::
+
+## Create a Rstack project
+
+[create-rstack](https://www.npmjs.com/package/create-rstack) lets you quickly create an application, library, or documentation site with Rstack configured. We recommend using [pnpm](https://pnpm.io/) as your package manager.
+
+<PackageManagerTabs
+  command={{
+    pnpm: 'pnpm create rstack@latest',
+    npm: 'npm create rstack@latest',
+    yarn: 'yarn create rstack',
+    bun: 'bun create rstack@latest',
+    deno: 'deno init --npm rstack@latest',
+  }}
+/>
+
+Follow the prompts to complete the setup.
+
+After creating the project, do the following:
+
+- Run `pnpm install` (or your package manager's install command) to install dependencies.
+- Run `pnpm run dev` to start the development server or watch mode.
+
+### Templates
+
+When creating a project, choose from the following templates provided by `create-rstack`:
+
+| Project type       | Templates                                                  |
+| ------------------ | ---------------------------------------------------------- |
+| Web application    | Vanilla JavaScript, React, Preact, Vue, Lit, Svelte, Solid |
+| Library            | Node.js, React, Vue, Svelte, Solid                         |
+| Documentation site | Single language, multilingual                              |
+
+All application and library templates are available in both JavaScript and TypeScript.
+
+### Current directory
+
+To create a project in the current directory, set the project name or path to `.`:
+
+```
+◆  Create Rstack Project
+│
+◇  Project name or path
+│  .
+│
+◇  "." is not empty, please choose:
+│  Continue and override files
+```
+
+### Non-interactive mode
+
+[create-rstack](https://www.npmjs.com/package/create-rstack) supports a non-interactive mode via command-line options. This mode skips prompts and creates the project directly, which is useful for scripts, CI, and automation.
+
+For example, the following command creates a TypeScript React application in the `my-project` directory:
+
+```bash
+npx -y create-rstack@latest my-project --template app-react-ts
+
+# Using abbreviations
+npx -y create-rstack@latest my-project -t app-react-ts
+
+# Skip Git repository initialization
+npx -y create-rstack@latest my-project -t app-react-ts --no-git
+```
+
+All CLI flags supported by `create-rstack`:
+
+```
+Usage: create-rstack [dir] [options]
+
+Options:
+
+  -h, --help                display help for command
+  -d, --dir <dir>           create project in specified directory
+  -t, --template <tpl>      specify the template to use
+  --no-git                  skip Git repository initialization
+  --override                override files in target directory
+  --packageName <name>      specify the package name
+  --template-version <ver>  specify the npm template version
+
+Available templates:
+
+  app-vanilla-js, app-vanilla-ts, app-react-js, app-react-ts,
+  app-preact-js, app-preact-ts, app-vue-js, app-vue-ts,
+  app-lit-js, app-lit-ts, app-svelte-js, app-svelte-ts,
+  app-solid-js, app-solid-ts, lib-node-js, lib-node-ts,
+  lib-react-js, lib-react-ts, lib-vue-js, lib-vue-ts,
+  lib-svelte-js, lib-svelte-ts, lib-solid-js, lib-solid-ts,
+  doc-basic, doc-i18n
+```
 
 ## Install Rstack
 
