@@ -9,8 +9,8 @@ const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, '..');
 const binPath = path.join(packageRoot, 'bin.js');
 const tempDirectories: string[] = [];
-const jsCheckScript = 'rs lint && rs fmt --check';
-const tsCheckScript = 'rs lint --type-check && rs fmt --check';
+const checkScript = 'rs check';
+const typeCheckScript = 'rs check --type-check';
 const templatesWithoutTypeCheck = new Set([
   'app-svelte-ts',
   'app-vue-ts',
@@ -74,7 +74,7 @@ const docTemplates = [
 ];
 
 const getCheckScript = (template: string, hasTypeScript: boolean): string =>
-  hasTypeScript && !templatesWithoutTypeCheck.has(template) ? tsCheckScript : jsCheckScript;
+  hasTypeScript && !templatesWithoutTypeCheck.has(template) ? typeCheckScript : checkScript;
 
 const readProjectPackage = async (projectDirectory: string): Promise<ProjectPackage> =>
   JSON.parse(await readFile(path.join(projectDirectory, 'package.json'), 'utf8')) as ProjectPackage;

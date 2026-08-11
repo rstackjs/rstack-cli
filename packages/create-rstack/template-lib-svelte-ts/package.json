@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "build": "svelte-check && rs lib",
-    "check": "rs lint && rs fmt --check",
+    "check": "rs check",
     "dev": "rs lib --watch",
     "format": "rs fmt",
     "lint": "rs lint",

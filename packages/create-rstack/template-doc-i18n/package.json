@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "rs doc build",
-    "check": "rs lint --type-check && rs fmt --check",
+    "check": "rs check --type-check",
     "dev": "rs doc",
     "format": "rs fmt",
     "lint": "rs lint",
