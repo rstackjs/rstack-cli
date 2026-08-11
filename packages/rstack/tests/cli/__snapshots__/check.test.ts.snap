@@ -1,0 +1,15 @@
+// Rstest Snapshot v1
+
+exports[`displays check help without loading config 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs check [options]
+
+Run static checks, including linting and formatting.
+
+Options:
+  --type-check  Enable TypeScript type checking
+  -h, --help    Display this help message
+"
+`;
