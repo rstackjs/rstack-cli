@@ -8,25 +8,14 @@ Install the dependencies:
 {{ packageManager }} install
 ```
 
-## Get started
+## Scripts
 
-Start the development server:
-
-```bash
-{{ packageManager }} run dev
-```
-
-Build the website for production:
-
-```bash
-{{ packageManager }} run build
-```
-
-Preview the production build locally:
-
-```bash
-{{ packageManager }} run preview
-```
+- `{{ packageManager }} run build`: Build the documentation site for production.
+- `{{ packageManager }} run check`: Run static checks, including linting and formatting.
+- `{{ packageManager }} run dev`: Start the documentation dev server.
+- `{{ packageManager }} run format`: Format code.
+- `{{ packageManager }} run lint`: Lint code.
+- `{{ packageManager }} run preview`: Preview the production build locally.
 
 ## Learn more
 

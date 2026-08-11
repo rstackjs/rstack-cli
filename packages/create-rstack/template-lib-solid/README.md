@@ -8,31 +8,15 @@ Install the dependencies:
 {{ packageManager }} install
 ```
 
-## Get started
+## Scripts
 
-Build the library:
-
-```bash
-{{ packageManager }} run build
-```
-
-Build the library in watch mode:
-
-```bash
-{{ packageManager }} run dev
-```
-
-Run tests:
-
-```bash
-{{ packageManager }} run test
-```
-
-Run tests in watch mode:
-
-```bash
-{{ packageManager }} run test:watch
-```
+- `{{ packageManager }} run build`: Build the library.
+- `{{ packageManager }} run check`: Run static checks, including linting and formatting.
+- `{{ packageManager }} run dev`: Build the library in watch mode.
+- `{{ packageManager }} run format`: Format code.
+- `{{ packageManager }} run lint`: Lint code.
+- `{{ packageManager }} run test`: Run tests.
+- `{{ packageManager }} run test:watch`: Run tests in watch mode.
 
 ## Learn more
 
