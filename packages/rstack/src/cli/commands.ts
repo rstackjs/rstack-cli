@@ -1,4 +1,4 @@
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { getConfigState } from '../config.ts';
 import { insertConfigArg, parseArgs, parseCliArgs } from './args.ts';
 import { hasHelpFlag, renderHelp } from './help.ts';
@@ -606,7 +606,12 @@ export async function setupCommands(): Promise<void> {
   const { args, configPath } = parseCliArgs(process.argv.slice(2));
   const command = args[0];
 
-  getConfigState().configPath = configPath;
+  // Resolved for every command so that a relative `--config` path always means
+  // the same file: it is anchored to the directory the CLI was invoked in, even
+  // when the config is later loaded from another directory. The motivating case
+  // is `rs fmt --lsp`, which loads the config from the LSP workspace root the
+  // client reports, and that root need not be the process working directory.
+  getConfigState().configPath = configPath === undefined ? undefined : resolve(configPath);
 
   if (!command || command === '-h' || command === '--help') {
     console.log(renderRootHelp());

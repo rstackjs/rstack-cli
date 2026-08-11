@@ -22,6 +22,14 @@ type FmtTestHarness = {
   writeProjectFile: (filePath: string, content: string) => void;
 };
 
+/** Environment for spawning the CLI with color output disabled. */
+export const createCliEnv = (): NodeJS.ProcessEnv => {
+  const env: NodeJS.ProcessEnv = { ...process.env, NO_COLOR: '1' };
+  delete env.FORCE_COLOR;
+
+  return env;
+};
+
 export const normalizeDuration = (output: string): string =>
   output.replace(/\d+m(?: \d+(?:\.\d+)?s)?|\d+(?:\.\d+)?s/g, '<duration>');
 
@@ -67,17 +75,13 @@ export const setupFmtTest = (): FmtTestHarness => {
     );
   };
 
-  const runCLI: RunCLI = (args, input, cwd = projectPath) => {
-    const env: NodeJS.ProcessEnv = { ...process.env, NO_COLOR: '1' };
-    delete env.FORCE_COLOR;
-
-    return spawnSync(process.execPath, [RSTACK_BIN_PATH, ...args], {
+  const runCLI: RunCLI = (args, input, cwd = projectPath) =>
+    spawnSync(process.execPath, [RSTACK_BIN_PATH, ...args], {
       cwd,
       encoding: 'utf8',
-      env,
+      env: createCliEnv(),
       input,
     });
-  };
 
   const runFmt = (args: string[] = [], cwd = projectPath) =>
     runCLI(['fmt', ...args], undefined, cwd);

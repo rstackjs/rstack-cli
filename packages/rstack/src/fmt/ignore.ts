@@ -80,3 +80,4 @@ const createIgnoreMatcher = async ({
 };
 
 export { createIgnoreMatcher };
+export type { IgnorePredicate };

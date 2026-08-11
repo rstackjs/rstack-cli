@@ -100,7 +100,9 @@
     "sort-package-json": "catalog:",
     "svelte": "catalog:",
     "tiny-readdir": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vscode-languageserver": "catalog:",
+    "vscode-languageserver-textdocument": "catalog:"
   },
   "peerDependencies": {
     "@rspress/core": "^2.0.17"

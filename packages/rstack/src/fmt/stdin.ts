@@ -1,6 +1,10 @@
 import { resolve } from 'node:path';
 import { createFmtOptionsResolver } from './config.ts';
-import { createFileRequest } from './discovery.ts';
+import {
+  createFileRequest,
+  createLazyPluginResolver,
+  resolveFileRequestPlugins,
+} from './discovery.ts';
 import { formatFmtSource } from './format.ts';
 import { createIgnoreMatcher } from './ignore.ts';
 import type { ResolvedFmtConfig } from './types.ts';
@@ -79,18 +83,10 @@ const runFmtStdin = async ({
     return;
   }
 
-  let file = createFileRequest(absolutePath, createFmtOptionsResolver(config));
-  if (file.options.plugins?.length) {
-    const { createFmtPluginResolver } = await import(
-      /* rspackChunkName: 'fmtPlugins' */
-      './plugins.ts'
-    );
-    file = {
-      ...file,
-      options: createFmtPluginResolver(config.rootPath)(file.options),
-    };
-  }
-
+  const file = await resolveFileRequestPlugins(
+    createFileRequest(absolutePath, createFmtOptionsResolver(config)),
+    createLazyPluginResolver(config.rootPath),
+  );
   const result = await formatFmtSource(file, () => source);
 
   if (result.status === 'unsupported') {

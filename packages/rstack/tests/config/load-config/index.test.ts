@@ -51,6 +51,20 @@ test('should prefer an explicit config path over the state config path', async (
   expect(filePath).toBe(explicitConfigPath);
 });
 
+test('should resolve a relative explicit config path from cwd', async () => {
+  const { configs, filePath } = await loadRstackConfig({
+    configFilePath: 'explicit.config.ts',
+    cwd: import.meta.dirname,
+  });
+
+  expect(configs.app).toEqual({});
+  expect(filePath).toBe(configPath('explicit.config.ts'));
+});
+
+test('should search for the config file in cwd', async () => {
+  await expect(loadRstackConfig({ cwd: import.meta.dirname })).rejects.toThrow('test config error');
+});
+
 test('should isolate parallel config sessions across top-level await', async () => {
   const hooks = createTestHooks();
   const firstLoad = loadConfigFile('parallel-first.config.ts');
