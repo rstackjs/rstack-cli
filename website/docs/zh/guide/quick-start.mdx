@@ -1,12 +1,12 @@
 ---
-description: '安装 Rstack CLI、添加项目脚本，并配置 Rstack JavaScript 工具链。'
+description: '创建 Rstack 项目，或在现有项目中安装 Rstack CLI 并配置 Rstack JavaScript 工具链。'
 ---
 
 # 快速上手 \{#quick-start}
 
 import { PackageManagerTabs } from '@rspress/core/theme';
 
-Rstack CLI 通过统一的命令行和配置文件整合 Rstack 工具链。本指南将介绍如何在现有项目中添加 Rstack，以及可以使用的工作流。
+Rstack CLI 通过统一的命令行和配置文件整合 Rstack 工具链。本指南将介绍如何创建新的 Rstack 项目或在现有项目中添加 Rstack，以及可以使用的工作流。
 
 ## 环境准备 \{#environment-preparation}
 
@@ -23,6 +23,95 @@ Rstack 支持使用 [Node.js](https://nodejs.org/)、[Deno](https://deno.com/) �
 使用 Node.js 作为运行时时，Rstack 要求 Node.js 版本为 22.12.0 或更高版本。
 
 :::
+
+## 创建 Rstack 项目 \{#create-a-rstack-project}
+
+使用 [create-rstack](https://www.npmjs.com/package/create-rstack) 可以快速创建已配置好 Rstack 的应用、库或文档站点。推荐使用 [pnpm](https://pnpm.io/) 作为包管理器。
+
+<PackageManagerTabs
+  command={{
+    pnpm: 'pnpm create rstack@latest',
+    npm: 'npm create rstack@latest',
+    yarn: 'yarn create rstack',
+    bun: 'bun create rstack@latest',
+    deno: 'deno init --npm rstack@latest',
+  }}
+/>
+
+按照提示操作即可完成创建。
+
+项目创建完成后，执行以下步骤：
+
+- 执行 `pnpm install`（或其他包管理器的 install 命令）安装依赖。
+- 执行 `pnpm run dev` 启动开发服务器或监听模式。
+
+### 模板 \{#templates}
+
+创建项目时，可选择 `create-rstack` 提供的下列模板：
+
+| 项目类型 | 模板                                                    |
+| -------- | ------------------------------------------------------- |
+| Web 应用 | 原生 JavaScript、React、Preact、Vue、Lit、Svelte、Solid |
+| 库       | Node.js、React、Vue、Svelte、Solid                      |
+| 文档站点 | 单语言、多语言                                          |
+
+所有应用和库模板均提供 JavaScript 和 TypeScript 版本。
+
+### 当前目录 \{#current-directory}
+
+如需在当前目录中创建项目，将项目名称或路径设置为 `.`：
+
+```
+◆  Create Rstack Project
+│
+◇  Project name or path
+│  .
+│
+◇  "." is not empty, please choose:
+│  Continue and override files
+```
+
+### 非交互模式 \{#non-interactive-mode}
+
+[create-rstack](https://www.npmjs.com/package/create-rstack) 支持通过命令行选项进入非交互模式。该模式会跳过提示并直接创建项目，适合脚本、CI 和自动化场景。
+
+例如，以下命令将在 `my-project` 目录中创建一个 TypeScript React 应用：
+
+```bash
+npx -y create-rstack@latest my-project --template app-react-ts
+
+# 使用缩写
+npx -y create-rstack@latest my-project -t app-react-ts
+
+# 跳过 Git 仓库初始化
+npx -y create-rstack@latest my-project -t app-react-ts --no-git
+```
+
+`create-rstack` 支持的全部 CLI 选项如下：
+
+```
+Usage: create-rstack [dir] [options]
+
+Options:
+
+  -h, --help                display help for command
+  -d, --dir <dir>           create project in specified directory
+  -t, --template <tpl>      specify the template to use
+  --no-git                  skip Git repository initialization
+  --override                override files in target directory
+  --packageName <name>      specify the package name
+  --template-version <ver>  specify the npm template version
+
+Available templates:
+
+  app-vanilla-js, app-vanilla-ts, app-react-js, app-react-ts,
+  app-preact-js, app-preact-ts, app-vue-js, app-vue-ts,
+  app-lit-js, app-lit-ts, app-svelte-js, app-svelte-ts,
+  app-solid-js, app-solid-ts, lib-node-js, lib-node-ts,
+  lib-react-js, lib-react-ts, lib-vue-js, lib-vue-ts,
+  lib-svelte-js, lib-svelte-ts, lib-solid-js, lib-solid-ts,
+  doc-basic, doc-i18n
+```
 
 ## 安装 Rstack \{#install-rstack}
 
