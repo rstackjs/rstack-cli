@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { color } from 'rslog';
 import { getConfigState } from '../config.ts';
-import { insertConfigArg, parseCliArgs } from './args.ts';
+import { insertConfigArg, parseArgs, parseCliArgs } from './args.ts';
 
 declare global {
   const RSTACK_VERSION: string;
@@ -20,6 +20,7 @@ ${color.cyan('Commands')}:
   doc          Serve or build docs
   fmt, format  Format code
   lint         Lint code
+  check        Run lint and formatting checks
   test         Run tests
   staged       Run tasks on staged Git files
   setup        Install Git hooks
@@ -31,6 +32,17 @@ ${color.cyan('Options')}:
   -c, --config <path>       Specify Rstack config file path
   -h, --help                Display this help message
   -v, --version             Display version number`;
+
+const checkHelpMessage = `Rstack v${RSTACK_VERSION}
+
+${color.cyan('Usage')}:
+${color.yellow('  $ rs check [options]')}
+
+Run lint and formatting checks.
+
+${color.cyan('Options')}:
+  --type-check  Enable TypeScript type checking
+  -h, --help    Display this help message`;
 
 async function runRsbuildCLI(args: string[]): Promise<void> {
   const argv = [
@@ -106,6 +118,34 @@ async function runRslintCLI(args: string[]): Promise<void> {
   await runCLI({ argv });
 }
 
+async function runCheckCLI(args: string[]): Promise<void> {
+  const { values } = parseArgs({
+    args,
+    options: {
+      'type-check': { type: 'boolean' },
+      help: { type: 'boolean', short: 'h' },
+    },
+    allowPositionals: false,
+    strict: true,
+  });
+
+  if (values.help) {
+    console.log(checkHelpMessage);
+    return;
+  }
+
+  await runRslintCLI(values.typeCheck ? ['--type-check'] : []);
+  if (process.exitCode) {
+    return;
+  }
+
+  const { runFmtCLI } = await import(
+    /* rspackChunkName: 'fmt' */
+    '../fmt/cli.ts'
+  );
+  await runFmtCLI(['--check']);
+}
+
 export async function setupCommands(): Promise<void> {
   const { args, configPath } = parseCliArgs(process.argv.slice(2));
   const command = args[0];
@@ -139,6 +179,11 @@ export async function setupCommands(): Promise<void> {
 
   if (command === 'lint') {
     await runRslintCLI(args.slice(1));
+    return;
+  }
+
+  if (command === 'check') {
+    await runCheckCLI(args.slice(1));
     return;
   }
 
