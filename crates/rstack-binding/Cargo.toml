@@ -9,10 +9,12 @@ publish = false
 
 [lib]
 crate-type = ["cdylib"]
+test = false
 
 [dependencies]
 napi.workspace = true
 napi-derive.workspace = true
+rstack-ignore.workspace = true
 
 [build-dependencies]
 napi-build.workspace = true

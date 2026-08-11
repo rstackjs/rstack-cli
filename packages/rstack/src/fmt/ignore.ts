@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import createIgnore from 'ignore';
-import { createRelativePathResolver } from './pathHelpers.ts';
+import type { IgnoreSource } from '../../binding.cjs';
+import { loadNativeBinding } from '../native/index.ts';
 import type { ResolvedFmtConfig } from './types.ts';
 
 /**
@@ -12,7 +12,7 @@ import type { ResolvedFmtConfig } from './types.ts';
  */
 const defaultIgnoreNames = ['package-lock.json', 'pnpm-lock.yaml'];
 
-type IgnoreMatcher = (filePath: string, isDirectory?: boolean) => boolean;
+type IgnorePredicate = (filePath: string, isDirectory?: boolean) => boolean;
 
 interface CreateIgnoreMatcherOptions {
   config: ResolvedFmtConfig;
@@ -21,28 +21,18 @@ interface CreateIgnoreMatcherOptions {
   ignorePaths?: string[];
 }
 
-const createDefaultIgnoreMatcher = (): IgnoreMatcher => {
+const createDefaultIgnoreMatcher = (): IgnorePredicate => {
   const suffixes = defaultIgnoreNames.map((name) => `${path.sep}${name}`);
 
   return (filePath) => suffixes.some((suffix) => filePath.endsWith(suffix));
 };
 
-const createPatternMatcher = (rootPath: string, patterns: string): IgnoreMatcher => {
-  const matcher = createIgnore({ allowRelativePaths: true }).add(patterns);
-  const resolveRelativePath = createRelativePathResolver(rootPath);
-
-  return (filePath, isDirectory = false) => {
-    const relativePath = resolveRelativePath(filePath);
-    if (relativePath === '') {
-      return false;
-    }
-
-    const posixPath = path.sep === '\\' ? relativePath.replaceAll('\\', '/') : relativePath;
-    return matcher.ignores(isDirectory ? `${posixPath}/` : posixPath);
-  };
+const createPatternMatcherSet = (sources: IgnoreSource[]): IgnorePredicate => {
+  const matcher = new (loadNativeBinding().IgnoreMatcher)(sources);
+  return (filePath, isDirectory = false) => matcher.isIgnored(filePath, isDirectory);
 };
 
-const loadIgnoreMatcher = async (cwd: string, ignorePath: string): Promise<IgnoreMatcher> => {
+const loadIgnoreSource = async (cwd: string, ignorePath: string): Promise<IgnoreSource> => {
   const filePath = path.resolve(cwd, ignorePath);
   let patterns: string;
 
@@ -54,7 +44,10 @@ const loadIgnoreMatcher = async (cwd: string, ignorePath: string): Promise<Ignor
     });
   }
 
-  return createPatternMatcher(path.dirname(filePath), patterns);
+  return {
+    rootPath: path.dirname(filePath),
+    patterns,
+  };
 };
 
 /** Creates a reusable matcher for default, config-level, and CLI-provided ignore patterns. */
@@ -62,24 +55,28 @@ const createIgnoreMatcher = async ({
   config,
   cwd,
   ignorePaths = [],
-}: CreateIgnoreMatcherOptions): Promise<IgnoreMatcher> => {
-  const configMatcher = config.ignorePatterns.length
-    ? createPatternMatcher(
-        config.rootPath,
-        [...defaultIgnoreNames, ...config.ignorePatterns].join('\n'),
-      )
-    : createDefaultIgnoreMatcher();
-  if (ignorePaths.length === 0) {
-    return configMatcher;
+}: CreateIgnoreMatcherOptions): Promise<IgnorePredicate> => {
+  const ignoreFileSources = await Promise.all(
+    ignorePaths.map((ignorePath) => loadIgnoreSource(cwd, ignorePath)),
+  );
+  if (config.ignorePatterns.length) {
+    return createPatternMatcherSet([
+      {
+        rootPath: config.rootPath,
+        patterns: [...defaultIgnoreNames, ...config.ignorePatterns].join('\n'),
+      },
+      ...ignoreFileSources,
+    ]);
   }
 
-  const ignoreMatchers = await Promise.all(
-    ignorePaths.map((ignorePath) => loadIgnoreMatcher(cwd, ignorePath)),
-  );
+  const defaultMatcher = createDefaultIgnoreMatcher();
+  if (ignoreFileSources.length === 0) {
+    return defaultMatcher;
+  }
 
+  const cliMatcher = createPatternMatcherSet(ignoreFileSources);
   return (filePath, isDirectory = false) =>
-    configMatcher(filePath, isDirectory) ||
-    ignoreMatchers.some((matches) => matches(filePath, isDirectory));
+    defaultMatcher(filePath, isDirectory) || cliMatcher(filePath, isDirectory);
 };
 
 export { createIgnoreMatcher };

@@ -700,4 +700,4 @@ if (!nativeBinding) {
 }
 
 module.exports = nativeBinding
-module.exports.nativePing = nativeBinding.nativePing
+module.exports.IgnoreMatcher = nativeBinding.IgnoreMatcher
