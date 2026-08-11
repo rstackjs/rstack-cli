@@ -20,3 +20,12 @@ for (const command of ['dev', 'build', 'preview']) {
     expect(normalizeHelpOutput(output)).toMatchSnapshot();
   });
 }
+
+for (const command of ['lib', 'lib build', 'lib inspect', 'lib mf-dev']) {
+  test(`displays ${command} help`, ({ execCli, expect }) => {
+    const output = execCli(`${command} --help`);
+
+    expect(execCli(`${command} -h`)).toBe(output);
+    expect(normalizeHelpOutput(output)).toMatchSnapshot();
+  });
+}
