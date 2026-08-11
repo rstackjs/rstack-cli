@@ -1,17 +1,16 @@
 import * as prettierEstreePlugin from 'prettier/plugins/estree';
 import type { Parser, ParserOptions, Plugin, SupportLanguage } from 'prettier';
 import {
+  langFromPath,
   parse as parseWithYuku,
   type Comment,
   type Diagnostic,
   type ParseOptions,
   type ParseResult,
-  type SourceLang,
   type SourceType,
 } from 'yuku-parser';
 
 const AST_FORMAT = 'estree-yuku';
-const JSX_REGEXP = /^[^"'`]*<\/|^[^/]{2}.*\/>/m;
 const SOURCE_TYPE_COMBINATIONS: SourceType[] = ['module', 'commonjs'];
 
 type Range = [start: number, end: number];
@@ -200,15 +199,24 @@ const mergeNestedJsdocComments = (comments: PrettierComment[]): void => {
 };
 
 const stripComments = (originalText: string, comments: PrettierComment[]): string => {
-  let text = originalText;
+  if (comments.length === 0) {
+    return originalText;
+  }
 
+  const chunks: string[] = [];
+  let cursor = 0;
+
+  // Yuku returns comments in source order, so mask each range while copying the source only once.
   for (const comment of comments) {
     const start = locStart(comment);
     const end = locEnd(comment);
-    text = text.slice(0, start) + text.slice(start, end).replace(/[^\n]/g, ' ') + text.slice(end);
+    chunks.push(originalText.slice(cursor, start));
+    chunks.push(originalText.slice(start, end).replace(/[^\n]/g, ' '));
+    cursor = end;
   }
 
-  return text;
+  chunks.push(originalText.slice(cursor));
+  return chunks.join('');
 };
 
 const setContentEnd = (
@@ -441,11 +449,7 @@ const parseWithOptions = (text: string, options: ParseOptions): ParseResult => {
   return result;
 };
 
-const getSourceType = (filepath: unknown): SourceType | undefined => {
-  if (typeof filepath !== 'string') {
-    return undefined;
-  }
-
+const getSourceType = (filepath: string): SourceType | undefined => {
   if (/\.(?:mjs|mts)$/i.test(filepath)) {
     return 'module';
   }
@@ -455,20 +459,6 @@ const getSourceType = (filepath: unknown): SourceType | undefined => {
   }
 
   return undefined;
-};
-
-const getLanguageCombinations = (text: string, filepath: unknown): SourceLang[] => {
-  if (typeof filepath === 'string') {
-    if (/\.(?:jsx|tsx)$/i.test(filepath)) {
-      return ['tsx'];
-    }
-
-    if (filepath.toLowerCase().endsWith('.d.ts')) {
-      return ['dts'];
-    }
-  }
-
-  return JSX_REGEXP.test(text) ? ['tsx', 'ts', 'dts'] : ['ts', 'tsx', 'dts'];
 };
 
 const tryCombinations = (combinations: (() => ParseResult)[]): ParseResult => {
@@ -505,9 +495,9 @@ const parseJavaScript = (text: string, options: ParserOptions<AstNode>): AstNode
 
 const parseTypeScript = (text: string, options: ParserOptions<AstNode>): AstNode => {
   const sourceType = getSourceType(options.filepath);
-  const languages = getLanguageCombinations(text, options.filepath);
-  const combinations = (sourceType ? [sourceType] : SOURCE_TYPE_COMBINATIONS).flatMap((candidate) =>
-    languages.map((lang) => () => parseWithOptions(text, { sourceType: candidate, lang })),
+  const lang = langFromPath(options.filepath.toLowerCase());
+  const combinations = (sourceType ? [sourceType] : SOURCE_TYPE_COMBINATIONS).map(
+    (candidate) => () => parseWithOptions(text, { sourceType: candidate, lang }),
   );
   const { program, comments } = tryCombinations(combinations);
 
