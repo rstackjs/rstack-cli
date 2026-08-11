@@ -35,6 +35,76 @@ Options:
 "
 `;
 
+exports[`displays doc build help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs doc build [root] [options]
+
+Build docs for production
+
+Options:
+  --base <base>        Set the base path and override config.base
+  -c, --config <path>  Specify Rstack config file path
+  -h, --help           Display this help message
+"
+`;
+
+exports[`displays doc eject help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs doc eject [component] [options]
+
+Eject a theme component
+
+Options:
+  -c, --config <path>  Specify Rstack config file path
+  -h, --help           Display this help message
+"
+`;
+
+exports[`displays doc help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs doc [command] [root] [options]
+
+Commands:
+  [root]             Run the docs dev server (default)
+  build [root]       Build docs for production
+  preview [root]     Preview the docs production build
+  eject [component]  Eject a theme component
+
+For command-specific options, run:
+  $ rs doc <command> -h
+
+Options:
+  --port <port>        Set the port number for the server
+  --host [host]        Set the host that the server listens to
+  --base <base>        Set the base path and override config.base
+  -c, --config <path>  Specify Rstack config file path
+  -h, --help           Display this help message
+"
+`;
+
+exports[`displays doc preview help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs doc preview [root] [options]
+
+Preview the docs production build
+
+Options:
+  --port <port>        Set the port number for the server
+  --host [host]        Set the host that the server listens to
+  --base <base>        Set the base path and override config.base
+  -c, --config <path>  Specify Rstack config file path
+  -h, --help           Display this help message
+"
+`;
+
 exports[`displays lib build help 1`] = `
 "Rstack v<version>
 
