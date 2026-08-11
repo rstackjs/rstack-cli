@@ -1,17 +1,22 @@
 import { color, logger } from 'rslog';
 import { parseArgs } from '../cli/args.ts';
+import { renderHelp } from '../cli/help.ts';
 import { installHooks } from './install.ts';
 
-const helpMessage = `Rstack v${RSTACK_VERSION}
-
-${color.cyan('Usage')}:
-${color.yellow('  $ rs setup [options]')}
-
-Install Git hooks in the current repository.
-
-${color.cyan('Options')}:
-  --hooks-dir <path>  Specify hooks directory relative to the Git repository root
-  -h, --help          Display this help message`;
+const renderSetupHelp = (): string =>
+  renderHelp({
+    usage: 'rs setup [options]',
+    description: 'Install Git hooks in the current repository.',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['--hooks-dir <path>', 'Specify hooks directory relative to the Git repository root'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
 
 export const runSetupCLI = (args: string[]): void => {
   const { values } = parseArgs({
@@ -32,7 +37,7 @@ export const runSetupCLI = (args: string[]): void => {
   const hooksDir = hooksDirs?.[0];
 
   if (values.help) {
-    console.log(helpMessage);
+    console.log(renderSetupHelp());
     return;
   }
 

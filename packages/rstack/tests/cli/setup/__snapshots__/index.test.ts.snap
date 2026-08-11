@@ -1,0 +1,15 @@
+// Rstest Snapshot v1
+
+exports[`displays setup help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs setup [options]
+
+Install Git hooks in the current repository.
+
+Options:
+  --hooks-dir <path>  Specify hooks directory relative to the Git repository root
+  -h, --help          Display this help message
+"
+`;

@@ -10,6 +10,9 @@ export type ExecCliOptions = ExecSyncOptions & {
 
 export type ExecCli = (command: string, options?: ExecCliOptions) => string;
 
+export const normalizeHelpOutput = (output: string): string =>
+  output.replace(/^Rstack v.+/u, 'Rstack v<version>');
+
 type ExecCliError = Error & {
   stdout?: Buffer | string;
   stderr?: Buffer | string;

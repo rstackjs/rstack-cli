@@ -1,6 +1,6 @@
 import lintStaged from 'lint-staged';
 import { afterEach, beforeEach, rs } from 'rstack/test';
-import { test } from '#test-helpers';
+import { normalizeHelpOutput, test } from '#test-helpers';
 import { loadRstackConfig } from '../../../src/config.ts';
 import { runStagedCLI, type StagedConfig } from '../../../src/staged.ts';
 
@@ -34,17 +34,7 @@ afterEach(() => {
 test('should display the staged help message', ({ execCli, expect }) => {
   const output = execCli('staged --help');
 
-  expect(output).toContain('Rstack v');
-  expect(output).toContain('Usage:\n  $ rs staged [options]');
-  expect(output).toContain('Runs lint-staged with tasks from define.staged in rstack.config.');
-  expect(output).toContain('--allow-empty');
-  expect(output).toContain('--cwd <path>');
-  expect(output).toContain('-d, --debug');
-  expect(output).toContain('--no-stash');
-  expect(output).toContain('-q, --quiet');
-  expect(output).toContain('-r, --relative');
-  expect(output).toContain('-v, --verbose');
-  expect(output).toContain('-h, --help');
+  expect(normalizeHelpOutput(output)).toMatchSnapshot();
 });
 
 test('should reject unknown staged options', ({ execCli, expect }) => {

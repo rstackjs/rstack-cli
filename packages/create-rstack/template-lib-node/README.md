@@ -11,7 +11,7 @@ Install the dependencies:
 ## Scripts
 
 - `{{ packageManager }} run build`: Build the library.
-- `{{ packageManager }} run check`: Run static checks, including linting and formatting.
+- `{{ packageManager }} run check`: Run static checks, including lint and format.
 - `{{ packageManager }} run dev`: Build the library in watch mode.
 - `{{ packageManager }} run format`: Format code.
 - `{{ packageManager }} run lint`: Lint code.

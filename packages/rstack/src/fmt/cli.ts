@@ -2,6 +2,7 @@ import path from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { color, logger } from 'rslog';
 import { parseArgs } from '../cli/args.ts';
+import { renderHelp } from '../cli/help.ts';
 import { loadRstackConfig } from '../config.ts';
 import { ensureProjectCacheDir } from '../projectCache.ts';
 import { fmtCacheFileName } from './cacheStore.ts';
@@ -26,26 +27,30 @@ interface ParsedFmtCLIArgs {
   stdinFilepath?: string;
 }
 
-const fmtHelpMessage: string = `Rstack v${RSTACK_VERSION}
-
-${color.cyan('Usage')}:
-${color.yellow('  $ rs fmt [options] [files/globs...]')}
-
-Format files with Prettier.
-
-${color.cyan('Options')}:
-  -w, --write                      Write formatted files in place (default)
-  --check                          Check whether files are formatted
-  -l, --list-different             Print paths of unformatted files
-  --ignore-path <path>             Path to an additional ignore file (repeatable)
-  -u, --ignore-unknown             Ignore unknown files
-  --no-cache                       Disable the formatting cache
-  --cache-location <path>          Path to the formatting cache directory
-  --no-error-on-unmatched-pattern  Do not error when no files match
-  --with-node-modules              Process files inside node_modules
-  --parallel-workers <count>       Number of parallel workers
-  --stdin-filepath <path>          Format stdin as if it were saved at <path>
-  -h, --help                       Display this help message`;
+const renderFmtHelp = (): string =>
+  renderHelp({
+    usage: 'rs fmt [options] [files/globs...]',
+    description: 'Format code',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['-w, --write', 'Write formatted files in place (default)'],
+          ['--check', 'Check whether files are formatted'],
+          ['-l, --list-different', 'Print paths of unformatted files'],
+          ['--ignore-path <path>', 'Path to an additional ignore file (repeatable)'],
+          ['-u, --ignore-unknown', 'Ignore unknown files'],
+          ['--no-cache', 'Disable the formatting cache'],
+          ['--cache-location <path>', 'Path to the formatting cache directory'],
+          ['--no-error-on-unmatched-pattern', 'Do not error when no files match'],
+          ['--with-node-modules', 'Process files inside node_modules'],
+          ['--parallel-workers <count>', 'Number of parallel workers'],
+          ['--stdin-filepath <path>', 'Format stdin as if it were saved at <path>'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
 
 const parseMaxWorkers = (value: string | undefined): number | undefined => {
   if (value === undefined) {
@@ -268,7 +273,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       withNodeModules,
     } = parseFmtCLIArgs(args);
     if (help) {
-      logger.log(fmtHelpMessage);
+      logger.log(renderFmtHelp());
       return;
     }
 
