@@ -321,6 +321,31 @@ const renderLibMfDevHelp = (): string =>
     ],
   });
 
+const renderLintHelp = (): string =>
+  renderHelp({
+    usage: 'rs lint [options] [files...]',
+    description: 'Lint code',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['--fix', 'Automatically fix problems'],
+          ['--type-check', 'Enable TypeScript type checking'],
+          ['--type-check-only', 'Run only TypeScript type checking'],
+          ['--format <format>', 'Set output format (default | jsonline | github | gitlab)'],
+          ['--quiet', 'Report errors only'],
+          ['--timing [all|N]', 'Print a per-rule timing table (all rules or top N)'],
+          ['--max-warnings <count>', 'Set the maximum number of warnings'],
+          ['--rule <rule>', 'Override a rule (repeatable)'],
+          ['--no-color', 'Disable colored output'],
+          ['--force-color', 'Force colored output'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
 async function runRsbuildCLI(args: string[]): Promise<void> {
   if (hasHelpFlag(args)) {
     switch (args[0]) {
@@ -439,6 +464,11 @@ async function runRspressCLI(args: string[]): Promise<void> {
 }
 
 async function runRslintCLI(args: string[]): Promise<void> {
+  if (hasHelpFlag(args)) {
+    console.log(renderLintHelp());
+    return;
+  }
+
   const argv = [
     process.execPath,
     'rslint',

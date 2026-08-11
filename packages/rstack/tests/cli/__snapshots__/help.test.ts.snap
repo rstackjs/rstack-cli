@@ -103,6 +103,30 @@ Options:
 "
 `;
 
+exports[`displays lint help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs lint [options] [files...]
+
+Lint code
+
+Options:
+  --fix                   Automatically fix problems
+  --type-check            Enable TypeScript type checking
+  --type-check-only       Run only TypeScript type checking
+  --format <format>       Set output format (default | jsonline | github | gitlab)
+  --quiet                 Report errors only
+  --timing [all|N]        Print a per-rule timing table (all rules or top N)
+  --max-warnings <count>  Set the maximum number of warnings
+  --rule <rule>           Override a rule (repeatable)
+  --no-color              Disable colored output
+  --force-color           Force colored output
+  -c, --config <path>     Specify Rstack config file path
+  -h, --help              Display this help message
+"
+`;
+
 exports[`displays preview help 1`] = `
 "Rstack v<version>
 

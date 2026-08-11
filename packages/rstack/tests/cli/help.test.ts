@@ -12,7 +12,7 @@ test('displays top-level help', ({ execCli, expect }) => {
   expect(normalizeHelpOutput(execCli('--help'))).toMatchSnapshot();
 });
 
-for (const command of ['dev', 'build', 'preview']) {
+for (const command of ['dev', 'build', 'preview', 'lint']) {
   test(`displays ${command} help`, ({ execCli, expect }) => {
     const output = execCli(`${command} --help`);
 
