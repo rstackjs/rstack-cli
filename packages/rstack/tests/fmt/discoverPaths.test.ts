@@ -1,7 +1,8 @@
 import { symlinkSync } from 'node:fs';
 import path from 'node:path';
-import { expect, test } from 'rstack/test';
+import { expect, rs, test } from 'rstack/test';
 import { discoverFmtPaths } from '../../src/fmt/discoverPaths.ts';
+import { loadNativeBinding } from '../../src/native/index.ts';
 import { withTempProject, writeProjectFile } from './helpers.ts';
 
 const relativePaths = (rootPath: string, files: string[]): string[] =>
@@ -162,6 +163,44 @@ test('keeps valid nested gitignore rules around normalized and malformed lines',
     const files = await discoverFmtPaths({ cwd: rootPath, patterns: ['**/*.{js,ts}'] });
 
     expect(relativePaths(rootPath, files)).toEqual([path.join('src', 'keep.js'), 'visible.ts']);
+  });
+});
+
+test.sequential('propagates errors while loading a nested gitignore', async () => {
+  await withTempProject(async (rootPath) => {
+    writeProjectFile(rootPath, 'src/.gitignore', '*.js\n');
+    writeProjectFile(rootPath, 'src/index.js');
+    const nativeError = new Error('Failed to add nested gitignore source');
+    const addSource = rs
+      .spyOn(loadNativeBinding().GitIgnoreMatcher.prototype, 'addSource')
+      .mockImplementation(() => {
+        throw nativeError;
+      });
+
+    try {
+      await expect(discoverFmtPaths({ cwd: rootPath })).rejects.toBe(nativeError);
+    } finally {
+      addSource.mockRestore();
+    }
+  });
+});
+
+test.sequential('propagates errors from batched native gitignore matching', async () => {
+  await withTempProject(async (rootPath) => {
+    writeProjectFile(rootPath, '.gitignore', '*.js\n');
+    writeProjectFile(rootPath, 'index.js');
+    const nativeError = new Error('Failed to match gitignore entries');
+    const matchBatch = rs
+      .spyOn(loadNativeBinding().GitIgnoreMatcher.prototype, 'isIgnoredBatchMask')
+      .mockImplementation(() => {
+        throw nativeError;
+      });
+
+    try {
+      await expect(discoverFmtPaths({ cwd: rootPath })).rejects.toBe(nativeError);
+    } finally {
+      matchBatch.mockRestore();
+    }
   });
 });
 
