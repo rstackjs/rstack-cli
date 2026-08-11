@@ -30,35 +30,35 @@ type SourceTemplate = {
 };
 
 const sourceTemplates: SourceTemplate[] = [
-  { template: 'app-vanilla-js', sourceExtension: 'js', testFile: 'dom.test.js' },
+  { template: 'app-vanilla', sourceExtension: 'js', testFile: 'dom.test.js' },
   { template: 'app-vanilla-ts', sourceExtension: 'ts', testFile: 'dom.test.ts' },
-  { template: 'app-react-js', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
+  { template: 'app-react', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
   { template: 'app-react-ts', sourceExtension: 'tsx', testFile: 'index.test.tsx' },
-  { template: 'app-preact-js', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
+  { template: 'app-preact', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
   { template: 'app-preact-ts', sourceExtension: 'tsx', testFile: 'index.test.tsx' },
-  { template: 'app-vue-js', sourceExtension: 'js', testFile: 'index.test.js' },
+  { template: 'app-vue', sourceExtension: 'js', testFile: 'index.test.js' },
   { template: 'app-vue-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
-  { template: 'app-lit-js', sourceExtension: 'js', testFile: 'index.test.js' },
+  { template: 'app-lit', sourceExtension: 'js', testFile: 'index.test.js' },
   { template: 'app-lit-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
-  { template: 'app-svelte-js', sourceExtension: 'js', testFile: 'index.test.js' },
+  { template: 'app-svelte', sourceExtension: 'js', testFile: 'index.test.js' },
   { template: 'app-svelte-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
-  { template: 'app-solid-js', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
+  { template: 'app-solid', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
   { template: 'app-solid-ts', sourceExtension: 'tsx', testFile: 'index.test.tsx' },
-  { template: 'lib-node-js', sourceExtension: 'js', testFile: 'index.test.js' },
+  { template: 'lib-node', sourceExtension: 'js', testFile: 'index.test.js' },
   { template: 'lib-node-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
-  { template: 'lib-react-js', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
+  { template: 'lib-react', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
   { template: 'lib-react-ts', sourceExtension: 'tsx', testFile: 'index.test.tsx' },
-  { template: 'lib-vue-js', sourceExtension: 'js', testFile: 'index.test.js' },
+  { template: 'lib-vue', sourceExtension: 'js', testFile: 'index.test.js' },
   { template: 'lib-vue-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
-  { template: 'lib-svelte-js', sourceExtension: 'js', testFile: 'index.test.js' },
+  { template: 'lib-svelte', sourceExtension: 'js', testFile: 'index.test.js' },
   { template: 'lib-svelte-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
-  { template: 'lib-solid-js', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
+  { template: 'lib-solid', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
   { template: 'lib-solid-ts', sourceExtension: 'tsx', testFile: 'index.test.tsx' },
 ];
 
 const docTemplates = [
   {
-    template: 'doc-basic',
+    template: 'doc',
     files: [
       'README.md',
       '.gitignore',

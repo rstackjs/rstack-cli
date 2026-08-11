@@ -1,5 +1,5 @@
 {
-  "name": "rstack-app-solid-js",
+  "name": "rstack-app-vue",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -14,13 +14,12 @@
     "test:watch": "rs test --watch"
   },
   "dependencies": {
-    "solid-js": "^1.9.14"
+    "vue": "^3.5.41"
   },
   "devDependencies": {
-    "@rsbuild/plugin-babel": "^2.0.1",
-    "@rsbuild/plugin-solid": "^1.2.2",
-    "@solidjs/testing-library": "^0.8.10",
+    "@rsbuild/plugin-vue": "^2.0.1",
     "@testing-library/jest-dom": "^7.0.0",
+    "@vue/test-utils": "^2.4.11",
     "happy-dom": "^20.11.2",
     "rstack": "^0.4.0"
   }

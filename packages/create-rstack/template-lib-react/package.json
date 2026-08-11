@@ -1,10 +1,9 @@
 {
-  "name": "rstack-lib-solid-js",
+  "name": "rstack-lib-react",
   "version": "0.0.0",
   "type": "module",
   "exports": {
     ".": {
-      "solid": "./dist/index.jsx",
       "default": "./dist/index.js"
     }
   },
@@ -22,16 +21,19 @@
     "test:watch": "rs test --watch"
   },
   "devDependencies": {
-    "@rsbuild/plugin-babel": "^2.0.1",
-    "@rsbuild/plugin-solid": "^1.2.2",
-    "@solidjs/testing-library": "^0.8.10",
+    "@rsbuild/plugin-react": "^2.1.0",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@types/react-dom": "^19.2.4",
     "happy-dom": "^20.11.2",
-    "rstack": "^0.4.0",
-    "solid-js": "^1.9.14"
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "rstack": "^0.4.0"
   },
   "peerDependencies": {
-    "solid-js": ">=1.8.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

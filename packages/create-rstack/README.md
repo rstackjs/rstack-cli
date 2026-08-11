@@ -24,31 +24,31 @@ npx create-rstack --dir my-project --template app-vanilla-ts --no-git
 
 ## Templates
 
-- `app-vanilla-js` - JavaScript Vanilla application
+- `app-vanilla` - JavaScript Vanilla application
 - `app-vanilla-ts` - TypeScript Vanilla application
-- `app-react-js` - JavaScript React application
+- `app-react` - JavaScript React application
 - `app-react-ts` - TypeScript React application
-- `app-preact-js` - JavaScript Preact application
+- `app-preact` - JavaScript Preact application
 - `app-preact-ts` - TypeScript Preact application
-- `app-vue-js` - JavaScript Vue application
+- `app-vue` - JavaScript Vue application
 - `app-vue-ts` - TypeScript Vue application
-- `app-lit-js` - JavaScript Lit application
+- `app-lit` - JavaScript Lit application
 - `app-lit-ts` - TypeScript Lit application
-- `app-svelte-js` - JavaScript Svelte application
+- `app-svelte` - JavaScript Svelte application
 - `app-svelte-ts` - TypeScript Svelte application
-- `app-solid-js` - JavaScript Solid application
+- `app-solid` - JavaScript Solid application
 - `app-solid-ts` - TypeScript Solid application
-- `lib-node-js` - JavaScript Node.js library
+- `lib-node` - JavaScript Node.js library
 - `lib-node-ts` - TypeScript Node.js library
-- `lib-react-js` - JavaScript React library
+- `lib-react` - JavaScript React library
 - `lib-react-ts` - TypeScript React library
-- `lib-vue-js` - JavaScript Vue library
+- `lib-vue` - JavaScript Vue library
 - `lib-vue-ts` - TypeScript Vue library
-- `lib-svelte-js` - JavaScript Svelte library
+- `lib-svelte` - JavaScript Svelte library
 - `lib-svelte-ts` - TypeScript Svelte library
-- `lib-solid-js` - JavaScript Solid library
+- `lib-solid` - JavaScript Solid library
 - `lib-solid-ts` - TypeScript Solid library
-- `doc-basic` - Basic documentation site
+- `doc` - Basic documentation site
 - `doc-i18n` - Multilingual documentation site
 
 ## Documentation

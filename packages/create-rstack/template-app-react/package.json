@@ -1,5 +1,5 @@
 {
-  "name": "rstack-app-vue-js",
+  "name": "rstack-app-react",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -14,12 +14,14 @@
     "test:watch": "rs test --watch"
   },
   "dependencies": {
-    "vue": "^3.5.41"
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
-    "@rsbuild/plugin-vue": "^2.0.1",
+    "@rsbuild/plugin-react": "^2.1.0",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.0",
-    "@vue/test-utils": "^2.4.11",
+    "@testing-library/react": "^16.3.2",
     "happy-dom": "^20.11.2",
     "rstack": "^0.4.0"
   }

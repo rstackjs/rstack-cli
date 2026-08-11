@@ -5,40 +5,55 @@ import {
   create,
   select,
 } from '@rstackjs/create-toolkit';
-import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const packageRoot = path.join(import.meta.dirname, '..');
 
+const templateNames = [
+  'app-vanilla',
+  'app-vanilla-ts',
+  'app-react',
+  'app-react-ts',
+  'app-preact',
+  'app-preact-ts',
+  'app-vue',
+  'app-vue-ts',
+  'app-lit',
+  'app-lit-ts',
+  'app-svelte',
+  'app-svelte-ts',
+  'app-solid',
+  'app-solid-ts',
+  'lib-node',
+  'lib-node-ts',
+  'lib-react',
+  'lib-react-ts',
+  'lib-vue',
+  'lib-vue-ts',
+  'lib-svelte',
+  'lib-svelte-ts',
+  'lib-solid',
+  'lib-solid-ts',
+  'doc',
+  'doc-i18n',
+];
+
+const resolveTemplateName = (template: string): string => {
+  if (!templateNames.includes(template)) {
+    throw new Error(`Invalid input: template "${template}" not found.`);
+  }
+
+  return template;
+};
+
 const getTemplateName = async ({ template }: Argv): Promise<string> => {
   if (typeof template === 'string') {
-    if (template === 'app' || template.startsWith('app-')) {
-      const [, framework = 'vanilla', language = 'js'] = template.split('-');
-
-      if (framework === 'js' || framework === 'ts') {
-        return `app-vanilla-${framework}`;
-      }
-
-      return `app-${framework}-${language}`;
+    if (/^(?:app|lib|doc)(?:-|$)/u.test(template)) {
+      return resolveTemplateName(template);
     }
 
-    if (template === 'lib' || template.startsWith('lib-')) {
-      const [, libraryType = 'node', language = 'js'] = template.split('-');
-
-      if (libraryType === 'js' || libraryType === 'ts') {
-        return `lib-node-${libraryType}`;
-      }
-
-      return `lib-${libraryType}-${language}`;
-    }
-
-    if (template === 'doc' || template.startsWith('doc-')) {
-      const [, documentationType = 'basic'] = template.split('-');
-      return `doc-${documentationType}`;
-    }
-
-    const [type, language = 'js'] = template.split('-');
-    return `${type}-${language}`;
+    return template;
   }
 
   const projectType = checkCancel<string>(
@@ -72,7 +87,7 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
       }),
     );
 
-    return `doc-${documentationType}`;
+    return resolveTemplateName(documentationType === 'basic' ? 'doc' : 'doc-i18n');
   }
 
   const templateType = checkCancel<string>(
@@ -109,7 +124,8 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
     }),
   );
 
-  return `${projectType}-${templateType}-${language}`;
+  const templateName = `${projectType}-${templateType}${language === 'ts' ? '-ts' : ''}`;
+  return resolveTemplateName(templateName);
 };
 
 const getStagedConfig = (templateName: string): string => {
@@ -141,7 +157,10 @@ const injectStagedSetup = async ({
     return;
   }
 
-  const configExtension = templateName.endsWith('-js') ? 'js' : 'ts';
+  const configExtension = await access(path.join(distFolder, 'rstack.config.ts')).then(
+    () => 'ts',
+    () => 'js',
+  );
   const packageJsonPath = path.join(distFolder, 'package.json');
   const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8')) as {
     scripts: Record<string, string>;
@@ -168,34 +187,7 @@ const injectStagedSetup = async ({
 await create({
   root: packageRoot,
   name: 'rstack',
-  templates: [
-    'app-vanilla-js',
-    'app-vanilla-ts',
-    'app-react-js',
-    'app-react-ts',
-    'app-preact-js',
-    'app-preact-ts',
-    'app-vue-js',
-    'app-vue-ts',
-    'app-lit-js',
-    'app-lit-ts',
-    'app-svelte-js',
-    'app-svelte-ts',
-    'app-solid-js',
-    'app-solid-ts',
-    'lib-node-js',
-    'lib-node-ts',
-    'lib-react-js',
-    'lib-react-ts',
-    'lib-vue-js',
-    'lib-vue-ts',
-    'lib-svelte-js',
-    'lib-svelte-ts',
-    'lib-solid-js',
-    'lib-solid-ts',
-    'doc-basic',
-    'doc-i18n',
-  ],
+  templates: templateNames,
   builtinTools: [],
   getTemplateName,
   onGitResolved: injectStagedSetup,
