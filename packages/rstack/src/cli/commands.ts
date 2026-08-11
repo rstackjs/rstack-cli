@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { getConfigState } from '../config.ts';
 import { insertConfigArg, parseArgs, parseCliArgs } from './args.ts';
-import { renderHelp } from './help.ts';
+import { hasHelpFlag, renderHelp } from './help.ts';
 
 const renderRootHelp = (): string =>
   renderHelp({
@@ -54,7 +54,77 @@ const renderCheckHelp = (): string =>
     ],
   });
 
+const renderDevHelp = (): string =>
+  renderHelp({
+    usage: 'rs dev [options]',
+    description: 'Run the app dev server',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['-o, --open [url]', 'Open the page in browser on startup'],
+          ['--port <port>', 'Set the port number for the server'],
+          ['--strict-port', 'Exit if the specified port is already in use'],
+          ['--host [host]', 'Set the host that the server listens to'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
+const renderBuildHelp = (): string =>
+  renderHelp({
+    usage: 'rs build [options]',
+    description: 'Build the app for production',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['-w, --watch', 'Enable watch mode to automatically rebuild on file changes'],
+          ['--dist-path <dir>', 'Set the root directory of output files'],
+          ['--source-map', 'Enable source map'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
+const renderPreviewHelp = (): string =>
+  renderHelp({
+    usage: 'rs preview [options]',
+    description: 'Preview the app production build',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['-o, --open [url]', 'Open the page in browser on startup'],
+          ['--port <port>', 'Set the port number for the server'],
+          ['--strict-port', 'Exit if the specified port is already in use'],
+          ['--host [host]', 'Set the host that the server listens to'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
 async function runRsbuildCLI(args: string[]): Promise<void> {
+  if (hasHelpFlag(args)) {
+    switch (args[0]) {
+      case 'dev':
+        console.log(renderDevHelp());
+        return;
+      case 'build':
+        console.log(renderBuildHelp());
+        return;
+      case 'preview':
+        console.log(renderPreviewHelp());
+        return;
+    }
+  }
+
   const argv = [
     process.execPath,
     'rsbuild',
