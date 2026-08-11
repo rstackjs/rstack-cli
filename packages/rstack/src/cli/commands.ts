@@ -110,6 +110,86 @@ const renderPreviewHelp = (): string =>
     ],
   });
 
+const renderDocHelp = (): string =>
+  renderHelp({
+    usage: 'rs doc [command] [root] [options]',
+    sections: [
+      {
+        title: 'Commands',
+        items: [
+          ['[root]', 'Run the docs dev server (default)'],
+          ['build [root]', 'Build docs for production'],
+          ['preview [root]', 'Preview the docs production build'],
+          ['eject [component]', 'Eject a theme component'],
+        ],
+      },
+      {
+        content: `For command-specific options, run:
+  $ rs doc <command> -h`,
+        dim: true,
+      },
+      {
+        title: 'Options',
+        items: [
+          ['--port <port>', 'Set the port number for the server'],
+          ['--host [host]', 'Set the host that the server listens to'],
+          ['--base <base>', 'Set the base path and override config.base'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
+const renderDocBuildHelp = (): string =>
+  renderHelp({
+    usage: 'rs doc build [root] [options]',
+    description: 'Build docs for production',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['--base <base>', 'Set the base path and override config.base'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
+const renderDocPreviewHelp = (): string =>
+  renderHelp({
+    usage: 'rs doc preview [root] [options]',
+    description: 'Preview the docs production build',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['--port <port>', 'Set the port number for the server'],
+          ['--host [host]', 'Set the host that the server listens to'],
+          ['--base <base>', 'Set the base path and override config.base'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
+const renderDocEjectHelp = (): string =>
+  renderHelp({
+    usage: 'rs doc eject [component] [options]',
+    description: 'Eject a theme component',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['-c, --config <path>', 'Specify Rstack config file path'],
+          ['-h, --help', 'Display this help message'],
+        ],
+      },
+    ],
+  });
+
 const renderTestHelp = (): string =>
   renderHelp({
     usage: 'rs test [command] [...filters] [options]',
@@ -443,6 +523,23 @@ const isMissingRspressCoreError = (error: unknown): boolean => {
 };
 
 async function runRspressCLI(args: string[]): Promise<void> {
+  if (hasHelpFlag(args)) {
+    switch (args[0]) {
+      case 'build':
+        console.log(renderDocBuildHelp());
+        return;
+      case 'preview':
+        console.log(renderDocPreviewHelp());
+        return;
+      case 'eject':
+        console.log(renderDocEjectHelp());
+        return;
+      default:
+        console.log(renderDocHelp());
+        return;
+    }
+  }
+
   const argv = [
     process.execPath,
     'rspress',
