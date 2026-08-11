@@ -48,6 +48,9 @@ test(
       const { capabilities } = await client.initialize();
 
       expect(capabilities.documentFormattingProvider).toBe(true);
+      // Incremental sync, filled in by the connection for the `TextDocuments`
+      // listener; without it compliant clients would never send the document.
+      expect(capabilities.textDocumentSync).toBe(2);
       expect(capabilities.documentRangeFormattingProvider).toBeUndefined();
       expect(capabilities.documentOnTypeFormattingProvider).toBeUndefined();
     });

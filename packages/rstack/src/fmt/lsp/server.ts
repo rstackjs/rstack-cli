@@ -229,7 +229,9 @@ const startFmtLsp = (options: RunFmtLspOptions, onExit: () => void): void => {
 
     return {
       // The project config is the single source of truth, so client formatting
-      // options are ignored and no other capability is advertised.
+      // options are ignored. The connection fills in incremental
+      // `textDocumentSync` for the `TextDocuments` listener; nothing else is
+      // advertised.
       capabilities: { documentFormattingProvider: true },
     };
   });
