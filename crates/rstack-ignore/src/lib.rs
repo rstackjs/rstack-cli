@@ -68,7 +68,9 @@ impl SourceMatcher {
         for line in source.patterns.split('\n') {
             let line = line.strip_suffix('\r').unwrap_or(line);
             let line = line.strip_prefix('\u{feff}').unwrap_or(line);
-            builder.add_line(None, line)?;
+            // Gitignore files and the previous JavaScript matcher treat malformed lines as
+            // nonmatching, while continuing to apply the remaining valid rules.
+            let _ = builder.add_line(None, line);
         }
 
         Ok(Self {
