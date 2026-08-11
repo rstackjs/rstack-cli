@@ -46,11 +46,8 @@ jobs:
       - name: Build Native Binding
         run: pnpm --filter rstack build:native
 
-      - name: Lint
-        run: node --run lint
-
-      - name: Check Format
-        run: node --run check:format
+      - name: Check
+        run: node --run check
 
       - name: Check Spell
         run: node --run check:spell

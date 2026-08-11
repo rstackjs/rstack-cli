@@ -14,13 +14,12 @@
 corepack enable && pnpm install
 
 # dev checks
-pnpm lint
+pnpm check
 pnpm test
 
 # build / format / spelling
 pnpm build
 pnpm format
-pnpm check:format
 pnpm check:spell
 
 # focused work
