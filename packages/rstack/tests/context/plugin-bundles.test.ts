@@ -18,6 +18,7 @@ type PluginManifest = {
   license: string;
   skills: string;
   mcpServers: string;
+  interface?: { defaultPrompt: string[] };
 };
 
 type CodexMarketplace = {
@@ -43,12 +44,15 @@ test('publishes host-valid plugin manifests and MCP launch configurations', asyn
   );
 
   expect(codexManifest).toMatchObject({
-    name: 'rstack-context-codex',
+    name: 'rstack-codex',
     version: '0.1.0',
     repository: repositoryUrl,
     license: 'MIT',
     skills: './skills/',
     mcpServers: './.mcp.json',
+    interface: {
+      defaultPrompt: ['Analyze my Rstack project using the available checkout-local evidence.'],
+    },
   });
   expect(claudeManifest).toMatchObject({
     name: 'rstack-context-claude',
@@ -60,7 +64,7 @@ test('publishes host-valid plugin manifests and MCP launch configurations', asyn
   });
 
   await expect(readJson('plugins/rstack-codex/.mcp.json')).resolves.toEqual({
-    rstack: { command: 'rs', args: ['mcp'] },
+    mcpServers: { rstack: { command: 'rs', args: ['mcp'] } },
   });
   await expect(readJson('plugins/rstack-claude/.mcp.json')).resolves.toEqual({
     mcpServers: { rstack: { command: 'rs', args: ['mcp'] } },
@@ -84,7 +88,7 @@ test('registers each bundle in its repository marketplace', async () => {
 
   expect(codexMarketplace.plugins).toContainEqual(
     expect.objectContaining({
-      name: 'rstack-context-codex',
+      name: 'rstack-codex',
       source: { source: 'local', path: './plugins/rstack-codex' },
     }),
   );

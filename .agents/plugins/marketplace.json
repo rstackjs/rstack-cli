@@ -5,7 +5,7 @@
   },
   "plugins": [
     {
-      "name": "rstack-context-codex",
+      "name": "rstack-codex",
       "source": {
         "source": "local",
         "path": "./plugins/rstack-codex"

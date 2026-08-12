@@ -1,5 +1,5 @@
 {
-  "name": "rstack-context-codex",
+  "name": "rstack-codex",
   "version": "0.1.0",
   "description": "Analyze Rstack module reachability, change impact, and build artifacts.",
   "author": {
@@ -15,7 +15,7 @@
     "developerName": "Rstack",
     "category": "Developer Tools",
     "capabilities": ["Read-only analysis"],
-    "defaultPrompt": "Analyze my Rstack project using the available checkout-local evidence."
+    "defaultPrompt": ["Analyze my Rstack project using the available checkout-local evidence."]
   },
   "mcpServers": "./.mcp.json"
 }
