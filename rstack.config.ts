@@ -8,30 +8,11 @@ define.lint(async () => {
     js.configs.recommended,
     ts.configs.recommended,
     {
-      files: [
-        '**/*.config.{js,cjs,mjs}',
-        '.agents/skills/**/scripts/**/*.{js,cjs,mjs}',
-        'packages/rstack/bin/**/*.{js,cjs,mjs}',
-        'scripts/**/*.{js,cjs,mjs}',
-      ],
-      languageOptions: {
-        globals: globals.node,
-      },
-    },
-    {
-      files: [
-        'packages/create-rstack/template-app-*/{src,tests}/**/*.{js,jsx}',
-        'packages/create-rstack/template-lib-{react,solid,svelte,vue}/{src,tests}/**/*.{js,jsx}',
-      ],
-      languageOptions: {
-        globals: globals.browser,
-      },
-    },
-    {
-      files: ['packages/rstack/tests/**/src/**/*.js'],
+      files: ['**/*.{js,jsx,cjs,mjs}'],
       languageOptions: {
         globals: {
           ...globals.browser,
+          ...globals.node,
           DEFINE_APP_TEST_VALUE: 'readonly',
           DEFINE_LIB_TEST_VALUE: 'readonly',
           DEFINE_VALUE: 'readonly',
