@@ -1,9 +1,11 @@
 // Rstack configuration guide: https://rstack.rs/config
-import globals from 'globals';
 import { define } from 'rstack';
 
 define.lint(async () => {
-  const { js, ts } = await import('rstack/lint');
+  const [{ default: globals }, { js, ts }] = await Promise.all([
+    import('globals'),
+    import('rstack/lint'),
+  ]);
   return [
     js.configs.recommended,
     ts.configs.recommended,
