@@ -22,6 +22,7 @@ beforeEach(() => {
   mocks.lintStaged.mockResolvedValue(true);
   mocks.loadRstackConfig.mockResolvedValue({
     configs: { staged: stagedConfig },
+    plugins: [],
     filePath: null,
     dependencies: [],
   });

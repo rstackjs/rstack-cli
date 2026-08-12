@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { afterEach, expect, test } from 'rstack/test';
-import { getConfigState, loadRstackConfig } from '../../../src/config.ts';
+import { define, getConfigState, loadRstackConfig } from '../../../src/config.ts';
 
 type Deferred = ReturnType<typeof Promise.withResolvers<void>>;
 
@@ -35,8 +35,9 @@ test('should discard a config session after loading fails', async () => {
 
   await expect(loadRstackConfig()).rejects.toThrow('test config error');
 
-  const { configs } = await loadConfigFile('explicit.config.ts');
+  const { configs, plugins } = await loadConfigFile('explicit.config.ts');
   expect(configs).toEqual({ app: {} });
+  expect(plugins).toEqual([]);
 });
 
 test('should prefer an explicit config path over the state config path', async () => {
@@ -81,10 +82,12 @@ test('should isolate parallel config sessions across top-level await', async () 
     app: { root: 'first' },
     test: {},
   });
+  expect(firstResult.plugins).toMatchObject([{ name: 'first' }]);
   expect(secondResult.configs).toEqual({
     app: { root: 'second' },
     lib: {},
   });
+  expect(secondResult.plugins).toMatchObject([{ name: 'second' }]);
 });
 
 test('should keep a running session intact when another config fails', async () => {
@@ -106,5 +109,26 @@ test('should keep a running session intact when another config fails', async () 
 test('should reject duplicate definitions within the same session', async () => {
   await expect(loadConfigFile('duplicate.config.ts')).rejects.toThrow(
     'The "app" config has already been defined.',
+  );
+});
+
+test('should capture nested and asynchronous plugin definitions', async () => {
+  const { plugins } = await loadConfigFile('plugins.config.ts');
+
+  expect(plugins).toHaveLength(3);
+  expect(plugins[0]).toMatchObject({ name: 'first' });
+  await expect(plugins[1]).resolves.toMatchObject({ name: 'second' });
+  await expect(plugins[2]).resolves.toEqual([false, expect.objectContaining({ name: 'third' })]);
+});
+
+test('should reject duplicate plugin definitions within the same session', async () => {
+  await expect(loadConfigFile('duplicate-plugins.config.ts')).rejects.toThrow(
+    'The "plugins" config has already been defined.',
+  );
+});
+
+test('should reject plugin definitions outside config loading', () => {
+  expect(() => define.plugins([])).toThrow(
+    'The "plugins" config must be defined while loading an Rstack config.',
   );
 });

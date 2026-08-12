@@ -6,6 +6,7 @@ import type { RslintConfig } from '@rslint/core';
 import type { UserConfig, UserConfigAsyncFn } from '@rspress/core';
 import type { RstestConfigExport } from '@rstest/core';
 import type { FmtConfigDefinition } from './fmt/types.ts';
+import type { RstackPlugins } from './plugin.ts';
 import type { StagedConfig } from './staged.ts';
 
 export type RslintConfigDefinition = RslintConfig | (() => Promise<RslintConfig>);
@@ -23,6 +24,7 @@ export type Configs = {
 
 export type LoadedRstackConfig = {
   configs: Configs;
+  plugins: RstackPlugins;
   filePath: string | null;
   dependencies: string[];
 };
@@ -44,6 +46,8 @@ export type LoadRstackConfigOptions = {
 
 type ConfigSession = {
   configs: Configs;
+  plugins: RstackPlugins;
+  pluginsDefined: boolean;
   active: boolean;
 };
 
@@ -85,6 +89,12 @@ export const getConfigState = (): ConfigState => {
 };
 
 type Define = {
+  /**
+   * Registers plugins that extend the Rstack CLI.
+   *
+   * @see {@link https://rstack.rs/plugins | Rstack plugin guide}
+   */
+  plugins: (plugins: RstackPlugins) => void;
   /**
    * Defines the Rsbuild config for the app.
    *
@@ -147,12 +157,18 @@ type Define = {
   staged: (config: StagedConfig) => void;
 };
 
-const setConfig = <T extends keyof Configs>(type: T, config: Configs[T]): void => {
+const getActiveConfigSession = (type: string): ConfigSession => {
   const session = getConfigSessionStorage().getStore();
 
   if (!session?.active) {
     throw new Error(`The "${type}" config must be defined while loading an Rstack config.`);
   }
+
+  return session;
+};
+
+const setConfig = <T extends keyof Configs>(type: T, config: Configs[T]): void => {
+  const session = getActiveConfigSession(type);
 
   if (type in session.configs) {
     throw new Error(`The "${type}" config has already been defined.`);
@@ -160,7 +176,18 @@ const setConfig = <T extends keyof Configs>(type: T, config: Configs[T]): void =
   session.configs[type] = config;
 };
 
+const setPlugins = (plugins: RstackPlugins): void => {
+  const session = getActiveConfigSession('plugins');
+
+  if (session.pluginsDefined) {
+    throw new Error('The "plugins" config has already been defined.');
+  }
+  session.plugins = plugins;
+  session.pluginsDefined = true;
+};
+
 export const define: Define = {
+  plugins: setPlugins,
   app: (config) => setConfig('app', config),
   lib: (config) => setConfig('lib', config),
   doc: (config) => setConfig('doc', config),
@@ -178,6 +205,8 @@ export const loadRstackConfig = async ({
   const configPath = configFilePath ?? state.configPath;
   const session: ConfigSession = {
     configs: {},
+    plugins: [],
+    pluginsDefined: false,
     active: true,
   };
 
@@ -202,12 +231,15 @@ export const loadRstackConfig = async ({
 
       return {
         configs: session.configs,
+        plugins: session.plugins,
         filePath,
         dependencies,
       };
     } finally {
       session.active = false;
       session.configs = {};
+      session.plugins = [];
+      session.pluginsDefined = false;
     }
   });
 };
