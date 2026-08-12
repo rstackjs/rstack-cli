@@ -1,6 +1,6 @@
 # MCP
 
-`rs mcp` exposes checkout-local Rstack build-context observations and explicit Rsdoctor artifacts to an MCP client. Its tools are read-only: they do not start builds, change configuration, or write project files.
+`rs mcp` exposes checkout-local Rstack observations and explicit Rsdoctor artifacts to an MCP client. Query tools are read-only. The two snapshot tools run lint or tests only when they are called explicitly; no tool changes Rstack configuration or applies a lint fix.
 
 ## Usage
 
@@ -10,7 +10,7 @@ Start one local MCP server from the repository root:
 rs mcp
 ```
 
-The server communicates over standard input and output, so stdout is reserved for MCP protocol messages. It resolves the checkout from the command's launch path and exposes seven tools: `project_status`, `product_roots`, `unused_candidates`, `dead_code_explain`, `module_impact`, `rsdoctor_analyze`, and `report_link`.
+The server communicates over standard input and output, so stdout is reserved for MCP protocol messages. It resolves the checkout from the command's launch path and exposes fourteen tools: `project_status`, `product_roots`, `unused_candidates`, `dead_code_explain`, `module_impact`, `snapshot_list`, `diagnostics_list`, `test_results`, `snapshot_diff`, `lint_fix_preview`, `lint_snapshot`, `test_snapshot`, `rsdoctor_analyze`, and `report_link`.
 
 ## Capture build context
 
@@ -37,7 +37,7 @@ Run one MCP process at the monorepo root. It reads the recorded runs from every 
 
 This works for Rslib-only repositories, Rsbuild-only repositories, and repositories that use both. It does not require Turbo, Nx, a daemon, a task graph, or a producer-to-MCP connection.
 
-## Read-only tools
+## MCP tools {#mcp-tools}
 
 ### Build context
 
@@ -53,6 +53,31 @@ The four module-analysis tools require both a `contextId` from `project_status` 
 - `module_impact` accepts the same module selector. `direction` is `dependencies` or `dependents` and defaults to `dependents`; `maxDepth` has the same 1-through-16 range and default of 8. It returns the bounded observed modules, reached product roots, affected chunk IDs, and truncation state.
 
 These results describe modules in one supplied artifact. An unreachable result is a review candidate, not a deletion instruction, and does not prove that a local function, class, variable, or export is unused.
+
+## Phase 3 development intelligence {#phase-3-development-intelligence}
+
+The development tools reuse the same immutable checkout-local store. `snapshot_list`, `diagnostics_list`, and `test_results` are read-only, non-destructive, and closed-world. They read the store for each request and never start a producer. Their optional `limit` defaults to 50 and accepts 1 through 200; a returned `nextCursor` continues the same deterministic ordering.
+
+`lint_snapshot` is explicit execution. It runs Rslint once for file patterns (default `['.']`) or one supplied text buffer, then records diagnostics and optional fixed output without writing source files. It is annotated `readOnlyHint: false`, `destructiveHint: false`, and `openWorldHint: true` because configuration is loaded and lint runs. Ask before calling it.
+
+`test_snapshot` is also explicit execution. It invokes the installed experimental `runRstest()` API once, optionally narrowed by files or a test-name pattern, and records structured summaries without watch mode, console streams, or coverage blobs. It is annotated `readOnlyHint: false`, `destructiveHint: true`, and `openWorldHint: true` because project configuration and tests execute. Ask before calling it.
+
+Freshness belongs to each producer and snapshot independently:
+
+- `fresh`: all completely recorded input files still match.
+- `stale`: one or more recorded paths are missing or changed; `changedPaths` lists them.
+- `partial`: every recorded input still matches, but the producer recorded only part of its dependency surface. One-shot test snapshots are at best partial because they fingerprint test files, not every imported application source.
+- `unknown`: the snapshot has no comparable input set. Unsaved lint text and older build observations can have unknown freshness.
+
+A fresh build does not make lint or test evidence fresh. If related-test selection is needed, use `rs test list --related <files> --json` explicitly; it is not an MCP tool.
+
+## Phase 4 change review {#phase-4-change-review}
+
+`snapshot_diff` is read-only, non-destructive, and closed-world. It compares normalized diagnostics or tests only when both snapshots have the same schema version, producer, context, and requested facet. An incompatible comparison returns reasons instead of inferring a delta. Compatible results include the independent freshness of both sides and deterministic added, removed, and changed items.
+
+`lint_fix_preview` has the same read-only annotations. It returns fixed text already stored by `lint_snapshot` when `includeFixPreview` was enabled. It does not reread or write the source file, and there is no apply tool; use an explicit `rs lint --fix <path>` only when you choose to apply fixes.
+
+Rslint type-check and timing collection remain explicit CLI workflows such as `rs lint --type-check --timing`. Rstest watch sessions, related-test selection through MCP, automatic captures, and source mutation are deliberately deferred. The MCP server has no daemon, watcher, or producer connection.
 
 ### Rsdoctor analysis
 
@@ -75,6 +100,6 @@ These results describe modules in one supplied artifact. An unreachable result i
 
 ## Limitations
 
-Build observations and artifact graphs may be partial or stale. Export-level and local-symbol dead-code analysis are unavailable because the current Rsdoctor artifact contract does not provide a supported export-use schema. Rstest results, Rslint diagnostics, watch queries, mutation tools, and automatic report generation are not included.
+Build observations, lint diagnostics, test results, and artifact graphs may be partial or stale. Export-level and local-symbol dead-code analysis are unavailable because the current Rsdoctor artifact contract does not provide a supported export-use schema. Watch queries, mutation tools, automatic captures, and automatic report generation are not included.
 
 Build context is evidence about observed builds, not proof that unobserved code is dead or unused.

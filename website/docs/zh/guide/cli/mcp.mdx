@@ -1,6 +1,6 @@
 # MCP \{#mcp}
 
-`rs mcp` 将当前检出的 Rstack 构建上下文观测结果和明确指定的 Rsdoctor 产物提供给 MCP 客户端。其工具均为只读：不会启动构建、修改配置或写入项目文件。
+`rs mcp` 将当前检出的 Rstack 观测结果和明确指定的 Rsdoctor 产物提供给 MCP 客户端。查询工具均为只读。两个快照工具只会在被明确调用时运行 lint 或测试；没有工具会修改 Rstack 配置或应用 lint 修复。
 
 ## 用法 \{#usage}
 
@@ -10,7 +10,7 @@
 rs mcp
 ```
 
-服务器通过标准输入和输出通信，因此 stdout 仅用于 MCP 协议消息。它会根据命令的启动路径解析检出目录，并公开七个工具：`project_status`、`product_roots`、`unused_candidates`、`dead_code_explain`、`module_impact`、`rsdoctor_analyze` 和 `report_link`。
+服务器通过标准输入和输出通信，因此 stdout 仅用于 MCP 协议消息。它会根据命令的启动路径解析检出目录，并公开十四个工具：`project_status`、`product_roots`、`unused_candidates`、`dead_code_explain`、`module_impact`、`snapshot_list`、`diagnostics_list`、`test_results`、`snapshot_diff`、`lint_fix_preview`、`lint_snapshot`、`test_snapshot`、`rsdoctor_analyze` 和 `report_link`。
 
 ## 捕获构建上下文 \{#capture-build-context}
 
@@ -37,7 +37,7 @@ define.context({
 
 它适用于仅使用 Rslib 的仓库、仅使用 Rsbuild 的仓库，以及同时使用两者的仓库。不需要 Turbo、Nx、守护进程、任务图或生产者到 MCP 的连接。
 
-## 只读工具 \{#read-only-tools}
+## MCP 工具 \{#mcp-tools}
 
 ### 构建上下文 \{#build-context}
 
@@ -53,6 +53,31 @@ define.context({
 - `module_impact` 接受相同的模块选择器。`direction` 可为 `dependencies` 或 `dependents`，默认值为 `dependents`；`maxDepth` 同样是 1 到 16，默认值为 8。它返回有界的已观测模块、到达的产品根、受影响的 chunk ID 和截断状态。
 
 这些结果只描述一个指定产物中的模块。不可达结果是需要复核的候选，而不是删除指令；它也不能证明某个局部函数、类、变量或导出未被使用。
+
+## 第 3 阶段开发智能 \{#phase-3-development-intelligence}
+
+开发工具复用同一个不可变的检出目录本地存储。`snapshot_list`、`diagnostics_list` 和 `test_results` 均为只读、非破坏性且封闭世界的工具。它们会在每次请求时读取存储，绝不会启动生产者。可选的 `limit` 默认为 50，取值范围为 1 到 200；返回的 `nextCursor` 会按相同的确定性顺序继续读取。
+
+`lint_snapshot` 是明确执行操作。它会针对文件模式（默认为 `['.']`）或一个给定文本缓冲区运行一次 Rslint，然后记录诊断和可选的修复输出，但不会写入源文件。其标注为 `readOnlyHint: false`、`destructiveHint: false` 和 `openWorldHint: true`，因为它会加载配置并运行 lint。调用前应先询问用户。
+
+`test_snapshot` 也是明确执行操作。它会调用一次已安装的实验性 `runRstest()` API，可按文件或测试名称模式缩小范围，并记录结构化摘要，不启动 watch 模式，也不记录控制台流或覆盖率大对象。其标注为 `readOnlyHint: false`、`destructiveHint: true` 和 `openWorldHint: true`，因为它会执行项目配置和测试。调用前应先询问用户。
+
+新鲜度按生产者和快照分别判断：
+
+- `fresh`：所有完整记录的输入文件仍然匹配。
+- `stale`：一个或多个记录路径已缺失或发生变化；`changedPaths` 会列出这些路径。
+- `partial`：所有记录的输入仍然匹配，但生产者只记录了部分依赖范围。一次性测试快照最多只能是 partial，因为它只为测试文件生成指纹，而不是为所有导入的应用源码生成指纹。
+- `unknown`：快照没有可比较的输入集合。未保存的 lint 文本和较早的构建观测可能具有未知新鲜度。
+
+新鲜的构建结果并不会让 lint 或测试证据自动变得新鲜。如需选择相关测试，请明确运行 `rs test list --related <files> --json`；它不是 MCP 工具。
+
+## 第 4 阶段变更复核 \{#phase-4-change-review}
+
+`snapshot_diff` 是只读、非破坏性且封闭世界的工具。只有两个快照的 schema 版本、生产者、上下文和请求的 facet 均相同时，它才会比较标准化的诊断或测试。对于不兼容的比较，它会返回原因，而不会推断差异。兼容结果包含两侧各自的新鲜度，以及确定性排序的新增、移除和变更项。
+
+`lint_fix_preview` 具有相同的只读标注。它会返回启用 `includeFixPreview` 时由 `lint_snapshot` 已存储的修复文本。它不会重新读取或写入源文件，也没有 apply 工具；仅在你选择应用修复时明确运行 `rs lint --fix <path>`。
+
+Rslint 类型检查和计时收集仍是明确的 CLI 工作流，例如 `rs lint --type-check --timing`。Rstest watch 会话、通过 MCP 选择相关测试、自动捕获和源文件修改均明确推迟实现。MCP 服务器没有守护进程、watcher 或生产者连接。
 
 ### Rsdoctor 分析 \{#rsdoctor-analysis}
 
@@ -75,6 +100,6 @@ define.context({
 
 ## 限制 \{#limitations}
 
-构建观测和产物图可能不完整或已过时。导出级和局部符号级的死代码分析目前不可用，因为当前 Rsdoctor 产物契约没有提供受支持的导出使用情况 schema。Rstest 结果、Rslint 诊断、watch 查询、变更工具和自动报告生成也不包含在内。
+构建观测、lint 诊断、测试结果和产物图可能不完整或已过时。导出级和局部符号级的死代码分析目前不可用，因为当前 Rsdoctor 产物契约没有提供受支持的导出使用情况 schema。watch 查询、变更工具、自动捕获和自动报告生成也不包含在内。
 
 构建上下文是已观测构建的证据，不能证明未观测到的代码已经死亡或未被使用。

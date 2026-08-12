@@ -16,6 +16,7 @@ import {
   type ContextDescriptor,
   type ContextRunManifest,
   type ContextSnapshot,
+  type LintCaptureResult,
 } from '../../src/context/index.ts';
 import { createContextMcpServer } from '../../src/context/mcp.ts';
 
@@ -39,8 +40,9 @@ const withTempWorkspace = async (
 const withMcpClient = async (
   workspaceRoot: string,
   callback: (client: Client) => Promise<void>,
+  dependencies?: Parameters<typeof createContextMcpServer>[1],
 ): Promise<void> => {
-  const server = createContextMcpServer(workspaceRoot);
+  const server = createContextMcpServer(workspaceRoot, dependencies);
   const client = new Client({ name: 'rstack-test-client', version: '1.0.0' });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
 
@@ -69,7 +71,7 @@ const writeRsdoctorArtifact = async (workspaceRoot: string): Promise<void> => {
   await writeFile(dataFile, JSON.stringify({ data: { summary: { costs: [{ costs: 12 }] } } }));
 };
 
-test('registers exactly the seven read-only Phase 2 tools', async () => {
+test('registers the exact ordered fourteen-tool catalog with accurate annotations', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await withMcpClient(workspaceRoot, async (client) => {
       const { tools } = await client.listTools();
@@ -80,6 +82,13 @@ test('registers exactly the seven read-only Phase 2 tools', async () => {
         'unused_candidates',
         'dead_code_explain',
         'module_impact',
+        'snapshot_list',
+        'diagnostics_list',
+        'test_results',
+        'snapshot_diff',
+        'lint_fix_preview',
+        'lint_snapshot',
+        'test_snapshot',
         'rsdoctor_analyze',
         'report_link',
       ]);
@@ -134,7 +143,25 @@ test('registers exactly the seven read-only Phase 2 tools', async () => {
           openWorldHint: false,
         });
       }
-      expect(tools[5]).toMatchObject({
+      for (const tool of tools.slice(5, 10)) {
+        expect(tool.annotations).toMatchObject({
+          readOnlyHint: true,
+          destructiveHint: false,
+          openWorldHint: false,
+        });
+        expect(tool.inputSchema).toMatchObject({ additionalProperties: false });
+      }
+      expect(tools[10]?.annotations).toMatchObject({
+        readOnlyHint: false,
+        destructiveHint: false,
+        openWorldHint: true,
+      });
+      expect(tools[11]?.annotations).toMatchObject({
+        readOnlyHint: false,
+        destructiveHint: true,
+        openWorldHint: true,
+      });
+      expect(tools[12]).toMatchObject({
         name: 'rsdoctor_analyze',
         annotations: {
           readOnlyHint: true,
@@ -146,7 +173,7 @@ test('registers exactly the seven read-only Phase 2 tools', async () => {
           required: ['dataFile', 'toolName'],
         },
       });
-      expect(tools[6]).toMatchObject({
+      expect(tools[13]).toMatchObject({
         name: 'report_link',
         annotations: {
           readOnlyHint: true,
@@ -606,6 +633,275 @@ test('returns a valid empty project status', async () => {
         issues: [],
       });
       expect(JSON.stringify(result.content)).not.toContain(workspaceRoot);
+    });
+  });
+});
+
+test('queries immutable lint and test snapshots with paging, diffs, and previews', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const lintContext = {
+      contextId: 'ctx_lint',
+      packageRoot: '.',
+      product: 'development',
+      environment: 'lint',
+    } as const;
+    const lintRun = {
+      ...createRun('run_lint', lintContext),
+      producer: 'rslint',
+      command: 'lint',
+    } satisfies ContextRunManifest;
+    const lintSnapshot = {
+      schemaVersion: contextStoreSchemaVersion,
+      snapshotId: 'snap_lint',
+      runId: lintRun.runId,
+      contextId: lintContext.contextId,
+      sequence: 0,
+      observedAt: '2026-08-12T06:00:00.000Z',
+      status: 'fail',
+      completeness: { lint: 'complete' },
+      facets: {
+        lint: {
+          producer: 'rslint',
+          mode: 'files',
+          fixPreviewCaptured: false,
+          files: [
+            {
+              path: 'src/index.ts',
+              digest: 'a'.repeat(64),
+              errorCount: 1,
+              warningCount: 0,
+              fixableErrorCount: 1,
+              fixableWarningCount: 0,
+              messages: [
+                {
+                  ruleId: 'no-debugger',
+                  severity: 2,
+                  message: 'Unexpected debugger statement.',
+                  line: 3,
+                  column: 1,
+                  fix: { range: [10, 18], text: '' },
+                },
+              ],
+            },
+          ],
+          totals: {
+            files: 1,
+            errors: 1,
+            warnings: 0,
+            fixableErrors: 1,
+            fixableWarnings: 0,
+          },
+        },
+      },
+    } satisfies ContextSnapshot;
+    const testContext = {
+      contextId: 'ctx_test',
+      packageRoot: '.',
+      product: 'development',
+      environment: 'test',
+    } as const;
+    const testRun = {
+      ...createRun('run_test', testContext),
+      producer: 'rstest',
+      command: 'test',
+    } satisfies ContextRunManifest;
+    const testSnapshot = {
+      schemaVersion: contextStoreSchemaVersion,
+      snapshotId: 'snap_test',
+      runId: testRun.runId,
+      contextId: testContext.contextId,
+      sequence: 0,
+      observedAt: '2026-08-12T07:00:00.000Z',
+      status: 'pass',
+      completeness: { test: 'complete' },
+      facets: {
+        test: {
+          producer: 'rstest',
+          files: [
+            {
+              project: 'unit',
+              path: 'src/index.test.ts',
+              status: 'pass',
+              tests: [
+                {
+                  project: 'unit',
+                  path: 'src/index.test.ts',
+                  name: 'works',
+                  status: 'pass',
+                },
+              ],
+            },
+          ],
+          stats: {
+            tests: { total: 1, passed: 1, failed: 0, skipped: 0, todo: 0 },
+            files: { total: 1, failed: 0 },
+          },
+          durationMs: 5,
+          unhandledErrors: [],
+        },
+      },
+    } satisfies ContextSnapshot;
+
+    for (const [run, snapshot] of [
+      [lintRun, lintSnapshot],
+      [testRun, testSnapshot],
+    ] as const) {
+      expect(await writeContextRunManifest(workspaceRoot, run)).toMatchObject({
+        written: true,
+      });
+      expect(await writeContextSnapshot(workspaceRoot, snapshot)).toMatchObject({ written: true });
+    }
+
+    await withMcpClient(workspaceRoot, async (client) => {
+      const snapshots = await client.callTool({
+        name: 'snapshot_list',
+        arguments: { limit: 1 },
+      });
+      expect(snapshots.isError).not.toBe(true);
+      expect(snapshots.structuredContent).toMatchObject({
+        total: 2,
+        items: [{ snapshotId: 'snap_test', producer: 'rstest' }],
+        nextCursor: expect.any(String),
+      });
+      const nextSnapshots = await client.callTool({
+        name: 'snapshot_list',
+        arguments: {
+          limit: 1,
+          cursor: (snapshots.structuredContent as { nextCursor: string }).nextCursor,
+        },
+      });
+      expect(nextSnapshots.structuredContent).toMatchObject({
+        total: 2,
+        items: [{ snapshotId: 'snap_lint', producer: 'rslint' }],
+      });
+      expect(nextSnapshots.structuredContent).not.toHaveProperty('nextCursor');
+
+      const diagnostics = await client.callTool({
+        name: 'diagnostics_list',
+        arguments: { snapshotId: lintSnapshot.snapshotId, severity: 'error' },
+      });
+      expect(diagnostics.isError).not.toBe(true);
+      expect(diagnostics.structuredContent).toMatchObject({
+        snapshotId: lintSnapshot.snapshotId,
+        total: 1,
+        items: [{ producer: 'rslint', path: 'src/index.ts', ruleId: 'no-debugger' }],
+      });
+
+      const results = await client.callTool({
+        name: 'test_results',
+        arguments: { snapshotId: testSnapshot.snapshotId, status: 'pass' },
+      });
+      expect(results.isError).not.toBe(true);
+      expect(results.structuredContent).toMatchObject({
+        snapshotId: testSnapshot.snapshotId,
+        total: 1,
+        items: [{ project: 'unit', path: 'src/index.test.ts', name: 'works' }],
+      });
+
+      const incompatible = await client.callTool({
+        name: 'snapshot_diff',
+        arguments: {
+          leftSnapshotId: lintSnapshot.snapshotId,
+          rightSnapshotId: testSnapshot.snapshotId,
+          kind: 'diagnostics',
+        },
+      });
+      expect(incompatible.isError).not.toBe(true);
+      expect(incompatible.structuredContent).toEqual({
+        compatible: false,
+        reasons: ['context', 'facet', 'producer'],
+      });
+
+      const preview = await client.callTool({
+        name: 'lint_fix_preview',
+        arguments: {
+          snapshotId: lintSnapshot.snapshotId,
+          path: 'src/index.ts',
+        },
+      });
+      expect(preview.isError).not.toBe(true);
+      expect(preview.structuredContent).toEqual({
+        available: false,
+        reason: 'not-captured',
+        snapshotId: lintSnapshot.snapshotId,
+        path: 'src/index.ts',
+      });
+    });
+  });
+});
+
+test('runs explicit captures through injected producers and returns ordinary MCP errors', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const lintResult = {
+      runId: 'run_lint',
+      contextId: 'ctx_lint',
+      snapshotId: 'snap_lint',
+      status: 'pass',
+      freshness: { state: 'fresh', changedPaths: [] },
+      summary: {
+        files: 1,
+        errors: 0,
+        warnings: 0,
+        fixableErrors: 0,
+        fixableWarnings: 0,
+      },
+    } satisfies LintCaptureResult;
+    const captureRequests: unknown[] = [];
+
+    await withMcpClient(
+      workspaceRoot,
+      async (client) => {
+        const lint = await client.callTool({
+          name: 'lint_snapshot',
+          arguments: { mode: 'files' },
+        });
+        expect(lint.structuredContent).toEqual(lintResult);
+        expect(captureRequests).toEqual([
+          { mode: 'files', patterns: ['.'], includeFixPreview: false },
+        ]);
+
+        const testResult = await client.callTool({
+          name: 'test_snapshot',
+          arguments: { files: ['src/index.test.ts'] },
+        });
+        expect(testResult.isError).toBe(true);
+        expect(testResult.content).toEqual([{ type: 'text', text: 'Test capture failed.' }]);
+      },
+      {
+        captureLintSnapshot: async (_root, request) => {
+          captureRequests.push(request);
+          return lintResult;
+        },
+        captureTestSnapshot: async () => {
+          throw new Error('Test capture failed.');
+        },
+      },
+    );
+  });
+});
+
+test('rejects unexpected fields at every Phase 3/4 MCP input boundary', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await withMcpClient(workspaceRoot, async (client) => {
+      for (const [name, arguments_] of [
+        ['snapshot_list', { unexpected: true }],
+        ['diagnostics_list', { unexpected: true }],
+        ['test_results', { unexpected: true }],
+        [
+          'snapshot_diff',
+          {
+            leftSnapshotId: 'left',
+            rightSnapshotId: 'right',
+            unexpected: true,
+          },
+        ],
+        ['lint_fix_preview', { snapshotId: 'snap', path: 'src/a.ts', unexpected: true }],
+        ['lint_snapshot', { mode: 'files', unexpected: true }],
+        ['test_snapshot', { unexpected: true }],
+      ] as const) {
+        const result = await client.callTool({ name, arguments: arguments_ });
+        expect(result.isError).toBe(true);
+      }
     });
   });
 });

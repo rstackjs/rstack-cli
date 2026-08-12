@@ -9,6 +9,8 @@ const skillNames = [
   'explain-dead-code',
   'assess-change-impact',
   'analyze-build',
+  'debug-dev-cycle',
+  'review-context-change',
 ] as const;
 
 type PluginManifest = {
@@ -100,7 +102,7 @@ test('registers each bundle in its repository marketplace', async () => {
   );
 });
 
-test('ships the same four concise skills for Codex and Claude', async () => {
+test('ships the same six concise skills for Codex and Claude', async () => {
   for (const skillName of skillNames) {
     const codexSkillPath = path.join(
       repositoryRoot,
