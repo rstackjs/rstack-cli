@@ -6,7 +6,7 @@ import { installHooks } from './install.ts';
 const renderSetupHelp = (): string =>
   renderHelp({
     usage: 'rs setup [options]',
-    description: 'Install Git hooks in the current repository.',
+    description: 'Install Git hooks in the current repository',
     sections: [
       {
         title: 'Options',

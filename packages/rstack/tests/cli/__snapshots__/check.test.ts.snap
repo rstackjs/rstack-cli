@@ -9,7 +9,8 @@ Usage:
 Run static checks, including lint and format
 
 Options:
-  --type-check  Enable TypeScript type checking
-  -h, --help    Display this help message
+  --type-check         Enable TypeScript type checking
+  -c, --config <path>  Specify Rstack config file path
+  -h, --help           Display this help message
 "
 `;

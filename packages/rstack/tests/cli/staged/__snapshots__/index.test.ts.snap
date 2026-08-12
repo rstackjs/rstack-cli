@@ -13,10 +13,11 @@ Options:
   -p, --concurrent <number|boolean>  The number of tasks to run concurrently, or false for serial
   --cwd <path>                       Working directory to run all tasks in
   -d, --debug                        Print additional debug information
-  --no-stash                         Disable the backup stash. Implies "--no-revert".
+  --no-stash                         Disable backup stash and automatic revert
   -q, --quiet                        Disable lint-staged's own console output
   -r, --relative                     Pass relative filepaths to tasks
   -v, --verbose                      Show task output even when tasks succeed; by default only failed output is shown
+  -c, --config <path>                Specify Rstack config file path
   -h, --help                         Display this help message
 "
 `;

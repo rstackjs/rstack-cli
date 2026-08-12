@@ -59,8 +59,7 @@ Usage:
 Eject a theme component
 
 Options:
-  -c, --config <path>  Specify Rstack config file path
-  -h, --help           Display this help message
+  -h, --help  Display this help message
 "
 `;
 
@@ -340,7 +339,7 @@ exports[`displays top-level help 1`] = `
 "Rstack v<version>
 
 Usage:
-  $ rs [command] [...options]
+  $ rs [command] [options]
 
 Commands:
   dev          Run the app dev server

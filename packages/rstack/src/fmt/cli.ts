@@ -46,6 +46,7 @@ const renderFmtHelp = (): string =>
           ['--with-node-modules', 'Process files inside node_modules'],
           ['--parallel-workers <count>', 'Number of parallel workers'],
           ['--stdin-filepath <path>', 'Format stdin as if it were saved at <path>'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
           ['-h, --help', 'Display this help message'],
         ],
       },

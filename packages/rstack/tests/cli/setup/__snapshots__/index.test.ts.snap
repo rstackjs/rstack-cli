@@ -6,7 +6,7 @@ exports[`displays setup help 1`] = `
 Usage:
   $ rs setup [options]
 
-Install Git hooks in the current repository.
+Install Git hooks in the current repository
 
 Options:
   --hooks-dir <path>  Specify hooks directory relative to the Git repository root
