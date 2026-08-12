@@ -155,6 +155,8 @@ test(
       `import { define } from 'rstack';
 
 console.log('hello from config');
+// Bypasses a patched \`console.log\`, so it needs its own reroute.
+console.dirxml('xml from config');
 
 define.fmt({ singleQuote: true });
 `,

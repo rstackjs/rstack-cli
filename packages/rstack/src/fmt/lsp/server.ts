@@ -69,6 +69,10 @@ const redirectConsoleToConnection = (connection: Connection): void => {
   }
   console.dir = (item: unknown, options?: object): void =>
     connection.console.log(inspect(item, options));
+  // `dir` and `dirxml` are the only methods that write to a standard stream
+  // without going through the five rerouted above; in Node, `dirxml` is `log`.
+  console.dirxml = (...args: unknown[]): void =>
+    connection.console.log(serializeConsoleArguments(args));
   console.trace = (...args: unknown[]): void => {
     const stack = new Error().stack?.replace(/(.+\n){2}/, '') ?? '';
     const message = args.length === 0 ? 'Trace' : `Trace: ${serializeConsoleArguments(args)}`;
