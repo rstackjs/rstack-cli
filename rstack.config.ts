@@ -12,7 +12,7 @@ define.lint(async () => {
       languageOptions: {
         globals: {
           ...globals.browser,
-          ...globals.node,
+          ...globals.nodeBuiltin,
           DEFINE_APP_TEST_VALUE: 'readonly',
           DEFINE_LIB_TEST_VALUE: 'readonly',
           DEFINE_VALUE: 'readonly',
