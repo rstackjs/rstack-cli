@@ -1,6 +1,5 @@
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 import { expect, test } from 'rstack/test';
 import { normalizeFmtConfig } from '../../src/fmt/config.ts';
 import { discoverFmtFiles } from '../../src/fmt/discovery.ts';
@@ -125,59 +124,6 @@ test('defers parser inference to workers and preserves an explicit parser', asyn
     expect(configuredFiles[0]).toEqual({
       path: path.join(rootPath, 'source.custom'),
       options: { parser: 'babel' },
-    });
-  });
-});
-
-test('resolves plugins after applying matching overrides', async () => {
-  await withTempProject(async (rootPath) => {
-    const pluginEntry = writeProjectFile(
-      rootPath,
-      'node_modules/prettier-plugin-fixture/index.mjs',
-      `export default {
-  languages: [
-    { name: 'Fixture JSON', parsers: ['json'], extensions: ['.fixture'] },
-    { name: 'Fixture TypeScript', parsers: ['babel'], extensions: ['.ts'] },
-  ],
-};
-`,
-    );
-    writeProjectFile(
-      rootPath,
-      'node_modules/prettier-plugin-fixture/package.json',
-      JSON.stringify({ name: 'prettier-plugin-fixture', exports: './index.mjs' }),
-    );
-    writeProjectFile(rootPath, 'example.fixture');
-    writeProjectFile(rootPath, 'example.ts');
-    const config = {
-      overrides: [
-        {
-          files: '*.fixture',
-          options: { plugins: ['prettier-plugin-fixture'] },
-        },
-        {
-          files: '*.ts',
-          options: { plugins: ['prettier-plugin-fixture'] },
-        },
-        {
-          files: '*.md',
-          options: { plugins: ['missing-plugin'] },
-        },
-      ],
-    };
-
-    const files = await discover(rootPath, ['example.fixture', 'example.ts'], config);
-
-    expect(files).toHaveLength(2);
-    expect(files[0]).toMatchObject({
-      options: {
-        plugins: [pathToFileURL(pluginEntry).href],
-      },
-    });
-    expect(files[1]).toMatchObject({
-      options: {
-        plugins: [pathToFileURL(pluginEntry).href],
-      },
     });
   });
 });

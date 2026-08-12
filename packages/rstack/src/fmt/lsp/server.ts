@@ -9,15 +9,9 @@ import {
   type InitializeParams,
   type TextEdit,
 } from 'vscode-languageserver/node';
-import { createOptionsResolver, type FmtOptionsResolver } from '../config.ts';
-import {
-  createFileRequest,
-  createLazyPluginResolver,
-  resolveFileRequestPlugins,
-} from '../discovery.ts';
+import { createFmtFileResolver, type FmtFileResolver } from '../fileResolver.ts';
 import { formatFmtSource } from '../format.ts';
 import { createIgnoreMatcher, type IgnorePredicate } from '../ignore.ts';
-import type { FmtPluginResolver } from '../plugins.ts';
 import type { ResolvedFmtConfig } from '../types.ts';
 import { computeMinimalTextEdit } from './minimalEdit.ts';
 
@@ -35,9 +29,7 @@ type FmtLspSessionOptions = RunFmtLspOptions & { root: string };
 
 interface FmtLspSession {
   isIgnored: IgnorePredicate;
-  resolveOptions: FmtOptionsResolver;
-  /** Resolves plugin specifiers through the file system; cached per session. */
-  getPluginResolver: () => Promise<FmtPluginResolver>;
+  resolveFile: FmtFileResolver;
 }
 
 const toFilePath = (uri: string): string | undefined => {
@@ -122,8 +114,7 @@ const createFmtLspSession = async ({
 
   return {
     isIgnored,
-    resolveOptions: createOptionsResolver(config),
-    getPluginResolver: createLazyPluginResolver(config.rootPath),
+    resolveFile: createFmtFileResolver(config),
   };
 };
 
@@ -137,10 +128,7 @@ const formatDocumentSource = async (
     return undefined;
   }
 
-  const file = await resolveFileRequestPlugins(
-    createFileRequest(filePath, session.resolveOptions),
-    session.getPluginResolver,
-  );
+  const file = await session.resolveFile(filePath);
   const result = await formatFmtSource(file, () => source);
 
   return result.status === 'formatted' ? result.formatted : undefined;
