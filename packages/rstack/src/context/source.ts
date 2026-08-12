@@ -26,11 +26,13 @@ type ExplicitRunOptions = {
   createRunId?: () => string;
 };
 
-const toWorkspacePath = (workspaceRoot: string, filePath: string): string =>
-  path
+const toWorkspacePath = (workspaceRoot: string, filePath: string): string => {
+  const relativePath = path
     .relative(path.resolve(workspaceRoot), path.resolve(workspaceRoot, filePath))
     .split(path.sep)
     .join('/');
+  return relativePath || '.';
+};
 
 const digest = (content: string | Buffer): string =>
   createHash('sha256').update(content).digest('hex');

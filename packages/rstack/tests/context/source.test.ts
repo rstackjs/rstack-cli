@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { contextStoreSchemaVersion, type ContextSnapshot } from '../../src/context/model.ts';
+import { validateRunManifest } from '../../src/context/records.ts';
 import {
   assessSnapshotFreshness,
   createExplicitContextDescriptor,
@@ -152,4 +153,24 @@ test('creates stable explicit contexts and unique testable runs', () => {
     startedAt: '2026-08-12T08:00:00.000Z',
     contexts: [context],
   });
+});
+
+test('represents the workspace root as a valid package path', () => {
+  const workspaceRoot = path.join(path.sep, 'workspace');
+  const context = createExplicitContextDescriptor({
+    producer: 'rstest',
+    workspaceRoot,
+    packageRoot: workspaceRoot,
+    configPath: path.join(workspaceRoot, 'rstest.config.ts'),
+  });
+  const run = createExplicitRun({
+    producer: 'rstest',
+    context,
+    command: 'test',
+    createRunId: () => 'run_root',
+    now: () => new Date('2026-08-12T08:00:00.000Z'),
+  });
+
+  expect(context.packageRoot).toBe('.');
+  expect(validateRunManifest(run)).toEqual(run);
 });
