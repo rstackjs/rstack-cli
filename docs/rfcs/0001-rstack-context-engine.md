@@ -2,7 +2,7 @@
 
 | Field   | Value                                                                              |
 | ------- | ---------------------------------------------------------------------------------- |
-| Status  | Proposed                                                                           |
+| Status  | Proposed; Phase 1 implemented downstream                                           |
 | Created | 2026-08-12                                                                         |
 | Target  | `rstack`, Rspack 2, Rsbuild 2, Rslib 1, Rstest 0.11, Rslint 0.7, Rsdoctor 2        |
 | Scope   | Headless build, lint, test, reachability, and package-contract evidence for agents |
@@ -64,8 +64,6 @@ source files into the model context.
   diagnostics, and test selection.
 - Fail open: a collector or context-engine failure must not fail the user's build, dev server, lint,
   or test command.
-- Establish explicit safety boundaries for repository trust, source access, command execution, and
-  mutation.
 
 ## Non-goals
 
@@ -177,7 +175,7 @@ flowchart LR
 | Producer               | Emit bounded, schema-versioned facts and completeness metadata into its own immutable run directory.       | Make cross-tool dead-code decisions or mutate another producer's record.  |
 | Workspace store        | Provide a disposable, task-runner-independent rendezvous of atomically published records for one checkout. | Execute project code, schedule tasks, or require a resident process.      |
 | Status reader/analyzer | Validate records and compute roots, reachability, contracts, findings, explanations, and diffs.            | Hide malformed, unsupported, unknown, or partial evidence.                |
-| MCP broker             | Expose one stdio server, enforce roots/capabilities, paginate output, and link resources.                  | Mount on a development server or expose a second Rsdoctor MCP endpoint.   |
+| MCP broker             | Expose one stdio server, answer typed queries, paginate output, and link resources.                        | Mount on a development server or expose a second Rsdoctor MCP endpoint.   |
 | Skills                 | Choose the correct queries, combine evidence, explain limits, and guide safe next actions.                 | Parse raw logs or represent candidates as proven dead.                    |
 
 ### Upstream and downstream ownership
@@ -194,7 +192,7 @@ flowchart TB
     Inject["Safe adapter<br/>injection"]
     Identity["Stable identity<br/>+ generations"]
     Merge["Cross-producer<br/>evidence merge"]
-    Policy["Product roots + contracts<br/>confidence + privacy"]
+    Policy["Product roots + contracts<br/>confidence + evidence bounds"]
     MCP["One MCP<br/>+ plugin skills"]
   end
 
@@ -310,13 +308,12 @@ offers first-class MCP watch control.
 ### Workspace and Git
 
 Every snapshot records the source revision, dirty-diff digest, config file and dependency digest,
-selected products, platform, command, and producer versions. Absolute paths, raw environment
-variables, and arbitrary config objects are not persisted.
+selected products, platform, command, and producer versions.
 
 ## Configuration and activation
 
-Passive collection is off until the repository is trusted. This RFC adds an optional `context`
-section to Rstack configuration for product intent and limits:
+Passive collection is opt-in. This RFC adds an optional `context` section to Rstack configuration
+for product intent and limits:
 
 ```ts
 export default define({
@@ -341,7 +338,7 @@ The normative behavior is:
   product from `define.app` or `define.lib`;
 - deep graph/source capture requires an explicit setting or command;
 - tests attach only to a user-started Rstest session;
-- CI does not persist or listen unless explicitly configured to emit a redacted artifact;
+- CI does not persist or listen unless explicitly configured to emit a context artifact;
 - `RSTACK_CONTEXT=0` is an emergency opt-out;
 - instrumentation changes the resolved in-memory config only and never writes the user's config file.
 
@@ -446,10 +443,9 @@ Normalized edge kinds include:
 
 - Repository IDs derive from canonical repository identity when available and remain stable across
   related working trees.
-- Workspace IDs are checkout/worktree-scoped. Their opaque value may incorporate a canonical root or
-  Git worktree identity, but absolute paths are never exposed through the MCP contract.
-- Context IDs derive from normalized config, target, mode, runtime, conditions, and redacted
-  environment digest.
+- Workspace IDs are checkout/worktree-scoped and may incorporate repository or Git worktree
+  identity.
+- Context IDs derive from normalized config, target, mode, runtime, and conditions.
 - Semantic module, symbol, export, package, test, chunk, and route IDs are deterministic within a
   workspace and do not include snapshot IDs.
 - Snapshot and run IDs are immutable time-sortable IDs.
@@ -695,9 +691,8 @@ broker keeps only a disposable in-memory query cache. A resident coordinator may
 measured multi-client cache duplication or event throughput proves it necessary; it is not part of
 the version 1 contract.
 
-Loopback Streamable HTTP may be added later for explicit multi-client use. It is not the default and
-must require a random bearer capability, strict origin validation, session limits, and loopback-only
-binding.
+Other transports may be reconsidered later if explicit multi-client use justifies them. They are not
+part of the version 1 contract.
 
 ### Storage
 
@@ -734,20 +729,24 @@ through an unbounded `resources/list`.
 
 ### Read-only tools
 
-| Tool                 | Purpose                                                                                        |
-| -------------------- | ---------------------------------------------------------------------------------------------- |
-| `project_status`     | Return active contexts, producer health, current generations, freshness, and evidence gaps.    |
-| `findings_list`      | Filter and page findings by code, product, package, path, confidence, freshness, and severity. |
-| `finding_explain`    | Return the shortest causal/evidence paths, bounds, counter-evidence, and safe next actions.    |
-| `entity_get`         | Get one normalized entity and selected producer facets.                                        |
-| `relationship_trace` | Traverse bounded dependencies, dependents, routes, tests, chunks, or export-use paths.         |
-| `snapshot_list`      | List recent compatible snapshots.                                                              |
-| `snapshot_diff`      | Compare findings, sizes, diagnostics, tests, and graph edges between compatible snapshots.     |
-| `diagnostics_list`   | Return deduplicated build, lint, type, test, and Rsdoctor diagnostics.                         |
-| `tests_related`      | Explain static related-test selection for files or modules.                                    |
-| `coverage_scope`     | Return bounded execution evidence for files, symbols, or tests.                                |
-| `rsdoctor_analyze`   | Invoke the supported in-process Agent CLI catalog against an explicit artifact.                |
-| `report_link`        | Return an explicit command/resource link for opening an existing Rsdoctor report.              |
+Phase 1 exposes exactly three tools:
+
+| Tool               | Purpose                                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------------------- |
+| `project_status`   | Return completed checkout-local build-context observations.                                    |
+| `rsdoctor_analyze` | Invoke a supported in-process Agent CLI tool against an explicit Rsdoctor data file.           |
+| `report_link`      | Return an ordinary `file:` resource link for an existing optional Rsdoctor report or manifest. |
+
+`rsdoctor_analyze` accepts an explicit `dataFile`, one of the ten pinned Agent CLI tool names, and
+optional input matching that tool's schema. The data file must contain JSON with an object-valued
+`data` field. Rstack returns the Agent CLI JSON result directly.
+
+`report_link` checks the conventional sibling `report-rsdoctor.html`, one unambiguous sibling HTML
+file, and the checkout's `.rsdoctor/manifest.json`, in that order. It starts no command or report
+server and creates no report. Missing GUI output returns an `rsdoctor_analyze` next action instead.
+
+Later phases may add findings, relationship, snapshot, diagnostics, and test/coverage queries after
+their normalized evidence is implemented.
 
 Read-only tools use `readOnlyHint: true`, `destructiveHint: false`, and `openWorldHint: false`.
 
@@ -927,40 +926,6 @@ Every investigative skill returns:
 - snapshot/run provenance;
 - resource links for deeper inspection.
 
-## Security and privacy
-
-### Trust boundary
-
-Rstack configuration, plugins, tests, reports, source comments, diagnostics, and paths are untrusted
-project input. They may contain prompt injection or secrets. The server treats them as data, never as
-instructions.
-
-### Capability tiers
-
-| Tier | Access                                                            | Default                         |
-| ---- | ----------------------------------------------------------------- | ------------------------------- |
-| 0    | Tool versions, contexts, run status, counts, freshness            | Enabled after repository trust. |
-| 1    | Sanitized diagnostics, package/module names, relative paths       | Enabled after repository trust. |
-| 2    | Source ranges, graph paths, maps, logs, coverage, report contents | Explicit workspace capability.  |
-| 3    | Build, test, lint, refresh, or mutation                           | Explicit per-action approval.   |
-
-### Required controls
-
-- Host-facing transport is stdio; producers and brokers exchange evidence only through the
-  checkout-local project cache in version 1.
-- Never expose MCP or report queries on the dev-server host/port.
-- Resolve and realpath every requested path; reject traversal, symlink escape, and paths outside MCP
-  roots.
-- Persist allowlisted schema fields only. Never serialize raw config objects, functions, plugin
-  instances, environment variables, headers, cookies, URLs, loader options, or arbitrary argv.
-- Relativize workspace paths and redact secrets at collection, persistence, logging, and response
-  boundaries.
-- Cap files, bytes, entities, edges, logs, source maps, coverage, diagnostics, time, and concurrency.
-- Bind every fix preview to workspace, path, source digest, and schema version. Reject stale or
-  changed inputs.
-- Do not upload artifacts or enable telemetry by default.
-- Do not start commands, watchers, indexing, or a daemon merely because a plugin was installed.
-
 ## Performance budgets
 
 Passive metadata collection targets:
@@ -1049,7 +1014,7 @@ cross-tool product, lint, test, contract, freshness, or permission model.
 
 ### Ship separate MCP servers for each tool
 
-Rejected. It duplicates lifecycle, trust, roots, transport, and discovery; gives the model conflicting
+Rejected. It duplicates lifecycle, roots, transport, and discovery; gives the model conflicting
 schemas; and prevents consistent cross-producer querying.
 
 ### Require a workspace coordinator daemon
@@ -1062,8 +1027,8 @@ process. A future daemon must consume the same store contract rather than replac
 
 ### Mount MCP on the Rsbuild dev server
 
-Rejected. It couples agent access to application networking, exposes dangerous host/port/CORS
-surfaces, and makes context disappear when the dev server stops.
+Rejected. It couples agent access to the application server lifecycle and makes context disappear
+when the dev server stops.
 
 ### Parse command output only
 
@@ -1113,17 +1078,21 @@ flowchart TB
 
 ### Phase 1A: passive build context
 
-- Add trusted, metadata-only Rsbuild/Rspack and Rslib observers.
-- Implement `rs mcp` with status-only, read-only MCP access to completed observations.
+Implemented downstream:
+
+- Add metadata-only Rsbuild/Rspack and Rslib observers.
+- Implement `rs mcp` with `project_status` access to completed observations.
 
 ### Phase 1B: Rsdoctor ingestion and richer build diagnostics
 
-- Ingest static Rsdoctor artifacts through the in-process Agent CLI.
-- Add richer build diagnostics.
+Implemented downstream: ingest static Rsdoctor artifacts through the in-process Agent CLI and expose
+its direct JSON results through `rsdoctor_analyze`.
 
 ### Phase 1C: report links
 
-- Add report links.
+Implemented downstream: add optional file links through `report_link` without starting a report
+server or command.
+
 - Defer destructive retention until real artifact sizes and access patterns are measured and a
   portable recovery contract exists.
 
@@ -1142,7 +1111,7 @@ flowchart TB
 
 ### Phase 4: change and mutation workflows
 
-- Add compatible snapshot diffs, build regression skill, redacted CI artifacts, and budgets.
+- Add compatible snapshot diffs, build regression skill, CI artifacts, and budgets.
 - Add hash-bound fix previews and explicit apply/verify flow.
 
 ### Phase 5: optional presentation
@@ -1159,7 +1128,7 @@ flowchart TB
   imports, literal and nonliteral CommonJS, barrels, cycles, side effects, concatenation, generated
   code, and multiple runtimes.
 - Byte-stable normalized snapshots across repeated equivalent builds.
-- Property tests for canonicalization, traversal bounds, public roots, and finding invariants.
+- Property tests for canonicalization, public roots, and finding invariants.
 - Compatibility fixtures for each supported producer patch and schema version.
 
 ### Product matrix
@@ -1168,8 +1137,7 @@ flowchart TB
 - Rslib ESM/CJS, bundleless, declarations, externals, published exports, and internal libraries.
 - Rstest Node, DOM, browser, projects, retries, watch cycles, snapshots, and Istanbul/V8 coverage.
 - Rslint object/function config, plugins, lint text/files, suggestions, fixes, and type checking.
-- Rsdoctor brief JSON, normal manifests, multi-compiler series, missing sections, and malformed/large
-  artifacts.
+- Rsdoctor brief JSON, normal manifests, multi-compiler series, missing sections, and invalid JSON.
 
 ### Dead-code safety invariants
 
@@ -1191,14 +1159,6 @@ No high-confidence dead finding may include:
 - Concurrent readers and writers, immutable-name collisions, ignored temporary files, incomplete run
   directories, crash recovery, schema skew, and orphan cleanup.
 - Watch tests wait for generation changes rather than sleeping.
-
-### Security
-
-- Malicious config/plugin/report text and prompt injection.
-- Secret canaries, path traversal, symlink escape, malformed/huge artifacts, graph bombs, and log
-  flooding.
-- Denied capabilities, fork/CI behavior, subprocess environment scrubbing, and network binding.
-- Stale fix token, changed source, deleted path, and outside-root mutation attempts.
 
 ### Performance
 
@@ -1222,8 +1182,8 @@ The first stable release is complete when:
 6. No GUI, network listener, build, test, or indexing job starts merely because the plugin is
    installed or an MCP client connects.
 7. Collector crashes and unsupported producer versions do not change the underlying command result.
-8. Security, false-positive, watch, protocol, compatibility, and performance test suites meet the
-   budgets in this RFC.
+8. False-positive, watch, protocol, compatibility, and performance test suites meet the budgets in
+   this RFC.
 
 ## References
 

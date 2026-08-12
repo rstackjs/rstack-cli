@@ -1,6 +1,6 @@
 # MCP \{#mcp}
 
-`rs mcp` 将当前检出的 Rstack 构建上下文观测结果提供给 MCP 客户端。Phase 1A 仅提供状态：它不会启动构建、修改配置或写入项目文件。
+`rs mcp` 将当前检出的 Rstack 构建上下文观测结果和可选的 Rsdoctor 产物提供给 MCP 客户端。Phase 1 为只读模式：它不会启动构建、修改配置或写入项目文件。
 
 ## 用法 \{#usage}
 
@@ -10,7 +10,7 @@
 rs mcp
 ```
 
-服务器通过标准输入和输出通信，因此 stdout 仅用于 MCP 协议消息。它会根据命令的启动路径解析检出目录，并提供 `project_status` 工具。
+服务器通过标准输入和输出通信，因此 stdout 仅用于 MCP 协议消息。它会根据命令的启动路径解析检出目录，并且 Phase 1 仅公开三个工具：`project_status`、`rsdoctor_analyze` 和 `report_link`。
 
 ## 捕获构建上下文 \{#capture-build-context}
 
@@ -37,8 +37,27 @@ define.context({
 
 它适用于仅使用 Rslib 的仓库、仅使用 Rsbuild 的仓库，以及同时使用两者的仓库。不需要 Turbo、Nx、守护进程、任务图或生产者到 MCP 的连接。
 
+## Phase 1 工具 \{#phase-1-tools}
+
+`project_status` 返回检出目录本地存储中已完成的构建上下文观测结果。
+
+`rsdoctor_analyze` 接受明确的 `dataFile`、`toolName` 和可选的工具输入。数据文件必须包含 JSON，且其中的 `data` 字段必须是对象；输入必须符合所选 Rsdoctor 工具的 schema。Rstack 会直接返回 Rsdoctor Agent CLI 的 JSON 结果。支持的工具名称如下：
+
+- `build_summary`
+- `bundle_optimize`
+- `chunks_list`
+- `errors_list`
+- `packages_direct_dependencies`
+- `packages_duplicates`
+- `packages_similar`
+- `tree_shaking_retained_modules`
+- `tree_shaking_side_effects`
+- `tree_shaking_summary`
+
+`report_link` 接受明确的 `dataFile`；当它找到同目录下的常规 `report-rsdoctor.html`、唯一且无歧义的同目录 HTML 文件，或检出目录中的 `.rsdoctor/manifest.json` 时，会返回 `file:` URI。GUI 链接是可选的。此工具不会启动报告服务器、运行命令或创建报告。
+
 ## 限制 \{#limitations}
 
-Phase 1A 仅公开 `project_status`，并返回可能不完整或已过时的已完成观测结果。它不包含 Rsdoctor 产物、报告链接、保留控制、诊断查询或变更工具。
+Phase 1 返回可能不完整或已过时的已完成观测结果。破坏性保留机制会延后，直到获得真实的产物大小和访问模式数据，并具备可移植的恢复契约。诊断查询、变更工具和自动报告生成不包含在内。
 
 构建上下文是已观测构建的证据，不能证明未观测到的代码已经死亡或未被使用。

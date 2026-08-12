@@ -1,6 +1,15 @@
-import { readdir } from 'node:fs/promises';
+import { readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { resolveRsdoctorArtifact } from './rsdoctor.ts';
+import { pathToFileURL } from 'node:url';
+import { resolveRsdoctorDataFile } from './rsdoctor.ts';
+
+type ReportFileResult =
+  | { kind: 'missing' }
+  | {
+      kind: 'file';
+      path: string;
+      uri: string;
+    };
 
 type RsdoctorReport = {
   kind: 'html' | 'manifest';
@@ -33,6 +42,34 @@ const createRsdoctorAnalyzeNextAction = (dataFile: string): RsdoctorAnalyzeNextA
   tool: 'rsdoctor_analyze',
 });
 
+const resolveReportFile = async (
+  workspaceRoot: string,
+  file: string,
+): Promise<ReportFileResult> => {
+  const resolvedFile = path.resolve(workspaceRoot, file);
+  try {
+    const fileStats = await stat(resolvedFile);
+    if (!fileStats.isFile()) {
+      return { kind: 'missing' };
+    }
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      (error.code === 'ENOENT' || error.code === 'ENOTDIR')
+    ) {
+      return { kind: 'missing' };
+    }
+    throw error;
+  }
+
+  return {
+    kind: 'file',
+    path: path.relative(workspaceRoot, resolvedFile).split(path.sep).join('/'),
+    uri: pathToFileURL(resolvedFile).toString(),
+  };
+};
+
 const getSiblingHtmlReports = async (directory: string): Promise<string[]> => {
   try {
     return (await readdir(directory, { withFileTypes: true }))
@@ -48,67 +85,67 @@ const resolveRsdoctorReport = async (
   workspaceRoot: string,
   dataFile: string,
 ): Promise<RsdoctorReportResult> => {
-  const artifact = await resolveRsdoctorArtifact(workspaceRoot, dataFile);
-  const dataDirectory = path.posix.dirname(artifact.dataFile);
+  const resolvedDataFile = await resolveRsdoctorDataFile(workspaceRoot, dataFile);
+  const dataDirectory = path.posix.dirname(resolvedDataFile);
   const conventionalReport = path.posix.join(dataDirectory, 'report-rsdoctor.html');
 
   const createReport = async (
     file: string,
     kind: RsdoctorReport['kind'],
-  ): Promise<RsdoctorReport> => {
-    const containedFile = await artifact.resolveContainedReportFile(file);
+  ): Promise<RsdoctorReport | undefined> => {
+    const result = await resolveReportFile(workspaceRoot, file);
+    if (result.kind === 'missing') {
+      return undefined;
+    }
     return {
       kind,
-      path: containedFile.path,
-      uri: containedFile.uri,
+      path: result.path,
+      uri: result.uri,
     };
   };
 
-  try {
+  const conventional = await createReport(conventionalReport, 'html');
+  if (conventional !== undefined) {
     return {
-      dataFile: artifact.dataFile,
-      report: await createReport(conventionalReport, 'html'),
+      dataFile: resolvedDataFile,
+      report: conventional,
     };
-  } catch (error) {
-    if (!(error instanceof Error) || !error.message.includes('could not be resolved')) {
-      throw error;
-    }
   }
 
   const htmlReports = await getSiblingHtmlReports(path.resolve(workspaceRoot, dataDirectory));
   if (htmlReports.length === 1) {
-    return {
-      dataFile: artifact.dataFile,
-      report: await createReport(path.posix.join(dataDirectory, htmlReports[0]), 'html'),
-    };
+    const sibling = await createReport(path.posix.join(dataDirectory, htmlReports[0]), 'html');
+    if (sibling !== undefined) {
+      return {
+        dataFile: resolvedDataFile,
+        report: sibling,
+      };
+    }
   }
 
   if (htmlReports.length > 1) {
     return {
-      nextAction: createRsdoctorAnalyzeNextAction(artifact.dataFile),
-      dataFile: artifact.dataFile,
+      nextAction: createRsdoctorAnalyzeNextAction(resolvedDataFile),
+      dataFile: resolvedDataFile,
       reason: 'Multiple sibling HTML reports were found; select one explicitly.',
     };
   }
 
-  try {
+  const manifest = await createReport('.rsdoctor/manifest.json', 'manifest');
+  if (manifest !== undefined) {
     return {
-      dataFile: artifact.dataFile,
-      report: await createReport('.rsdoctor/manifest.json', 'manifest'),
+      dataFile: resolvedDataFile,
+      report: manifest,
     };
-  } catch (error) {
-    if (!(error instanceof Error) || !error.message.includes('could not be resolved')) {
-      throw error;
-    }
   }
 
   return {
-    nextAction: createRsdoctorAnalyzeNextAction(artifact.dataFile),
-    dataFile: artifact.dataFile,
+    nextAction: createRsdoctorAnalyzeNextAction(resolvedDataFile),
+    dataFile: resolvedDataFile,
     reason:
       'No GUI report was found; a GUI report is optional. Use rsdoctor_analyze for static inspection.',
   };
 };
 
-export { resolveRsdoctorReport };
-export type { RsdoctorReport, RsdoctorReportResult };
+export { resolveReportFile, resolveRsdoctorReport };
+export type { ReportFileResult, RsdoctorReport, RsdoctorReportResult };

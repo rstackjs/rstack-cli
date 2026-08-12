@@ -1,6 +1,5 @@
-import { access, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 import type { JsonValue } from './model.ts';
 
 const supportedToolNames = [
@@ -34,11 +33,6 @@ type RsdoctorAnalysisResult = {
   toolName: string;
   dataFile: string;
   result: JsonValue;
-};
-
-type ResolvedRsdoctorArtifact = {
-  dataFile: string;
-  resolveContainedReportFile: (file: string) => Promise<{ path: string; uri: string }>;
 };
 
 type RsdoctorAdapter = {
@@ -193,27 +187,12 @@ const readArtifact = async (workspaceRoot: string, dataFile: string): Promise<st
 const toRelativeWorkspaceFile = (workspaceRoot: string, file: string): string =>
   path.relative(workspaceRoot, file).split(path.sep).join('/');
 
-const resolveRsdoctorArtifact = async (
+const resolveRsdoctorDataFile = async (
   workspaceRoot: string,
   dataFile: string,
-): Promise<ResolvedRsdoctorArtifact> => {
+): Promise<string> => {
   const artifactPath = await readArtifact(workspaceRoot, dataFile);
-
-  return {
-    dataFile: toRelativeWorkspaceFile(workspaceRoot, artifactPath),
-    resolveContainedReportFile: async (file: string): Promise<{ path: string; uri: string }> => {
-      const resolvedFile = path.resolve(workspaceRoot, file);
-      try {
-        await access(resolvedFile);
-      } catch {
-        throw new Error('Rsdoctor file could not be resolved.');
-      }
-      return {
-        path: toRelativeWorkspaceFile(workspaceRoot, resolvedFile),
-        uri: pathToFileURL(resolvedFile).toString(),
-      };
-    },
-  };
+  return toRelativeWorkspaceFile(workspaceRoot, artifactPath);
 };
 
 const analyzeRsdoctorArtifact = async (
@@ -250,10 +229,5 @@ const analyzeRsdoctorArtifact = async (
   };
 };
 
-export { analyzeRsdoctorArtifact, listRsdoctorTools, resolveRsdoctorArtifact };
-export type {
-  ResolvedRsdoctorArtifact,
-  RsdoctorAnalysisRequest,
-  RsdoctorAnalysisResult,
-  RsdoctorToolDescriptor,
-};
+export { analyzeRsdoctorArtifact, listRsdoctorTools, resolveRsdoctorDataFile };
+export type { RsdoctorAnalysisRequest, RsdoctorAnalysisResult, RsdoctorToolDescriptor };

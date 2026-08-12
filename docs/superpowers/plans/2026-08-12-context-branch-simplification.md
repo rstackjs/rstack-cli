@@ -1,4 +1,4 @@
-# Context Branch Simplification Implementation Plan
+# Context branch simplification implementation plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development
 > (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox
@@ -7,24 +7,20 @@
 **Goal:** Reduce the context-engine branch to a simple read-only foundation with an optional
 Rsdoctor adapter, while preserving passive build evidence and the single stdio MCP server.
 
-**Architecture:** Remove the premature destructive retention surface and the branch-specific security
-layer. Move duplicated persisted-record validation into one internal module used by the writer and
-status reader. Lazy-load Rsdoctor, validate functional tool inputs, and return its JSON result without
-redaction or security projection.
+**Architecture:** Remove the premature destructive retention surface. Move duplicated
+persisted-record validation into one internal module used by the writer and status reader. Lazy-load
+Rsdoctor, validate functional tool inputs, and return its JSON result directly.
 
 **Tech Stack:** TypeScript, Node.js 22+, pnpm, Rstest, Rslint, MCP SDK 1.29.0, Zod 4.4.3,
 `@rsdoctor/agent-cli` 0.1.1.
 
-## Global Constraints
+## Global constraints
 
 - Work only on `codex/rstack-mcp-observability`; never rewrite or amend existing commits.
 - Follow strict red-green-refactor TDD for every behavior change.
 - Keep one local stdio MCP server. Do not add a daemon, HTTP listener, dev-server route, report
   server, build invocation, or startup mutation.
 - The Phase 1 MCP surface is read-only: `project_status`, `rsdoctor_analyze`, and `report_link` only.
-- Do not add a security threat model or security-only implementation/tests/docs. Remove prompt/secret
-  redaction, traversal/symlink defenses, adversarial size/graph/log protections, capability/env/network
-  hardening, and stale-token/outside-root security cases introduced on this branch.
 - Keep only ordinary type/shape validation needed for functional errors and stable data contracts.
 - Keep English and Chinese documentation aligned in structure, meaning, examples, and anchors.
 - Prefer deletion and shared validation over new wrappers. Do not preserve an abstraction solely
@@ -93,15 +89,14 @@ Run the focused MCP tests and `pnpm check`; commit as
 - Produces `validateSnapshot(value): ContextSnapshot | undefined`.
 - Produces canonical generation filename validation
   `<sequence padded to 10>-<snapshotId>.json`.
-- Removes the branch-added per-record byte limit and `oversized-record` issue variant.
 - `readLatestSnapshot` sorts canonical generation filenames newest-first and stops after the first
   valid matching snapshot instead of parsing every historical generation.
 
 - [ ] **Step 1: write schema-parity tests**
 
 Cover valid/invalid manifests and snapshots, duplicate manifest context IDs, canonical generation
-names, writer/reader acceptance parity, and ordinary JSON parse failure. Delete oversized-record and
-adversarial filesystem cases. Verify RED against the current duplicated validators.
+names, writer/reader acceptance parity, and ordinary JSON parse failure. Verify RED against the
+current duplicated validators.
 
 - [ ] **Step 2: implement the shared record module**
 
@@ -150,8 +145,8 @@ Provide more than 100 valid and invalid assets/chunks and more than 20 chunk fil
 retained rows and dropped counts, and assert the `toJson` options omit `timings`.
 
 Add ordinary fixtures proving a checkout nested under an unrelated ancestor workspace resolves to
-the checkout root, and proving a symlinked loaded config path produces a canonical workspace-relative
-descriptor instead of disabling capture.
+the checkout root and an existing loaded config path produces a normalized workspace-relative
+descriptor.
 
 - [ ] **Step 2: verify RED**
 
@@ -171,7 +166,7 @@ Run build/injection tests and `pnpm check`; commit as
 
 ---
 
-### Task 4: remove Rsdoctor security filtering and lazy-load the adapter
+### Task 4: simplify and lazy-load the Rsdoctor adapter
 
 **Files:**
 
@@ -186,26 +181,22 @@ Run build/injection tests and `pnpm check`; commit as
 - Supported tool names remain exactly the pinned ten-agent catalog names.
 - `@rsdoctor/agent-cli` is loaded with dynamic `import()` only on the first analysis request.
 - Tool input is validated against the selected catalog entry's JSON schema for functional errors.
-- Tool output is returned as JSON without path, environment, configuration, source, prompt, or secret
-  filtering and without branch-added artifact/result size caps.
+- Tool output is returned directly as JSON.
 
 - [ ] **Step 1: rewrite tests for the direct functional contract**
 
-Keep catalog-name, valid-artifact, malformed-JSON, wrong-envelope, and unknown-tool coverage. Delete
-absolute/external path, symlink, secret/environment/source redaction, huge-artifact, deep/wide-result,
-and response-cap tests. Add a real-tool test proving returned strings and fields are not redacted.
+Keep catalog-name, valid-artifact, malformed-JSON, wrong-envelope, and unknown-tool coverage. Add a
+real-tool test proving returned strings and fields are unchanged.
 
 - [ ] **Step 2: verify RED**
 
-Run Rsdoctor/MCP tests. Expected: current output still redacts or removes the fixture's values and the
-package is still loaded eagerly.
+Run Rsdoctor/MCP tests. Expected: the current adapter still changes fixture values and the package is
+still loaded eagerly.
 
-- [ ] **Step 3: delete security helpers and lazy-load the package**
+- [ ] **Step 3: simplify the adapter and lazy-load the package**
 
-Delete artifact/result byte caps, path containment/realpath checks, path/secret/environment regexes,
-key tokenization, safe-metric exceptions, and recursive sanitization. Resolve the explicit data file
-with ordinary `path.resolve`, parse JSON, and invoke the selected pinned catalog tool. Dynamically
-import the package and cache its catalog/executor on first use.
+Resolve the explicit data file with ordinary `path.resolve`, parse JSON, and invoke the selected
+pinned catalog tool. Dynamically import the package and cache its catalog/executor on first use.
 
 - [ ] **Step 4: verify startup isolation**
 
@@ -239,20 +230,17 @@ Run Rsdoctor/MCP tests and `pnpm check`; commit as
 - [ ] **Step 1: write typed-outcome report tests and verify RED**
 
 Cover missing conventional report, one valid sibling, ambiguous siblings, and manifest fallback.
-Delete symlink/path-escape cases and assert no control flow depends on an exception message.
+Assert no control flow depends on an exception message.
 
 - [ ] **Step 2: implement the typed boundary**
 
-Use ordinary resolved paths and `stat` to return discriminated outcomes. Delete the closure-bearing
-artifact report resolver, containment checks, and exception-text matching.
+Use ordinary resolved paths and `stat` to return discriminated outcomes. The report resolver owns
+file lookup directly and consumes typed outcomes.
 
 - [ ] **Step 3: align English, Chinese, and RFC status**
 
 Document the exact three-tool Phase 1 surface, direct Rsdoctor JSON contract, optional GUI links, and
-deferred retention. Remove the RFC security/privacy and security-validation sections and every
-branch-added claim or requirement about prompt injection, secrets, traversal, symlinks, adversarial
-sizes/graphs/logs, capability denial, environment/network hardening, or stale-token/outside-root
-mutation.
+deferred retention. Update both planning documents to match the implemented functional contract.
 
 - [ ] **Step 4: run full verification and commit**
 
