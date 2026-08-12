@@ -1,6 +1,6 @@
 # MCP \{#mcp}
 
-`rs mcp` 将当前检出的 Rstack 构建上下文观测结果和可选的 Rsdoctor 产物提供给 MCP 客户端。Phase 1 为只读模式：它不会启动构建、修改配置或写入项目文件。
+`rs mcp` 将当前检出的 Rstack 构建上下文观测结果和明确指定的 Rsdoctor 产物提供给 MCP 客户端。其工具均为只读：不会启动构建、修改配置或写入项目文件。
 
 ## 用法 \{#usage}
 
@@ -10,7 +10,7 @@
 rs mcp
 ```
 
-服务器通过标准输入和输出通信，因此 stdout 仅用于 MCP 协议消息。它会根据命令的启动路径解析检出目录，并且 Phase 1 仅公开三个工具：`project_status`、`rsdoctor_analyze` 和 `report_link`。
+服务器通过标准输入和输出通信，因此 stdout 仅用于 MCP 协议消息。它会根据命令的启动路径解析检出目录，并公开七个工具：`project_status`、`product_roots`、`unused_candidates`、`dead_code_explain`、`module_impact`、`rsdoctor_analyze` 和 `report_link`。
 
 ## 捕获构建上下文 \{#capture-build-context}
 
@@ -37,9 +37,24 @@ define.context({
 
 它适用于仅使用 Rslib 的仓库、仅使用 Rsbuild 的仓库，以及同时使用两者的仓库。不需要 Turbo、Nx、守护进程、任务图或生产者到 MCP 的连接。
 
-## Phase 1 工具 \{#phase-1-tools}
+## 只读工具 \{#read-only-tools}
+
+### 构建上下文 \{#build-context}
 
 `project_status` 返回检出目录本地存储中已完成的构建上下文观测结果。
+
+### 产物范围内的模块分析 \{#artifact-scoped-module-analysis}
+
+四个模块分析工具都需要 `project_status` 返回的 `contextId` 和明确指定的 Rsdoctor `dataFile`。结果来源信息使用 `artifactBinding: "explicit-unverified"`：所选构建观测可以提供有用的上下文，但 Rstack 不会声称指定产物来自该次运行。
+
+- `product_roots` 返回应用入口根、精确匹配的库包目标和保守的优化器根，同时包含图问题和分析边界。
+- `unused_candidates` 返回在该产物图中不存在从所选根出发的已观测路径的模块。可选的 `limit` 必须是 1 到 100 的整数，默认值为 50。
+- `dead_code_explain` 接受非空的精确模块 ID、路径、名称或唯一的路径后缀。可选的 `maxDepth` 必须是 1 到 16 的整数，默认值为 8。它会报告模块是可达、被保守保留、不可达模块候选，还是因为证据不完整而处于未知状态。
+- `module_impact` 接受相同的模块选择器。`direction` 可为 `dependencies` 或 `dependents`，默认值为 `dependents`；`maxDepth` 同样是 1 到 16，默认值为 8。它返回有界的已观测模块、到达的产品根、受影响的 chunk ID 和截断状态。
+
+这些结果只描述一个指定产物中的模块。不可达结果是需要复核的候选，而不是删除指令；它也不能证明某个局部函数、类、变量或导出未被使用。
+
+### Rsdoctor 分析 \{#rsdoctor-analysis}
 
 `rsdoctor_analyze` 接受明确的 `dataFile`、`toolName` 和可选的工具输入。数据文件必须包含 JSON，且其中的 `data` 字段必须是对象；输入必须符合所选 Rsdoctor 工具的 schema。Rstack 会直接返回 Rsdoctor Agent CLI 的 JSON 结果。支持的工具名称如下：
 
@@ -54,10 +69,12 @@ define.context({
 - `tree_shaking_side_effects`
 - `tree_shaking_summary`
 
+### 报告链接 \{#report-links}
+
 `report_link` 接受明确的 `dataFile`；当它找到同目录下的常规 `report-rsdoctor.html`、唯一且无歧义的同目录 HTML 文件，或检出目录中的 `.rsdoctor/manifest.json` 时，会返回 `file:` URI。GUI 链接是可选的。此工具不会启动报告服务器、运行命令或创建报告。
 
 ## 限制 \{#limitations}
 
-Phase 1 返回可能不完整或已过时的已完成观测结果。破坏性保留机制会延后，直到获得真实的产物大小和访问模式数据，并具备可移植的恢复契约。诊断查询、变更工具和自动报告生成不包含在内。
+构建观测和产物图可能不完整或已过时。导出级和局部符号级的死代码分析目前不可用，因为当前 Rsdoctor 产物契约没有提供受支持的导出使用情况 schema。Rstest 结果、Rslint 诊断、watch 查询、变更工具和自动报告生成也不包含在内。
 
 构建上下文是已观测构建的证据，不能证明未观测到的代码已经死亡或未被使用。

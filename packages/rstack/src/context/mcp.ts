@@ -2,6 +2,12 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ContentBlock } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
+import {
+  explainDeadCodeCandidate,
+  findUnusedCandidates,
+  readProductRoots,
+  traceModuleImpact,
+} from './queries.ts';
 import { analyzeRsdoctorArtifact } from './rsdoctor.ts';
 import { resolveRsdoctorReport } from './report.ts';
 import { readProjectStatus } from './status.ts';
@@ -14,6 +20,40 @@ const rsdoctorAnalyzeInput = z
     dataFile: z.string().min(1),
     input: z.record(z.string(), z.unknown()).optional(),
     toolName: z.string().min(1),
+  })
+  .strict();
+
+const productRootsInput = z
+  .object({
+    contextId: z.string().min(1),
+    dataFile: z.string().min(1),
+  })
+  .strict();
+
+const unusedCandidatesInput = z
+  .object({
+    contextId: z.string().min(1),
+    dataFile: z.string().min(1),
+    limit: z.number().int().min(1).max(100).optional(),
+  })
+  .strict();
+
+const deadCodeExplainInput = z
+  .object({
+    contextId: z.string().min(1),
+    dataFile: z.string().min(1),
+    module: z.string().min(1),
+    maxDepth: z.number().int().min(1).max(16).optional(),
+  })
+  .strict();
+
+const moduleImpactInput = z
+  .object({
+    contextId: z.string().min(1),
+    dataFile: z.string().min(1),
+    module: z.string().min(1),
+    direction: z.enum(['dependencies', 'dependents']).optional(),
+    maxDepth: z.number().int().min(1).max(16).optional(),
   })
   .strict();
 
@@ -59,6 +99,127 @@ const createContextMcpServer = (workspaceRoot: string): McpServer => {
         content: [{ type: 'text', text: renderProjectStatus(status) }],
         structuredContent: status,
       };
+    },
+  );
+
+  server.registerTool(
+    'product_roots',
+    {
+      title: 'Resolve product roots',
+      description: 'Return selected roots for one explicit Rsdoctor module graph.',
+      inputSchema: productRootsInput,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
+    },
+    async ({ contextId, dataFile }) => {
+      try {
+        const result = await readProductRoots(workspaceRoot, {
+          contextId,
+          dataFile,
+        });
+        return {
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+          structuredContent: result,
+        };
+      } catch (error) {
+        return toMcpError(error);
+      }
+    },
+  );
+
+  server.registerTool(
+    'unused_candidates',
+    {
+      title: 'Find unused module candidates',
+      description:
+        'Return unreachable module candidates from one explicit Rsdoctor artifact graph.',
+      inputSchema: unusedCandidatesInput,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
+    },
+    async ({ contextId, dataFile, limit }) => {
+      try {
+        const result = await findUnusedCandidates(workspaceRoot, {
+          contextId,
+          dataFile,
+          limit,
+        });
+        return {
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+          structuredContent: result,
+        };
+      } catch (error) {
+        return toMcpError(error);
+      }
+    },
+  );
+
+  server.registerTool(
+    'dead_code_explain',
+    {
+      title: 'Explain module reachability',
+      description:
+        'Explain why one module is reachable, conservatively preserved, or an artifact-scoped candidate.',
+      inputSchema: deadCodeExplainInput,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
+    },
+    async ({ contextId, dataFile, module, maxDepth }) => {
+      try {
+        const result = await explainDeadCodeCandidate(workspaceRoot, {
+          contextId,
+          dataFile,
+          module,
+          maxDepth,
+        });
+        return {
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+          structuredContent: result,
+        };
+      } catch (error) {
+        return toMcpError(error);
+      }
+    },
+  );
+
+  server.registerTool(
+    'module_impact',
+    {
+      title: 'Trace module impact',
+      description:
+        'Trace bounded module dependencies or dependents within one explicit artifact graph.',
+      inputSchema: moduleImpactInput,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
+    },
+    async ({ contextId, dataFile, module, direction, maxDepth }) => {
+      try {
+        const result = await traceModuleImpact(workspaceRoot, {
+          contextId,
+          dataFile,
+          module,
+          direction,
+          maxDepth,
+        });
+        return {
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+          structuredContent: result,
+        };
+      } catch (error) {
+        return toMcpError(error);
+      }
     },
   );
 

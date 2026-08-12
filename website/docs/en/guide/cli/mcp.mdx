@@ -1,6 +1,6 @@
 # MCP
 
-`rs mcp` exposes checkout-local Rstack build-context observations and optional Rsdoctor artifacts to an MCP client. Phase 1 is read-only: it never starts builds, changes configuration, or writes project files.
+`rs mcp` exposes checkout-local Rstack build-context observations and explicit Rsdoctor artifacts to an MCP client. Its tools are read-only: they do not start builds, change configuration, or write project files.
 
 ## Usage
 
@@ -10,7 +10,7 @@ Start one local MCP server from the repository root:
 rs mcp
 ```
 
-The server communicates over standard input and output, so stdout is reserved for MCP protocol messages. It resolves the checkout from the command's launch path and exposes exactly three Phase 1 tools: `project_status`, `rsdoctor_analyze`, and `report_link`.
+The server communicates over standard input and output, so stdout is reserved for MCP protocol messages. It resolves the checkout from the command's launch path and exposes seven tools: `project_status`, `product_roots`, `unused_candidates`, `dead_code_explain`, `module_impact`, `rsdoctor_analyze`, and `report_link`.
 
 ## Capture build context
 
@@ -37,9 +37,24 @@ Run one MCP process at the monorepo root. It reads the recorded runs from every 
 
 This works for Rslib-only repositories, Rsbuild-only repositories, and repositories that use both. It does not require Turbo, Nx, a daemon, a task graph, or a producer-to-MCP connection.
 
-## Phase 1 tools
+## Read-only tools
+
+### Build context
 
 `project_status` returns completed build-context observations from the checkout-local store.
+
+### Artifact-scoped module analysis
+
+The four module-analysis tools require both a `contextId` from `project_status` and an explicit Rsdoctor `dataFile`. The result provenance uses `artifactBinding: "explicit-unverified"`: the selected build observation is useful context, but Rstack does not claim that the supplied artifact came from that run.
+
+- `product_roots` returns application entry roots, exactly matched library package targets, and conservative optimizer roots, together with graph issues and analysis bounds.
+- `unused_candidates` returns modules with no observed path from the selected roots in that artifact graph. Its optional `limit` is an integer from 1 through 100 and defaults to 50.
+- `dead_code_explain` accepts a non-empty exact module ID, path, name, or unique path suffix. Its optional `maxDepth` is an integer from 1 through 16 and defaults to 8. It reports whether the module is reachable, conservatively preserved, an unreachable module candidate, or unknown because the evidence is incomplete.
+- `module_impact` accepts the same module selector. `direction` is `dependencies` or `dependents` and defaults to `dependents`; `maxDepth` has the same 1-through-16 range and default of 8. It returns the bounded observed modules, reached product roots, affected chunk IDs, and truncation state.
+
+These results describe modules in one supplied artifact. An unreachable result is a review candidate, not a deletion instruction, and does not prove that a local function, class, variable, or export is unused.
+
+### Rsdoctor analysis
 
 `rsdoctor_analyze` accepts an explicit `dataFile`, a `toolName`, and optional tool input. The data file must contain JSON with an object-valued `data` field, and the input must match the selected Rsdoctor tool schema. Rstack returns the Rsdoctor Agent CLI JSON result directly. The supported tool names are:
 
@@ -54,10 +69,12 @@ This works for Rslib-only repositories, Rsbuild-only repositories, and repositor
 - `tree_shaking_side_effects`
 - `tree_shaking_summary`
 
+### Report links
+
 `report_link` accepts an explicit `dataFile` and returns a `file:` URI when it finds the conventional sibling `report-rsdoctor.html`, one unambiguous sibling HTML file, or the checkout's `.rsdoctor/manifest.json`. GUI links are optional. This tool does not start a report server, run a command, or create a report.
 
 ## Limitations
 
-Phase 1 returns completed observations that may be partial or stale. Destructive retention is deferred until real artifact sizes and access patterns are measured and a portable recovery contract exists. Diagnostics queries, mutation tools, and automatic report generation are not included.
+Build observations and artifact graphs may be partial or stale. Export-level and local-symbol dead-code analysis are unavailable because the current Rsdoctor artifact contract does not provide a supported export-use schema. Rstest results, Rslint diagnostics, watch queries, mutation tools, and automatic report generation are not included.
 
 Build context is evidence about observed builds, not proof that unobserved code is dead or unused.

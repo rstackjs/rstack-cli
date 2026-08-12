@@ -1,4 +1,4 @@
-import { access, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { access, cp, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 // cspell:ignore modelcontextprotocol
@@ -18,6 +18,11 @@ import {
   type ContextSnapshot,
 } from '../../src/context/index.ts';
 import { createContextMcpServer } from '../../src/context/mcp.ts';
+
+const reachabilityFixture = path.resolve(
+  import.meta.dirname,
+  '../fixtures/context/reachability/application',
+);
 
 const withTempWorkspace = async (
   callback: (workspaceRoot: string) => Promise<void>,
@@ -64,13 +69,17 @@ const writeRsdoctorArtifact = async (workspaceRoot: string): Promise<void> => {
   await writeFile(dataFile, JSON.stringify({ data: { summary: { costs: [{ costs: 12 }] } } }));
 };
 
-test('registers exactly the three read-only Phase 1 tools', async () => {
+test('registers exactly the seven read-only Phase 2 tools', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await withMcpClient(workspaceRoot, async (client) => {
       const { tools } = await client.listTools();
 
       expect(tools.map((tool) => tool.name)).toEqual([
         'project_status',
+        'product_roots',
+        'unused_candidates',
+        'dead_code_explain',
+        'module_impact',
         'rsdoctor_analyze',
         'report_link',
       ]);
@@ -86,7 +95,46 @@ test('registers exactly the three read-only Phase 1 tools', async () => {
           openWorldHint: false,
         },
       });
-      expect(tools[1]).toMatchObject({
+      expect(tools.slice(1, 5)).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: 'product_roots',
+            inputSchema: expect.objectContaining({
+              additionalProperties: false,
+              required: ['contextId', 'dataFile'],
+            }),
+          }),
+          expect.objectContaining({
+            name: 'unused_candidates',
+            inputSchema: expect.objectContaining({
+              additionalProperties: false,
+              required: ['contextId', 'dataFile'],
+            }),
+          }),
+          expect.objectContaining({
+            name: 'dead_code_explain',
+            inputSchema: expect.objectContaining({
+              additionalProperties: false,
+              required: ['contextId', 'dataFile', 'module'],
+            }),
+          }),
+          expect.objectContaining({
+            name: 'module_impact',
+            inputSchema: expect.objectContaining({
+              additionalProperties: false,
+              required: ['contextId', 'dataFile', 'module'],
+            }),
+          }),
+        ]),
+      );
+      for (const tool of tools.slice(1, 5)) {
+        expect(tool.annotations).toMatchObject({
+          readOnlyHint: true,
+          destructiveHint: false,
+          openWorldHint: false,
+        });
+      }
+      expect(tools[5]).toMatchObject({
         name: 'rsdoctor_analyze',
         annotations: {
           readOnlyHint: true,
@@ -98,7 +146,7 @@ test('registers exactly the three read-only Phase 1 tools', async () => {
           required: ['dataFile', 'toolName'],
         },
       });
-      expect(tools[2]).toMatchObject({
+      expect(tools[6]).toMatchObject({
         name: 'report_link',
         annotations: {
           readOnlyHint: true,
@@ -109,6 +157,91 @@ test('registers exactly the three read-only Phase 1 tools', async () => {
           additionalProperties: false,
           required: ['dataFile'],
         },
+      });
+    });
+  });
+});
+
+test('returns structured results for each artifact-scoped module tool', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await cp(reachabilityFixture, workspaceRoot, { recursive: true });
+    const context = {
+      contextId: 'ctx_app',
+      packageRoot: '.',
+      product: 'application',
+    } as const;
+    expect(
+      await writeContextRunManifest(workspaceRoot, createRun('run_app', context)),
+    ).toMatchObject({ written: true });
+
+    await withMcpClient(workspaceRoot, async (client) => {
+      const productRoots = await client.callTool({
+        name: 'product_roots',
+        arguments: {
+          contextId: context.contextId,
+          dataFile: 'rsdoctor-data.json',
+        },
+      });
+      expect(productRoots.isError).not.toBe(true);
+      expect(productRoots.structuredContent).toMatchObject({
+        provenance: {
+          contextId: context.contextId,
+          dataFile: 'rsdoctor-data.json',
+          artifactBinding: 'explicit-unverified',
+        },
+        graph: { moduleCount: 8, edgeCount: 4 },
+      });
+
+      const candidates = await client.callTool({
+        name: 'unused_candidates',
+        arguments: {
+          contextId: context.contextId,
+          dataFile: 'rsdoctor-data.json',
+          limit: 1,
+        },
+      });
+      expect(candidates.isError).not.toBe(true);
+      expect(candidates.structuredContent).toMatchObject({
+        total: 1,
+        returned: 1,
+        candidates: [
+          {
+            classification: 'unreachable-module-candidate',
+            subject: { kind: 'module', id: '3', path: 'src/legacy.ts' },
+          },
+        ],
+      });
+
+      const explanation = await client.callTool({
+        name: 'dead_code_explain',
+        arguments: {
+          contextId: context.contextId,
+          dataFile: 'rsdoctor-data.json',
+          module: 'src/legacy.ts',
+          maxDepth: 8,
+        },
+      });
+      expect(explanation.isError).not.toBe(true);
+      expect(explanation.structuredContent).toMatchObject({
+        classification: 'unreachable-module-candidate',
+        subject: { kind: 'module', id: '3', path: 'src/legacy.ts' },
+      });
+
+      const impact = await client.callTool({
+        name: 'module_impact',
+        arguments: {
+          contextId: context.contextId,
+          dataFile: 'rsdoctor-data.json',
+          module: 'src/live.ts',
+          direction: 'dependents',
+          maxDepth: 8,
+        },
+      });
+      expect(impact.isError).not.toBe(true);
+      expect(impact.structuredContent).toMatchObject({
+        direction: 'dependents',
+        subject: { kind: 'module', id: '2', path: 'src/live.ts' },
+        affectedChunks: ['10', 'shared'],
       });
     });
   });
@@ -280,6 +413,92 @@ test('returns an MCP error for an invalid Rsdoctor tool name', async () => {
       });
       expect(unknownTool.isError).toBe(true);
       expect(unknownTool.content).toEqual([{ type: 'text', text: 'Unknown Rsdoctor tool.' }]);
+    });
+  });
+});
+
+test('returns ordinary MCP errors for invalid module-analysis selections', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await cp(reachabilityFixture, workspaceRoot, { recursive: true });
+    const context = {
+      contextId: 'ctx_app',
+      packageRoot: '.',
+      product: 'application',
+    } as const;
+    expect(
+      await writeContextRunManifest(workspaceRoot, createRun('run_app', context)),
+    ).toMatchObject({ written: true });
+
+    await withMcpClient(workspaceRoot, async (client) => {
+      const unknownContext = await client.callTool({
+        name: 'product_roots',
+        arguments: { contextId: 'ctx_missing', dataFile: 'rsdoctor-data.json' },
+      });
+      expect(unknownContext.isError).toBe(true);
+      expect(unknownContext.content).toEqual([
+        { type: 'text', text: 'Unknown context: ctx_missing' },
+      ]);
+
+      const unknownModule = await client.callTool({
+        name: 'dead_code_explain',
+        arguments: {
+          contextId: context.contextId,
+          dataFile: 'rsdoctor-data.json',
+          module: 'src/missing.ts',
+        },
+      });
+      expect(unknownModule.isError).toBe(true);
+      expect(unknownModule.content).toEqual([
+        { type: 'text', text: 'Unknown module selector: src/missing.ts' },
+      ]);
+    });
+  });
+});
+
+test('rejects unexpected fields at every strict module-analysis input boundary', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await withMcpClient(workspaceRoot, async (client) => {
+      const calls = [
+        {
+          name: 'product_roots',
+          arguments: {
+            contextId: 'ctx_app',
+            dataFile: 'artifact.json',
+            unexpected: true,
+          },
+        },
+        {
+          name: 'unused_candidates',
+          arguments: {
+            contextId: 'ctx_app',
+            dataFile: 'artifact.json',
+            unexpected: true,
+          },
+        },
+        {
+          name: 'dead_code_explain',
+          arguments: {
+            contextId: 'ctx_app',
+            dataFile: 'artifact.json',
+            module: 'src/index.ts',
+            unexpected: true,
+          },
+        },
+        {
+          name: 'module_impact',
+          arguments: {
+            contextId: 'ctx_app',
+            dataFile: 'artifact.json',
+            module: 'src/index.ts',
+            unexpected: true,
+          },
+        },
+      ];
+
+      for (const call of calls) {
+        const result = await client.callTool(call);
+        expect(result.isError).toBe(true);
+      }
     });
   });
 });
