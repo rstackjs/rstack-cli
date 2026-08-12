@@ -136,20 +136,14 @@ provenance only.
 ### System overview
 
 ```mermaid
-flowchart LR
-  subgraph Commands["Existing Rstack commands"]
-    Build["rs dev / rs build"]
-    Lib["rs lib"]
-    Lint["rs lint"]
-    Test["rs test"]
-  end
-
-  subgraph Producers["Passive evidence producers"]
-    Rspack["Rspack observer"]
-    Doctor["Rsdoctor collector"]
-    Rslib["Rslib contract adapter"]
-    Rslint["Resident Rslint worker"]
-    Rstest["Rstest observer"]
+flowchart TB
+  subgraph Capture["Passive evidence capture"]
+    direction LR
+    Build["rs dev / rs build"] --> Rspack["Rspack observer"]
+    Build --> Doctor["Rsdoctor collector"]
+    Lib["rs lib"] --> Rslib["Rslib contract adapter"]
+    Lint["rs lint"] --> Rslint["Resident Rslint worker"]
+    Test["rs test"] --> Rstest["Rstest observer"]
   end
 
   Coordinator["Per-workspace context coordinator"]
@@ -164,12 +158,6 @@ flowchart LR
 
   OptionalUI["Optional Rsdoctor report UI"]
 
-  Build --> Rspack
-  Build --> Doctor
-  Lib --> Rslib
-  Lint --> Rslint
-  Test --> Rstest
-
   Rspack --> Coordinator
   Doctor --> Coordinator
   Rslib --> Coordinator
@@ -180,7 +168,7 @@ flowchart LR
   Query --> Broker
   Broker --> Codex
   Broker --> Claude
-  Store -. "explicit open report" .-> OptionalUI
+  Doctor -. "explicit report artifact" .-> OptionalUI
 ```
 
 ### Component responsibilities
@@ -198,18 +186,18 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-  subgraph Upstream["Upstream compiler and analyzer ownership"]
-    RP["Rspack: optimizer and runtime facts"]
-    RD["Rsdoctor: report contract, build graph, rules, Agent CLI"]
-    RT["Rstest: supported observer/watch API"]
+  subgraph Upstream["Upstream ownership"]
+    RP["Rspack<br/>optimizer + runtime facts"]
+    RD["Rsdoctor<br/>report contract + build graph"]
+    RT["Rstest<br/>observer/watch API"]
   end
 
   subgraph Rstack["Rstack ownership"]
-    Inject["Safe adapter injection"]
-    Identity["Stable identity + generations"]
-    Merge["Cross-producer evidence merge"]
-    Policy["Product roots, contracts, confidence, privacy"]
-    MCP["One MCP + plugin skills"]
+    Inject["Safe adapter<br/>injection"]
+    Identity["Stable identity<br/>+ generations"]
+    Merge["Cross-producer<br/>evidence merge"]
+    Policy["Product roots + contracts<br/>confidence + privacy"]
+    MCP["One MCP<br/>+ plugin skills"]
   end
 
   RP --> RD
@@ -366,7 +354,7 @@ The normative behavior is:
 ## Safe configuration injection
 
 ```mermaid
-flowchart LR
+flowchart TB
   User["User config object or function"]
   Resolve["Existing Rstack resolver"]
   Clone["Shallow immutable clone"]
@@ -398,12 +386,12 @@ return values, assets, graphs, or diagnostics.
 erDiagram
   WORKSPACE ||--o{ CONTEXT : contains
   CONTEXT ||--o{ RUN : executes
-  RUN }o--o{ SNAPSHOT : contributes
-  SNAPSHOT ||--o{ ENTITY : records
+  RUN }|--o| SNAPSHOT : contributes
+  SNAPSHOT }|--o{ ENTITY : records
   ENTITY ||--o{ EDGE : originates
   ENTITY ||--o{ EVIDENCE : supports
   SNAPSHOT ||--o{ FINDING : classifies
-  FINDING }o--o{ EVIDENCE : cites
+  FINDING }o--|{ EVIDENCE : cites
 
   WORKSPACE {
     string id
@@ -545,28 +533,36 @@ optimizerRetention:          used | side-effect | bailout | removed | unknown
 ### Finding classifier
 
 ```mermaid
-flowchart TD
+flowchart TB
   Start["Definition or export candidate"]
-  Complete{"Required producer sections complete?"}
-  Dynamic{"Dynamic / CJS / reflection uncertainty?"}
-  Contract{"Protected public contract?"}
-  Prod{"Reachable from any production root?"}
-  NonProd{"Reachable from non-production roots?"}
-  Shipped{"Shipped or retained in any selected build?"}
+  Complete["Complete evidence?"]
+  Dynamic["Dynamic access uncertain?"]
+  Contract["Protected contract?"]
+  Prod["Production-reachable?"]
+  NonProd["Non-production-reachable?"]
+  Shipped["Shipped or retained?"]
 
   Start --> Complete
-  Complete -- "no" --> Partial["insufficient-evidence"]
+  Complete -- "no" --> Partial
   Complete -- "yes" --> Dynamic
-  Dynamic -- "yes" --> Candidate["candidate with explicit uncertainty"]
+  Dynamic -- "yes" --> Candidate
   Dynamic -- "no" --> Contract
-  Contract -- "yes" --> Protected["public-contract-unused or no finding"]
+  Contract -- "yes" --> Protected
   Contract -- "no" --> Prod
-  Prod -- "yes" --> Live["live; consider unnecessary visibility/export only"]
+  Prod -- "yes" --> Live
   Prod -- "no" --> NonProd
-  NonProd -- "yes" --> TestOnly["test-only or development-only"]
+  NonProd -- "yes" --> TestOnly
   NonProd -- "no" --> Shipped
-  Shipped -- "yes" --> Retained["retained unexpectedly; explain side effect/bailout"]
-  Shipped -- "no" --> Dead["dead-code candidate"]
+  Shipped -- "yes" --> Retained
+  Shipped -- "no" --> Dead
+
+  Partial["insufficient evidence"]
+  Candidate["uncertain candidate"]
+  Protected["protected contract"]
+  Live["live export"]
+  TestOnly["test/development only"]
+  Retained["retained unexpectedly"]
+  Dead["dead-code candidate"]
 ```
 
 ### Finding codes
@@ -596,22 +592,20 @@ success result.
 
 ```mermaid
 sequenceDiagram
-  participant FS as File system
-  participant RB as Rsbuild/Rspack watch
+  participant RB as Build watch
   participant C as Context coordinator
   participant L as Rslint worker
   participant T as Rstest watch
-  participant M as MCP client
+  participant M as Model
 
-  FS->>RB: changed files
-  RB->>C: generation 184 + invalidation set
-  C->>L: lint changed files for generation 184
-  C-->>T: attach generation 184 change set
-  RB->>C: build 184 finished
+  RB->>C: generation 184 (changed files)
+  C->>L: lint changed files
+  C-->>T: attach change set
+  RB->>C: build finished
   C-->>M: build fresh, lint running, tests stale
-  L->>C: lint 184 finished
+  L->>C: lint finished
   C-->>M: build + lint fresh, tests stale
-  T->>C: affected tests 184 finished
+  T->>C: affected tests finished
   C-->>M: snapshot 184 complete
 ```
 
@@ -652,7 +646,7 @@ Unix-domain socket or Windows named pipe. Agent hosts launch `rs mcp`, a stdio b
 or starts the coordinator and exposes the sole MCP surface.
 
 ```mermaid
-flowchart LR
+flowchart TB
   Commands["rs command processes"] -->|"private socket / named pipe"| Daemon["Project coordinator"]
   Daemon --> WAL[("bounded WAL + snapshots")]
   Codex["Codex"] -->|stdio| Broker["rs mcp"]
@@ -741,7 +735,7 @@ totals, truncation, completeness, and the snapshot ID.
 ### Progressive model presentation
 
 ```mermaid
-flowchart LR
+flowchart TB
   Hint["1. Small freshness/status hint"]
   Skill["2. Task skill selects queries"]
   Summary["3. Compact findings summary"]
@@ -1050,19 +1044,15 @@ paths, trees, tables, and evidence cards; a full visual graph is optional invest
 ## Delivery plan
 
 ```mermaid
-timeline
-  title Rstack Context Engine delivery
-  Phase 0 : Publish contracts and upstream preview packages
-          : Version Rsdoctor artifacts
-  Phase 1 : Passive build and Rsdoctor snapshots
-          : One read-only MCP server
-  Phase 2 : Product roots and unused-code findings
-          : Codex and Claude skills
-  Phase 3 : Development generations
-          : Rslint worker and passive Rstest attachment
-  Phase 4 : Snapshot diffs and CI artifacts
-          : Safe fix previews
-  Phase 5 : Optional remote transport and thin visual summaries
+flowchart TB
+  P0["Phase 0: contracts<br/>Preview packages + versioned Rsdoctor artifacts"]
+  P1["Phase 1: passive build context<br/>Snapshots + one read-only MCP server"]
+  P2["Phase 2: reachability<br/>Product roots + unused-code skills"]
+  P3["Phase 3: development intelligence<br/>Generations + Rslint + Rstest"]
+  P4["Phase 4: change workflows<br/>Snapshot diffs + CI + fix previews"]
+  P5["Phase 5: optional presentation<br/>Remote transport + thin visual summaries"]
+
+  P0 --> P1 --> P2 --> P3 --> P4 --> P5
 ```
 
 ### Phase 0: contracts
