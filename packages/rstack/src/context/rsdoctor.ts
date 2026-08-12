@@ -11,15 +11,10 @@ const absolutePathPattern =
 const environmentAssignmentPattern = /\b[A-Z][A-Z0-9_]{1,}\s*=\s*(?:"[^"]*"|'[^']*'|[^\s,;]+)/gu;
 const secretAssignmentPattern =
   /\b(?:[a-z0-9]+[_-])?(?:access[_-]?key|api[_-]?key|token|secret|password|passwd|private[_-]?key)\b\s*[:=]\s*(?:"[^"]*"|'[^']*'|[^\s,;]+)/giu;
-const sensitiveKeyNames = new Set([
-  'accesskey',
-  'accesskeyid',
-  'apikey',
+const sensitiveKeyTokens = new Set([
   'authorization',
   'auth',
-  'awsaccesskeyid',
   'bearer',
-  'clientsecret',
   'config',
   'configuration',
   'content',
@@ -42,6 +37,13 @@ const sensitiveKeyNames = new Set([
   'sourcescontent',
   'token',
 ]);
+const sensitiveKeyTokenSequences = [
+  ['access', 'key'],
+  ['api', 'key'],
+  ['private', 'key'],
+] as const;
+const safeNumericMetricSuffixes = new Set(['count', 'size']);
+const safeConfigurationMetricSuffixes = new Set(['hash', 'status', 'version']);
 
 type RsdoctorToolDescriptor = {
   name: string;
@@ -74,9 +76,53 @@ const containsAbsolutePath = (value: string): boolean => {
   return matches;
 };
 
-const isSensitiveKey = (key: string): boolean => {
-  const normalized = key.replaceAll(/[^a-zA-Z0-9]/gu, '').toLowerCase();
-  return sensitiveKeyNames.has(normalized);
+const tokenizeKey = (key: string): string[] =>
+  key
+    .replaceAll(/([a-z0-9])([A-Z])/gu, '$1 $2')
+    .replaceAll(/([A-Z])([A-Z][a-z])/gu, '$1 $2')
+    .split(/[^a-zA-Z0-9]+/u)
+    .filter(Boolean)
+    .map((token) => token.toLowerCase());
+
+const isSafeMetricKey = (tokens: string[], value: unknown): boolean => {
+  if (tokens.length < 2) {
+    return false;
+  }
+
+  const suffix = tokens.at(-1)!;
+  const prefix = tokens.slice(0, -1);
+  const isConfigurationMetric = prefix.length === 1 && prefix[0] === 'configuration';
+  const isSourceMetric =
+    (prefix.length === 1 && prefix[0] === 'source') ||
+    (prefix.length === 2 && prefix[0] === 'source' && prefix[1] === 'map');
+
+  if (safeNumericMetricSuffixes.has(suffix)) {
+    return (
+      (isConfigurationMetric || isSourceMetric) &&
+      typeof value === 'number' &&
+      Number.isFinite(value)
+    );
+  }
+
+  return (
+    isConfigurationMetric &&
+    safeConfigurationMetricSuffixes.has(suffix) &&
+    (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
+  );
+};
+
+const isSensitiveKey = (key: string, value: unknown): boolean => {
+  const tokens = tokenizeKey(key);
+  if (isSafeMetricKey(tokens, value)) {
+    return false;
+  }
+
+  return (
+    tokens.some((token) => sensitiveKeyTokens.has(token)) ||
+    sensitiveKeyTokenSequences.some((sequence) =>
+      tokens.some((_, start) => sequence.every((token, index) => tokens[start + index] === token)),
+    )
+  );
 };
 
 const sanitizeText = (value: string): string =>
@@ -120,7 +166,7 @@ const toJsonValue = (
     for (const [key, entry] of Object.entries(value)) {
       if (
         entry === undefined ||
-        (sanitizeUntrustedValues && (containsAbsolutePath(key) || isSensitiveKey(key)))
+        (sanitizeUntrustedValues && (containsAbsolutePath(key) || isSensitiveKey(key, entry)))
       ) {
         continue;
       }

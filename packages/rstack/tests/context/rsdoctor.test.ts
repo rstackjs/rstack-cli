@@ -389,6 +389,74 @@ test('preserves safe sourceSize metadata from a real retained-modules tool resul
   });
 });
 
+test('sanitizes composite sensitive keys while preserving safe metric metadata', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const apiToken = 'top-level-api-token';
+    const nodeEnvironment = 'top-level-production';
+    const refreshToken = 'top-level-refresh-token';
+    const sourceCode = 'private source code';
+    const webpackConfig = 'private webpack configuration';
+
+    await writeArtifact(
+      workspaceRoot,
+      validDataFile,
+      JSON.stringify({
+        data: {
+          errors: [
+            {
+              error: {
+                API_TOKEN: apiToken,
+                API_TOKEN_SIZE: 17,
+                NODE_ENV: nodeEnvironment,
+                NODE_ENV_STATUS: nodeEnvironment,
+                author: 'safe-author',
+                buildStatus: 'safe-status',
+                configurationCount: 3,
+                configurationHash: 'safe-configuration-hash',
+                configurationStatus: 'safe-configuration-status',
+                configurationVersion: 'safe-configuration-version',
+                refreshToken,
+                sourceCode,
+                sourceMapSize: 48,
+                sourceSize: 96,
+                webpackConfig: { define: { PRIVATE_VALUE: webpackConfig } },
+              },
+              id: 'composite-keys',
+            },
+          ],
+        },
+      }),
+    );
+
+    const analysis = await analyzeRsdoctorArtifact(workspaceRoot, {
+      dataFile: validDataFile,
+      toolName: 'errors_list',
+    });
+    const serialized = JSON.stringify(analysis);
+
+    expect(serialized).toContain('safe-author');
+    expect(serialized).toContain('safe-status');
+    expect(serialized).toContain('safe-configuration-hash');
+    expect(serialized).toContain('safe-configuration-version');
+    expect(serialized).toContain('safe-configuration-status');
+    expect(serialized).toContain('"sourceSize":96');
+    expect(serialized).toContain('"sourceMapSize":48');
+    expect(serialized).toContain('"configurationCount":3');
+    expect(serialized).not.toContain(apiToken);
+    expect(serialized).not.toContain(nodeEnvironment);
+    expect(serialized).not.toContain(refreshToken);
+    expect(serialized).not.toContain(sourceCode);
+    expect(serialized).not.toContain(webpackConfig);
+    expect(serialized).not.toContain('API_TOKEN');
+    expect(serialized).not.toContain('API_TOKEN_SIZE');
+    expect(serialized).not.toContain('NODE_ENV');
+    expect(serialized).not.toContain('NODE_ENV_STATUS');
+    expect(serialized).not.toContain('refreshToken');
+    expect(serialized).not.toContain('sourceCode');
+    expect(serialized).not.toContain('webpackConfig');
+  });
+});
+
 test('rejects a real Rsdoctor tool result exceeding one MiB', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     const description = 'x'.repeat(512 * 1024);
