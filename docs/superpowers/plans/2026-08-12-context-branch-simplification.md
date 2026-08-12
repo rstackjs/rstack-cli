@@ -94,6 +94,8 @@ Run the focused MCP tests and `pnpm check`; commit as
 - Produces canonical generation filename validation
   `<sequence padded to 10>-<snapshotId>.json`.
 - Removes the branch-added per-record byte limit and `oversized-record` issue variant.
+- `readLatestSnapshot` sorts canonical generation filenames newest-first and stops after the first
+  valid matching snapshot instead of parsing every historical generation.
 
 - [ ] **Step 1: write schema-parity tests**
 
@@ -111,7 +113,8 @@ context implementation rather than exporting them through `context/index.ts`.
 
 Keep the existing straightforward atomic publication and JSON reads. Use the shared validators and
 canonical generation-name helper in both paths. Delete the duplicate sets and predicates from
-`store.ts`. Remove pre-read byte checks and their model/test surface.
+`store.ts`. Remove pre-read byte checks and their model/test surface. Replace the all-generations
+parse/sort with a descending filename loop that stops at the latest valid record.
 
 - [ ] **Step 4: verify and commit**
 
@@ -125,18 +128,30 @@ Run record/store/status tests and `pnpm check`; commit as
 **Files:**
 
 - Modify: `packages/rstack/src/context/build.ts`
+- Modify: `packages/rstack/src/context/workspace.ts`
+- Modify: `packages/rstack/src/rsbuildConfig.ts`
+- Modify: `packages/rstack/src/rslibConfig.ts`
 - Modify: `packages/rstack/tests/context/build.test.ts`
+- Modify: `packages/rstack/tests/context/workspace.test.ts`
+- Modify: `packages/rstack/tests/context/injection.test.ts`
 
 **Interfaces:**
 
 - `buildMetadataFacet` keeps the existing persisted `BuildMetadataFacet` shape.
 - Stats extraction no longer requests unused timings and retains no more than 100 safe assets,
   100 chunks, or 20 safe files per retained chunk while counting dropped safe rows.
+- Workspace discovery stops after inspecting the nearest `.git` root instead of selecting an
+  unrelated ancestor workspace manifest.
+- Rsbuild and Rslib loaders canonicalize an existing loaded config path before observer creation.
 
 - [ ] **Step 1: write high-cardinality extraction tests**
 
 Provide more than 100 valid and invalid assets/chunks and more than 20 chunk files. Assert exact
 retained rows and dropped counts, and assert the `toJson` options omit `timings`.
+
+Add ordinary fixtures proving a checkout nested under an unrelated ancestor workspace resolves to
+the checkout root, and proving a symlinked loaded config path produces a canonical workspace-relative
+descriptor instead of disabling capture.
 
 - [ ] **Step 2: verify RED**
 
@@ -145,7 +160,9 @@ Run the focused build test. Expected: current extraction requests timings and al
 - [ ] **Step 3: implement one-pass bounded collectors**
 
 Use simple loops with retained arrays and dropped counters. Normalize each candidate once. Preserve
-ordering and the public snapshot shape.
+ordering and the public snapshot shape. Stop workspace discovery immediately after processing the
+nearest `.git` directory. Canonicalize `loaded.filePath` once in each CLI-specific loader before
+passing it to `createBuildContextPlugin`.
 
 - [ ] **Step 4: verify and commit**
 
