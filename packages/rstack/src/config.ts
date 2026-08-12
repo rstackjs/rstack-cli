@@ -51,6 +51,13 @@ type ConfigSession = {
   active: boolean;
 };
 
+export type RstackInvocation = {
+  cwd: string;
+  command: string;
+  args: string[];
+  configFilePath: string | null;
+};
+
 type ConfigState = {
   /**
    * Config file path from the global `--config` flag. Always absolute: the CLI
@@ -58,6 +65,7 @@ type ConfigState = {
    * (`loadRstackConfig` may be called with an LSP workspace root as `cwd`).
    */
   configPath?: string;
+  invocation?: RstackInvocation;
 };
 
 declare global {
@@ -80,7 +88,7 @@ const getConfigSessionStorage = (): AsyncLocalStorage<ConfigSession> => {
 
 export const getConfigState = (): ConfigState => {
   // The CLI and its internal tool config can also be loaded as separate module
-  // instances. Keep only the CLI config path in its own global state.
+  // instances. Keep CLI invocation state in its own global state.
   if (!globalThis.__rstackCliState) {
     globalThis.__rstackCliState = {};
   }
@@ -228,6 +236,10 @@ export const loadRstackConfig = async ({
               ],
             }),
       });
+
+      if (state.invocation) {
+        state.invocation.configFilePath = filePath;
+      }
 
       return {
         configs: session.configs,
