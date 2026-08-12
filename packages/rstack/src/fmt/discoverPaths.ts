@@ -188,13 +188,14 @@ class GitIgnoreFiles {
     }
 
     // Ignore files may disappear or become unreadable during traversal.
-    const loading = readFile(path.join(directoryPath, '.gitignore'), 'utf8')
-      .then((content) => {
+    const loading = readFile(path.join(directoryPath, '.gitignore'), 'utf8').then(
+      (content) => {
         const relativePath = toPosixPath(this.#resolveRelativePath(directoryPath));
         this.#matcher ??= new (loadNativeBinding().GitIgnoreMatcher)();
         this.#hasRules = this.#matcher.addSource(relativePath, content);
-      })
-      .catch(() => undefined);
+      },
+      () => undefined,
+    );
 
     this.#loads.set(directoryPath, loading);
     return loading;
@@ -204,11 +205,14 @@ class GitIgnoreFiles {
 const createTraversalOptions = (
   gitIgnore: GitIgnoreFiles,
   ignoredDirNames: ReadonlySet<string>,
+  signal: { aborted: boolean },
+  onError: (error: unknown) => void,
   isIncluded?: (filePath: string) => boolean,
   isIgnored?: (filePath: string, isDirectory: boolean) => boolean,
 ) => {
   return {
     followSymlinks: false,
+    signal,
     ignore: (targetPath: string, targetContext: DirentLike) => {
       // With symlink following disabled, tiny-readdir always provides a Dirent here.
       const dirent = targetContext as Dirent;
@@ -233,41 +237,76 @@ const createTraversalOptions = (
       );
     },
     onDirents: async (dirents: Dirent[]) => {
-      const parentPath = getDirentParentPath(dirents[0]);
-      let hasGitIgnore = false;
+      try {
+        const parentPath = getDirentParentPath(dirents[0]);
+        let hasGitIgnore = false;
 
-      for (const dirent of dirents) {
-        if (dirent.name === '.gitignore') {
-          hasGitIgnore = true;
-        }
-      }
-
-      if (hasGitIgnore) {
-        await gitIgnore.load(parentPath);
-      }
-
-      const ignored = gitIgnore.matchDirents(parentPath, dirents);
-      if (typeof ignored === 'boolean') {
-        if (ignored) {
-          (dirents[0] as GitIgnoreDirent)[gitIgnored] = true;
-        }
-      } else if (typeof ignored === 'number') {
-        for (let index = 0; index < dirents.length; index++) {
-          if (ignored & (1 << index)) {
-            (dirents[index] as GitIgnoreDirent)[gitIgnored] = true;
+        for (const dirent of dirents) {
+          if (dirent.name === '.gitignore') {
+            hasGitIgnore = true;
           }
         }
-      } else if (ignored) {
-        for (let index = 0; index < ignored.length; index++) {
-          if (ignored[index] === 1) {
-            (dirents[index] as GitIgnoreDirent)[gitIgnored] = true;
+
+        if (hasGitIgnore) {
+          await gitIgnore.load(parentPath);
+        }
+
+        const ignored = gitIgnore.matchDirents(parentPath, dirents);
+        if (typeof ignored === 'boolean') {
+          if (ignored) {
+            (dirents[0] as GitIgnoreDirent)[gitIgnored] = true;
+          }
+        } else if (typeof ignored === 'number') {
+          for (let index = 0; index < dirents.length; index++) {
+            if (ignored & (1 << index)) {
+              (dirents[index] as GitIgnoreDirent)[gitIgnored] = true;
+            }
+          }
+        } else if (ignored) {
+          for (let index = 0; index < ignored.length; index++) {
+            if (ignored[index] === 1) {
+              (dirents[index] as GitIgnoreDirent)[gitIgnored] = true;
+            }
           }
         }
+      } catch (error) {
+        onError(error);
       }
 
       return undefined;
     },
   };
+};
+
+const discoverDirectoryFiles = async (
+  rootPath: string,
+  gitIgnore: GitIgnoreFiles,
+  ignoredDirNames: ReadonlySet<string>,
+  isIncluded?: (filePath: string) => boolean,
+  isIgnored?: (filePath: string, isDirectory: boolean) => boolean,
+): Promise<string[]> => {
+  let failed = false;
+  let failure: unknown;
+  const signal = { aborted: false };
+  const onError = (error: unknown): void => {
+    if (!failed) {
+      failed = true;
+      failure = error;
+    }
+    signal.aborted = true;
+  };
+
+  const result = await readdir(
+    rootPath,
+    createTraversalOptions(gitIgnore, ignoredDirNames, signal, onError, isIncluded, isIgnored),
+  );
+
+  // tiny-readdir only handles fulfilled onDirents promises, so rethrow after its counter settles.
+  if (failed) {
+    throw failure;
+  }
+
+  return result.files;
 };
 
 const normalizeGlob = (cwd: string, pattern: string): string => {
@@ -426,12 +465,7 @@ const discoverFmtPaths = async ({
               return globMatchers.some((matches) => matches(relativePath));
             };
 
-        return (
-          await readdir(
-            rootPath,
-            createTraversalOptions(gitIgnore, ignoredDirNames, isIncluded, isIgnored),
-          )
-        ).files;
+        return discoverDirectoryFiles(rootPath, gitIgnore, ignoredDirNames, isIncluded, isIgnored);
       }),
     );
 
