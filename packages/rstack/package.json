@@ -73,6 +73,7 @@
     "test": "rs test"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "catalog:",
     "@rsbuild/core": "catalog:",
     "@rslib/core": "catalog:",
     "@rslint/core": "catalog:",

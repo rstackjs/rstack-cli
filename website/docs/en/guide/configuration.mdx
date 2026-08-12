@@ -66,15 +66,16 @@ define.app(async () => {
 
 Configuration options follow the formats of the underlying tools. When using APIs and helpers that Rstack re-exports, prefer the `rstack/app`, `rstack/lib`, `rstack/test`, and `rstack/lint` entry points.
 
-| API                                 | Tool                                                                    | Commands                                                                        |
-| ----------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| [`define.app()`](#define-app)       | [Rsbuild](https://rsbuild.rs/config/)                                   | [`rs dev`](./cli/dev), [`rs build`](./cli/build), [`rs preview`](./cli/preview) |
-| [`define.lib()`](#define-lib)       | [Rslib](https://rslib.rs/config/)                                       | [`rs lib`](./cli/lib)                                                           |
-| [`define.doc()`](#define-doc)       | [Rspress](https://rspress.rs/api/config/config-basic)                   | [`rs doc`](./cli/doc)                                                           |
-| [`define.test()`](#define-test)     | [Rstest](https://rstest.rs/config/)                                     | [`rs test`](./cli/test)                                                         |
-| [`define.lint()`](#define-lint)     | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
-| [`define.fmt()`](#define-fmt)       | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
-| [`define.staged()`](#define-staged) | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
+| API                                   | Tool                                                                    | Commands                                                                        |
+| ------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [`define.app()`](#define-app)         | [Rsbuild](https://rsbuild.rs/config/)                                   | [`rs dev`](./cli/dev), [`rs build`](./cli/build), [`rs preview`](./cli/preview) |
+| [`define.lib()`](#define-lib)         | [Rslib](https://rslib.rs/config/)                                       | [`rs lib`](./cli/lib)                                                           |
+| [`define.context()`](#define-context) | Rstack build-context capture                                            | [`rs mcp`](./cli/mcp)                                                           |
+| [`define.doc()`](#define-doc)         | [Rspress](https://rspress.rs/api/config/config-basic)                   | [`rs doc`](./cli/doc)                                                           |
+| [`define.test()`](#define-test)       | [Rstest](https://rstest.rs/config/)                                     | [`rs test`](./cli/test)                                                         |
+| [`define.lint()`](#define-lint)       | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
+| [`define.fmt()`](#define-fmt)         | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
+| [`define.staged()`](#define-staged)   | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
 
 ### `define.app()` \{#define-app}
 
@@ -107,6 +108,23 @@ define.lib({
   format: 'esm',
 });
 ```
+
+### `define.context()` \{#define-context}
+
+Configures checkout-local Rstack build-context capture for `rs dev`, `rs build`, and `rs lib`. This Rstack-owned configuration is not forwarded to Rsbuild or Rslib.
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.context({
+  enabled: true,
+  capture: 'metadata',
+});
+```
+
+Capture is disabled unless `enabled` is `true` or `RSTACK_CONTEXT=1` is set. `RSTACK_CONTEXT=0` always disables capture, and `capture: 'off'` disables it even when it is enabled. When capture is enabled and omitted, it defaults to `metadata`; `deep` still captures metadata and records deep capture as unsupported in Phase 1A.
+
+Use [`rs mcp`](./cli/mcp) to read the completed observations through the local read-only MCP server.
 
 ### `define.doc()` \{#define-doc}
 

@@ -1,0 +1,44 @@
+# MCP \{#mcp}
+
+`rs mcp` 将当前检出的 Rstack 构建上下文观测结果提供给 MCP 客户端。Phase 1A 仅提供状态：它不会启动构建、修改配置或写入项目文件。
+
+## 用法 \{#usage}
+
+在仓库根目录启动一个本地 MCP 服务器：
+
+```bash
+rs mcp
+```
+
+服务器通过标准输入和输出通信，因此 stdout 仅用于 MCP 协议消息。它会根据命令的启动路径解析检出目录，并提供 `project_status` 工具。
+
+## 捕获构建上下文 \{#capture-build-context}
+
+在 `rstack.config.ts` 中启用元数据捕获：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.context({
+  enabled: true,
+  capture: 'metadata',
+});
+```
+
+`define.context()` 是 Rstack 自有配置，不会转发给 Rsbuild 或 Rslib。`RSTACK_CONTEXT=1` 会启用捕获，而 `RSTACK_CONTEXT=0` 始终会禁用捕获。`capture: 'off'` 也会禁用捕获。
+
+生产者会在执行 `rs dev`、`rs build` 和 `rs lib` 时，将已完成的观测结果写入检出目录本地存储。它们不会连接到 MCP 进程；MCP 服务器会在调用 `project_status` 时读取存储。
+
+所有配置规则请参阅 [`define.context()`](../configuration#define-context)。
+
+## Monorepo \{#monorepos}
+
+在 monorepo 根目录运行一个 MCP 进程。即使构建是在各个包目录中独立启动，它也会读取该检出目录内每个包记录的运行信息。
+
+它适用于仅使用 Rslib 的仓库、仅使用 Rsbuild 的仓库，以及同时使用两者的仓库。不需要 Turbo、Nx、守护进程、任务图或生产者到 MCP 的连接。
+
+## 限制 \{#limitations}
+
+Phase 1A 仅公开 `project_status`，并返回可能不完整或已过时的已完成观测结果。它不包含 Rsdoctor 产物、报告链接、保留控制、诊断查询或变更工具。
+
+构建上下文是已观测构建的证据，不能证明未观测到的代码已经死亡或未被使用。

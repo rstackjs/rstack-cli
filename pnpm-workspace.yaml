@@ -13,6 +13,7 @@ cleanupUnusedCatalogs: true
 
 catalog:
   '@napi-rs/cli': '^3.8.3'
+  '@modelcontextprotocol/sdk': '1.29.0'
   '@rsbuild/core': '~2.1.10'
   '@rsbuild/plugin-react': '^2.1.0'
   '@rsbuild/plugin-sass': '^2.0.1'

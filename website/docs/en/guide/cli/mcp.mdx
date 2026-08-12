@@ -1,0 +1,44 @@
+# MCP
+
+`rs mcp` exposes checkout-local Rstack build-context observations to an MCP client. Phase 1A provides status only: it never starts builds, changes configuration, or writes project files.
+
+## Usage
+
+Start one local MCP server from the repository root:
+
+```bash
+rs mcp
+```
+
+The server communicates over standard input and output, so stdout is reserved for MCP protocol messages. It resolves the checkout from the command's launch path and serves the `project_status` tool.
+
+## Capture build context
+
+Enable metadata capture in `rstack.config.ts`:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.context({
+  enabled: true,
+  capture: 'metadata',
+});
+```
+
+`define.context()` is Rstack-owned configuration. It is not forwarded to Rsbuild or Rslib. `RSTACK_CONTEXT=1` enables capture, while `RSTACK_CONTEXT=0` always disables it. `capture: 'off'` also disables capture.
+
+Producers write completed observations to the checkout-local store during `rs dev`, `rs build`, and `rs lib`. They do not connect to the MCP process; the MCP server reads the store when `project_status` is called.
+
+For all configuration rules, see [`define.context()`](../configuration#define-context).
+
+## Monorepos
+
+Run one MCP process at the monorepo root. It reads the recorded runs from every package in that checkout, even when the builds were started independently from package directories.
+
+This works for Rslib-only repositories, Rsbuild-only repositories, and repositories that use both. It does not require Turbo, Nx, a daemon, a task graph, or a producer-to-MCP connection.
+
+## Limitations
+
+Phase 1A exposes only `project_status` and returns completed observations that may be partial or stale. It does not include Rsdoctor artifacts, report links, retention controls, diagnostics queries, or mutation tools.
+
+Build context is evidence about observed builds, not proof that unobserved code is dead or unused.

@@ -1096,13 +1096,15 @@ paths, trees, tables, and evidence cards; a full visual graph is optional invest
 ```mermaid
 flowchart TB
   P0["Phase 0: foundation + contracts<br/>Workspace discovery + immutable records"]
-  P1["Phase 1: passive build context<br/>Snapshots + one read-only MCP server"]
+  P1A["Phase 1A: passive build context<br/>Snapshots + one read-only MCP server"]
+  P1B["Phase 1B: Rsdoctor ingestion + richer build diagnostics"]
+  P1C["Phase 1C: bounded retention + report links"]
   P2["Phase 2: reachability<br/>Product roots + unused-code skills"]
   P3["Phase 3: development intelligence<br/>Generations + Rslint + Rstest"]
   P4["Phase 4: change workflows<br/>Snapshot diffs + CI + fix previews"]
   P5["Phase 5: optional presentation<br/>Remote transport + thin visual summaries"]
 
-  P0 --> P1 --> P2 --> P3 --> P4 --> P5
+  P0 --> P1A --> P1B --> P1C --> P2 --> P3 --> P4 --> P5
 ```
 
 ### Phase 0: foundation and contracts
@@ -1113,11 +1115,20 @@ flowchart TB
 - Land Rsdoctor preview packages and artifact metadata.
 - Contract-test the Rspack/Rsdoctor payload against pinned versions.
 
-### Phase 1: passive build context
+### Phase 1A: passive build context
 
 - Add trusted, metadata-only Rsbuild/Rspack and Rslib observers.
+- Implement `rs mcp` with status-only, read-only MCP access to completed observations.
+
+### Phase 1B: Rsdoctor ingestion and richer build diagnostics
+
 - Ingest static Rsdoctor artifacts through the in-process Agent CLI.
-- Implement `rs mcp`, status, diagnostics, basic entity queries, record retention, and report links.
+- Add richer build diagnostics.
+
+### Phase 1C: bounded retention and report links
+
+- Add bounded retention after real artifact sizes and access patterns are measured.
+- Add report links.
 
 ### Phase 2: reachability and skills
 

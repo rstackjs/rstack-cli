@@ -19,6 +19,7 @@ const renderRootHelp = (): string =>
           ['lint', 'Lint code'],
           ['check', 'Run static checks, including lint and format'],
           ['test', 'Run tests'],
+          ['mcp', 'Start the local Rstack MCP server over stdio'],
           ['staged', 'Run tasks on staged Git files'],
           ['setup', 'Install Git hooks'],
         ],
@@ -424,6 +425,12 @@ const renderLintHelp = (): string =>
     ],
   });
 
+const renderMcpHelp = (): string =>
+  renderHelp({
+    usage: 'rs mcp',
+    description: 'Start the local Rstack MCP server over stdio',
+  });
+
 async function runRsbuildCLI(args: string[]): Promise<void> {
   if (hasHelpFlag(args)) {
     switch (args[0]) {
@@ -602,6 +609,25 @@ async function runCheckCLI(args: string[]): Promise<void> {
   await runFmtCLI(['--check']);
 }
 
+async function runMcpCLI(args: string[]): Promise<void> {
+  const { values } = parseArgs({
+    args,
+    options: {
+      help: { type: 'boolean', short: 'h' },
+    },
+    allowPositionals: false,
+    strict: true,
+  });
+
+  if (values.help) {
+    console.log(renderMcpHelp());
+    return;
+  }
+
+  const { runContextMcpServer } = await import('../mcp.ts');
+  await runContextMcpServer(process.cwd());
+}
+
 export async function setupCommands(): Promise<void> {
   const { args, configPath } = parseCliArgs(process.argv.slice(2));
   const command = args[0];
@@ -640,6 +666,11 @@ export async function setupCommands(): Promise<void> {
 
   if (command === 'check') {
     await runCheckCLI(args.slice(1));
+    return;
+  }
+
+  if (command === 'mcp') {
+    await runMcpCLI(args.slice(1));
     return;
   }
 

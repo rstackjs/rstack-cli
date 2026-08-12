@@ -66,15 +66,16 @@ define.app(async () => {
 
 各 API 沿用底层工具的配置格式。使用 Rstack 已重导出的 API 和辅助函数时，推荐从 `rstack/app`、`rstack/lib`、`rstack/test` 和 `rstack/lint` 入口导入。
 
-| API                                 | 底层工具                                                                | 对应命令                                                                        |
-| ----------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| [`define.app()`](#define-app)       | [Rsbuild](https://rsbuild.rs/zh/config/)                                | [`rs dev`](./cli/dev)、[`rs build`](./cli/build)、[`rs preview`](./cli/preview) |
-| [`define.lib()`](#define-lib)       | [Rslib](https://rslib.rs/zh/config/)                                    | [`rs lib`](./cli/lib)                                                           |
-| [`define.doc()`](#define-doc)       | [Rspress](https://rspress.rs/zh/api/config/config-basic)                | [`rs doc`](./cli/doc)                                                           |
-| [`define.test()`](#define-test)     | [Rstest](https://rstest.rs/zh/config/)                                  | [`rs test`](./cli/test)                                                         |
-| [`define.lint()`](#define-lint)     | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
-| [`define.fmt()`](#define-fmt)       | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
-| [`define.staged()`](#define-staged) | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
+| API                                   | 底层工具                                                                | 对应命令                                                                        |
+| ------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [`define.app()`](#define-app)         | [Rsbuild](https://rsbuild.rs/zh/config/)                                | [`rs dev`](./cli/dev)、[`rs build`](./cli/build)、[`rs preview`](./cli/preview) |
+| [`define.lib()`](#define-lib)         | [Rslib](https://rslib.rs/zh/config/)                                    | [`rs lib`](./cli/lib)                                                           |
+| [`define.context()`](#define-context) | Rstack 构建上下文捕获                                                   | [`rs mcp`](./cli/mcp)                                                           |
+| [`define.doc()`](#define-doc)         | [Rspress](https://rspress.rs/zh/api/config/config-basic)                | [`rs doc`](./cli/doc)                                                           |
+| [`define.test()`](#define-test)       | [Rstest](https://rstest.rs/zh/config/)                                  | [`rs test`](./cli/test)                                                         |
+| [`define.lint()`](#define-lint)       | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
+| [`define.fmt()`](#define-fmt)         | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
+| [`define.staged()`](#define-staged)   | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
 
 ### `define.app()` \{#define-app}
 
@@ -107,6 +108,23 @@ define.lib({
   format: 'esm',
 });
 ```
+
+### `define.context()` \{#define-context}
+
+为 `rs dev`、`rs build` 和 `rs lib` 配置检出目录本地的 Rstack 构建上下文捕获。这是 Rstack 自有配置，不会转发给 Rsbuild 或 Rslib。
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.context({
+  enabled: true,
+  capture: 'metadata',
+});
+```
+
+除非 `enabled` 为 `true` 或设置了 `RSTACK_CONTEXT=1`，否则捕获会保持禁用。`RSTACK_CONTEXT=0` 始终会禁用捕获；即使已启用，`capture: 'off'` 也会禁用捕获。启用捕获但省略 `capture` 时，默认值为 `metadata`；`deep` 仍会捕获元数据，并在 Phase 1A 中将深度捕获记录为不受支持。
+
+使用 [`rs mcp`](./cli/mcp) 通过本地只读 MCP 服务器读取已完成的观测结果。
 
 ### `define.doc()` \{#define-doc}
 
