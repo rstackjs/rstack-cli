@@ -95,9 +95,9 @@ test('registers the exact ordered fourteen-tool catalog with accurate annotation
       expect(tools.map((tool) => tool.name)).not.toContain('context_prune');
       expect(tools[0]).toMatchObject({
         name: 'project_status',
-        title: 'Rstack project status',
+        title: 'Rstack context status',
         description:
-          'Return checkout-local Rstack build contexts and their latest completed observations.',
+          'Return all recorded checkout-local Rstack contexts and their latest completed snapshots.',
         annotations: {
           readOnlyHint: true,
           destructiveHint: false,

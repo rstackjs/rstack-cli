@@ -219,9 +219,9 @@ const createContextMcpServer = (
   server.registerTool(
     'project_status',
     {
-      title: 'Rstack project status',
+      title: 'Rstack context status',
       description:
-        'Return checkout-local Rstack build contexts and their latest completed observations.',
+        'Return all recorded checkout-local Rstack contexts and their latest completed snapshots.',
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
