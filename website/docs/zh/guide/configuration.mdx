@@ -38,7 +38,7 @@ Rstack 默认会查找使用以下任一文件名的配置文件：
 - `rstack.config.mts`
 - `rstack.config.mjs`
 
-所有 `rs` 命令都支持全局的 `-c, --config` 选项，用于加载其他名称或位置的配置文件：
+会使用 Rstack 配置的命令都支持全局的 `-c, --config` 选项，用于加载其他名称或位置的配置文件：
 
 ```bash
 rs build --config ./configs/rstack.config.ts
@@ -46,7 +46,9 @@ rs build --config ./configs/rstack.config.ts
 
 ## 按需加载依赖 \{#loading-dependencies-on-demand}
 
-每次执行 `rs` 命令时，Rstack 都会加载并执行配置文件，然后只解析当前命令需要的配置函数。
+执行会使用 Rstack 配置的命令时，Rstack 会加载并执行配置文件，然后只解析当前命令需要的配置函数。
+
+> [`rs mcp`](./cli/mcp) 是只读的存储读取器。它根据启动所在目录解析检出目录，不会加载或执行 `rstack.config.*`；请改为在生产者命令 [`rs dev`](./cli/dev)、[`rs build`](./cli/build) 和 [`rs lib`](./cli/lib) 上启用捕获。
 
 如果配置需要导入插件或其他工具专属依赖，请使用异步配置函数，并在函数内通过动态 `import()` 加载这些依赖。这样只有解析该配置时才会加载相关依赖。
 
@@ -70,7 +72,7 @@ define.app(async () => {
 | ------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | [`define.app()`](#define-app)         | [Rsbuild](https://rsbuild.rs/zh/config/)                                | [`rs dev`](./cli/dev)、[`rs build`](./cli/build)、[`rs preview`](./cli/preview) |
 | [`define.lib()`](#define-lib)         | [Rslib](https://rslib.rs/zh/config/)                                    | [`rs lib`](./cli/lib)                                                           |
-| [`define.context()`](#define-context) | Rstack 构建上下文捕获                                                   | [`rs mcp`](./cli/mcp)                                                           |
+| [`define.context()`](#define-context) | Rstack 构建上下文捕获                                                   | [`rs dev`](./cli/dev)、[`rs build`](./cli/build)、[`rs lib`](./cli/lib)         |
 | [`define.doc()`](#define-doc)         | [Rspress](https://rspress.rs/zh/api/config/config-basic)                | [`rs doc`](./cli/doc)                                                           |
 | [`define.test()`](#define-test)       | [Rstest](https://rstest.rs/zh/config/)                                  | [`rs test`](./cli/test)                                                         |
 | [`define.lint()`](#define-lint)       | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |

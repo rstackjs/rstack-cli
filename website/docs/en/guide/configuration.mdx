@@ -38,7 +38,7 @@ By default, Rstack looks for a file with one of the following names:
 - `rstack.config.mts`
 - `rstack.config.mjs`
 
-All `rs` commands accept the global `-c, --config` option for loading a file with a different name or location:
+Commands that consume Rstack configuration accept the global `-c, --config` option for loading a file with a different name or location:
 
 ```bash
 rs build --config ./configs/rstack.config.ts
@@ -46,7 +46,9 @@ rs build --config ./configs/rstack.config.ts
 
 ## Loading dependencies on demand
 
-Every `rs` command loads and executes the Rstack configuration file, then resolves only the configuration functions needed by that command.
+Commands that consume Rstack configuration load and execute the Rstack configuration file, then resolve only the configuration functions needed by that command.
+
+> [`rs mcp`](./cli/mcp) is a read-only store reader. It resolves the checkout from its launch directory and does not load or execute `rstack.config.*`; enable capture on the producer commands, [`rs dev`](./cli/dev), [`rs build`](./cli/build), and [`rs lib`](./cli/lib), instead.
 
 When a configuration needs to import plugins or other tool-specific dependencies, use an async configuration function and load those dependencies with dynamic `import()` inside it. This ensures that they are loaded only when the configuration is resolved.
 
@@ -70,7 +72,7 @@ Configuration options follow the formats of the underlying tools. When using API
 | ------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | [`define.app()`](#define-app)         | [Rsbuild](https://rsbuild.rs/config/)                                   | [`rs dev`](./cli/dev), [`rs build`](./cli/build), [`rs preview`](./cli/preview) |
 | [`define.lib()`](#define-lib)         | [Rslib](https://rslib.rs/config/)                                       | [`rs lib`](./cli/lib)                                                           |
-| [`define.context()`](#define-context) | Rstack build-context capture                                            | [`rs mcp`](./cli/mcp)                                                           |
+| [`define.context()`](#define-context) | Rstack build-context capture                                            | [`rs dev`](./cli/dev), [`rs build`](./cli/build), [`rs lib`](./cli/lib)         |
 | [`define.doc()`](#define-doc)         | [Rspress](https://rspress.rs/api/config/config-basic)                   | [`rs doc`](./cli/doc)                                                           |
 | [`define.test()`](#define-test)       | [Rstest](https://rstest.rs/config/)                                     | [`rs test`](./cli/test)                                                         |
 | [`define.lint()`](#define-lint)       | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
