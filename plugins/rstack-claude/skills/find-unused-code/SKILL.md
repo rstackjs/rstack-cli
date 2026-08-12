@@ -1,13 +1,14 @@
 ---
 name: find-unused-code
-description: Find artifact-scoped Rstack module candidates that are unreachable from observed product roots. Use for requests to locate unused modules or prioritize dead-code investigation in an explicit Rsdoctor build artifact.
+description: Find artifact-scoped Rstack modules unreachable from observed product roots. Use this skill when listing or prioritizing module-level unused-code candidates in an explicit Rsdoctor artifact; it does not analyze local symbols.
 ---
 
 # Find unused code
 
-Require the project's `rs` executable to be available on the MCP host's `PATH`.
-
-1. Call `project_status` and select the relevant ready context. Do not invent a context when the choice is ambiguous.
+1. Call `project_status` and select the context whose package root, product, environment, and target
+   match the user's build. If none exists, explain that a relevant Rstack build must publish a
+   context and stop; deduplicate repeated runs by `contextId`, and ask the user to choose only if
+   several distinct contexts match.
 2. Obtain the user's explicit Rsdoctor `dataFile`; do not discover or generate an artifact implicitly.
 3. Call `product_roots` with `contextId` and `dataFile`. Summarize production, published-contract, and conservative roots plus graph issues.
 4. Call `unused_candidates` with the same inputs and an optional `limit` from 1 to 100.

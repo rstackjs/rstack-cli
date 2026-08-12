@@ -1,13 +1,12 @@
 ---
 name: analyze-build
-description: Analyze an explicit Rstack Rsdoctor build artifact with the narrowest relevant view. Use for build summaries, errors, chunks, bundle optimization, or tree-shaking retention and side-effect questions.
+description: Analyze an explicit Rstack Rsdoctor artifact with the narrowest build-wide view. Use this skill when summarizing build health or errors, inspecting chunks or packages, finding bundle optimizations, or reviewing build-wide tree-shaking evidence; use explain-dead-code for one module.
 ---
 
 # Analyze build
 
-Require the project's `rs` executable to be available on the MCP host's `PATH`.
-
-1. Call `project_status` to establish available contexts and latest build observations.
+1. Call `project_status` to establish available contexts and latest build observations. Analysis can
+   still proceed from the explicit artifact when no recorded context exists.
 2. Obtain the user's explicit Rsdoctor `dataFile`; do not start a build or discover an artifact implicitly.
 3. Call `rsdoctor_analyze` with the narrowest suitable `toolName` and only the input that view needs:
    - Use `build_summary` for an overview.
@@ -17,7 +16,12 @@ Require the project's `rs` executable to be available on the MCP host's `PATH`.
    - Use `tree_shaking_retained_modules` for retained modules.
    - Use `tree_shaking_side_effects` for side effects.
    - Use `tree_shaking_summary` for a tree-shaking overview.
-4. Summarize the returned evidence and its artifact boundary. Use another narrow view only when the first result makes it necessary.
+   - Use `packages_direct_dependencies` for direct bundled dependencies.
+   - Use `packages_duplicates` for bundled duplicate packages.
+   - Use `packages_similar` for similar bundled packages.
+4. Summarize the returned evidence and its artifact boundary. Distinguish missing or `null` data
+   from a measured zero or a healthy result. Use another narrow view only when the first result
+   makes it necessary.
 5. Call `report_link` only when a navigable local report would help. Treat it as optional.
 
 Never require a GUI. Do not infer source execution or repository-wide dead code from build-artifact evidence.

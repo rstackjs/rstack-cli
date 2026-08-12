@@ -3,12 +3,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ContentBlock } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import { diffContextSnapshots } from './diff.ts';
-import {
-  captureLintSnapshot,
-  getLintFixPreview,
-  listDiagnostics,
-  type LintSnapshotRequest,
-} from './lint.ts';
+import { captureLintSnapshot, getLintFixPreview, listDiagnostics } from './lint.ts';
 import {
   explainDeadCodeCandidate,
   findUnusedCandidates,
@@ -116,7 +111,7 @@ const lintFixPreviewInput = z
   .object({ snapshotId: z.string().min(1), path: z.string().min(1) })
   .strict();
 
-const lintSnapshotInput = z.discriminatedUnion('mode', [
+const lintSnapshotRequestInput = z.discriminatedUnion('mode', [
   z
     .object({
       mode: z.literal('files'),
@@ -137,6 +132,18 @@ const lintSnapshotInput = z.discriminatedUnion('mode', [
     })
     .strict(),
 ]);
+
+const lintSnapshotInput = z
+  .object({
+    mode: z.enum(['files', 'text']),
+    patterns: z.array(z.string().min(1)).optional(),
+    code: z.string().optional(),
+    filePath: z.string().min(1).optional(),
+    includeFixPreview: z.boolean().optional(),
+    packageRoot: z.string().min(1).optional(),
+    configPath: z.string().min(1).optional(),
+  })
+  .strict();
 
 const testSnapshotInput = z
   .object({
@@ -483,9 +490,10 @@ const createContextMcpServer = (
     },
     async (input) => {
       try {
+        const request = lintSnapshotRequestInput.parse(input);
         const result = await (dependencies.captureLintSnapshot ?? captureLintSnapshot)(
           workspaceRoot,
-          input as LintSnapshotRequest,
+          request,
         );
         return {
           content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],

@@ -15,7 +15,9 @@
     "developerName": "Rstack",
     "category": "Developer Tools",
     "capabilities": ["Project analysis", "Lint and test capture"],
-    "defaultPrompt": ["Analyze my Rstack project using the available checkout-local evidence."]
+    "defaultPrompt": [
+      "Show my current Rstack build, lint, and test context from stored checkout-local evidence; do not run a new capture."
+    ]
   },
   "mcpServers": "./.mcp.json"
 }

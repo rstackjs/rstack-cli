@@ -161,6 +161,18 @@ test('registers the exact ordered fourteen-tool catalog with accurate annotation
         destructiveHint: false,
         openWorldHint: true,
       });
+      expect(tools[10]?.inputSchema).toMatchObject({
+        additionalProperties: false,
+        required: ['mode'],
+        properties: {
+          mode: expect.any(Object),
+          packageRoot: expect.any(Object),
+          configPath: expect.any(Object),
+          patterns: expect.any(Object),
+          code: expect.any(Object),
+          filePath: expect.any(Object),
+        },
+      });
       expect(tools[11]?.annotations).toMatchObject({
         readOnlyHint: false,
         destructiveHint: true,
@@ -893,6 +905,12 @@ test('runs explicit captures through injected producers and returns ordinary MCP
           packageRoot: 'packages/app',
           configPath: 'packages/app/rstack.config.ts',
         });
+        const incompleteLintText = await client.callTool({
+          name: 'lint_snapshot',
+          arguments: { mode: 'text', filePath: 'src/index.ts' },
+        });
+        expect(incompleteLintText.isError).toBe(true);
+        expect(captureRequests).toHaveLength(2);
 
         const testResult = await client.callTool({
           name: 'test_snapshot',

@@ -111,7 +111,9 @@ test('publishes host-valid plugin manifests and MCP launch configurations', asyn
     skills: './skills/',
     mcpServers: './.mcp.json',
     interface: {
-      defaultPrompt: ['Analyze my Rstack project using the available checkout-local evidence.'],
+      defaultPrompt: [
+        'Show my current Rstack build, lint, and test context from stored checkout-local evidence; do not run a new capture.',
+      ],
     },
   });
   expect(claudeManifest).toMatchObject({
