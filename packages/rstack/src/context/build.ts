@@ -247,7 +247,7 @@ const createBuildContextPlugin = (options: BuildContextPluginOptions): RsbuildPl
   let warned = false;
 
   return {
-    name: 'rstack:build-context',
+    name: 'rstack:context-build',
     setup(api) {
       const guard =
         <Arguments extends unknown[]>(callback: (...args: Arguments) => Promise<void> | void) =>

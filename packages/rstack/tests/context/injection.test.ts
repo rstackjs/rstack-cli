@@ -114,7 +114,7 @@ const getObserver = (config: { plugins?: Array<unknown> }) => {
       }
     | undefined;
 
-  expect(observer?.name).toBe('rstack:build-context');
+  expect(observer?.name).toBe('rstack:context-build');
   return observer!;
 };
 
@@ -233,7 +233,7 @@ test('keeps the resolved library config unchanged when context is disabled', asy
 
       expect(config).toBe(hooks.config);
       expect(config.plugins?.map((plugin) => (plugin as { name?: string })?.name)).not.toContain(
-        'rstack:build-context',
+        'rstack:context-build',
       );
       expect(config.lib).toBe(hooks.config.lib);
     },
@@ -248,7 +248,7 @@ test('RSTACK_CONTEXT=0 prevents app observer injection while preserving config w
     const watchFiles = config.dev?.watchFiles as Array<{ paths?: string[] }>;
 
     expect(config.plugins?.map((plugin) => (plugin as { name?: string })?.name)).not.toContain(
-      'rstack:build-context',
+      'rstack:context-build',
     );
     expect(watchFiles[0]).toBe('user-watch.ts');
     expect(watchFiles.at(-1)).toMatchObject({ paths: [fixture.configPath] });
