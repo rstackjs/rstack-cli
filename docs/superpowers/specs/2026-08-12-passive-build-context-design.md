@@ -27,8 +27,8 @@ records on demand, and exposes a compact `project_status` tool. It does not list
 producer processes, index a task graph, or cache authoritative state.
 
 This is Phase 1A. Phase 1B will add static Rsdoctor ingestion and richer build diagnostics. Phase 1C
-will add bounded retention and report links after real artifact sizes and access patterns are
-measured.
+will add report links. Destructive retention is deferred pending real artifact-size and
+access-pattern measurements and defined product semantics.
 
 ## Alternatives considered
 
