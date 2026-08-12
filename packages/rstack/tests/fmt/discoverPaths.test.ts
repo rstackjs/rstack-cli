@@ -152,6 +152,41 @@ test('applies a nested gitignore without a root matcher', async () => {
   });
 });
 
+test('loads gitignore rules between the Git root and a nested cwd', async () => {
+  await withTempProject(async (rootPath) => {
+    const cwd = path.join(rootPath, 'packages/app');
+    writeProjectFile(rootPath, '.gitignore', 'ignored.ts\n');
+    writeProjectFile(rootPath, 'packages/app/ignored.ts');
+    writeProjectFile(rootPath, 'packages/app/visible.ts');
+
+    const files = await discoverFmtPaths({ cwd });
+
+    expect(relativePaths(cwd, files)).toEqual(['visible.ts']);
+  });
+});
+
+test('discovers absolute directory and glob targets outside cwd', async () => {
+  await withTempProject(async (rootPath) => {
+    const cwd = path.join(rootPath, 'project');
+    const sharedPath = path.join(rootPath, 'shared');
+    writeProjectFile(rootPath, 'project/index.ts');
+    const javaScriptPath = writeProjectFile(rootPath, 'shared/index.js');
+    const typeScriptPath = writeProjectFile(rootPath, 'shared/nested/index.ts');
+
+    const directoryFiles = await discoverFmtPaths({
+      cwd,
+      patterns: [sharedPath],
+    });
+    const globFiles = await discoverFmtPaths({
+      cwd,
+      patterns: [path.join(sharedPath, '**/*.ts')],
+    });
+
+    expect(directoryFiles).toEqual([javaScriptPath, typeScriptPath]);
+    expect(globFiles).toEqual([typeScriptPath]);
+  });
+});
+
 test('keeps valid nested gitignore rules around normalized and malformed lines', async () => {
   await withTempProject(async (rootPath) => {
     writeProjectFile(rootPath, '.gitignore', '\uFEFF*.js\r\nmalformed\\\r\n');
