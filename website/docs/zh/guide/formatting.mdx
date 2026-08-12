@@ -108,7 +108,7 @@ define.fmt({
 2. **应用默认忽略规则和 `ignorePatterns`**：默认忽略 [lock 文件](#lock-files)，随后应用 `ignorePatterns`。这些规则按顺序匹配，后面的规则优先。例如，`!pnpm-lock.yaml` 可以重新包含默认忽略的文件。
 3. **应用 [`--ignore-path`](./cli/fmt#--ignore-path-path) 指定的文件**：每个 ignore 文件单独匹配，同一文件中后面的规则优先。不同 ignore 文件与 `ignorePatterns` 的排除结果会叠加：只要任一来源忽略某个路径，该路径就会保持排除，即使其他来源尝试重新包含它。
 
-> 即使命令行直接指定了某个文件，默认忽略规则、`ignorePatterns` 和 `--ignore-path` 中的规则仍然有效。通过 [`--stdin-filepath`](./cli/fmt#--stdin-filepath-path) 指定的路径也是如此。
+> 即使命令行直接指定了某个文件，默认忽略规则、`ignorePatterns` 和 `--ignore-path` 中的规则仍然有效。通过 [`--stdin-filepath`](./cli/fmt#--stdin-filepath-path) 指定的路径，以及通过 [`--lsp`](./cli/fmt#--lsp) 格式化的文档也是如此。
 
 ## 排序 package.json 字段 \{#sort-package-json}
 

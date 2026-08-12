@@ -25,6 +25,8 @@ interface ParsedFmtCLIArgs {
   help: boolean;
   /** Path the stdin content is formatted as; it need not exist on disk. */
   stdinFilepath?: string;
+  /** Serve formatting over the Language Server Protocol instead of exiting. */
+  lsp: boolean;
 }
 
 const renderFmtHelp = (): string =>
@@ -46,6 +48,7 @@ const renderFmtHelp = (): string =>
           ['--with-node-modules', 'Process files inside node_modules'],
           ['--parallel-workers <count>', 'Number of parallel workers'],
           ['--stdin-filepath <path>', 'Format stdin as if it were saved at <path>'],
+          ['--lsp', 'Run a language server on stdio'],
           ['-c, --config <path>', 'Specify Rstack config file path'],
           ['-h, --help', 'Display this help message'],
         ],
@@ -66,6 +69,19 @@ const parseMaxWorkers = (value: string | undefined): number | undefined => {
   return maxWorkers;
 };
 
+/** Rejects the mode flags and file arguments that a server-like option replaces. */
+const assertExclusiveMode = (option: string, hasMode: boolean, positionals: string[]): void => {
+  if (hasMode) {
+    throw new Error(
+      `The ${option} option cannot be used with --write, --check, or --list-different.`,
+    );
+  }
+
+  if (positionals.length > 0) {
+    throw new Error(`The ${option} option cannot be used with file arguments.`);
+  }
+};
+
 const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   const { values, positionals } = parseArgs({
     args,
@@ -81,6 +97,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       'with-node-modules': { type: 'boolean' },
       'parallel-workers': { type: 'string' },
       'stdin-filepath': { type: 'string' },
+      lsp: { type: 'boolean' },
       help: { type: 'boolean', short: 'h' },
     },
     allowPositionals: true,
@@ -110,17 +127,18 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   const maxWorkers = parseMaxWorkers(parallelWorkers);
   const help = values.help ?? false;
   const stdinFilepath = values.stdinFilepath;
+  const lsp = values.lsp ?? false;
+
+  if (lsp) {
+    assertExclusiveMode('--lsp', modes.length > 0, positionals);
+
+    if (stdinFilepath !== undefined) {
+      throw new Error('The --lsp option cannot be used with --stdin-filepath.');
+    }
+  }
 
   if (stdinFilepath !== undefined) {
-    if (modes.length > 0) {
-      throw new Error(
-        'The --stdin-filepath option cannot be used with --write, --check, or --list-different.',
-      );
-    }
-
-    if (positionals.length > 0) {
-      throw new Error('The --stdin-filepath option cannot be used with file arguments.');
-    }
+    assertExclusiveMode('--stdin-filepath', modes.length > 0, positionals);
   }
 
   return {
@@ -135,6 +153,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
     maxWorkers,
     help,
     stdinFilepath,
+    lsp,
   };
 };
 
@@ -244,7 +263,7 @@ const logFmtResult = (
 };
 
 const loadFmtConfig = async (cwd: string): Promise<ResolvedFmtConfig> => {
-  const { configs, filePath } = await loadRstackConfig();
+  const { configs, filePath } = await loadRstackConfig({ cwd });
 
   return resolveFmtConfig({
     definition: configs.fmt,
@@ -266,6 +285,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       help,
       ignorePaths,
       ignoreUnknown,
+      lsp,
       maxWorkers,
       mode,
       noErrorOnUnmatchedPattern,
@@ -275,6 +295,23 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
     } = parseFmtCLIArgs(args);
     if (help) {
       logger.log(renderFmtHelp());
+      return;
+    }
+
+    if (lsp) {
+      const { runFmtLsp } = await import(
+        /* rspackChunkName: 'fmtLsp' */
+        './lsp/server.ts'
+      );
+      await runFmtLsp({
+        // The client's workspace root is not necessarily the directory the
+        // editor spawned the server in; the server resolves relative
+        // `--ignore-path` values from this cwd so they stay based on the same
+        // directory as a relative `--config`.
+        cwd,
+        ignorePaths,
+        loadConfig: loadFmtConfig,
+      });
       return;
     }
 
