@@ -5,7 +5,7 @@ import { hasHelpFlag, renderHelp } from './help.ts';
 
 const renderRootHelp = (): string =>
   renderHelp({
-    usage: 'rs [command] [...options]',
+    usage: 'rs [command] [options]',
     sections: [
       {
         title: 'Commands',
@@ -48,6 +48,7 @@ const renderCheckHelp = (): string =>
         title: 'Options',
         items: [
           ['--type-check', 'Enable TypeScript type checking'],
+          ['-c, --config <path>', 'Specify Rstack config file path'],
           ['-h, --help', 'Display this help message'],
         ],
       },
@@ -182,10 +183,7 @@ const renderDocEjectHelp = (): string =>
     sections: [
       {
         title: 'Options',
-        items: [
-          ['-c, --config <path>', 'Specify Rstack config file path'],
-          ['-h, --help', 'Display this help message'],
-        ],
+        items: [['-h, --help', 'Display this help message']],
       },
     ],
   });
