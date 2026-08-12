@@ -129,8 +129,8 @@ type BuildMetadataFacet = {
   isFirstCompile: boolean;
   durationMs: number;
   hash?: string;
-  errors: number;
-  warnings: number;
+  hasErrors: boolean;
+  hasWarnings: boolean;
   assets: Array<{ name: string; size: number }>;
   chunks: Array<{ id?: string; files: string[]; initial?: boolean }>;
   truncated: { assets: number; chunks: number };
@@ -141,7 +141,9 @@ At most 100 assets, 100 chunks, and 20 files per chunk are retained. Asset names
 normalized to non-absolute POSIX paths. Source content, source maps, module source, raw config,
 environment variables, output contents, and full diagnostic messages are not captured.
 
-Snapshot status is derived from `stats.hasErrors()`: `fail` when true and `pass` otherwise. Missing
+Snapshot status is derived from `stats.hasErrors()`: `fail` when true and `pass` otherwise. The
+facet stores only `hasErrors` and `hasWarnings` booleans so no diagnostic text or misleading partial
+counts cross the observer boundary. Missing
 Stats produces `error` with `build: partial`. `deep` completeness is `disabled` for metadata mode and
 `unsupported` when deep capture was requested.
 
