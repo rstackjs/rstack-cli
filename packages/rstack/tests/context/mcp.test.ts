@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 // cspell:ignore modelcontextprotocol
@@ -54,12 +54,22 @@ const createRun = (runId: string, context: ContextDescriptor): ContextRunManifes
   contexts: [context],
 });
 
-test('registers only the read-only project status tool', async () => {
+const writeRsdoctorArtifact = async (workspaceRoot: string): Promise<void> => {
+  const dataFile = path.join(workspaceRoot, 'artifacts', 'rsdoctor-data.json');
+  await mkdir(path.dirname(dataFile), { recursive: true });
+  await writeFile(dataFile, JSON.stringify({ data: { summary: { costs: [{ costs: 12 }] } } }));
+};
+
+test('registers exactly three read-only closed-world context tools', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await withMcpClient(workspaceRoot, async (client) => {
       const { tools } = await client.listTools();
 
-      expect(tools).toHaveLength(1);
+      expect(tools.map((tool) => tool.name)).toEqual([
+        'project_status',
+        'rsdoctor_analyze',
+        'report_link',
+      ]);
       expect(tools[0]).toMatchObject({
         name: 'project_status',
         title: 'Rstack project status',
@@ -71,6 +81,137 @@ test('registers only the read-only project status tool', async () => {
           openWorldHint: false,
         },
       });
+      expect(tools[1]).toMatchObject({
+        name: 'rsdoctor_analyze',
+        annotations: {
+          readOnlyHint: true,
+          destructiveHint: false,
+          openWorldHint: false,
+        },
+        inputSchema: {
+          additionalProperties: false,
+          required: ['dataFile', 'toolName'],
+        },
+      });
+      expect(tools[2]).toMatchObject({
+        name: 'report_link',
+        annotations: {
+          readOnlyHint: true,
+          destructiveHint: false,
+          openWorldHint: false,
+        },
+        inputSchema: {
+          additionalProperties: false,
+          required: ['dataFile'],
+        },
+      });
+    });
+  });
+});
+
+test('analyzes an explicit local Rsdoctor artifact without returning workspace paths', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await writeRsdoctorArtifact(workspaceRoot);
+
+    await withMcpClient(workspaceRoot, async (client) => {
+      const result = await client.callTool({
+        name: 'rsdoctor_analyze',
+        arguments: {
+          dataFile: 'artifacts/rsdoctor-data.json',
+          toolName: 'build_summary',
+        },
+      });
+
+      expect(result.structuredContent).toEqual({
+        dataFile: 'artifacts/rsdoctor-data.json',
+        result: {
+          data: { costs: [{ costs: 12 }], totalCost: 12 },
+          description: 'Get build summary with costs (build time analysis).',
+          ok: true,
+        },
+        toolName: 'build_summary',
+      });
+      expect(JSON.stringify(result.content)).not.toContain(workspaceRoot);
+    });
+  });
+});
+
+test('returns a contained report resource link only for an existing report', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await writeRsdoctorArtifact(workspaceRoot);
+    const reportPath = path.join(workspaceRoot, 'artifacts', 'report-rsdoctor.html');
+    await writeFile(reportPath, '<html></html>');
+
+    await withMcpClient(workspaceRoot, async (client) => {
+      const result = await client.callTool({
+        name: 'report_link',
+        arguments: { dataFile: 'artifacts/rsdoctor-data.json' },
+      });
+
+      expect(result.structuredContent).toEqual({
+        dataFile: 'artifacts/rsdoctor-data.json',
+        report: {
+          kind: 'html',
+          path: 'artifacts/report-rsdoctor.html',
+          uri: `file://${reportPath}`,
+        },
+      });
+      expect(result.content).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: 'resource_link',
+            name: 'Rsdoctor HTML report',
+            uri: `file://${reportPath}`,
+          }),
+        ]),
+      );
+    });
+  });
+});
+
+test('returns redacted MCP errors for invalid Rsdoctor tool names and paths', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await writeRsdoctorArtifact(workspaceRoot);
+
+    await withMcpClient(workspaceRoot, async (client) => {
+      const unknownTool = await client.callTool({
+        name: 'rsdoctor_analyze',
+        arguments: {
+          dataFile: 'artifacts/rsdoctor-data.json',
+          toolName: 'unknown_tool',
+        },
+      });
+      const absolutePath = await client.callTool({
+        name: 'rsdoctor_analyze',
+        arguments: {
+          dataFile: path.join(workspaceRoot, 'artifacts', 'rsdoctor-data.json'),
+          toolName: 'build_summary',
+        },
+      });
+
+      expect(unknownTool.isError).toBe(true);
+      expect(absolutePath.isError).toBe(true);
+      expect(JSON.stringify(unknownTool)).not.toContain(workspaceRoot);
+      expect(JSON.stringify(absolutePath)).not.toContain(workspaceRoot);
+    });
+  });
+});
+
+test('rejects unexpected fields at the strict Rsdoctor MCP input boundary', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await writeRsdoctorArtifact(workspaceRoot);
+
+    await withMcpClient(workspaceRoot, async (client) => {
+      const result = await client.callTool({
+        name: 'rsdoctor_analyze',
+        arguments: {
+          dataFile: 'artifacts/rsdoctor-data.json',
+          toolName: 'build_summary',
+          unexpected: true,
+        },
+      });
+
+      expect(result.isError).toBe(true);
     });
   });
 });

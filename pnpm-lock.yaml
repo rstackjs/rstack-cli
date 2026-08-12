@@ -142,6 +142,9 @@ catalogs:
     yuku-parser:
       specifier: 0.8.4
       version: 0.8.4
+    zod:
+      specifier: 4.4.3
+      version: 4.4.3
 
 importers:
 
@@ -354,7 +357,7 @@ importers:
     dependencies:
       '@modelcontextprotocol/sdk':
         specifier: 'catalog:'
-        version: 1.29.0(supports-color@8.1.1)
+        version: 1.29.0(supports-color@8.1.1)(zod@4.4.3)
       '@rsbuild/core':
         specifier: 'catalog:'
         version: 2.1.10
@@ -379,6 +382,9 @@ importers:
       yuku-parser:
         specifier: 'catalog:'
         version: 0.8.4
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
     devDependencies:
       '@napi-rs/cli':
         specifier: 'catalog:'
@@ -743,6 +749,7 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       '@cfworker/json-schema': ^4.1.1
+      zod: ^3.25 || ^4.0
     peerDependenciesMeta:
       '@cfworker/json-schema':
         optional: true
@@ -3588,7 +3595,7 @@ snapshots:
       '@types/react': 19.2.18
       react: 19.2.8
 
-  '@modelcontextprotocol/sdk@1.29.0(supports-color@8.1.1)':
+  '@modelcontextprotocol/sdk@1.29.0(supports-color@8.1.1)(zod@4.4.3)':
     dependencies:
       '@hono/node-server': 1.19.17(hono@4.13.1)
       ajv: 8.20.0

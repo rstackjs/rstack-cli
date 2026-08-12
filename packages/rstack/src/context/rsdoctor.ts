@@ -1,5 +1,6 @@
 import { lstat, readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { createInProcessRsdoctorCliToolExecutor, getToolCatalog } from '@rsdoctor/agent-cli';
 import type { JsonValue } from './model.ts';
 
@@ -79,6 +80,11 @@ type RsdoctorAnalysisResult = {
   toolName: string;
   dataFile: string;
   result: JsonValue;
+};
+
+type ResolvedRsdoctorArtifact = {
+  dataFile: string;
+  resolveContainedReportFile: (file: string) => Promise<{ path: string; uri: string }>;
 };
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
@@ -253,6 +259,21 @@ const getRelativeDataFile = (dataFile: unknown): string => {
   return dataFile;
 };
 
+const getRelativeWorkspaceFile = (file: unknown): string => {
+  if (
+    typeof file !== 'string' ||
+    file.length === 0 ||
+    file.includes('\\') ||
+    isAbsolutePath(file) ||
+    file !== path.posix.normalize(file) ||
+    file.split('/').includes('..')
+  ) {
+    throw new Error('Rsdoctor file must be a normalized relative path.');
+  }
+
+  return file;
+};
+
 const isWithin = (parent: string, candidate: string): boolean => {
   const relative = path.relative(parent, candidate);
   return (
@@ -275,29 +296,40 @@ const resolveWorkspaceRoot = async (workspaceRoot: unknown): Promise<string> => 
   }
 };
 
-const readArtifact = async (workspaceRoot: string, dataFile: string): Promise<string> => {
-  const candidate = path.resolve(workspaceRoot, dataFile);
+const resolveContainedFile = async (workspaceRoot: string, file: string): Promise<string> => {
+  const candidate = path.resolve(workspaceRoot, getRelativeWorkspaceFile(file));
   if (!isWithin(workspaceRoot, candidate)) {
-    throw new Error('Rsdoctor data file must stay within the workspace.');
+    throw new Error('Rsdoctor file must stay within the workspace.');
   }
 
-  let resolvedArtifact: string;
+  let resolvedFile: string;
   try {
-    resolvedArtifact = await realpath(candidate);
+    resolvedFile = await realpath(candidate);
   } catch {
-    throw new Error('Rsdoctor data file could not be resolved.');
+    throw new Error('Rsdoctor file could not be resolved.');
   }
 
-  if (!isWithin(workspaceRoot, resolvedArtifact)) {
-    throw new Error('Rsdoctor data file must stay within the workspace.');
+  if (!isWithin(workspaceRoot, resolvedFile)) {
+    throw new Error('Rsdoctor file must stay within the workspace.');
   }
 
   let fileStats: Awaited<ReturnType<typeof lstat>>;
   try {
-    fileStats = await lstat(resolvedArtifact);
+    fileStats = await lstat(resolvedFile);
   } catch {
-    throw new Error('Rsdoctor data file could not be read.');
+    throw new Error('Rsdoctor file could not be read.');
   }
+
+  if (!fileStats.isFile()) {
+    throw new Error('Rsdoctor file must be a regular file.');
+  }
+
+  return resolvedFile;
+};
+
+const readArtifact = async (workspaceRoot: string, dataFile: string): Promise<string> => {
+  const resolvedArtifact = await resolveContainedFile(workspaceRoot, dataFile);
+  const fileStats = await lstat(resolvedArtifact);
 
   if (!fileStats.isFile()) {
     throw new Error('Rsdoctor data file must be a regular file.');
@@ -330,6 +362,29 @@ const readArtifact = async (workspaceRoot: string, dataFile: string): Promise<st
   }
 
   return resolvedArtifact;
+};
+
+const toRelativeWorkspaceFile = (workspaceRoot: string, file: string): string =>
+  path.relative(workspaceRoot, file).split(path.sep).join('/');
+
+const resolveRsdoctorArtifact = async (
+  workspaceRoot: string,
+  dataFile: string,
+): Promise<ResolvedRsdoctorArtifact> => {
+  const relativeDataFile = getRelativeDataFile(dataFile);
+  const canonicalWorkspaceRoot = await resolveWorkspaceRoot(workspaceRoot);
+  const artifactPath = await readArtifact(canonicalWorkspaceRoot, relativeDataFile);
+
+  return Object.freeze({
+    dataFile: toRelativeWorkspaceFile(canonicalWorkspaceRoot, artifactPath),
+    resolveContainedReportFile: async (file: string): Promise<{ path: string; uri: string }> => {
+      const resolvedFile = await resolveContainedFile(canonicalWorkspaceRoot, file);
+      return {
+        path: toRelativeWorkspaceFile(canonicalWorkspaceRoot, resolvedFile),
+        uri: pathToFileURL(resolvedFile).toString(),
+      };
+    },
+  });
 };
 
 const getInput = (input: unknown): Record<string, unknown> => {
@@ -386,11 +441,16 @@ const analyzeRsdoctorArtifact = async (
   }
 
   return {
-    dataFile: path.relative(canonicalWorkspaceRoot, artifactPath).split(path.sep).join('/'),
+    dataFile: toRelativeWorkspaceFile(canonicalWorkspaceRoot, artifactPath),
     result,
     toolName: request.toolName,
   };
 };
 
-export { analyzeRsdoctorArtifact, listRsdoctorTools };
-export type { RsdoctorAnalysisRequest, RsdoctorAnalysisResult, RsdoctorToolDescriptor };
+export { analyzeRsdoctorArtifact, listRsdoctorTools, resolveRsdoctorArtifact };
+export type {
+  ResolvedRsdoctorArtifact,
+  RsdoctorAnalysisRequest,
+  RsdoctorAnalysisResult,
+  RsdoctorToolDescriptor,
+};

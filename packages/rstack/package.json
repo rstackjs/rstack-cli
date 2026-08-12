@@ -81,7 +81,8 @@
     "@rstest/core": "catalog:",
     "prettier": "catalog:",
     "tinypool": "catalog:",
-    "yuku-parser": "catalog:"
+    "yuku-parser": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@napi-rs/cli": "catalog:",

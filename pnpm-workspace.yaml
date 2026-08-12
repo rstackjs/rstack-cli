@@ -57,6 +57,7 @@ catalog:
   tiny-readdir: 3.1.1
   'typescript': '^7.0.2'
   yuku-parser: '0.8.4'
+  zod: '4.4.3'
 
 dedupePeers: true
 
