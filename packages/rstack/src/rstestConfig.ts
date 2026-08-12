@@ -16,7 +16,7 @@ const resolveAutomaticExtends = async (
   // introduce conflicting runtime, resolve, and source transform settings.
   const appConfig = loaded.configs.app;
   const runtime = await getRstackPluginRuntime(loaded);
-  if (appConfig || runtime.configModifiers.app.length > 0) {
+  if (appConfig || runtime.hasConfigModifier('app')) {
     const { withRsbuildConfig } = await import(
       /* rspackChunkName: 'adapterRsbuild' */
       '@rstest/adapter-rsbuild'
@@ -37,7 +37,7 @@ const resolveAutomaticExtends = async (
   }
 
   const libConfig = loaded.configs.lib;
-  if (libConfig || runtime.configModifiers.lib.length > 0) {
+  if (libConfig || runtime.hasConfigModifier('lib')) {
     const { withRslibConfig } = await import(
       /* rspackChunkName: 'adapterRslib' */
       '@rstest/adapter-rslib'

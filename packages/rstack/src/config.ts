@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { resolve } from 'node:path';
 import { loadConfig } from '@rstackjs/load-config';
 import { logger } from 'rslog';
 import type { RsbuildConfigDefinition } from '@rsbuild/core';
@@ -32,6 +33,7 @@ export type LoadedRstackConfig = {
 };
 
 const loadedPluginRuntimes = new WeakMap<LoadedRstackConfig, Promise<RstackPluginRuntime>>();
+const loadedConfigDirectories = new WeakMap<LoadedRstackConfig, string>();
 
 export type LoadRstackConfigOptions = {
   /**
@@ -112,7 +114,7 @@ export const getRstackPluginRuntime = (
   const runtime = createPluginRuntime({
     plugins: config.plugins,
     context: {
-      cwd: invocation?.cwd ?? process.cwd(),
+      cwd: invocation?.cwd ?? loadedConfigDirectories.get(config) ?? process.cwd(),
       command: invocation?.command ?? 'programmatic',
       args: invocation?.args ?? [],
       configFilePath: config.filePath,
@@ -275,12 +277,14 @@ export const loadRstackConfig = async ({
         state.invocation.configFilePath = filePath;
       }
 
-      return {
+      const loaded = {
         configs: session.configs,
         plugins: session.plugins,
         filePath,
         dependencies,
       };
+      loadedConfigDirectories.set(loaded, resolve(cwd ?? process.cwd()));
+      return loaded;
     } finally {
       session.active = false;
       session.configs = {};

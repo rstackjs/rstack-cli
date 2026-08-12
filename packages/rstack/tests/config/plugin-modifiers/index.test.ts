@@ -82,3 +82,19 @@ test('initializes plugins again for each fresh config load', async () => {
     configFilePath,
   });
 });
+
+test('uses the programmatic config cwd in plugin context', async () => {
+  const loaded = await loadRstackConfig({
+    configFilePath,
+    cwd: import.meta.dirname,
+  });
+
+  await applyRstackConfigModifiers(loaded, 'app', {});
+
+  expect(globalThis.__rstackPluginModifierContext).toEqual({
+    cwd: import.meta.dirname,
+    command: 'programmatic',
+    args: [],
+    configFilePath,
+  });
+});

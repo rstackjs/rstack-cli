@@ -61,13 +61,24 @@ test('flattens nested asynchronous plugins in declaration order and initializes 
 
 test('rejects invalid plugin objects and duplicate plugin names', async () => {
   const options = {
-    context: { cwd: '/project', command: 'command', args: [], configFilePath: null },
+    context: {
+      cwd: '/project',
+      command: 'command',
+      args: [],
+      configFilePath: null,
+    },
     logger,
   };
 
   await expect(
-    createPluginRuntime({ ...options, plugins: [true] as unknown as RstackPlugins }),
+    createPluginRuntime({
+      ...options,
+      plugins: [true] as unknown as RstackPlugins,
+    }),
   ).rejects.toThrow('Invalid Rstack plugin');
+  await expect(createPluginRuntime({ ...options, plugins: {} as RstackPlugins })).rejects.toThrow(
+    'Invalid Rstack plugins',
+  );
   await expect(
     createPluginRuntime({
       ...options,
@@ -85,6 +96,45 @@ test('rejects invalid plugin objects and duplicate plugin names', async () => {
   ).rejects.toThrow('Duplicate Rstack plugin');
 });
 
+test('rejects invalid config modifier registrations', async () => {
+  const options = {
+    context: {
+      cwd: '/project',
+      command: 'command',
+      args: [],
+      configFilePath: null,
+    },
+    logger,
+  };
+
+  await expect(
+    createPluginRuntime({
+      ...options,
+      plugins: [
+        {
+          name: 'invalid-kind',
+          setup({ modifyConfig }) {
+            modifyConfig('unknown' as never, () => {});
+          },
+        },
+      ],
+    }),
+  ).rejects.toThrow('Invalid Rstack config kind');
+  await expect(
+    createPluginRuntime({
+      ...options,
+      plugins: [
+        {
+          name: 'invalid-handler',
+          setup({ modifyConfig }) {
+            modifyConfig('app', undefined as never);
+          },
+        },
+      ],
+    }),
+  ).rejects.toThrow('Invalid Rstack app config modifier');
+});
+
 test('validates every plugin before setup begins', async () => {
   let setupRan = false;
 
@@ -99,7 +149,12 @@ test('validates every plugin before setup begins', async () => {
         },
         { name: 'invalid' } as never,
       ],
-      context: { cwd: '/project', command: 'command', args: [], configFilePath: null },
+      context: {
+        cwd: '/project',
+        command: 'command',
+        args: [],
+        configFilePath: null,
+      },
       logger,
     }),
   ).rejects.toThrow('Expected a setup function');
@@ -108,7 +163,12 @@ test('validates every plugin before setup begins', async () => {
 
 test('rejects invalid, duplicate, and built-in command names', async () => {
   const options = {
-    context: { cwd: '/project', command: 'command', args: [], configFilePath: null },
+    context: {
+      cwd: '/project',
+      command: 'command',
+      args: [],
+      configFilePath: null,
+    },
     logger,
   };
 
@@ -178,7 +238,10 @@ test('runs config modifiers after setup and keeps each modifier result', async (
           modifyConfig('app', (config) => {
             config.root = '/first';
           });
-          modifyConfig('app', (config) => ({ ...config, root: `${config.root}/second` }));
+          modifyConfig('app', (config) => ({
+            ...config,
+            root: `${config.root}/second`,
+          }));
           modifyConfig('app', async (config) => ({
             ...config,
             root: `${config.root}/third`,
@@ -186,11 +249,17 @@ test('runs config modifiers after setup and keeps each modifier result', async (
         },
       },
     ],
-    context: { cwd: '/project', command: 'command', args: [], configFilePath: null },
+    context: {
+      cwd: '/project',
+      command: 'command',
+      args: [],
+      configFilePath: null,
+    },
     logger,
   });
 
-  expect(runtime.configModifiers.app).toHaveLength(3);
+  expect(runtime.hasConfigModifier('app')).toBe(true);
+  expect(runtime.hasConfigModifier('lib')).toBe(false);
   await expect(runtime.applyConfigModifiers('app', {})).resolves.toMatchObject({
     root: '/first/second/third',
   });

@@ -18,7 +18,7 @@ const stagedConfig: StagedConfig = {
 };
 
 const noStagedModifiers = {
-  configModifiers: { staged: [] },
+  hasConfigModifier: () => false,
   applyConfigModifiers: async (_kind: 'staged', config: StagedConfig) => config,
 };
 
@@ -55,7 +55,7 @@ test('should accept a staged config supplied only by a plugin modifier', async (
     dependencies: [],
   });
   mocks.getRstackPluginRuntime.mockResolvedValue({
-    configModifiers: { staged: [() => modifierConfig] },
+    hasConfigModifier: () => true,
     applyConfigModifiers: async () => modifierConfig,
   } as never);
 

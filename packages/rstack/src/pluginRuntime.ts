@@ -11,13 +11,13 @@ export type RstackConfigModifier<K extends keyof RstackConfigMap> = (
   config: RstackConfigMap[K],
 ) => void | RstackConfigMap[K] | Promise<void | RstackConfigMap[K]>;
 
-export type RstackConfigModifierRegistry = {
+type RstackConfigModifierRegistry = {
   [K in keyof RstackConfigMap]: RstackConfigModifier<K>[];
 };
 
 export type RstackPluginRuntime = {
   readonly context: RstackPluginContext;
-  readonly configModifiers: RstackConfigModifierRegistry;
+  hasConfigModifier(kind: keyof RstackConfigMap): boolean;
   runCommand(name: string, args: readonly string[]): Promise<boolean>;
   applyConfigModifiers<K extends keyof RstackConfigMap>(
     kind: K,
@@ -53,6 +53,10 @@ const hasValidName = (name: unknown): name is string =>
   typeof name === 'string' && name.length > 0 && name.trim() === name && !/\s/u.test(name);
 
 const flattenPlugins = async (plugins: RstackPlugins): Promise<RstackPlugin[]> => {
+  if (!Array.isArray(plugins)) {
+    throw new Error('Invalid Rstack plugins. Expected an array.');
+  }
+
   const result: RstackPlugin[] = [];
 
   const visit = async (value: RstackPlugins[number]): Promise<void> => {
@@ -115,7 +119,6 @@ export const createPluginRuntime = async ({
   const configModifiers = createModifierRegistry();
   const pluginNames = new Set<string>();
   const reservedCommandNames = new Set(reservedCommands);
-  let setupComplete = false;
 
   const addCommand = (command: RstackCommand): void => {
     if (!command || typeof command !== 'object' || Array.isArray(command)) {
@@ -145,7 +148,9 @@ export const createPluginRuntime = async ({
 
   const runtime: RstackPluginRuntime = {
     context,
-    configModifiers,
+    hasConfigModifier(kind) {
+      return configModifiers[kind].length > 0;
+    },
     async runCommand(name, args) {
       const handler = commands.get(name);
       if (!handler) {
@@ -155,10 +160,6 @@ export const createPluginRuntime = async ({
       return true;
     },
     async applyConfigModifiers(kind, config) {
-      if (!setupComplete) {
-        throw new Error('Rstack plugin setup must complete before config modifiers run.');
-      }
-
       let current = config;
       for (const modifier of configModifiers[kind] as RstackConfigModifier<typeof kind>[]) {
         const result = await modifier(current);
@@ -186,11 +187,16 @@ export const createPluginRuntime = async ({
       logger,
       addCommand,
       modifyConfig(kind, handler) {
+        if (!Object.hasOwn(configModifiers, kind)) {
+          throw new Error(`Invalid Rstack config kind: "${String(kind)}".`);
+        }
+        if (typeof handler !== 'function') {
+          throw new Error(`Invalid Rstack ${kind} config modifier. Expected a function.`);
+        }
         (configModifiers[kind] as RstackConfigModifier<typeof kind>[]).push(handler);
       },
     });
   }
 
-  setupComplete = true;
   return runtime;
 };

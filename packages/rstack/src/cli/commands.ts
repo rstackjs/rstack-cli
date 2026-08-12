@@ -165,16 +165,12 @@ async function runCheckCLI(args: string[]): Promise<void> {
 }
 
 export async function setupCommands(): Promise<void> {
+  const state = getConfigState();
+  delete state.configPath;
+  delete state.invocation;
+
   const { args, configPath } = parseCliArgs(process.argv.slice(2));
   const command = args[0];
-  const state = getConfigState();
-
-  // Resolved for every command so that a relative `--config` path always means
-  // the same file: it is anchored to the directory the CLI was invoked in, even
-  // when the config is later loaded from another directory. The motivating case
-  // is `rs fmt --lsp`, which loads the config from the LSP workspace root the
-  // client reports, and that root need not be the process working directory.
-  state.configPath = configPath === undefined ? undefined : resolve(configPath);
 
   if (!command || command === '-h' || command === '--help') {
     return printCommandHelp('root');
@@ -185,6 +181,10 @@ export async function setupCommands(): Promise<void> {
     return;
   }
 
+  // Anchor a relative `--config` to the directory the CLI was invoked in,
+  // even when a command later loads it from another directory (for example,
+  // an LSP workspace root).
+  state.configPath = configPath === undefined ? undefined : resolve(configPath);
   state.invocation = {
     cwd: process.cwd(),
     command,

@@ -46,7 +46,7 @@ export async function runStagedCLI(args: string[]): Promise<void> {
 
   const loaded = await loadRstackConfig();
   const runtime = await getRstackPluginRuntime(loaded);
-  if (!loaded.configs.staged && runtime.configModifiers.staged.length === 0) {
+  if (!loaded.configs.staged && !runtime.hasConfigModifier('staged')) {
     throw new Error(
       'No define.staged config found. Add define.staged({ "*": "your-command" }) to rstack config file',
     );
