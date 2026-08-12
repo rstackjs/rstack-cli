@@ -15,6 +15,7 @@ type OptimizerBound = 'cjs' | 'dynamic-import' | 'side-effect' | 'unknown-bailou
 type ObservedModule = ModuleRef & {
   isEntry: boolean;
   optimizerBound?: OptimizerBound;
+  optimizerReasons?: string[];
 };
 
 type ObservedModuleGraph = {
@@ -120,6 +121,7 @@ type DeadCodeExplanation = {
   state: ModuleState;
   paths: ModulePath[];
   evidence: string[];
+  analysisTruncated: boolean;
   bounds: string[];
 };
 

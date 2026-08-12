@@ -13,6 +13,7 @@ cleanupUnusedCatalogs: true
 
 catalog:
   '@rsdoctor/agent-cli': '0.1.1'
+  '@rsdoctor/rspack-plugin': '1.6.1'
   '@napi-rs/cli': '^3.8.3'
   '@modelcontextprotocol/sdk': '1.29.0'
   '@rsbuild/core': '~2.1.10'

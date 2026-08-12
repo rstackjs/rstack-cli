@@ -7,7 +7,7 @@ description: Analyze an explicit Rstack Rsdoctor artifact with the narrowest bui
 
 1. Call `project_status` to establish available contexts and latest build observations. Analysis can
    still proceed from the explicit artifact when no recorded context exists.
-2. Obtain the user's explicit Rsdoctor `dataFile`; do not start a build or discover an artifact implicitly.
+2. Obtain the user's explicit Rsdoctor `dataFile`; do not start a build or discover an artifact implicitly. If it is missing, explain that the package needs `@rsdoctor/rspack-plugin` and an explicit `RSTACK_CONTEXT=1 RSDOCTOR=true RSDOCTOR_OUTPUT=json rs build` or `rs lib` run, then ask before any install or build.
 3. Call `rsdoctor_analyze` with the narrowest suitable `toolName` and only the input that view needs:
    - Use `build_summary` for an overview.
    - Use `errors_list` for build errors.

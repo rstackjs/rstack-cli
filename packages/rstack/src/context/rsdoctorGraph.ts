@@ -42,6 +42,13 @@ const stringifyBailoutReason = (value: unknown): string => {
   return preferredText || JSON.stringify(value);
 };
 
+const getOptimizerReasons = (value: unknown): string[] | undefined => {
+  const reasons = [...new Set((Array.isArray(value) ? value : [value]).map(stringifyBailoutReason))]
+    .filter(Boolean)
+    .sort(compareStrings);
+  return reasons.length === 0 ? undefined : reasons;
+};
+
 const getOptimizerBound = (value: unknown): OptimizerBound | undefined => {
   const reason = stringifyBailoutReason(value).toLowerCase();
   if (!reason) return undefined;
@@ -55,7 +62,7 @@ const getOptimizerBound = (value: unknown): OptimizerBound | undefined => {
   ) {
     return 'cjs';
   }
-  if (reason.includes('side effect')) return 'side-effect';
+  if (/side[_ -]?effects?/u.test(reason)) return 'side-effect';
   if (reason.includes('dynamic import') || reason.includes('import()')) {
     return 'dynamic-import';
   }
@@ -75,7 +82,8 @@ const normalizeModule = (value: unknown): ObservedModule | undefined => {
         ...new Set(value.chunks.map(getId).filter((entry): entry is string => entry !== undefined)),
       ].sort(compareStrings)
     : [];
-  const optimizerBound = getOptimizerBound(value.bailoutReason);
+  const optimizerReasons = getOptimizerReasons(value.bailoutReason);
+  const optimizerBound = getOptimizerBound(optimizerReasons);
 
   return {
     id,
@@ -84,6 +92,7 @@ const normalizeModule = (value: unknown): ObservedModule | undefined => {
     chunks,
     isEntry: value.isEntry === true,
     ...(optimizerBound === undefined ? {} : { optimizerBound }),
+    ...(optimizerReasons === undefined ? {} : { optimizerReasons }),
   };
 };
 
@@ -113,6 +122,21 @@ const normalizeGraph = (data: Record<string, unknown>): ObservedModuleGraph => {
       continue;
     }
     modulesById.set(module.id, module);
+  }
+
+  for (const row of Array.isArray(moduleGraph.modules) ? moduleGraph.modules : []) {
+    if (!isObject(row) || !Array.isArray(row.modules)) continue;
+    const container = modulesById.get(getId(row.id) ?? '');
+    if (container === undefined || container.chunks.length === 0) continue;
+    for (const childId of row.modules.map(getId)) {
+      if (childId === undefined) continue;
+      const child = modulesById.get(childId);
+      if (child === undefined) continue;
+      modulesById.set(childId, {
+        ...child,
+        chunks: [...new Set([...child.chunks, ...container.chunks])].sort(compareStrings),
+      });
+    }
   }
 
   const edgeKeys = new Set<string>();

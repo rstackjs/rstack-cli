@@ -49,8 +49,12 @@ const explanationVisitLimit = 5_000;
 const compareStrings = (left: string, right: string): number =>
   left === right ? 0 : left < right ? -1 : 1;
 
-const toModuleRef = ({ isEntry: _, optimizerBound: __, ...module }: ObservedModule): ModuleRef =>
-  module;
+const toModuleRef = ({
+  isEntry: _,
+  optimizerBound: __,
+  optimizerReasons: ___,
+  ...module
+}: ObservedModule): ModuleRef => module;
 
 const toSubject = (module: ObservedModule): ModuleCandidate['subject'] => ({
   kind: 'module',
@@ -378,6 +382,9 @@ const explainDeadCodeCandidate = async (
         : 'Traversal bounds prevented a complete reachability result for this module.',
     ];
   }
+  evidence.push(
+    ...(module.optimizerReasons ?? []).map((reason) => `Rsdoctor optimizer: ${reason}`),
+  );
 
   return {
     provenance,
@@ -386,6 +393,10 @@ const explainDeadCodeCandidate = async (
     state: moduleState(module, product, traversals),
     paths,
     evidence,
+    analysisTruncated:
+      traversals.production.truncated ||
+      traversals.contract.truncated ||
+      traversals.conservative.truncated,
     bounds,
   };
 };

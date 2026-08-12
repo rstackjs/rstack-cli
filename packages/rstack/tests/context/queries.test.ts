@@ -264,6 +264,7 @@ test('explains reachable, candidate, and conservatively preserved modules', asyn
     });
 
     expect(reachable.classification).toBe('reachable');
+    expect(reachable.analysisTruncated).toBe(false);
     expect(reachable.paths).toEqual([
       {
         rootKind: 'production-entry',
@@ -282,6 +283,7 @@ test('explains reachable, candidate, and conservatively preserved modules', asyn
     expect(candidate.state.productionReachability).toBe('unreachable');
     expect(preserved.classification).toBe('preserved-by-conservative-root');
     expect(preserved.state.optimizerRetention).toBe('side-effect');
+    expect(preserved.evidence).toContain('Rsdoctor optimizer: Top-level side effects');
   });
 });
 
@@ -302,6 +304,7 @@ test('returns insufficient evidence rather than unreachable when the requested d
     });
 
     expect(result.classification).toBe('insufficient-evidence');
+    expect(result.analysisTruncated).toBe(true);
     expect(result.state.productionReachability).toBe('unknown');
     expect(result.bounds).toContain('production-traversal-truncated');
   });

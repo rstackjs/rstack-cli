@@ -9,7 +9,7 @@ description: Trace observed dependents of one Rstack module to estimate affected
    match the user's build. If none exists, explain that a relevant Rstack build must publish a
    context and stop; deduplicate repeated runs by `contextId`, and ask the user to choose only if
    several distinct contexts match.
-2. Obtain the explicit Rsdoctor `dataFile` and module ID, exact path/name, or unique path suffix.
+2. Obtain the explicit Rsdoctor `dataFile` and module ID, exact path/name, or unique path suffix. If the artifact is missing, explain that the package needs `@rsdoctor/rspack-plugin` and an explicit `RSTACK_CONTEXT=1 RSDOCTOR=true RSDOCTOR_OUTPUT=json rs build` or `rs lib` run, then ask before any install or build.
 3. Call `module_impact` with the selected `contextId` and `direction: "dependents"`. Set `maxDepth`
    from 1 to 16 only when useful.
 4. Report the subject, visited dependent modules, and `totalVisited` versus `returned`.

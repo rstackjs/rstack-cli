@@ -72,7 +72,12 @@ const matchesTarget = (module: ObservedModule, target: string, packageRoot: stri
   return modulePath === scopedTarget || modulePath.endsWith(`/${scopedTarget}`);
 };
 
-const toRootModule = ({ isEntry: _, optimizerBound: __, ...module }: ObservedModule) => module;
+const toRootModule = ({
+  isEntry: _,
+  optimizerBound: __,
+  optimizerReasons: ___,
+  ...module
+}: ObservedModule) => module;
 
 const addRoot = (roots: ProductRoot[], root: ProductRoot): void => {
   if (roots.some(({ kind, module }) => kind === root.kind && module.id === root.module.id)) {

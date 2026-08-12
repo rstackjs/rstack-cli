@@ -122,6 +122,73 @@ test('maps an unclassified non-empty bailout to an unknown optimizer bound', asy
     const graph = await readRsdoctorModuleGraph(workspaceRoot, 'rsdoctor-data.json');
 
     expect(graph.modules[0]?.optimizerBound).toBe('unknown-bailout');
+    expect(graph.modules[0]?.optimizerReasons).toEqual([
+      'optimizer could not classify this module',
+    ]);
+  } finally {
+    await rm(workspaceRoot, { force: true, recursive: true });
+  }
+});
+
+test('inherits chunk membership from a concatenated module container', async () => {
+  const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'rstack-rsdoctor-graph-'));
+  try {
+    await writeFile(
+      path.join(workspaceRoot, 'rsdoctor-data.json'),
+      JSON.stringify({
+        data: {
+          moduleGraph: {
+            modules: [
+              {
+                id: 2,
+                path: '/workspace/src/index.ts',
+                webpackId: 'src/index.ts|hash',
+                chunks: ['1'],
+                isEntry: true,
+                modules: [0, 1],
+              },
+              {
+                id: 1,
+                path: '/workspace/src/index.ts',
+                webpackId: 'src/index.ts',
+                chunks: [],
+                isEntry: true,
+                bailoutReason: ['Statement with side_effects in source code'],
+                concatenationModules: [2],
+              },
+              {
+                id: 0,
+                path: '/workspace/src/index.css',
+                webpackId: 'src/index.css',
+                chunks: [],
+                concatenationModules: [2],
+              },
+            ],
+            dependencies: [],
+          },
+        },
+      }),
+    );
+
+    const graph = await readRsdoctorModuleGraph(workspaceRoot, 'rsdoctor-data.json');
+
+    expect(
+      graph.modules.map(({ id, chunks, optimizerBound, optimizerReasons }) => ({
+        id,
+        chunks,
+        optimizerBound,
+        optimizerReasons,
+      })),
+    ).toEqual([
+      { id: '0', chunks: ['1'], optimizerBound: undefined, optimizerReasons: undefined },
+      {
+        id: '1',
+        chunks: ['1'],
+        optimizerBound: 'side-effect',
+        optimizerReasons: ['Statement with side_effects in source code'],
+      },
+      { id: '2', chunks: ['1'], optimizerBound: undefined, optimizerReasons: undefined },
+    ]);
   } finally {
     await rm(workspaceRoot, { force: true, recursive: true });
   }

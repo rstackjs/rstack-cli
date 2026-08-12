@@ -1,3 +1,5 @@
+import { PackageManagerTabs } from '@rspress/core/theme';
+
 # MCP \{#mcp}
 
 `rs mcp` 将当前检出的 Rstack 观测结果和明确指定的 Rsdoctor 产物提供给 MCP 客户端。查询工具均为只读。两个快照工具只会在被明确调用时运行 lint 或测试；没有工具会修改 Rstack 配置或应用 lint 修复。
@@ -30,6 +32,24 @@ define.context({
 生产者会在执行 `rs dev`、`rs build` 和 `rs lib` 时，将已完成的观测结果写入检出目录本地存储。它们不会连接到 MCP 进程；MCP 服务器会在调用 `project_status` 时读取存储。
 
 所有配置规则请参阅 [`define.context()`](../configuration#define-context)。
+
+## 创建 Rsdoctor 产物 \{#create-an-rsdoctor-artifact}
+
+在需要分析构建的每个包中安装可选的 Rsdoctor 收集器：
+
+<PackageManagerTabs command="install -D @rsdoctor/rspack-plugin" />
+
+启用上下文捕获和 JSON 输出，然后运行该包真实的 Rstack 构建：
+
+```bash
+# Rsbuild 应用
+RSTACK_CONTEXT=1 RSDOCTOR=true RSDOCTOR_OUTPUT=json rs build
+
+# Rslib 库
+RSTACK_CONTEXT=1 RSDOCTOR=true RSDOCTOR_OUTPUT=json rs lib
+```
+
+Rsbuild 只会为该命令加载已安装的收集器。构建会在检出目录本地存储中记录 Rstack 上下文，并通常写入 `dist/rsdoctor-data.json`。将这个明确的 JSON 路径传给产物分析工具。安装收集器不会让普通构建收集 Rsdoctor 数据；只有设置 `RSDOCTOR=true` 时才会收集。
 
 ## Monorepo \{#monorepos}
 
@@ -102,6 +122,6 @@ Rslint 类型检查和计时收集仍是明确的 CLI 工作流，例如 `rs lin
 
 ## 限制 \{#limitations}
 
-构建观测、lint 诊断、测试结果和产物图可能不完整或已过时。导出级和局部符号级的死代码分析目前不可用，因为当前 Rsdoctor 产物契约没有提供受支持的导出使用情况 schema。watch 查询、变更工具、自动捕获和自动报告生成也不包含在内。
+构建观测、lint 诊断、测试结果和产物图可能不完整或已过时。未进入打包器图的源文件（例如完全未被导入的文件）无法从产物中发现。导出级和局部符号级的死代码分析目前也不可用，因为当前 Rsdoctor 产物契约没有提供受支持的导出使用情况 schema。watch 查询、变更工具、自动捕获和自动报告生成也不包含在内。
 
 构建上下文是已观测构建的证据，不能证明未观测到的代码已经死亡或未被使用。

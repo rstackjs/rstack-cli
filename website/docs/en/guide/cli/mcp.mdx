@@ -1,3 +1,5 @@
+import { PackageManagerTabs } from '@rspress/core/theme';
+
 # MCP
 
 `rs mcp` exposes checkout-local Rstack observations and explicit Rsdoctor artifacts to an MCP client. Query tools are read-only. The two snapshot tools run lint or tests only when they are called explicitly; no tool changes Rstack configuration or applies a lint fix.
@@ -30,6 +32,27 @@ define.context({
 Producers write completed observations to the checkout-local store during `rs dev`, `rs build`, and `rs lib`. They do not connect to the MCP process; the MCP server reads the store when `project_status` is called.
 
 For all configuration rules, see [`define.context()`](../configuration#define-context).
+
+## Create an Rsdoctor artifact
+
+Install the optional Rsdoctor collector in each package whose build you want to analyze:
+
+<PackageManagerTabs command="install -D @rsdoctor/rspack-plugin" />
+
+Run the package's real Rstack build with context capture and JSON output enabled:
+
+```bash
+# Rsbuild application
+RSTACK_CONTEXT=1 RSDOCTOR=true RSDOCTOR_OUTPUT=json rs build
+
+# Rslib library
+RSTACK_CONTEXT=1 RSDOCTOR=true RSDOCTOR_OUTPUT=json rs lib
+```
+
+Rsbuild loads the installed collector only for that command. The build records its Rstack context
+in the checkout-local store and normally writes `dist/rsdoctor-data.json`. Pass that explicit JSON
+path to the artifact-analysis tools. Installing the collector does not make normal builds collect
+Rsdoctor data unless `RSDOCTOR=true` is set.
 
 ## Monorepos
 
@@ -102,6 +125,6 @@ Rslint type-check and timing collection remain explicit CLI workflows such as `r
 
 ## Limitations
 
-Build observations, lint diagnostics, test results, and artifact graphs may be partial or stale. Export-level and local-symbol dead-code analysis are unavailable because the current Rsdoctor artifact contract does not provide a supported export-use schema. Watch queries, mutation tools, automatic captures, and automatic report generation are not included.
+Build observations, lint diagnostics, test results, and artifact graphs may be partial or stale. A source file that never entered the bundler graph, such as a completely unimported file, is not discoverable from the artifact. Export-level and local-symbol dead-code analysis are also unavailable because the current Rsdoctor artifact contract does not provide a supported export-use schema. Watch queries, mutation tools, automatic captures, and automatic report generation are not included.
 
 Build context is evidence about observed builds, not proof that unobserved code is dead or unused.
