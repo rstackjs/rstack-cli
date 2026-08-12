@@ -5,6 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "benchmark:fmt-discovery": "node scripts/benchmark-fmt-discovery.js",
     "build": "pnpm --filter \"./packages/**\" build",
     "check": "rs check --type-check",
     "check:spell": "pnpm dlx cspell && heading-case",
