@@ -1,5 +1,5 @@
 import type { ConfigParams, RsbuildConfigDefinition, WatchFiles } from '@rsbuild/core';
-import { loadRstackConfig, type Configs } from './config.ts';
+import { applyRstackConfigModifiers, loadRstackConfig, type Configs } from './config.ts';
 
 const resolveRsbuildConfig = async (configs: Configs, params: ConfigParams) => {
   const appConfig = configs.app;
@@ -13,8 +13,13 @@ const resolveRsbuildConfig = async (configs: Configs, params: ConfigParams) => {
 };
 
 const loadRsbuildConfig: RsbuildConfigDefinition = async (params) => {
-  const { configs, filePath, dependencies } = await loadRstackConfig();
-  const config = await resolveRsbuildConfig(configs, params);
+  const loaded = await loadRstackConfig();
+  const { configs, filePath, dependencies } = loaded;
+  const config = await applyRstackConfigModifiers(
+    loaded,
+    'app',
+    await resolveRsbuildConfig(configs, params),
+  );
 
   if (!filePath) {
     return config;

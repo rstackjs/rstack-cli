@@ -1,5 +1,5 @@
 import type { ConfigParams, RslibConfig, RslibConfigDefinition } from '@rslib/core';
-import { loadRstackConfig, type Configs } from './config.ts';
+import { applyRstackConfigModifiers, loadRstackConfig, type Configs } from './config.ts';
 
 const resolveRslibConfig = async (configs: Configs, params: ConfigParams): Promise<RslibConfig> => {
   const libConfig = configs.lib;
@@ -13,8 +13,12 @@ const resolveRslibConfig = async (configs: Configs, params: ConfigParams): Promi
 };
 
 const loadRslibConfig = (async (params: ConfigParams) => {
-  const { configs } = await loadRstackConfig();
-  return resolveRslibConfig(configs, params);
+  const loaded = await loadRstackConfig();
+  return applyRstackConfigModifiers(
+    loaded,
+    'lib',
+    await resolveRslibConfig(loaded.configs, params),
+  );
 }) as RslibConfigDefinition;
 
 export default loadRslibConfig;

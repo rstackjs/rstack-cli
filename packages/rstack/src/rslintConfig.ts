@@ -1,7 +1,8 @@
-import { loadRstackConfig } from './config.ts';
+import { applyRstackConfigModifiers, loadRstackConfig } from './config.ts';
 import type { RslintConfig } from '@rslint/core';
 
-const { configs } = await loadRstackConfig();
+const loaded = await loadRstackConfig();
+const { configs } = loaded;
 const lintExports = configs.lint ?? [];
 
 let lintConfig: RslintConfig;
@@ -13,4 +14,10 @@ if (typeof lintExports === 'function') {
   lintConfig = lintExports;
 }
 
-export default lintConfig;
+const modifiedLintConfig: RslintConfig = await applyRstackConfigModifiers(
+  loaded,
+  'lint',
+  lintConfig,
+);
+
+export default modifiedLintConfig;

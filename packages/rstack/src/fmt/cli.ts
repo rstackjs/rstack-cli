@@ -3,10 +3,10 @@ import { performance } from 'node:perf_hooks';
 import { color, logger } from 'rslog';
 import { parseArgs } from '../cli/args.ts';
 import { printCommandHelp } from '../cli/help.ts';
-import { loadRstackConfig } from '../config.ts';
+import { applyRstackConfigModifiers, loadRstackConfig } from '../config.ts';
 import { ensureProjectCacheDir } from '../projectCache.ts';
 import { fmtCacheFileName } from './cacheStore.ts';
-import { resolveFmtConfig } from './config.ts';
+import { resolveFmtConfig, resolveFmtConfigDefinition } from './config.ts';
 import { discoverFmtFiles } from './discovery.ts';
 import { createRelativePathResolver, toPosixPath } from './pathHelpers.ts';
 import { runFmtFiles } from './runner.ts';
@@ -236,11 +236,16 @@ const logFmtResult = (
 };
 
 const loadFmtConfig = async (cwd: string): Promise<ResolvedFmtConfig> => {
-  const { configs, filePath } = await loadRstackConfig({ cwd });
+  const loaded = await loadRstackConfig({ cwd });
+  const config = await applyRstackConfigModifiers(
+    loaded,
+    'fmt',
+    await resolveFmtConfigDefinition(loaded.configs.fmt),
+  );
 
   return resolveFmtConfig({
-    definition: configs.fmt,
-    configFilePath: filePath,
+    definition: config,
+    configFilePath: loaded.filePath,
     cwd,
   });
 };

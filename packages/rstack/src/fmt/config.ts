@@ -116,16 +116,20 @@ const createOptionsResolver = (config: ResolvedFmtConfig): FmtOptionsResolver =>
 };
 
 /** Resolves a formatter config definition and its project root. */
+const resolveFmtConfigDefinition = async (
+  definition: FmtConfigDefinition | undefined,
+): Promise<FmtConfig> => (typeof definition === 'function' ? await definition() : definition) ?? {};
+
 const resolveFmtConfig = async ({
   definition,
   configFilePath,
   cwd,
 }: ResolveFmtConfigOptions): Promise<ResolvedFmtConfig> => {
-  const config = typeof definition === 'function' ? await definition() : definition;
+  const config = await resolveFmtConfigDefinition(definition);
   const rootPath = configFilePath ? dirname(configFilePath) : cwd;
 
   return normalizeFmtConfig(config, rootPath);
 };
 
-export { createOptionsResolver, normalizeFmtConfig, resolveFmtConfig };
+export { createOptionsResolver, normalizeFmtConfig, resolveFmtConfig, resolveFmtConfigDefinition };
 export type { FmtOptionsResolver };

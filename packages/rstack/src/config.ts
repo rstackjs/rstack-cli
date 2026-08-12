@@ -1,12 +1,14 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { loadConfig } from '@rstackjs/load-config';
+import { logger } from 'rslog';
 import type { RsbuildConfigDefinition } from '@rsbuild/core';
 import type { RslibConfigDefinition } from '@rslib/core';
 import type { RslintConfig } from '@rslint/core';
 import type { UserConfig, UserConfigAsyncFn } from '@rspress/core';
 import type { RstestConfigExport } from '@rstest/core';
 import type { FmtConfigDefinition } from './fmt/types.ts';
-import type { RstackPlugins } from './plugin.ts';
+import type { RstackConfigMap, RstackPlugins } from './plugin.ts';
+import { createPluginRuntime, type RstackPluginRuntime } from './pluginRuntime.ts';
 import type { StagedConfig } from './staged.ts';
 
 export type RslintConfigDefinition = RslintConfig | (() => Promise<RslintConfig>);
@@ -28,6 +30,8 @@ export type LoadedRstackConfig = {
   filePath: string | null;
   dependencies: string[];
 };
+
+const loadedPluginRuntimes = new WeakMap<LoadedRstackConfig, Promise<RstackPluginRuntime>>();
 
 export type LoadRstackConfigOptions = {
   /**
@@ -95,6 +99,36 @@ export const getConfigState = (): ConfigState => {
 
   return globalThis.__rstackCliState;
 };
+
+export const getRstackPluginRuntime = (
+  config: LoadedRstackConfig,
+): Promise<RstackPluginRuntime> => {
+  const existingRuntime = loadedPluginRuntimes.get(config);
+  if (existingRuntime) {
+    return existingRuntime;
+  }
+
+  const invocation = getConfigState().invocation;
+  const runtime = createPluginRuntime({
+    plugins: config.plugins,
+    context: {
+      cwd: invocation?.cwd ?? process.cwd(),
+      command: invocation?.command ?? 'programmatic',
+      args: invocation?.args ?? [],
+      configFilePath: config.filePath,
+    },
+    logger,
+  });
+  loadedPluginRuntimes.set(config, runtime);
+  return runtime;
+};
+
+export const applyRstackConfigModifiers = async <K extends keyof RstackConfigMap>(
+  loaded: LoadedRstackConfig,
+  kind: K,
+  config: RstackConfigMap[K],
+): Promise<RstackConfigMap[K]> =>
+  (await getRstackPluginRuntime(loaded)).applyConfigModifiers(kind, config);
 
 type Define = {
   /**
