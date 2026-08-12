@@ -24,10 +24,13 @@ import { define } from 'rstack';
 define.context({
   enabled: true,
   capture: 'metadata',
+  variant: 'firefox_v3',
 });
 ```
 
 `define.context()` is Rstack-owned configuration. It is not forwarded to Rsbuild or Rslib. `RSTACK_CONTEXT=1` enables capture, while `RSTACK_CONTEXT=0` always disables it. `capture: 'off'` also disables capture.
+
+The optional `variant` gives builds such as `firefox_v3` and `chrome_v3` distinct context identities without guessing arbitrary environment variables. Rstack also records the checkout-relative Rsbuild/Rslib output directory and includes it in context identity.
 
 Producers write completed observations to the checkout-local store during `rs dev`, `rs build`, and `rs lib`. They do not connect to the MCP process; the MCP server reads the store when `project_status` is called.
 
@@ -93,6 +96,8 @@ Freshness belongs to each producer and snapshot independently:
 - `stale`: one or more recorded paths are missing or changed; `changedPaths` lists them.
 - `partial`: every recorded input still matches, but the producer recorded only part of its dependency surface. One-shot test snapshots are at best partial because they fingerprint test files, not every imported application source.
 - `unknown`: the snapshot has no comparable input set. Unsaved lint text and older build observations can have unknown freshness.
+
+Build observations fingerprint only the loaded Rstack config file and its loaded config dependencies. They are therefore at best `partial` when those inputs still match and become `stale` when a recorded config input changes or disappears. They do not claim coverage of the application dependency graph.
 
 A fresh build does not make lint or test evidence fresh. If related-test selection is needed, use `rs test list --related <files> --json` explicitly; it is not an MCP tool.
 

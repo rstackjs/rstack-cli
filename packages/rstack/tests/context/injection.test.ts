@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -6,7 +6,7 @@ import type { RsbuildConfig } from '@rsbuild/core';
 import type { RslibConfig } from '@rslib/core';
 import { afterEach, expect, test } from 'rstack/test';
 import { getConfigState } from '../../src/config.ts';
-import { readContextWorkspaceStatus } from '../../src/context/index.ts';
+import { readContextWorkspaceStatus, readProjectStatus } from '../../src/context/index.ts';
 import defaultLoadRsbuildConfig, {
   loadRsbuildConfig,
   resolveRsbuildConfig,
@@ -83,8 +83,13 @@ const withConfig = async (
   );
   await writeFile(path.join(workspaceRoot, 'pnpm-workspace.yaml'), 'packages: []\n');
   await writeFile(
+    path.join(workspaceRoot, 'context-label.ts'),
+    "export const variant = 'firefox_v3';\n",
+  );
+  await writeFile(
     configPath,
     `import { define } from ${JSON.stringify(configModuleUrl)};
+import { variant } from './context-label.ts';
 
 const config = {
   plugins: [{ name: 'user-first' }, false, [{ name: 'user-last' }]],
@@ -93,7 +98,7 @@ const config = {
 };
 
 globalThis.__rstackInjectionTestHooks = { config };
-define.context({ enabled: ${contextEnabled} });
+define.context({ enabled: ${contextEnabled}, variant });
 define.${kind}(${configDefinition});
 `,
   );
@@ -147,12 +152,57 @@ const observeBuild = async (config: { plugins?: Array<unknown> }, workspaceRoot:
     environments: {
       web: {
         config: { output: { target: 'web' } },
+        distPath: path.join(workspaceRoot, 'dist'),
         name: 'web',
       },
     },
   });
 
   return readContextWorkspaceStatus(workspaceRoot);
+};
+
+const observeCompletedBuild = async (
+  config: { plugins?: Array<unknown> },
+  workspaceRoot: string,
+) => {
+  let afterEnvironmentCompile:
+    | ((context: {
+        environment: unknown;
+        isFirstCompile: boolean;
+        isWatch: boolean;
+        stats: unknown;
+        time: number;
+      }) => Promise<void> | void)
+    | undefined;
+  const observer = getObserver(config);
+
+  observer.setup?.({
+    logger: { warn: () => {} },
+    onAfterEnvironmentCompile: (callback: typeof afterEnvironmentCompile) => {
+      afterEnvironmentCompile = callback;
+    },
+    onBeforeBuild: () => {},
+    onBeforeDevCompile: () => {},
+  });
+
+  expect(afterEnvironmentCompile).toBeDefined();
+  await afterEnvironmentCompile!({
+    environment: {
+      config: { output: { target: 'web' } },
+      distPath: path.join(workspaceRoot, 'dist'),
+      name: 'web',
+    },
+    isFirstCompile: true,
+    isWatch: false,
+    stats: {
+      hasErrors: () => false,
+      hasWarnings: () => false,
+      toJson: () => ({}),
+    },
+    time: 1,
+  });
+
+  return readProjectStatus(workspaceRoot);
 };
 
 afterEach(() => {
@@ -206,7 +256,7 @@ for (const { kind, definition, producer, product } of [
         }>;
         expect(watchFiles[0]).toBe('user-watch.ts');
         expect(watchFiles.at(-1)).toMatchObject({
-          paths: [fixture.configPath],
+          paths: [fixture.configPath, path.join(fixture.workspaceRoot, 'context-label.ts')],
           type: 'reload-server',
         });
       } else {
@@ -222,12 +272,26 @@ for (const { kind, definition, producer, product } of [
         contexts: [
           {
             configPath: 'rstack.config.ts',
+            variant: 'firefox_v3',
             mode: 'injection-test',
             packageName: '@rstack/injection-fixture',
             packageRoot: '.',
             product,
           },
         ],
+      });
+      const snapshotStatus = await observeCompletedBuild(result, fixture.workspaceRoot);
+      expect(snapshotStatus.contexts[0]!.freshness).toEqual({
+        state: 'partial',
+        changedPaths: [],
+      });
+      await writeFile(
+        path.join(fixture.workspaceRoot, 'context-label.ts'),
+        `${await readFile(path.join(fixture.workspaceRoot, 'context-label.ts'), 'utf8')}\n`,
+      );
+      expect((await readProjectStatus(fixture.workspaceRoot)).contexts[0]!.freshness).toEqual({
+        state: 'stale',
+        changedPaths: ['context-label.ts'],
       });
     });
   });
@@ -289,7 +353,9 @@ test('RSTACK_CONTEXT=0 prevents app observer injection while preserving config w
       'rstack:context-build',
     );
     expect(watchFiles[0]).toBe('user-watch.ts');
-    expect(watchFiles.at(-1)).toMatchObject({ paths: [fixture.configPath] });
+    expect(watchFiles.at(-1)).toMatchObject({
+      paths: [fixture.configPath, path.join(fixture.workspaceRoot, 'context-label.ts')],
+    });
   });
 });
 

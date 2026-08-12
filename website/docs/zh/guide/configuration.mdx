@@ -121,10 +121,15 @@ import { define } from 'rstack';
 define.context({
   enabled: true,
   capture: 'metadata',
+  variant: 'firefox_v3',
 });
 ```
 
 除非 `enabled` 为 `true` 或设置了 `RSTACK_CONTEXT=1`，否则捕获会保持禁用。`RSTACK_CONTEXT=0` 始终会禁用捕获；即使已启用，`capture: 'off'` 也会禁用捕获。启用捕获但省略 `capture` 时，默认值为 `metadata`；`deep` 仍会捕获元数据，并在 Phase 1A 中将深度捕获记录为不受支持。
+
+当不同构建需要在包、环境、模式、目标和输出目录之外拥有不同的上下文标识时，请使用可选的 `variant` 字符串。例如，即使 `firefox_v3` 和 `chrome_v3` 写入同一目录，它们仍会保持为不同上下文。Rstack 不会根据任意环境变量猜测变体。相对于检出目录的 Rsbuild/Rslib `distPath` 也会被自动记录并参与上下文标识。
+
+构建快照会为已加载的 Rstack 配置文件及其已加载的配置依赖生成指纹。指纹未变化时会报告为 `partial`，而不是 `fresh`，因为 Rstack 不会收集完整的应用依赖图。任何已记录的配置输入发生变化或缺失时，快照会变为 `stale`。
 
 使用 [`rs mcp`](./cli/mcp) 提供的查询工具读取已完成的观测结果。显式调用 `lint_snapshot` 和 `test_snapshot` 工具时会加载所选项目的配置，并运行对应的 lint 或测试生产者。
 

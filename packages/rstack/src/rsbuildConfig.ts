@@ -4,6 +4,7 @@ import { loadRstackConfig, type Configs } from './config.ts';
 import {
   appendBuildContextPlugin,
   createBuildContextPlugin,
+  recordContextInputFiles,
   resolveContextCapture,
   resolveContextWorkspace,
 } from './context/index.ts';
@@ -27,20 +28,29 @@ export const loadRsbuildConfig = async (params: ConfigParams): Promise<RsbuildCo
   const configPath = loaded.filePath === null ? undefined : await realpath(loaded.filePath);
   const config = await resolveRsbuildConfig(loaded.configs, params);
   const capture = resolveContextCapture(loaded.configs.context);
-  const configWithContext =
-    capture === 'off'
-      ? config
-      : appendBuildContextPlugin(
-          config,
-          createBuildContextPlugin({
-            producer: 'rsbuild',
-            product: 'application',
-            capture,
-            workspace: await resolveContextWorkspace(configPath ?? process.cwd()),
-            configPath,
-            params,
-          }),
-        );
+  let configWithContext = config;
+  if (capture !== 'off') {
+    const workspace = await resolveContextWorkspace(configPath ?? process.cwd());
+    const inputs =
+      configPath === undefined
+        ? undefined
+        : await recordContextInputFiles(workspace.workspaceRoot, [
+            ...new Set([configPath, ...loaded.dependencies]),
+          ]);
+    configWithContext = appendBuildContextPlugin(
+      config,
+      createBuildContextPlugin({
+        producer: 'rsbuild',
+        product: 'application',
+        capture,
+        workspace,
+        configPath,
+        params,
+        variant: loaded.configs.context?.variant,
+        inputs,
+      }),
+    );
+  }
 
   if (!loaded.filePath) {
     return configWithContext;

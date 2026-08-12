@@ -4,6 +4,7 @@ import { loadRstackConfig, type Configs } from './config.ts';
 import {
   appendBuildContextPlugin,
   createBuildContextPlugin,
+  recordContextInputFiles,
   resolveContextCapture,
   resolveContextWorkspace,
 } from './context/index.ts';
@@ -31,6 +32,12 @@ export const loadRslibConfig = async (params: ConfigParams): Promise<RslibConfig
     return config;
   }
   const workspace = await resolveContextWorkspace(configPath ?? process.cwd());
+  const inputs =
+    configPath === undefined
+      ? undefined
+      : await recordContextInputFiles(workspace.workspaceRoot, [
+          ...new Set([configPath, ...loaded.dependencies]),
+        ]);
   return appendBuildContextPlugin(
     config,
     createBuildContextPlugin({
@@ -40,6 +47,8 @@ export const loadRslibConfig = async (params: ConfigParams): Promise<RslibConfig
       workspace,
       configPath,
       params,
+      variant: loaded.configs.context?.variant,
+      inputs,
     }),
   );
 };

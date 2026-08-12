@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import type { ConfigParams, RsbuildConfig } from '@rsbuild/core';
@@ -7,6 +7,7 @@ import {
   appendBuildContextPlugin,
   createBuildContextPlugin,
   readContextWorkspaceStatus,
+  recordContextInputFiles,
   type BuildMetadataFacet,
   type ResolvedContextWorkspace,
 } from '../../src/context/index.ts';
@@ -81,6 +82,7 @@ const getObserverHooks = (plugin: ReturnType<typeof createBuildContextPlugin>): 
 
 const createEnvironment = (name: string, target: string) => ({
   config: { output: { target } },
+  distPath: path.resolve('dist'),
   name,
 });
 
@@ -119,23 +121,28 @@ const collectContextId = async ({
   configPath,
   producer = 'rsbuild',
   product = 'application',
+  variant,
   params = { command: 'build', env: 'production' },
   environment = 'web',
   target = 'web',
+  distPath = path.join(workspaceRoot, 'dist'),
 }: {
   workspaceRoot: string;
   workspace: ResolvedContextWorkspace;
   configPath: string;
   producer?: 'rsbuild' | 'rslib';
   product?: 'application' | 'library';
+  variant?: string;
   params?: Pick<ConfigParams, 'command' | 'env' | 'envMode'>;
   environment?: string;
   target?: string;
+  distPath?: string;
 }): Promise<string> => {
   const runId = `run_${Math.random().toString(16).slice(2)}`;
   const plugin = createBuildContextPlugin({
     producer,
     product,
+    variant,
     capture: 'metadata',
     workspace,
     configPath,
@@ -149,6 +156,7 @@ const collectContextId = async ({
     environments: {
       [environment]: {
         ...createEnvironment(environment, target),
+        distPath,
       },
     },
   });
@@ -643,5 +651,66 @@ test('derives stable IDs from normalized identity inputs and separates every ide
       }),
     ).resolves.not.toBe(stable);
     await expect(collectContextId({ ...base, target: 'node' })).resolves.not.toBe(stable);
+    await expect(
+      collectContextId({
+        ...base,
+        distPath: path.join(workspaceRoot, 'dist-firefox'),
+      }),
+    ).resolves.not.toBe(stable);
+    await expect(collectContextId({ ...base, variant: 'firefox_v3' })).resolves.not.toBe(stable);
+  });
+});
+
+test('records explicit build variants, normalized output paths, and partial config inputs', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const configPath = path.join(workspaceRoot, 'rstack.config.ts');
+    const dependencyPath = path.join(workspaceRoot, 'config', 'shared.ts');
+    await mkdir(path.dirname(dependencyPath), { recursive: true });
+    await writeFile(configPath, 'export {}\n');
+    await writeFile(dependencyPath, 'export const shared = true;\n');
+    const plugin = createBuildContextPlugin({
+      producer: 'rsbuild',
+      product: 'application',
+      capture: 'metadata',
+      variant: 'firefox_v3',
+      workspace: { workspaceRoot, packageRoot: workspaceRoot },
+      configPath,
+      inputs: await recordContextInputFiles(workspaceRoot, [dependencyPath, configPath]),
+      params: { command: 'build', env: 'production' },
+      createRunId: () => 'run_variant_inputs',
+    });
+    const { hooks } = getObserverHarness(plugin);
+    const environment = {
+      ...createEnvironment('web', 'web'),
+      distPath: path.join(workspaceRoot, 'dist', 'firefox'),
+    };
+
+    await hooks.beforeBuild?.({ environments: { web: environment } });
+    await invokeAfter(hooks, {
+      environment,
+      isFirstCompile: true,
+      isWatch: false,
+      stats: createStats({}),
+      time: 1,
+    });
+
+    const status = await readContextWorkspaceStatus(workspaceRoot);
+    expect(status.runs[0]!.run.contexts[0]).toMatchObject({
+      variant: 'firefox_v3',
+      distPath: 'dist/firefox',
+    });
+    expect(status.runs[0]!.contexts[0]!.latestSnapshot!.source).toMatchObject({
+      inputCompleteness: 'partial',
+      inputs: [
+        {
+          path: 'config/shared.ts',
+          digest: expect.stringMatching(/^[0-9a-f]{64}$/u),
+        },
+        {
+          path: 'rstack.config.ts',
+          digest: expect.stringMatching(/^[0-9a-f]{64}$/u),
+        },
+      ],
+    });
   });
 });

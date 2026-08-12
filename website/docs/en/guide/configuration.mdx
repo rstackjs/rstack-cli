@@ -121,10 +121,15 @@ import { define } from 'rstack';
 define.context({
   enabled: true,
   capture: 'metadata',
+  variant: 'firefox_v3',
 });
 ```
 
 Capture is disabled unless `enabled` is `true` or `RSTACK_CONTEXT=1` is set. `RSTACK_CONTEXT=0` always disables capture, and `capture: 'off'` disables it even when it is enabled. When capture is enabled and omitted, it defaults to `metadata`; `deep` still captures metadata and records deep capture as unsupported in Phase 1A.
+
+Use the optional `variant` string when separate builds need distinct context identities beyond their package, environment, mode, target, and output directory. For example, `firefox_v3` and `chrome_v3` remain separate even if they write to the same directory. Rstack does not guess variants from arbitrary environment variables. The checkout-relative Rsbuild/Rslib `distPath` is also recorded and participates in context identity automatically.
+
+Build snapshots fingerprint the loaded Rstack config file and its loaded config dependencies. An unchanged fingerprint is reported as `partial`, not `fresh`, because Rstack does not collect the complete application dependency graph. A changed or missing recorded config input makes the snapshot `stale`.
 
 Use the query tools exposed by [`rs mcp`](./cli/mcp) to read completed observations. Its explicit `lint_snapshot` and `test_snapshot` tools load the selected project's configuration and run their lint or test producer.
 

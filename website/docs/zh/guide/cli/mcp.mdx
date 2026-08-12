@@ -24,10 +24,13 @@ import { define } from 'rstack';
 define.context({
   enabled: true,
   capture: 'metadata',
+  variant: 'firefox_v3',
 });
 ```
 
 `define.context()` 是 Rstack 自有配置，不会转发给 Rsbuild 或 Rslib。`RSTACK_CONTEXT=1` 会启用捕获，而 `RSTACK_CONTEXT=0` 始终会禁用捕获。`capture: 'off'` 也会禁用捕获。
+
+可选的 `variant` 可以让 `firefox_v3` 和 `chrome_v3` 等构建拥有不同的上下文标识，无需猜测任意环境变量。Rstack 还会记录相对于检出目录的 Rsbuild/Rslib 输出目录，并将其纳入上下文标识。
 
 生产者会在执行 `rs dev`、`rs build` 和 `rs lib` 时，将已完成的观测结果写入检出目录本地存储。它们不会连接到 MCP 进程；MCP 服务器会在调用 `project_status` 时读取存储。
 
@@ -90,6 +93,8 @@ Rsbuild 只会为该命令加载已安装的收集器。构建会在检出目录
 - `stale`：一个或多个记录路径已缺失或发生变化；`changedPaths` 会列出这些路径。
 - `partial`：所有记录的输入仍然匹配，但生产者只记录了部分依赖范围。一次性测试快照最多只能是 partial，因为它只为测试文件生成指纹，而不是为所有导入的应用源码生成指纹。
 - `unknown`：快照没有可比较的输入集合。未保存的 lint 文本和较早的构建观测可能具有未知新鲜度。
+
+构建观测只会为已加载的 Rstack 配置文件及其已加载的配置依赖生成指纹。因此，当这些输入仍然匹配时，构建观测最多为 `partial`；任何已记录的配置输入发生变化或缺失时则变为 `stale`。它们不会声称覆盖应用依赖图。
 
 新鲜的构建结果并不会让 lint 或测试证据自动变得新鲜。如需选择相关测试，请明确运行 `rs test list --related <files> --json`；它不是 MCP 工具。
 

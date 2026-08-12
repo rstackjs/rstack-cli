@@ -12,6 +12,7 @@ import {
   contextStoreSchemaVersion,
   type BuildMetadataFacet,
   type ContextDescriptor,
+  type ContextInputFile,
   type ContextRunManifest,
   type ContextSnapshot,
   type ContextStoreWriteResult,
@@ -26,6 +27,8 @@ type BuildContextPluginOptions = {
   workspace: ResolvedContextWorkspace;
   configPath?: string;
   params: ConfigParams;
+  variant?: string;
+  inputs?: ContextInputFile[];
   createRunId?: () => string;
   now?: () => Date;
 };
@@ -34,6 +37,9 @@ const normalizeWorkspacePath = (workspaceRoot: string, value: string): string =>
   path.relative(workspaceRoot, value).split(path.sep).join('/') || '.';
 
 const getTarget = (environment: EnvironmentContext): string => environment.config.output.target;
+
+const getDistPath = (workspaceRoot: string, environment: EnvironmentContext): string =>
+  normalizeWorkspacePath(workspaceRoot, environment.distPath);
 
 const getMode = (params: ConfigParams): string => params.envMode ?? params.env;
 
@@ -189,6 +195,7 @@ const createContextDescriptor = (
       : normalizeWorkspacePath(options.workspace.workspaceRoot, options.configPath);
   const mode = getMode(options.params);
   const target = getTarget(environment);
+  const distPath = getDistPath(options.workspace.workspaceRoot, environment);
   const identity = [
     options.producer,
     packageRoot,
@@ -198,6 +205,8 @@ const createContextDescriptor = (
     options.params.command,
     mode,
     target,
+    distPath,
+    options.variant ?? '',
   ].join('\u0000');
   const contextId = `ctx_${createHash('sha256').update(identity).digest('hex').slice(0, 24)}`;
 
@@ -212,6 +221,8 @@ const createContextDescriptor = (
     environment: environment.name,
     target,
     mode,
+    distPath,
+    ...(options.variant === undefined ? {} : { variant: options.variant }),
   };
 };
 
@@ -324,6 +335,14 @@ const createBuildContextPlugin = (options: BuildContextPluginOptions): RsbuildPl
             sequence,
             observedAt: now().toISOString(),
             ...capture,
+            ...(options.inputs === undefined
+              ? {}
+              : {
+                  source: {
+                    inputs: options.inputs,
+                    inputCompleteness: 'partial',
+                  },
+                }),
           };
 
           ensureContextWrite(await writeContextSnapshot(options.workspace.workspaceRoot, snapshot));

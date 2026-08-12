@@ -3,6 +3,7 @@ export type ContextCaptureTier = 'metadata' | 'deep';
 export type ContextConfig = {
   enabled?: boolean;
   capture?: 'off' | ContextCaptureTier;
+  variant?: string;
 };
 
 export const resolveContextCapture = (

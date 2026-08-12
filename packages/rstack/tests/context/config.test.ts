@@ -37,7 +37,7 @@ test('loads context config separately from app and library configs', async () =>
       `import { define } from ${JSON.stringify(configModulePath)};`,
       "define.app({ root: 'app-root' });",
       "define.lib({ lib: ['src/index.ts'] });",
-      "define.context({ capture: 'deep', enabled: true });",
+      "define.context({ capture: 'deep', enabled: true, variant: 'firefox_v3' });",
     ].join('\n'),
     async (configFilePath) => {
       const { configs } = await loadRstackConfig({ configFilePath });
@@ -45,7 +45,7 @@ test('loads context config separately from app and library configs', async () =>
       expect(configs).toEqual({
         app: { root: 'app-root' },
         lib: { lib: ['src/index.ts'] },
-        context: { capture: 'deep', enabled: true },
+        context: { capture: 'deep', enabled: true, variant: 'firefox_v3' },
       });
     },
   );

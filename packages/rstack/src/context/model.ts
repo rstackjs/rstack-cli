@@ -31,6 +31,8 @@ type ContextDescriptor = {
   environment?: string;
   target?: string;
   mode?: string;
+  variant?: string;
+  distPath?: string;
 };
 
 type BuildMetadataFacet = {
