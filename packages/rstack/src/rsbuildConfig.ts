@@ -1,7 +1,16 @@
-import type { ConfigParams, RsbuildConfigDefinition, WatchFiles } from '@rsbuild/core';
+import type { ConfigParams, RsbuildConfig, WatchFiles } from '@rsbuild/core';
 import { loadRstackConfig, type Configs } from './config.ts';
+import {
+  appendBuildContextPlugin,
+  createBuildContextPlugin,
+  resolveContextCapture,
+  resolveContextWorkspace,
+} from './context/index.ts';
 
-const resolveRsbuildConfig = async (configs: Configs, params: ConfigParams) => {
+export const resolveRsbuildConfig = async (
+  configs: Configs,
+  params: ConfigParams,
+): Promise<RsbuildConfig> => {
   const appConfig = configs.app;
   if (!appConfig) {
     return {};
@@ -12,24 +21,39 @@ const resolveRsbuildConfig = async (configs: Configs, params: ConfigParams) => {
   return appConfig;
 };
 
-const loadRsbuildConfig: RsbuildConfigDefinition = async (params) => {
-  const { configs, filePath, dependencies } = await loadRstackConfig();
-  const config = await resolveRsbuildConfig(configs, params);
+export const loadRsbuildConfig = async (params: ConfigParams): Promise<RsbuildConfig> => {
+  const loaded = await loadRstackConfig();
+  const config = await resolveRsbuildConfig(loaded.configs, params);
+  const capture = resolveContextCapture(loaded.configs.context);
+  const configWithContext =
+    capture === 'off'
+      ? config
+      : appendBuildContextPlugin(
+          config,
+          createBuildContextPlugin({
+            producer: 'rsbuild',
+            product: 'application',
+            capture,
+            workspace: await resolveContextWorkspace(loaded.filePath ?? process.cwd()),
+            configPath: loaded.filePath ?? undefined,
+            params,
+          }),
+        );
 
-  if (!filePath) {
-    return config;
+  if (!loaded.filePath) {
+    return configWithContext;
   }
 
-  const watchFiles = config.dev?.watchFiles;
+  const watchFiles = configWithContext.dev?.watchFiles;
   const watchConfig: WatchFiles = {
-    paths: [filePath, ...dependencies],
+    paths: [loaded.filePath, ...loaded.dependencies],
     type: 'reload-server',
   };
 
   return {
-    ...config,
+    ...configWithContext,
     dev: {
-      ...config.dev,
+      ...configWithContext.dev,
       watchFiles: [
         ...(watchFiles ? (Array.isArray(watchFiles) ? watchFiles : [watchFiles]) : []),
         watchConfig,
