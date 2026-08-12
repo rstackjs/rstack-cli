@@ -118,8 +118,36 @@ test('returns every applicable incompatibility reason in stable order', () => {
 
   expect(compare(left, right, 'diagnostics')).toEqual({
     compatible: false,
-    reasons: ['schema-version', 'producer', 'context', 'facet'],
+    reasons: ['context', 'facet', 'producer', 'schema-version'],
   });
+});
+
+test('identifies the missing side when a requested snapshot does not exist', async () => {
+  const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'rstack-context-diff-missing-'));
+  try {
+    const present = storedSnapshot({
+      snapshotId: 'snap_present',
+      producer: 'rslint',
+      facet: emptyLintFacet(),
+    });
+    await writeContextRunManifest(workspaceRoot, present.run);
+    await writeContextSnapshot(workspaceRoot, present.snapshot);
+
+    await expect(
+      diffContextSnapshots(workspaceRoot, {
+        leftSnapshotId: 'snap_missing_left',
+        rightSnapshotId: 'snap_present',
+      }),
+    ).rejects.toThrow('Snapshot not found: snap_missing_left');
+    await expect(
+      diffContextSnapshots(workspaceRoot, {
+        leftSnapshotId: 'snap_present',
+        rightSnapshotId: 'snap_missing_right',
+      }),
+    ).rejects.toThrow('Snapshot not found: snap_missing_right');
+  } finally {
+    await rm(workspaceRoot, { force: true, recursive: true });
+  }
 });
 
 test('diffs lint diagnostics by location and reports all observable changes', () => {

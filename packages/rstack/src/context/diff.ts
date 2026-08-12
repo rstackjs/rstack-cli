@@ -136,7 +136,7 @@ const diffStoredContextSnapshots = (
   ) {
     reasons.push('facet');
   }
-  if (reasons.length > 0) return { compatible: false, reasons };
+  if (reasons.length > 0) return { compatible: false, reasons: reasons.sort() };
 
   const items =
     kind === 'diagnostics'
