@@ -19,11 +19,12 @@ type RsdoctorReportResult =
       reason: string;
     };
 
-const quoteCommandArgument = (argument: string): string =>
-  `'${argument.replaceAll("'", '\'\\"\'\\"')}'`;
+const quotePosixArgument = (argument: string): string => `'${argument.replaceAll("'", "'\\''")}'`;
+
+const rstackPackagePath = 'packages/rstack';
 
 const inspectCommand = (dataFile: string): string =>
-  `pnpm exec rsdoctor-agent query build_summary --data-file ${quoteCommandArgument(dataFile)}`;
+  `pnpm --filter rstack exec rsdoctor-agent query build_summary --data-file ${quotePosixArgument(path.posix.relative(rstackPackagePath, dataFile))}`;
 
 const getSiblingHtmlReports = async (directory: string): Promise<string[]> => {
   try {

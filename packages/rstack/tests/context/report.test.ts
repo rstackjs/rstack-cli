@@ -1,5 +1,5 @@
-import { execFile as execFileCallback } from 'node:child_process';
-import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
+import { exec as execCallback } from 'node:child_process';
+import { mkdtemp, mkdir, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -9,7 +9,7 @@ import { resolveRsdoctorReport } from '../../src/context/report.ts';
 import { resolveRsdoctorArtifact } from '../../src/context/rsdoctor.ts';
 
 const validDataFile = 'artifacts/rsdoctor-data.json';
-const execFile = promisify(execFileCallback);
+const exec = promisify(execCallback);
 
 const withTempWorkspace = async (
   callback: (workspaceRoot: string) => Promise<void>,
@@ -23,13 +23,14 @@ const withTempWorkspace = async (
   }
 };
 
-const withRstackWorkspace = async (
-  callback: (workspaceRoot: string) => Promise<void>,
+const withCheckoutWorkspace = async (
+  callback: (checkoutRoot: string, workspaceRoot: string) => Promise<void>,
 ): Promise<void> => {
-  const workspaceRoot = await mkdtemp(path.join(process.cwd(), '.rstack-rsdoctor-report-'));
+  const checkoutRoot = await realpath(path.resolve(process.cwd(), '../..'));
+  const workspaceRoot = await mkdtemp(path.join(checkoutRoot, ".rstack-rsdoctor-report-' space-"));
 
   try {
-    await callback(workspaceRoot);
+    await callback(checkoutRoot, workspaceRoot);
   } finally {
     await rm(workspaceRoot, { force: true, recursive: true });
   }
@@ -117,7 +118,7 @@ test('returns a safe no-report response for ambiguous sibling HTML reports', asy
     await writeWorkspaceFile(workspaceRoot, 'artifacts/second.html', '<html></html>');
 
     await expect(resolveRsdoctorReport(workspaceRoot, validDataFile)).resolves.toEqual({
-      nextCommand: `pnpm exec rsdoctor-agent query build_summary --data-file '${validDataFile}'`,
+      nextCommand: `pnpm --filter rstack exec rsdoctor-agent query build_summary --data-file '../../${validDataFile}'`,
       dataFile: validDataFile,
       reason: 'Multiple sibling HTML reports were found; select one explicitly.',
     });
@@ -129,7 +130,7 @@ test('returns a safe no-report response when no report artifact exists', async (
     await writeDataFile(workspaceRoot);
 
     await expect(resolveRsdoctorReport(workspaceRoot, validDataFile)).resolves.toEqual({
-      nextCommand: `pnpm exec rsdoctor-agent query build_summary --data-file '${validDataFile}'`,
+      nextCommand: `pnpm --filter rstack exec rsdoctor-agent query build_summary --data-file '../../${validDataFile}'`,
       dataFile: validDataFile,
       reason:
         'No contained Rsdoctor HTML or manifest report artifact was found. The command inspects data and does not generate a report.',
@@ -137,30 +138,28 @@ test('returns a safe no-report response when no report artifact exists', async (
   });
 });
 
-test('returns an executable static inspection command with only a safe relative data path', async () => {
-  await withRstackWorkspace(async (workspaceRoot) => {
+test('returns a checkout-executable static inspection command for an apostrophe-and-space path', async () => {
+  await withCheckoutWorkspace(async (checkoutRoot, workspaceRoot) => {
     await writeDataFile(workspaceRoot);
+    const dataFile = path
+      .relative(checkoutRoot, path.join(workspaceRoot, validDataFile))
+      .split(path.sep)
+      .join('/');
 
-    const result = await resolveRsdoctorReport(workspaceRoot, validDataFile);
-
-    expect(result).toEqual({
-      nextCommand: `pnpm exec rsdoctor-agent query build_summary --data-file '${validDataFile}'`,
-      dataFile: validDataFile,
-      reason:
-        'No contained Rsdoctor HTML or manifest report artifact was found. The command inspects data and does not generate a report.',
-    });
+    const result = await resolveRsdoctorReport(checkoutRoot, dataFile);
 
     if (!('nextCommand' in result)) {
       throw new Error('Expected a static Rsdoctor inspection command.');
     }
 
-    expect(result.nextCommand).not.toContain(workspaceRoot);
-
-    const { stdout } = await execFile(
-      'pnpm',
-      ['exec', 'rsdoctor-agent', 'query', 'build_summary', '--data-file', validDataFile],
-      { cwd: workspaceRoot },
+    expect(result.dataFile).toBe(dataFile);
+    expect(result.nextCommand).toMatch(
+      /^pnpm --filter rstack exec rsdoctor-agent query build_summary --data-file '/u,
     );
+    expect(result.nextCommand).toContain("\\'");
+    expect(result.nextCommand).not.toContain(checkoutRoot);
+
+    const { stdout } = await exec(result.nextCommand, { cwd: checkoutRoot });
 
     expect(JSON.parse(stdout)).toMatchObject({ ok: true });
   });
