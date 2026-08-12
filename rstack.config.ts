@@ -2,10 +2,23 @@
 import { define } from 'rstack';
 
 define.lint(async () => {
+  const { default: globals } = await import('globals');
   const { js, ts } = await import('rstack/lint');
   return [
     js.configs.recommended,
     ts.configs.recommended,
+    {
+      files: ['**/*.{js,jsx,cjs,mjs}'],
+      languageOptions: {
+        globals: {
+          ...globals.browser,
+          ...globals.nodeBuiltin,
+          DEFINE_APP_TEST_VALUE: 'readonly',
+          DEFINE_LIB_TEST_VALUE: 'readonly',
+          DEFINE_VALUE: 'readonly',
+        },
+      },
+    },
     // Source imports use .ts for Node.js native TypeScript execution; builds rewrite them to .js.
     {
       files: ['packages/rstack/src/**/*.ts'],
