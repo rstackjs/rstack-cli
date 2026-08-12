@@ -37,3 +37,10 @@ export {
   type RsdoctorAnalysisResult,
   type RsdoctorToolDescriptor,
 } from './rsdoctor.ts';
+export {
+  applyContextRetention,
+  planContextRetention,
+  type ContextRetentionPlan,
+  type ContextRetentionPolicy,
+  type ContextRetentionResult,
+} from './retention.ts';
