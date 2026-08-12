@@ -1,6 +1,6 @@
 import { expect, test } from 'rstack/test';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { computeMinimalEdit } from '../../../src/fmt/lsp/minimalEdit.ts';
+import { computeMinimalEdit, computeMinimalTextEdit } from '../../../src/fmt/lsp/minimalEdit.ts';
 
 /** Applies an edit the way an editor does, to prove it rewrites the document. */
 const applyMinimalEdit = (source: string, formatted: string): string => {
@@ -165,10 +165,29 @@ test('addresses every combination of line terminators', () => {
       if (applied !== formatted) {
         failures.push(`${JSON.stringify(source)} -> ${JSON.stringify(formatted)}`);
       }
+
+      // The hand-rolled position mapping must agree with the reference
+      // implementation on every terminator combination.
+      const range = computeMinimalTextEdit(source, formatted)?.range;
+      const expected = {
+        start: document.positionAt(edit.start),
+        end: document.positionAt(edit.end),
+      };
+      if (JSON.stringify(range) !== JSON.stringify(expected)) {
+        failures.push(`positions ${JSON.stringify(source)} -> ${JSON.stringify(formatted)}`);
+      }
     }
   }
 
   expect(failures).toEqual([]);
+});
+
+// The protocol counts a lone `\r` as a line break, so the mapping must too.
+test('maps positions across lone carriage returns', () => {
+  expect(computeMinimalTextEdit('a\rb=2;\r', 'a\rb = 2;\r')).toEqual({
+    range: { start: { line: 1, character: 1 }, end: { line: 1, character: 2 } },
+    newText: ' = ',
+  });
 });
 
 // U+2028 ends a line for JavaScript but never for the protocol.

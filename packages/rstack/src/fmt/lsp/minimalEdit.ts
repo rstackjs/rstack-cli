@@ -105,9 +105,9 @@ interface MinimalTextEdit {
 /**
  * Reduces a reformat to the single LSP text edit that actually changed.
  *
- * The offset → position mapping only counts line feeds because LSP characters
- * and JS offsets share the UTF-16 unit, and because `computeMinimalEdit` never
- * places a boundary inside a surrogate pair or a `\r\n`.
+ * Positions count UTF-16 code units, like JS offsets, and lines end at `\n`,
+ * `\r\n`, or a lone `\r`, like the protocol's. `computeMinimalEdit` keeping
+ * boundaries out of surrogate pairs and `\r\n` is what makes the mapping exact.
  */
 const computeMinimalTextEdit = (source: string, formatted: string): MinimalTextEdit | undefined => {
   const edit = computeMinimalEdit(source, formatted);
@@ -117,13 +117,18 @@ const computeMinimalTextEdit = (source: string, formatted: string): MinimalTextE
 
   let line = 0;
   let lineStart = 0;
-  // Resumes from the previous call's line, so start and end share one scan.
+  // Resumes from the previous call's line, so start and end share one scan. A
+  // `\r` followed by `\n` defers to the `\n` so the pair counts once.
   const advanceTo = (offset: number): Position => {
-    let lineFeed = source.indexOf('\n', lineStart);
-    while (lineFeed !== -1 && lineFeed < offset) {
-      line++;
-      lineStart = lineFeed + 1;
-      lineFeed = source.indexOf('\n', lineStart);
+    for (let index = lineStart; index < offset; index++) {
+      const code = source.charCodeAt(index);
+      if (
+        code === LINE_FEED ||
+        (code === CARRIAGE_RETURN && source.charCodeAt(index + 1) !== LINE_FEED)
+      ) {
+        line++;
+        lineStart = index + 1;
+      }
     }
 
     return { line, character: offset - lineStart };
