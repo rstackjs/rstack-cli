@@ -1,24 +1,9 @@
 import { color, logger } from 'rslog';
 import { parseArgs } from '../cli/args.ts';
-import { renderHelp } from '../cli/help.ts';
+import { printCommandHelp } from '../cli/help.ts';
 import { installHooks } from './install.ts';
 
-const renderSetupHelp = (): string =>
-  renderHelp({
-    usage: 'rs setup [options]',
-    description: 'Install Git hooks in the current repository',
-    sections: [
-      {
-        title: 'Options',
-        items: [
-          ['--hooks-dir <path>', 'Specify hooks directory relative to the Git repository root'],
-          ['-h, --help', 'Display this help message'],
-        ],
-      },
-    ],
-  });
-
-export const runSetupCLI = (args: string[]): void => {
+export const runSetupCLI = async (args: string[]): Promise<void> => {
   const { values } = parseArgs({
     args,
     options: {
@@ -37,7 +22,7 @@ export const runSetupCLI = (args: string[]): void => {
   const hooksDir = hooksDirs?.[0];
 
   if (values.help) {
-    console.log(renderSetupHelp());
+    await printCommandHelp('setup');
     return;
   }
 
