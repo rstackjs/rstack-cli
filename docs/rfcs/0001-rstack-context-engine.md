@@ -117,39 +117,43 @@ provenance only.
 
 ## Terminology
 
-| Term          | Definition                                                                                |
-| ------------- | ----------------------------------------------------------------------------------------- |
-| Workspace     | One trusted Rstack configuration root and its allowed filesystem roots.                   |
-| Product       | A shipped application entry, server entry, worker, CLI, or library contract.              |
-| Context       | One normalized combination of config, target, mode, runtime, environment, and conditions. |
-| Run           | A producer execution such as a build, lint request, or test cycle.                        |
-| Generation    | A monotonically increasing source-change epoch used to correlate concurrent producers.    |
-| Snapshot      | An immutable, queryable view assembled from one or more runs.                             |
-| Facet         | Producer-specific evidence attached to a normalized entity.                               |
-| Evidence      | An immutable observation supporting or weakening a claim.                                 |
-| Finding       | A classified, actionable claim with explicit bounds and evidence.                         |
-| Root          | A definition or module from which reachability is computed.                               |
-| Contract root | An entry that external consumers are allowed to import or invoke.                         |
+| Term          | Definition                                                                                    |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| Repository    | Stable source identity shared by related clones and working trees when it can be established. |
+| Workspace     | One authorized checkout or worktree and its allowed filesystem roots.                         |
+| Product       | A shipped application entry, server entry, worker, CLI, or library contract.                  |
+| Context       | One normalized combination of config, target, mode, runtime, environment, and conditions.     |
+| Run           | A producer execution such as a build, lint request, or test cycle.                            |
+| Generation    | A producer-local monotonically increasing build, lint, or test cycle.                         |
+| Snapshot      | An immutable, queryable view assembled from one or more runs.                                 |
+| Facet         | Producer-specific evidence attached to a normalized entity.                                   |
+| Evidence      | An immutable observation supporting or weakening a claim.                                     |
+| Finding       | A classified, actionable claim with explicit bounds and evidence.                             |
+| Root          | A definition or module from which reachability is computed.                                   |
+| Contract root | An entry that external consumers are allowed to import or invoke.                             |
 
 ## Architecture
 
 ### System overview
 
 ```mermaid
-flowchart TB
+flowchart LR
   subgraph Capture["Passive evidence capture"]
-    direction LR
+    direction TB
     Build["rs dev / rs build"] --> Rspack["Rspack observer"]
     Build --> Doctor["Rsdoctor collector"]
     Lib["rs lib"] --> Rslib["Rslib contract adapter"]
     Lint["rs lint"] --> Rslint["Resident Rslint worker"]
     Test["rs test"] --> Rstest["Rstest observer"]
+    Rspack --> Publish["Atomic record publisher"]
+    Doctor --> Publish
+    Rslib --> Publish
+    Rslint --> Publish
+    Rstest --> Publish
   end
 
-  Coordinator["Per-workspace context coordinator"]
-  Store[("Immutable snapshots + bounded event log")]
-  Query["Reachability, classification, diff, and query engine"]
-  Broker["rs mcp stdio broker"]
+  Store[("Workspace evidence store<br/>.rstack/cache/context-v1")]
+  Broker["rs mcp<br/>stdio reader + query engine"]
 
   subgraph Hosts["Agent hosts"]
     Codex["Codex plugin + skills"]
@@ -158,29 +162,23 @@ flowchart TB
 
   OptionalUI["Optional Rsdoctor report UI"]
 
-  Rspack --> Coordinator
-  Doctor --> Coordinator
-  Rslib --> Coordinator
-  Rslint --> Coordinator
-  Rstest --> Coordinator
-  Coordinator --> Store
-  Store --> Query
-  Query --> Broker
-  Broker --> Codex
-  Broker --> Claude
+  Publish --> Store
+  Codex --> Broker
+  Claude --> Broker
+  Broker -->|"bounded reads"| Store
   Doctor -. "explicit report artifact" .-> OptionalUI
 ```
 
 ### Component responsibilities
 
-| Component    | Responsibility                                                                                                    | Must not do                                                               |
-| ------------ | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Tool adapter | Add one passive collector after the user's resolved configuration and correlate its lifecycle with a run.         | Modify the user's config file, reorder user plugins, or fail the command. |
-| Producer     | Emit bounded, schema-versioned facts and completeness metadata.                                                   | Make cross-tool dead-code decisions.                                      |
-| Coordinator  | Assign workspace, context, run, generation, and snapshot identities; merge producer facts; persist bounded state. | Execute project code merely because an MCP client connected.              |
-| Analyzer     | Compute roots, reachability, contract requirements, findings, explanations, and diffs.                            | Hide unknown dynamic behavior or partial captures.                        |
-| MCP broker   | Expose one stdio server, enforce roots/capabilities, paginate output, and link resources.                         | Mount on a development server or expose a second Rsdoctor MCP endpoint.   |
-| Skills       | Choose the correct queries, combine evidence, explain limits, and guide safe next actions.                        | Parse raw logs or represent candidates as proven dead.                    |
+| Component              | Responsibility                                                                                             | Must not do                                                               |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Tool adapter           | Add one passive collector after the user's resolved configuration and correlate its lifecycle with a run.  | Modify the user's config file, reorder user plugins, or fail the command. |
+| Producer               | Emit bounded, schema-versioned facts and completeness metadata into its own immutable run directory.       | Make cross-tool dead-code decisions or mutate another producer's record.  |
+| Workspace store        | Provide a disposable, task-runner-independent rendezvous of atomically published records for one checkout. | Execute project code, schedule tasks, or require a resident process.      |
+| Status reader/analyzer | Validate records and compute roots, reachability, contracts, findings, explanations, and diffs.            | Hide malformed, unsupported, unknown, or partial evidence.                |
+| MCP broker             | Expose one stdio server, enforce roots/capabilities, paginate output, and link resources.                  | Mount on a development server or expose a second Rsdoctor MCP endpoint.   |
+| Skills                 | Choose the correct queries, combine evidence, explain limits, and guide safe next actions.                 | Parse raw logs or represent candidates as proven dead.                    |
 
 ### Upstream and downstream ownership
 
@@ -395,7 +393,8 @@ erDiagram
 
   WORKSPACE {
     string id
-    string rootDigest
+    string repositoryId
+    string checkoutDigest
   }
   CONTEXT {
     string id
@@ -449,7 +448,10 @@ Normalized edge kinds include:
 
 ### Identity
 
-- Workspace IDs derive from canonical repository identity, not the absolute checkout path.
+- Repository IDs derive from canonical repository identity when available and remain stable across
+  related working trees.
+- Workspace IDs are checkout/worktree-scoped. Their opaque value may incorporate a canonical root or
+  Git worktree identity, but absolute paths are never exposed through the MCP contract.
 - Context IDs derive from normalized config, target, mode, runtime, conditions, and redacted
   environment digest.
 - Semantic module, symbol, export, package, test, chunk, and route IDs are deterministic within a
@@ -593,70 +595,109 @@ success result.
 ```mermaid
 sequenceDiagram
   participant RB as Build watch
-  participant C as Context coordinator
+  participant S as Workspace store
   participant L as Rslint worker
   participant T as Rstest watch
+  participant MCP as rs mcp
   participant M as Model
 
-  RB->>C: generation 184 (changed files)
-  C->>L: lint changed files
-  C-->>T: attach change set
-  RB->>C: build finished
-  C-->>M: build fresh, lint running, tests stale
-  L->>C: lint finished
-  C-->>M: build + lint fresh, tests stale
-  T->>C: affected tests finished
-  C-->>M: snapshot 184 complete
+  RB->>S: atomically publish build generation 184
+  L->>S: publish explicit or requested lint result
+  T->>S: publish completed watch cycle
+  M->>MCP: project_status
+  MCP->>S: read completed records
+  MCP-->>M: build fresh, lint fresh, tests stale
 ```
 
 Example status exposed to the model:
 
 ```text
-DEV  source=9a73f2 + 2 uncommitted files  generation=184
-Build  PASS     412ms  [FRESH]
-Lint   RUNNING         [generation 184]
-Tests  PASS     31/31  [STALE: generation 183; 2 changed files]
+DEV  source=9a73f2 + 2 uncommitted files
+Build  PASS     412ms  [FRESH: build generation 184]
+Lint   RUNNING         [lint generation 52]
+Tests  PASS     31/31  [STALE: test cycle 31; 2 changed files]
 Next   wait for lint, or inspect the changed-file diagnostics already available
 ```
 
 Rslint behavior during development:
 
-- one resident engine per workspace;
-- debounce and coalesce changed paths;
-- lint changed files immediately;
+- no background lint process is started merely because a dev server or MCP client exists;
+- an explicit `rs lint` run publishes its result, while an approved MCP lint request may reuse one
+  resident engine within that MCP process;
+- lint requested or explicitly changed files without blocking build or HMR;
 - schedule program-wide type checking on explicit request or idle policy;
-- bind each result to generation and source digest;
+- bind each result to its producer generation and source digest;
 - cancel by terminating and recreating the worker only when necessary.
 
 Rstest behavior during development:
 
 - attach only when the user already started `rs test --watch` or explicitly requested it;
-- correlate each watch cycle with the latest observed generation;
+- correlate each watch cycle with its source digest and the nearest observed build generation;
 - use related-test evidence to explain affected selection;
 - preserve previous results as stale until the new cycle finishes;
 - distinguish cancellation, infrastructure failure, and product test failure;
 - never claim exact case-to-symbol execution without an appropriately scoped coverage capture.
 
-## Coordinator and transport
+## Workspace store and transport
 
 ### Process model
 
-One coordinator runs per trusted project. Rstack commands and watch processes publish over a private
-Unix-domain socket or Windows named pipe. Agent hosts launch `rs mcp`, a stdio broker that discovers
-or starts the coordinator and exposes the sole MCP surface.
+Version 1 requires no coordinator process. Rstack commands and watch processes resolve identity from
+their actual loaded config or package path and atomically publish into the checkout-local disposable
+cache. Agent hosts may launch `rs mcp` from the repository root, a package, or another authorized MCP
+root; the broker locates the workspace store without treating its CWD as package or build identity.
 
 ```mermaid
 flowchart TB
-  Commands["rs command processes"] -->|"private socket / named pipe"| Daemon["Project coordinator"]
-  Daemon --> WAL[("bounded WAL + snapshots")]
-  Codex["Codex"] -->|stdio| Broker["rs mcp"]
-  Claude["Claude Code"] -->|stdio| Broker
-  Broker -->|"private socket / named pipe"| Daemon
+  subgraph Shells["Commands may run in any package or shell"]
+    LibA["rs lib --watch<br/>packages/a"]
+    LibB["rs lib --watch<br/>packages/b"]
+    App["rs dev<br/>apps/web"]
+    Tests["rs test --watch"]
+  end
+
+  Store[(".rstack/cache/context-v1<br/>immutable per-run records")]
+  Codex["Codex root session"] -->|stdio| Broker["rs mcp"]
+  Claude["Claude root session"] -->|stdio| Broker
+  LibA -->|"atomic publish"| Store
+  LibB -->|"atomic publish"| Store
+  App -->|"atomic publish"| Store
+  Tests -->|"atomic publish"| Store
+  Broker -->|"validate + query"| Store
 ```
 
-The coordinator manifest is per-user and atomic. Discovery validates PID, daemon boot ID, workspace
-identity, owner, schema version, and lease. Stale manifests and sockets are removed only after those
-checks. Unfinished runs recovered from the event log are marked aborted and stale.
+Each producer owns `runs/<runId>`. It first publishes an immutable run manifest, then publishes each
+completed context generation under that run. Publication writes a unique same-directory temporary
+file and atomically links it into its final name; readers ignore temporary files and never observe a
+partially written completed record.
+
+```text
+.rstack/cache/context-v1/
+└── runs/
+    └── <runId>/
+        ├── run.json
+        └── contexts/
+            └── <contextId>/
+                └── generations/
+                    └── <sequence>-<snapshotId>.json
+```
+
+The resolved hierarchy is checkout → package → tool/config → product → environment → run →
+generation. A single Rslib process may therefore publish separate ESM, CJS, DTS, or bundleless
+contexts, and a single Rsbuild process may publish client, server, or worker contexts. Concurrent
+processes targeting the same context remain separate sessions; status reports ambiguity rather than
+silently choosing one.
+
+Workspace discovery prefers the nearest package-manager workspace manifest, then a Git checkout
+marker, then the nearest package root. It requires neither Turbo nor Nx and does not parse their task
+graphs. Rstack CLI users receive adapters through resolved-config injection. Direct Rsbuild, Rspack,
+Rslib, and Rstest users must add the corresponding explicit Rstack plugin or reporter; arbitrary
+third-party processes cannot be instrumented safely by inference.
+
+Commands may start before the MCP process, and multiple MCP processes may read the same records. Each
+broker keeps only a disposable in-memory query cache. A resident coordinator may be reconsidered if
+measured multi-client cache duplication or event throughput proves it necessary; it is not part of
+the version 1 contract.
 
 Loopback Streamable HTTP may be added later for explicit multi-client use. It is not the default and
 must require a random bearer capability, strict origin validation, session limits, and loopback-only
@@ -664,7 +705,7 @@ binding.
 
 ### Storage
 
-- Append-only events are a crash-recovery mechanism, not the query API.
+- Completed records are immutable; incomplete run directories and temporary files are not queryable.
 - Snapshots are immutable and content-addressed where practical.
 - Only a bounded latest history is retained by default.
 - Source, maps, logs, coverage, and deep graphs have independent caps and retention policies.
@@ -909,7 +950,8 @@ instructions.
 
 ### Required controls
 
-- Host-facing transport is stdio; internal IPC uses owner-only sockets or named pipes.
+- Host-facing transport is stdio; producers and brokers exchange evidence only through the
+  checkout-local project cache in version 1.
 - Never expose MCP or report queries on the dev-server host/port.
 - Resolve and realpath every requested path; reject traversal, symlink escape, and paths outside MCP
   roots.
@@ -927,14 +969,14 @@ instructions.
 
 Passive metadata collection targets:
 
-| Metric                         | Budget                                                        |
-| ------------------------------ | ------------------------------------------------------------- |
-| One-shot build overhead        | Less than 2%                                                  |
-| Context-engine startup         | Less than 100 ms after package load                           |
-| Incremental/watch observer p95 | Less than 25 ms per generation                                |
-| Coordinator resident memory    | Less than 50 MiB excluding explicitly retained deep artifacts |
-| Default MCP query              | Less than 500 ms warm                                         |
-| Bounded graph query            | One concurrent query, 2 s deadline, 1 MiB response cap        |
+| Metric                          | Budget                                                        |
+| ------------------------------- | ------------------------------------------------------------- |
+| One-shot build overhead         | Less than 2%                                                  |
+| Context-engine startup          | Less than 100 ms after package load                           |
+| Incremental/watch observer p95  | Less than 25 ms per generation                                |
+| MCP query-cache resident memory | Less than 50 MiB excluding explicitly retained deep artifacts |
+| Default MCP query               | Less than 500 ms warm                                         |
+| Bounded graph query             | One concurrent query, 2 s deadline, 1 MiB response cap        |
 
 High-cardinality module/resolution hooks, module sources, full reasons, source maps, deep coverage,
 and Rspack/Rsdoctor profiling are opt-in. Every snapshot records extraction time, heap delta where
@@ -953,7 +995,7 @@ emits a drop marker, degrades the relevant facet to partial, and never blocks th
 - Cancelled and infrastructure-failed tests are not product test failures.
 - Watch restart creates a new instance identity and preserves the prior snapshot as stale.
 - A process exit without a completion marker closes the run as aborted/unknown.
-- The coordinator rejects unsupported schema majors and records compatible minor capabilities.
+- The status reader rejects unsupported schema majors and reports compatible minor capabilities.
 - Source changes invalidate only affected facets; unaffected results may remain fresh when their
   dependency digest proves applicability.
 
@@ -1012,7 +1054,15 @@ cross-tool product, lint, test, contract, freshness, or permission model.
 ### Ship separate MCP servers for each tool
 
 Rejected. It duplicates lifecycle, trust, roots, transport, and discovery; gives the model conflicting
-schemas; and prevents atomic cross-producer snapshots.
+schemas; and prevents consistent cross-producer querying.
+
+### Require a workspace coordinator daemon
+
+Deferred unless measurements justify it. A daemon can centralize query caches and event delivery, but
+it also introduces process discovery, sockets or named pipes, leases, restart recovery, version skew,
+and cross-worktree isolation before those costs are necessary. Immutable per-run files already allow
+commands and any number of root-launched MCP processes to rendezvous without a task runner or shared
+process. A future daemon must consume the same store contract rather than replace it.
 
 ### Mount MCP on the Rsbuild dev server
 
@@ -1045,7 +1095,7 @@ paths, trees, tables, and evidence cards; a full visual graph is optional invest
 
 ```mermaid
 flowchart TB
-  P0["Phase 0: contracts<br/>Preview packages + versioned Rsdoctor artifacts"]
+  P0["Phase 0: foundation + contracts<br/>Workspace discovery + immutable records"]
   P1["Phase 1: passive build context<br/>Snapshots + one read-only MCP server"]
   P2["Phase 2: reachability<br/>Product roots + unused-code skills"]
   P3["Phase 3: development intelligence<br/>Generations + Rslint + Rstest"]
@@ -1055,8 +1105,10 @@ flowchart TB
   P0 --> P1 --> P2 --> P3 --> P4 --> P5
 ```
 
-### Phase 0: contracts
+### Phase 0: foundation and contracts
 
+- Implement config-path-based checkout/package discovery, the versioned workspace evidence store,
+  immutable publication, bounded validation, and the deterministic status reader.
 - Define normalized entity, edge, evidence, snapshot, finding, and compatibility schemas.
 - Land Rsdoctor preview packages and artifact metadata.
 - Contract-test the Rspack/Rsdoctor payload against pinned versions.
@@ -1065,8 +1117,7 @@ flowchart TB
 
 - Add trusted, metadata-only Rsbuild/Rspack and Rslib observers.
 - Ingest static Rsdoctor artifacts through the in-process Agent CLI.
-- Implement the per-project coordinator, immutable snapshots, `rs mcp`, status, diagnostics, basic
-  entity queries, and report links.
+- Implement `rs mcp`, status, diagnostics, basic entity queries, record retention, and report links.
 
 ### Phase 2: reachability and skills
 
@@ -1077,8 +1128,8 @@ flowchart TB
 
 ### Phase 3: development intelligence
 
-- Add source generations, bounded event subscriptions, resident Rslint worker, and passive Rstest
-  attachment.
+- Add producer-local source generations, bounded event subscriptions, MCP-process-scoped resident
+  Rslint workers, and passive Rstest attachment.
 - Ship `debug-dev-cycle` and `select-affected-tests` skills.
 
 ### Phase 4: change and mutation workflows
@@ -1129,8 +1180,8 @@ No high-confidence dead finding may include:
 - Raw stdio JSON-RPC transcripts and MCP SDK clients.
 - Initialization ordering, schema negotiation, invalid params, cancellation, progress, pagination,
   subscriptions, and stdout purity.
-- Concurrent readers, producer backpressure, coordinator restart, stale manifest, PID reuse, crash
-  recovery, version skew, and orphan cleanup.
+- Concurrent readers and writers, immutable-name collisions, ignored temporary files, incomplete run
+  directories, crash recovery, bounded retention, schema skew, and orphan cleanup.
 - Watch tests wait for generation changes rather than sleeping.
 
 ### Security
@@ -1144,9 +1195,9 @@ No high-confidence dead finding may include:
 ### Performance
 
 Benchmark small, medium, and large workspaces across cold, warm, and incremental runs. Track build
-overhead, incremental p95, extraction bytes, queue drops, coordinator RSS, query p95, and response
-size. Pull requests fail only on statistically meaningful regressions beyond versioned budgets;
-large stress cases run nightly.
+overhead, incremental p95, extraction bytes, queue drops, store bytes, MCP query-cache RSS, query p95,
+and response size. Pull requests fail only on statistically meaningful regressions beyond versioned
+budgets; large stress cases run nightly.
 
 ## Acceptance criteria
 
