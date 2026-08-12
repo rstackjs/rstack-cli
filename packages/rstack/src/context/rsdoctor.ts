@@ -42,8 +42,26 @@ const sensitiveKeyTokenSequences = [
   ['api', 'key'],
   ['private', 'key'],
 ] as const;
-const safeNumericMetricSuffixes = new Set(['count', 'size']);
-const safeConfigurationMetricSuffixes = new Set(['hash', 'status', 'version']);
+const safeNumericMetricSuffixes = new Set(['count', 'duration', 'size']);
+const safeConfigurationStatuses = new Set([
+  'complete',
+  'disabled',
+  'error',
+  'fail',
+  'ok',
+  'partial',
+  'pass',
+  'pending',
+  'ready',
+  'running',
+  'success',
+  'unknown',
+  'warning',
+]);
+const safeConfigurationHashPattern = /^(?:sha256:)?[a-f0-9]{64}$/iu;
+const maxSafeConfigurationVersionLength = 128;
+const safeConfigurationVersionPattern =
+  /^(?:v)?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/u;
 
 type RsdoctorToolDescriptor = {
   name: string;
@@ -100,14 +118,27 @@ const isSafeMetricKey = (tokens: string[], value: unknown): boolean => {
     return (
       (isConfigurationMetric || isSourceMetric) &&
       typeof value === 'number' &&
-      Number.isFinite(value)
+      Number.isFinite(value) &&
+      value >= 0
     );
   }
 
+  if (!isConfigurationMetric || typeof value !== 'string') {
+    return false;
+  }
+
+  if (suffix === 'hash') {
+    return safeConfigurationHashPattern.test(value);
+  }
+
+  if (suffix === 'status') {
+    return safeConfigurationStatuses.has(value);
+  }
+
   return (
-    isConfigurationMetric &&
-    safeConfigurationMetricSuffixes.has(suffix) &&
-    (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
+    suffix === 'version' &&
+    value.length <= maxSafeConfigurationVersionLength &&
+    safeConfigurationVersionPattern.test(value)
   );
 };
 

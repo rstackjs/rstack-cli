@@ -392,6 +392,7 @@ test('preserves safe sourceSize metadata from a real retained-modules tool resul
 test('sanitizes composite sensitive keys while preserving safe metric metadata', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     const apiToken = 'top-level-api-token';
+    const configurationHash = 'a'.repeat(64);
     const nodeEnvironment = 'top-level-production';
     const refreshToken = 'top-level-refresh-token';
     const sourceCode = 'private source code';
@@ -412,9 +413,9 @@ test('sanitizes composite sensitive keys while preserving safe metric metadata',
                 author: 'safe-author',
                 buildStatus: 'safe-status',
                 configurationCount: 3,
-                configurationHash: 'safe-configuration-hash',
-                configurationStatus: 'safe-configuration-status',
-                configurationVersion: 'safe-configuration-version',
+                configurationHash,
+                configurationStatus: 'ready',
+                configurationVersion: '1.2.3',
                 refreshToken,
                 sourceCode,
                 sourceMapSize: 48,
@@ -436,9 +437,9 @@ test('sanitizes composite sensitive keys while preserving safe metric metadata',
 
     expect(serialized).toContain('safe-author');
     expect(serialized).toContain('safe-status');
-    expect(serialized).toContain('safe-configuration-hash');
-    expect(serialized).toContain('safe-configuration-version');
-    expect(serialized).toContain('safe-configuration-status');
+    expect(serialized).toContain(configurationHash);
+    expect(serialized).toContain('"configurationVersion":"1.2.3"');
+    expect(serialized).toContain('"configurationStatus":"ready"');
     expect(serialized).toContain('"sourceSize":96');
     expect(serialized).toContain('"sourceMapSize":48');
     expect(serialized).toContain('"configurationCount":3');
@@ -454,6 +455,77 @@ test('sanitizes composite sensitive keys while preserving safe metric metadata',
     expect(serialized).not.toContain('refreshToken');
     expect(serialized).not.toContain('sourceCode');
     expect(serialized).not.toContain('webpackConfig');
+  });
+});
+
+test('redacts unsafe configuration metadata values while preserving validated metadata', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const objectHashSecret = 'object-hash-secret';
+    const objectStatusSecret = 'object-status-secret';
+    const objectVersionSecret = 'object-version-secret';
+    const scalarHashSecret = 'private-configuration-hash';
+    const scalarStatusSecret = 'private configuration status';
+    const scalarVersionSecret = 'private-version-value';
+    const validHash = 'b'.repeat(64);
+
+    await writeArtifact(
+      workspaceRoot,
+      validDataFile,
+      JSON.stringify({
+        data: {
+          errors: [
+            {
+              error: {
+                configurationHash: scalarHashSecret,
+                configurationStatus: scalarStatusSecret,
+                configurationVersion: scalarVersionSecret,
+              },
+              id: 'unsafe-scalars',
+            },
+            {
+              error: {
+                configurationHash: { plugins: [objectHashSecret] },
+                configurationStatus: { state: objectStatusSecret },
+                configurationVersion: { value: objectVersionSecret },
+              },
+              id: 'unsafe-objects',
+            },
+            {
+              error: {
+                configurationCount: 3,
+                configurationHash: validHash,
+                configurationStatus: 'ready',
+                configurationVersion: '1.2.3',
+                sourceDuration: 12,
+                sourceMapSize: 48,
+                sourceSize: 96,
+              },
+              id: 'safe-metadata',
+            },
+          ],
+        },
+      }),
+    );
+
+    const analysis = await analyzeRsdoctorArtifact(workspaceRoot, {
+      dataFile: validDataFile,
+      toolName: 'errors_list',
+    });
+    const serialized = JSON.stringify(analysis);
+
+    expect(serialized).toContain(validHash);
+    expect(serialized).toContain('"configurationStatus":"ready"');
+    expect(serialized).toContain('"configurationVersion":"1.2.3"');
+    expect(serialized).toContain('"configurationCount":3');
+    expect(serialized).toContain('"sourceDuration":12');
+    expect(serialized).toContain('"sourceMapSize":48');
+    expect(serialized).toContain('"sourceSize":96');
+    expect(serialized).not.toContain(scalarHashSecret);
+    expect(serialized).not.toContain(scalarStatusSecret);
+    expect(serialized).not.toContain(scalarVersionSecret);
+    expect(serialized).not.toContain(objectHashSecret);
+    expect(serialized).not.toContain(objectStatusSecret);
+    expect(serialized).not.toContain(objectVersionSecret);
   });
 });
 
