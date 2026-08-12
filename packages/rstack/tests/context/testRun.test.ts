@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import type { TestRunResult } from '@rstest/core/api';
 import { expect, test } from 'rstack/test';
+import { listDiagnostics } from '../../src/context/lint.ts';
 import { readProjectStatus } from '../../src/context/status.ts';
 import { readContextSnapshotById } from '../../src/context/store.ts';
 import {
@@ -295,6 +296,64 @@ test('records unhandled Rstest errors as an error snapshot', async () => {
           },
         ],
       },
+    });
+  });
+});
+
+test('persists a thrown Rstest configuration error as a completed diagnostic snapshot', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const configError = new Error('configuration failed');
+    configError.name = 'ConfigError';
+    const dependencies: TestCaptureDependencies = {
+      runRstest: async () => {
+        await expect(readProjectStatus(workspaceRoot)).resolves.toMatchObject({
+          contexts: [{ runId: 'run_thrown', state: 'pending' }],
+        });
+        throw configError;
+      },
+      createRunId: () => 'run_thrown',
+      createSnapshotId: () => 'snap_thrown',
+      now: () => new Date('2026-08-12T08:00:00.000Z'),
+    };
+
+    await expect(captureTestSnapshot(workspaceRoot, {}, dependencies)).rejects.toBe(configError);
+
+    const stored = await readContextSnapshotById(workspaceRoot, 'snap_thrown');
+    expect(stored?.snapshot).toMatchObject({
+      runId: 'run_thrown',
+      status: 'error',
+      completeness: { test: 'complete' },
+      facets: {
+        test: {
+          producer: 'rstest',
+          files: [],
+          stats: {
+            tests: { total: 0, passed: 0, failed: 0, skipped: 0, todo: 0 },
+            files: { total: 0, failed: 0 },
+          },
+          durationMs: 0,
+          unhandledErrors: [
+            {
+              name: 'ConfigError',
+              message: 'configuration failed',
+              stack: expect.any(String),
+            },
+          ],
+        },
+      },
+    });
+    await expect(
+      listDiagnostics(workspaceRoot, { snapshotId: 'snap_thrown' }),
+    ).resolves.toMatchObject({
+      snapshotId: 'snap_thrown',
+      total: 1,
+      items: [
+        {
+          producer: 'rstest',
+          severity: 'error',
+          message: 'configuration failed',
+        },
+      ],
     });
   });
 });

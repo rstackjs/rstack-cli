@@ -172,17 +172,55 @@ const captureTestSnapshot = async (
     createRunId: dependencies.createRunId,
     now,
   });
-  const runRstest = dependencies.runRstest ?? (await loadRunRstest());
-  const result = await withRstackConfigTarget(target.packageRoot, target.configPath, () =>
-    runRstest({
-      cwd: target.packageRoot,
-      config: wrapperConfigPath,
-      ...(request.files === undefined ? {} : { files: request.files }),
-      ...(request.testNamePattern === undefined
-        ? {}
-        : { testNamePattern: request.testNamePattern }),
-    }),
-  );
+  ensureWritten(await writeContextRunManifest(workspaceRoot, run));
+  let result: TestRunResult;
+  try {
+    const runRstest = dependencies.runRstest ?? (await loadRunRstest());
+    result = await withRstackConfigTarget(target.packageRoot, target.configPath, () =>
+      runRstest({
+        cwd: target.packageRoot,
+        config: wrapperConfigPath,
+        ...(request.files === undefined ? {} : { files: request.files }),
+        ...(request.testNamePattern === undefined
+          ? {}
+          : { testNamePattern: request.testNamePattern }),
+      }),
+    );
+  } catch (error) {
+    const capturedError: TestErrorRecord =
+      error instanceof Error
+        ? {
+            name: error.name,
+            message: error.message,
+            ...optionalString('stack', error.stack),
+          }
+        : { name: 'Error', message: String(error) };
+    const facet: TestFacet = {
+      producer: 'rstest',
+      files: [],
+      stats: {
+        tests: { total: 0, passed: 0, failed: 0, skipped: 0, todo: 0 },
+        files: { total: 0, failed: 0 },
+      },
+      durationMs: 0,
+      unhandledErrors: [capturedError],
+    };
+    const snapshot: ContextSnapshot = {
+      schemaVersion: contextStoreSchemaVersion,
+      snapshotId: dependencies.createSnapshotId?.() ?? `snap_${Date.now()}_${randomUUID()}`,
+      runId: run.runId,
+      contextId: context.contextId,
+      sequence: 0,
+      observedAt: now().toISOString(),
+      status: 'error',
+      completeness: { test: 'complete' },
+      facets: { test: facet as unknown as JsonValue },
+      source: { inputs: [], inputCompleteness: 'partial' },
+    };
+
+    ensureWritten(await writeContextSnapshot(workspaceRoot, snapshot));
+    throw error;
+  }
   const facet = normalizeTestFacet(workspaceRoot, result);
   const inputs = await recordContextInputFiles(workspaceRoot, [
     ...new Set(facet.files.map((file) => file.path)),
@@ -200,7 +238,6 @@ const captureTestSnapshot = async (
     source: { inputs, inputCompleteness: 'partial' },
   };
 
-  ensureWritten(await writeContextRunManifest(workspaceRoot, run));
   ensureWritten(await writeContextSnapshot(workspaceRoot, snapshot));
   return {
     runId: run.runId,
