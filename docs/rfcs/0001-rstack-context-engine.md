@@ -1,134 +1,80 @@
 # RFC 0001: Rstack context engine
 
-| Field   | Value                                                                              |
-| ------- | ---------------------------------------------------------------------------------- |
-| Status  | Proposed; Phase 1 implemented downstream                                           |
-| Created | 2026-08-12                                                                         |
-| Target  | `rstack`, Rspack 2, Rsbuild 2, Rslib 1, Rstest 0.11, Rslint 0.7, Rsdoctor 2        |
-| Scope   | Headless build, lint, test, reachability, and package-contract evidence for agents |
+| Field   | Value                                                                             |
+| ------- | --------------------------------------------------------------------------------- |
+| Status  | Implemented downstream through Phase 4; Phase 5 resolved without a custom UI      |
+| Created | 2026-08-12                                                                        |
+| Target  | `rstack`, Rspack 2, Rsbuild 2, Rslib 1, Rstest 0.11, Rslint 0.7, and Rsdoctor 2   |
+| Scope   | Headless build, lint, test, and artifact-scoped module evidence for coding agents |
 
 ## Summary
 
-This RFC proposes a headless Rstack Context Engine that turns facts from Rsbuild, Rspack, Rslib,
-Rslint, Rstest, and Rsdoctor into versioned evidence snapshots. One workspace-bound MCP server
-exposes compact queries over those snapshots. Codex and Claude plugin bundles add task-oriented
-skills that teach models how to combine the evidence safely.
+The Rstack Context Engine turns completed Rsbuild, Rslib, Rslint, and Rstest observations into
+immutable records under the workspace cache. A single `rs mcp` process launched by an agent host
+resolves the workspace root and exposes compact queries over those records. The same MCP also reads
+explicit Rsdoctor artifacts for build analysis and module-level reachability.
 
-The first product use case is unused and dead-code investigation. The engine does not equate
-"not observed" with "dead." It keeps the following claims independent:
+This is deliberately a lean, file-based design:
 
-1. Is the definition reachable from a configured production root?
-2. Is it reachable only from tests, examples, benchmarks, or development tooling?
-3. Is it part of a published or otherwise protected public contract?
-4. Was it shipped in a specific build and runtime?
-5. Was it executed by a specific test capture?
-6. Did the optimizer retain it for side effects or because analysis was incomplete?
+- independent package processes publish records into one workspace store;
+- one root-launched MCP reads every completed record in that store;
+- no coordinator daemon, task-runner integration, package-process discovery service, or development
+  server route is required;
+- Rslint and Rstest execute only through explicit one-shot MCP tools;
+- Codex and Claude Code bundles register the same `rs mcp` command and provide the same six workflow
+  skills; and
+- rich build visualization continues to use an existing Rsdoctor report through `report_link`.
 
-Rsdoctor supplies the canonical build-analysis data and remains the optional rich report viewer.
-Its GUI is not required by the context engine, MCP server, Codex plugin, Claude plugin, or CI.
+The unused-code feature is intentionally artifact-scoped. It identifies modules that are not
+reachable from selected roots in one Rsdoctor module graph. It does not prove that a local symbol or
+export is unused across the repository.
 
 ## Motivation
 
-Rstack already presents one CLI and one configuration file for the JavaScript toolchain, but the
-underlying tools expose different kinds of useful information:
+Rstack already provides one CLI for applications, libraries, lint, and tests, but each underlying
+tool observes a different part of development:
 
-- Rspack knows the exact resolved production graph, chunks, runtimes, used exports, optimization
-  bailouts, and emitted assets.
-- Rsdoctor enriches that graph with bundle, package, loader, plugin, rule, and tree-shaking data.
-- Rslib knows which library variants are shipped and how package exports and externalization define
-  a consumer-facing contract.
-- Rslint has high-confidence lexical and type-aware diagnostics, including unused local symbols and
-  safe fix information.
-- Rstest knows the test projects, related-test graph, results, coverage, retries, snapshots, and
-  development-only consumers.
+- Rsbuild and Rslib know which configurations and environments completed and which assets and chunks
+  they emitted.
+- Rspack supplies the compilation metadata used by those build observers.
+- Rsdoctor provides a richer build artifact, module graph, optimization information, and focused
+  analysis tools.
+- Rslint provides structured diagnostics and optional whole-file fixed output.
+- Rstest provides structured file, case, error, and run results.
 
-Today an agent must invoke those tools separately, parse incompatible output, infer freshness, and
-reconstruct causal links. Raw output also encourages unsafe conclusions: an unused export in one
-browser build might be a public library API, a server-only export, a dynamic entry, or a test-only
-helper.
+Without a shared representation, an agent must run commands repeatedly, parse terminal output, and
+guess which package, build, or source revision an observation describes. That becomes especially
+ambiguous in monorepos where several Rslib packages and one or more Rsbuild applications run at the
+same time.
 
-The context engine makes the combined evidence queryable without placing large logs, graphs, or
-source files into the model context.
+The context engine gives those independent processes a small rendezvous format and gives agent hosts
+one consistent query surface.
 
 ## Goals
 
-- Provide one local, workspace-bound MCP surface for Rstack project intelligence.
-- Reuse Rsdoctor's data model and headless analyzers instead of rebuilding its GUI or collectors.
-- Model production, non-production, public-contract, build, and execution evidence independently.
-- Support Rstack applications, libraries, multi-environment builds, and workspaces.
-- Preserve user configuration and plugin order while adding opt-in passive observers.
-- Keep build, lint, and test states independently fresh during development.
-- Return small, typed, paginated answers with provenance, confidence, completeness, and source
-  locations.
-- Offer task-oriented Codex and Claude skills for unused code, build analysis, impact analysis,
-  diagnostics, and test selection.
-- Fail open: a collector or context-engine failure must not fail the user's build, dev server, lint,
-  or test command.
+- Provide one checkout-local MCP surface for Rstack evidence.
+- Work in Rslib-only, Rsbuild-only, and mixed workspaces.
+- Keep package and build identities independent from the MCP process current working directory.
+- Record completed observations as immutable, schema-versioned files.
+- Keep build, lint, test, and Rsdoctor evidence independently selectable and fresh.
+- Reuse Rsdoctor artifacts and its existing GUI instead of duplicating them.
+- Return bounded structured results with context, snapshot, freshness, completeness, and provenance.
+- Provide task-oriented Codex and Claude Code skills for module reachability, change impact, build
+  analysis, development diagnostics, and snapshot review.
+- Keep context capture from changing the result of the underlying build command.
 
 ## Non-goals
 
-- Replacing the Rsdoctor report UI.
-- Exposing MCP through an Rsbuild development-server route.
-- Proving arbitrary local-symbol elimination from source maps or minified output.
-- Treating a single build, test run, or coverage capture as proof that code is globally dead.
-- Starting builds, tests, watchers, or long-lived report servers automatically when an agent session
-  opens.
-- Sending source, configuration, environment variables, or build reports to a remote service.
-- Replacing Knip, dependency-cruiser, CodeQL, or architecture-policy tools. Their evidence may be
-  integrated later as additional producer facets.
-- Editing user configuration files to install instrumentation.
-
-## Design principles
-
-### Facts first, decisions later
-
-The compilers and runners collect facts. A workspace-level analyzer makes conclusions only after
-merging all relevant product and non-product captures.
-
-This follows the core architecture of Astral's Hawk: each compiler invocation emits a fragment,
-then a separate graph analysis combines production and non-production fragments before deciding
-whether public Rust APIs are dead or unnecessarily visible. Rstack applies the same separation to
-JavaScript build, library, lint, and test evidence while accounting for dynamic imports, CommonJS,
-package exports, side effects, multiple runtimes, and external consumers.
-
-### Headless first
-
-Structured artifacts and APIs are the system of record. Visual reports project the same evidence;
-they are never required to answer a query.
-
-### Progressive disclosure
-
-The model initially receives a short status or finding summary. It requests evidence paths,
-diagnostics, logs, modules, or source only when needed. The server never returns an unbounded raw
-Rspack Stats object or complete Rsdoctor report.
-
-### Honest uncertainty
-
-The engine uses categorical confidence (`exact`, `derived`, `inferred`, or `unknown`) and explicit
-analysis bounds. It does not invent a single dead-code probability.
-
-### Stable meaning over producer internals
-
-Rspack module IDs, Rsdoctor numeric keys, PIDs, ports, and watch-cycle counters are capture-local.
-The engine normalizes them into stable semantic identities and retains the original producer IDs as
-provenance only.
-
-## Terminology
-
-| Term          | Definition                                                                                    |
-| ------------- | --------------------------------------------------------------------------------------------- |
-| Repository    | Stable source identity shared by related clones and working trees when it can be established. |
-| Workspace     | One authorized checkout or worktree and its allowed filesystem roots.                         |
-| Product       | A shipped application entry, server entry, worker, CLI, or library contract.                  |
-| Context       | One normalized combination of config, target, mode, runtime, environment, and conditions.     |
-| Run           | A producer execution such as a build, lint request, or test cycle.                            |
-| Generation    | A producer-local monotonically increasing build, lint, or test cycle.                         |
-| Snapshot      | An immutable, queryable view assembled from one or more runs.                                 |
-| Facet         | Producer-specific evidence attached to a normalized entity.                                   |
-| Evidence      | An immutable observation supporting or weakening a claim.                                     |
-| Finding       | A classified, actionable claim with explicit bounds and evidence.                             |
-| Root          | A definition or module from which reachability is computed.                                   |
-| Contract root | An entry that external consumers are allowed to import or invoke.                             |
+- Proving arbitrary local-symbol or export dead code from a bundled artifact.
+- Treating absence from one build graph as repository-wide proof of deletion eligibility.
+- Starting background lint, test, build, watch, or indexing jobs when an MCP client connects.
+- Controlling Rslint or Rstest watch sessions.
+- Depending on Turbo, Nx, or another task runner.
+- Running a coordinator daemon or discovering live package processes.
+- Mounting MCP on an Rsbuild development-server route.
+- Providing a custom context-engine GUI or remote MCP transport in this branch.
+- Applying lint fixes or source edits.
+- Replacing the full Rsdoctor report or general source-analysis tools.
 
 ## Architecture
 
@@ -136,532 +82,107 @@ provenance only.
 
 ```mermaid
 flowchart LR
-  subgraph Capture["Passive evidence capture"]
-    direction TB
-    Build["rs dev / rs build"] --> Rspack["Rspack observer"]
-    Build --> Doctor["Rsdoctor collector"]
-    Lib["rs lib"] --> Rslib["Rslib contract adapter"]
-    Lint["rs lint"] --> Rslint["Resident Rslint worker"]
-    Test["rs test"] --> Rstest["Rstest observer"]
-    Rspack --> Publish["Atomic record publisher"]
-    Doctor --> Publish
-    Rslib --> Publish
-    Rslint --> Publish
-    Rstest --> Publish
+  subgraph Processes["Independent Rstack processes"]
+    App["rs dev / rs build"] --> AppObserver["Rsbuild metadata observer"]
+    Library["rs lib"] --> LibObserver["Rslib metadata observer"]
+    Lint["Explicit lint_snapshot"] --> Rslint["One-shot Rslint API"]
+    Test["Explicit test_snapshot"] --> Rstest["One-shot Rstest API"]
   end
 
-  Store[("Workspace evidence store<br/>.rstack/cache/context-v1")]
-  Broker["rs mcp<br/>stdio reader + query engine"]
+  Store[(".rstack/cache/context-v1<br/>immutable run records")]
+  Artifact["Explicit Rsdoctor artifact"]
+  Report["Existing Rsdoctor report"]
+  MCP["rs mcp<br/>stdio query server"]
 
   subgraph Hosts["Agent hosts"]
-    Codex["Codex plugin + skills"]
-    Claude["Claude plugin + skills"]
+    Codex["Codex bundle + six skills"]
+    Claude["Claude Code bundle + six skills"]
   end
 
-  OptionalUI["Optional Rsdoctor report UI"]
-
-  Publish --> Store
-  Codex --> Broker
-  Claude --> Broker
-  Broker -->|"bounded reads"| Store
-  Doctor -. "explicit report artifact" .-> OptionalUI
+  AppObserver -->|publish| Store
+  LibObserver -->|publish| Store
+  Rslint -->|publish| Store
+  Rstest -->|publish| Store
+  Codex -->|stdio| MCP
+  Claude -->|stdio| MCP
+  MCP -->|read completed records| Store
+  MCP -->|read selected file| Artifact
+  MCP -->|resolve report_link| Report
+  MCP -->|execute on request| Lint
+  MCP -->|execute on request| Test
 ```
+
+The build observers are appended to resolved in-memory Rsbuild or Rslib configuration. They record
+completed environment compilations and do not modify the user's stored configuration. The lint and
+test paths are different: `lint_snapshot` and `test_snapshot` are explicit MCP executions that
+publish their results after the one-shot command completes.
 
 ### Component responsibilities
 
-| Component              | Responsibility                                                                                             | Must not do                                                               |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Tool adapter           | Add one passive collector after the user's resolved configuration and correlate its lifecycle with a run.  | Modify the user's config file, reorder user plugins, or fail the command. |
-| Producer               | Emit bounded, schema-versioned facts and completeness metadata into its own immutable run directory.       | Make cross-tool dead-code decisions or mutate another producer's record.  |
-| Workspace store        | Provide a disposable, task-runner-independent rendezvous of atomically published records for one checkout. | Execute project code, schedule tasks, or require a resident process.      |
-| Status reader/analyzer | Validate records and compute roots, reachability, contracts, findings, explanations, and diffs.            | Hide malformed, unsupported, unknown, or partial evidence.                |
-| MCP broker             | Expose one stdio server, answer typed queries, paginate output, and link resources.                        | Mount on a development server or expose a second Rsdoctor MCP endpoint.   |
-| Skills                 | Choose the correct queries, combine evidence, explain limits, and guide safe next actions.                 | Parse raw logs or represent candidates as proven dead.                    |
+| Component              | Responsibility                                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
+| Rsbuild/Rslib observer | Publish metadata for each completed build environment and watch generation.                      |
+| Explicit capture       | Run one Rslint or Rstest request and publish its normalized result.                              |
+| Workspace store        | Hold immutable run manifests and context generations shared by independent package processes.    |
+| Rsdoctor adapter       | Read an explicit artifact, normalize its module graph, and invoke supported Agent CLI queries.   |
+| Query layer            | Select contexts and snapshots, assess freshness, traverse module graphs, page, and diff results. |
+| MCP server             | Expose the query and explicit-capture tools over stdio.                                          |
+| Plugin skills          | Select the relevant tools and present their evidence boundaries to the model.                    |
 
-### Upstream and downstream ownership
+### Monorepo process model
+
+The MCP process does not use its launch directory as a package or build identifier. `rs mcp` starts
+at the host-provided current working directory, walks upward to the nearest workspace manifest, Git
+checkout, or package root, and opens that workspace's store. Build processes perform the same
+workspace resolution from their loaded config path while retaining their own package root.
 
 ```mermaid
 flowchart TB
-  subgraph Upstream["Upstream ownership"]
-    RP["Rspack<br/>optimizer + runtime facts"]
-    RD["Rsdoctor<br/>report contract + build graph"]
-    RT["Rstest<br/>observer/watch API"]
+  subgraph Workspace["One workspace or checkout"]
+    LibA["packages/a<br/>rs lib"]
+    LibB["packages/b<br/>rs lib"]
+    LibC["packages/c<br/>rs lib"]
+    App["apps/web<br/>rs dev"]
+    Store[("workspace store")]
+
+    LibA -->|"run + packageRoot + contexts"| Store
+    LibB -->|"run + packageRoot + contexts"| Store
+    LibC -->|"run + packageRoot + contexts"| Store
+    App -->|"run + packageRoot + contexts"| Store
   end
 
-  subgraph Rstack["Rstack ownership"]
-    Inject["Safe adapter<br/>injection"]
-    Identity["Stable identity<br/>+ generations"]
-    Merge["Cross-producer<br/>evidence merge"]
-    Policy["Product roots + contracts<br/>confidence + evidence bounds"]
-    MCP["One MCP<br/>+ plugin skills"]
-  end
-
-  RP --> RD
-  RD --> Merge
-  RT --> Merge
-  Inject --> Merge
-  Identity --> Merge
-  Merge --> Policy --> MCP
+  Agent["Agent session at repository root"] -->|stdio| MCP["one rs mcp server"]
+  MCP -->|"all completed runs"| Store
 ```
 
-Rspack and Rsdoctor own facts that cannot be reconstructed reliably after compilation: provided
-exports with zero active edges, optimizer usage state, side-effect decisions, runtime activity,
-dependency locations, transformed declarations, and optimization bailouts. Rstack owns composition,
-not duplicate compiler instrumentation.
-
-## Evidence producers
-
-### Rsbuild and Rspack
-
-Rstack adds one global Rsbuild observer after resolving the user's app configuration. The observer
-uses documented Rsbuild lifecycle hooks for environment/config/build events and a final
-`tools.rspack` composition to append one no-op Rspack observer per environment.
-
-The default capture includes:
-
-- command, environment, target, mode, runtime, tool versions, and config fingerprint;
-- build start, completion, failure, restart, close, and watch change sets;
-- minimal Stats for hashes, timings, assets, chunks, diagnostics, entrypoints, and module inventory;
-- completeness and extraction-cost metadata.
-
-Deep build capture is opt-in and adds:
-
-- module reasons and issuer paths;
-- provided and used exports;
-- optimization bailouts;
-- runtime-aware ModuleGraph and ChunkGraph edges;
-- Rsdoctor export-usage and tree-shaking data;
-- bounded source-map attribution.
-
-Collection occurs only at lifecycle points where Rspack data is complete. JS proxy objects are
-serialized immediately and never retained between callbacks.
-
-### Rsdoctor
-
-Rsdoctor is the canonical build-analysis provider. The context engine consumes static
-`rsdoctor-data.json` or a normal `.rsdoctor/manifest.json` and its shards. It integrates
-`@rsdoctor/agent-cli` in-process and reuses `@rsdoctor/shared` graph and diff operations where a
-stable public surface exists.
-
-The default agent path does not depend on:
-
-- `@rsdoctor/client`;
-- an HTTP or Socket.IO report server;
-- the removed legacy `@rsdoctor/mcp-server`;
-- a browser session.
-
-The Rsdoctor GUI remains available through an explicit `report_link` result for investigations where
-a treemap or large interactive graph is materially more useful than a bounded path or table.
-
-### Rslib
-
-Rstack adds one global Rsbuild-compatible observer after resolving the CLI-specific Rslib config.
-The adapter does not modify `lib[]` entries or the shared resolver used by Rstest.
-
-Rslib contributes:
-
-- selected library variants and environment identities;
-- entry files, output formats, targets, filenames, and bundleless mode;
-- `autoExternal` and explicit externals intent;
-- emitted outputs and Stats per environment;
-- declaration-output intent and coarse completion state;
-- package name, files, `main`, `module`, `types`, `exports`, and `bin` contract roots;
-- validation of package-export targets against actual outputs.
-
-Published libraries default to an open-world public contract. Internal libraries may opt into
-closed-world workspace analysis.
-
-### Rslint
-
-One resident `Rslint` engine per workspace provides structured `lintFiles` and `lintText` results.
-Requests are serialized through the engine. Rstack uses the generated Rslint config file so project
-plugins and configuration behave exactly like `rs lint`.
-
-Rslint contributes:
-
-- lexical unused locals, parameters, private members, and unreachable-code diagnostics;
-- rule IDs, severity, locations, suggestions, and fix ranges;
-- whole-file fixed output for previews;
-- optional TypeScript compiler diagnostics through a captured CLI subprocess.
-
-The public JS API has no cancellation or type-check/timing surface. Hard cancellation therefore
-requires a killable worker or one-shot subprocess and recreation of the resident engine.
-
-### Rstest
-
-Rstest contributes two distinct evidence families:
-
-- static module dependency: which tests are related to a changed source file;
-- runtime execution: which source ranges were covered by a specific test capture.
-
-Those signals never collapse into one claim. A related test can import a module without executing a
-symbol, and a coverage hit can come from setup, module initialization, hooks, or shared state.
-
-The observer records run, file, suite, case, diagnostic, console, retry, snapshot, coverage, and
-completion events. Project configuration supplies environment/browser metadata that reporter events
-do not carry directly.
-
-Rstest's current programmatic and reporter APIs are experimental and must be pinned to an exact patch.
-A supported append-only observer and watch-session control API should be added upstream before Rstack
-offers first-class MCP watch control.
-
-### Workspace and Git
-
-Every snapshot records the source revision, dirty-diff digest, config file and dependency digest,
-selected products, platform, command, and producer versions.
-
-## Configuration and activation
-
-Passive collection is opt-in. This RFC adds an optional `context` section to Rstack configuration
-for product intent and limits:
-
-```ts
-export default define({
-  context: {
-    enabled: true,
-    products: [
-      { config: 'app', kind: 'application' },
-      { config: 'lib', kind: 'published-library' },
-    ],
-    capture: 'metadata',
-    tests: 'attach',
-  },
-});
-```
-
-The normative behavior is:
-
-- `metadata` is the default capture tier;
-- `capture` accepts `off`, `metadata`, or `deep`;
-- `tests` accepts `off` or `attach`; test execution is never implied;
-- `products` is required only when Rstack cannot infer a safe application or published-library
-  product from `define.app` or `define.lib`;
-- deep graph/source capture requires an explicit setting or command;
-- tests attach only to a user-started Rstest session;
-- CI does not persist or listen unless explicitly configured to emit a context artifact;
-- `RSTACK_CONTEXT=0` is an emergency opt-out;
-- instrumentation changes the resolved in-memory config only and never writes the user's config file.
-
-## Safe configuration injection
-
-```mermaid
-flowchart TB
-  User["User config object or function"]
-  Resolve["Existing Rstack resolver"]
-  Clone["Shallow immutable clone"]
-  Append["Append one Rstack-owned observer"]
-  Tool["Underlying tool CLI/API"]
-
-  User --> Resolve --> Clone --> Append --> Tool
-  User -. "never edited" .-> Tool
-```
-
-The injection points are intentionally tool-specific:
-
-| Tool    | Injection point                                            | Reason                                                                                     |
-| ------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Rsbuild | After `resolveRsbuildConfig` in `rsbuildConfig.ts`         | Covers app CLI runs without leaking instrumentation into Rstest's app extension.           |
-| Rspack  | Final composed `tools.rspack` result                       | Observes the actual bundler config after user composition.                                 |
-| Rslib   | After CLI-only `resolveRslibConfig`                        | One global plugin covers all generated library environments without duplicating callbacks. |
-| Rstest  | Append observer after configured reporters are constructed | Rstest reporter configuration is replace-not-concatenate.                                  |
-| Rslint  | Programmatic `Rslint` instance using generated config      | Preserves structured diagnostics; CLI is retained only for type-check/timing gaps.         |
-
-Observers must be per-instance idempotent, never module-global. They must not mutate hook arguments,
-return values, assets, graphs, or diagnostics.
-
-## Information model
-
-### Core entities
-
-```mermaid
-erDiagram
-  WORKSPACE ||--o{ CONTEXT : contains
-  CONTEXT ||--o{ RUN : executes
-  RUN }|--o| SNAPSHOT : contributes
-  SNAPSHOT }|--o{ ENTITY : records
-  ENTITY ||--o{ EDGE : originates
-  ENTITY ||--o{ EVIDENCE : supports
-  SNAPSHOT ||--o{ FINDING : classifies
-  FINDING }o--|{ EVIDENCE : cites
-
-  WORKSPACE {
-    string id
-    string repositoryId
-    string checkoutDigest
-  }
-  CONTEXT {
-    string id
-    string configDigest
-    string target
-    string mode
-    string runtime
-  }
-  RUN {
-    string id
-    int generation
-    string producer
-    string status
-  }
-  SNAPSHOT {
-    string id
-    string sourceDigest
-    string completeness
-  }
-  ENTITY {
-    string id
-    string kind
-    string canonicalKey
-  }
-  EDGE {
-    string type
-    string targetId
-  }
-  EVIDENCE {
-    string id
-    string claim
-    string method
-  }
-  FINDING {
-    string id
-    string code
-    string confidence
-  }
-```
-
-Entity kinds include workspace, product, environment, route entry, module, symbol, export, package,
-test project, test file, test case, chunk, asset, diagnostic, and report.
-
-Normalized edge kinds include:
-
-- `imports`, `dynamic_imports`, `requires`, and `reexports`;
-- `declares`, `exports`, and `contract_exposes`;
-- `routes_to`, `included_in`, and `emits`;
-- `exercises`, `covers`, and `related_to_test`;
-- `retained_for_side_effect`, `retained_by_bailout`, and `diagnosed_by`.
-
-### Identity
-
-- Repository IDs derive from canonical repository identity when available and remain stable across
-  related working trees.
-- Workspace IDs are checkout/worktree-scoped and may incorporate repository or Git worktree
-  identity.
-- Context IDs derive from normalized config, target, mode, runtime, and conditions.
-- Semantic module, symbol, export, package, test, chunk, and route IDs are deterministic within a
-  workspace and do not include snapshot IDs.
-- Snapshot and run IDs are immutable time-sortable IDs.
-- Evidence IDs are content-addressed.
-- Producer-local numeric IDs remain in the provenance facet only.
-
-### Evidence envelope
-
-```json
-{
-  "schemaVersion": 1,
-  "id": "ev_…",
-  "producer": "rspack",
-  "producerVersion": "2.x",
-  "runId": "run_…",
-  "generation": 184,
-  "contextId": "ctx_…",
-  "observedAt": "2026-08-12T03:30:00Z",
-  "method": "export_usage_graph",
-  "claim": "export has no active incoming edge in runtime main",
-  "source": {
-    "uri": "rstack://workspace/ws_…/source/packages/app/src/feature.ts",
-    "range": {
-      "startLine": 12,
-      "startColumn": 1,
-      "endLine": 18,
-      "endColumn": 2
-    },
-    "digest": "sha256:…"
-  },
-  "bounds": {
-    "products": ["browser-production"],
-    "runtimes": ["main"],
-    "dynamicAccess": "unknown"
-  }
-}
-```
-
-### Freshness, completeness, and confidence
-
-These dimensions are independent:
-
-| Dimension    | Values                                                               | Meaning                                                             |
-| ------------ | -------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Status       | `queued`, `running`, `pass`, `fail`, `cancelled`, `error`, `skipped` | What happened during the run.                                       |
-| Freshness    | `live`, `fresh`, `stale`, `partial`, `unknown`                       | Whether the result applies to the current generation/source digest. |
-| Completeness | Per-producer section map                                             | Which facts were collected, disabled, truncated, or unsupported.    |
-| Confidence   | `exact`, `derived`, `inferred`, `unknown`                            | How directly the conclusion follows from the evidence.              |
-
-A green result may be stale. An empty section may mean "nothing found," "collector disabled," or
-"producer unsupported"; the schema must preserve that distinction.
-
-## Product and reachability model
-
-### Root classes
-
-| Root class                | Examples                                                                         | Default policy                                       |
-| ------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| Production executable     | Browser entry, server entry, worker, Node CLI                                    | Seeds production reachability.                       |
-| Published contract        | `package.json#exports`, `main`, `module`, `types`, `bin`                         | Protected from closed-world deletion.                |
-| Internal library          | Workspace-only library explicitly declared internal                              | Uses actual workspace consumers as roots.            |
-| Non-production executable | Test, example, benchmark, doctest-equivalent, setup file                         | Seeds non-production reachability only.              |
-| Conservative runtime root | Dynamic namespace, nonliteral CommonJS, reflection, registration, generated code | Preserves liveness and lowers confidence.            |
-| Side-effect root          | Explicit or inferred effectful module                                            | Preserves module execution, not necessarily exports. |
-
-### Independent state axes
-
-Each definition is classified along at least these axes:
-
-```text
-productionReachability:      live | unreachable | unknown
-nonProductionReachability:   live | unreachable | unknown
-publicContract:              required | not-required | unknown
-shipped:                     yes | no | unknown        (per build/runtime)
-executed:                    yes | no | unknown        (per capture)
-optimizerRetention:          used | side-effect | bailout | removed | unknown
-```
-
-### Finding classifier
-
-```mermaid
-flowchart TB
-  Start["Definition or export candidate"]
-  Complete["Complete evidence?"]
-  Dynamic["Dynamic access uncertain?"]
-  Contract["Protected contract?"]
-  Prod["Production-reachable?"]
-  NonProd["Non-production-reachable?"]
-  Shipped["Shipped or retained?"]
-
-  Start --> Complete
-  Complete -- "no" --> Partial
-  Complete -- "yes" --> Dynamic
-  Dynamic -- "yes" --> Candidate
-  Dynamic -- "no" --> Contract
-  Contract -- "yes" --> Protected
-  Contract -- "no" --> Prod
-  Prod -- "yes" --> Live
-  Prod -- "no" --> NonProd
-  NonProd -- "yes" --> TestOnly
-  NonProd -- "no" --> Shipped
-  Shipped -- "yes" --> Retained
-  Shipped -- "no" --> Dead
-
-  Partial["insufficient evidence"]
-  Candidate["uncertain candidate"]
-  Protected["protected contract"]
-  Live["live export"]
-  TestOnly["test/development only"]
-  Retained["retained unexpectedly"]
-  Dead["dead-code candidate"]
-```
-
-### Finding codes
-
-| Code                        | Meaning                                                                                          | Default action                                                        |
-| --------------------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| `unused-local`              | Rslint proves a non-exported local/private definition is unused.                                 | Offer a lint fix preview when available.                              |
-| `unused-export`             | An export is provided but unused in all selected production runtimes.                            | Investigate contract and dynamic bounds; do not delete automatically. |
-| `dead-export`               | The export is unreachable from production and non-production roots and is not contract-required. | Offer a removal plan after verification.                              |
-| `unnecessary-export`        | The definition is live but no selected consumer requires it to be exported.                      | Offer visibility/export reduction.                                    |
-| `test-only-export`          | Reachable only from tests or other non-production roots.                                         | Explain test-only status; avoid production bundle claims.             |
-| `dead-module`               | No selected root reaches the module and no required side effect preserves it.                    | Offer module removal after multi-context verification.                |
-| `retained-for-side-effects` | No exports are used, but the module is retained for effects.                                     | Explain effect locations and package metadata.                        |
-| `tree-shaking-bailout`      | Rspack cannot optimize the module/export as expected.                                            | Explain bailout and likely remediation.                               |
-| `not-shipped`               | Present in source but absent from a specific build.                                              | Report as build-scoped evidence, not global dead code.                |
-| `not-executed`              | Included in coverage scope but had no hits in a capture.                                         | Report as test-scoped evidence, not reachability proof.               |
-| `insufficient-evidence`     | Required producers were disabled, stale, truncated, or unsupported.                              | Recommend the smallest safe capture that fills the gap.               |
-
-Arbitrary local-symbol DCE remains heuristic unless Rspack exposes its internal inner-graph facts.
-Source-map absence is not proof because inlining, renaming, minification, concatenation, and constant
-folding can remove names and ranges.
-
-## Development and watch mode
-
-Build, lint, and test must remain independent. Lint and test never block HMR or change the Rsbuild
-success result.
-
-```mermaid
-sequenceDiagram
-  participant RB as Build watch
-  participant S as Workspace store
-  participant L as Rslint worker
-  participant T as Rstest watch
-  participant MCP as rs mcp
-  participant M as Model
-
-  RB->>S: atomically publish build generation 184
-  L->>S: publish explicit or requested lint result
-  T->>S: publish completed watch cycle
-  M->>MCP: project_status
-  MCP->>S: read completed records
-  MCP-->>M: build fresh, lint fresh, tests stale
-```
-
-Example status exposed to the model:
-
-```text
-DEV  source=9a73f2 + 2 uncommitted files
-Build  PASS     412ms  [FRESH: build generation 184]
-Lint   RUNNING         [lint generation 52]
-Tests  PASS     31/31  [STALE: test cycle 31; 2 changed files]
-Next   wait for lint, or inspect the changed-file diagnostics already available
-```
-
-Rslint behavior during development:
-
-- no background lint process is started merely because a dev server or MCP client exists;
-- an explicit `rs lint` run publishes its result, while an approved MCP lint request may reuse one
-  resident engine within that MCP process;
-- lint requested or explicitly changed files without blocking build or HMR;
-- schedule program-wide type checking on explicit request or idle policy;
-- bind each result to its producer generation and source digest;
-- cancel by terminating and recreating the worker only when necessary.
-
-Rstest behavior during development:
-
-- attach only when the user already started `rs test --watch` or explicitly requested it;
-- correlate each watch cycle with its source digest and the nearest observed build generation;
-- use related-test evidence to explain affected selection;
-- preserve previous results as stale until the new cycle finishes;
-- distinguish cancellation, infrastructure failure, and product test failure;
-- never claim exact case-to-symbol execution without an appropriately scoped coverage capture.
-
-## Workspace store and transport
-
-### Process model
-
-Version 1 requires no coordinator process. Rstack commands and watch processes resolve identity from
-their actual loaded config or package path and atomically publish into the checkout-local disposable
-cache. Agent hosts may launch `rs mcp` from the repository root, a package, or another authorized MCP
-root; the broker locates the workspace store without treating its CWD as package or build identity.
-
-```mermaid
-flowchart TB
-  subgraph Shells["Commands may run in any package or shell"]
-    LibA["rs lib --watch<br/>packages/a"]
-    LibB["rs lib --watch<br/>packages/b"]
-    App["rs dev<br/>apps/web"]
-    Tests["rs test --watch"]
-  end
-
-  Store[(".rstack/cache/context-v1<br/>immutable per-run records")]
-  Codex["Codex root session"] -->|stdio| Broker["rs mcp"]
-  Claude["Claude root session"] -->|stdio| Broker
-  LibA -->|"atomic publish"| Store
-  LibB -->|"atomic publish"| Store
-  App -->|"atomic publish"| Store
-  Tests -->|"atomic publish"| Store
-  Broker -->|"validate + query"| Store
-```
-
-Each producer owns `runs/<runId>`. It first publishes an immutable run manifest, then publishes each
-completed context generation under that run. Publication writes a unique same-directory temporary
-file and atomically links it into its final name; readers ignore temporary files and never observe a
-partially written completed record.
+This model has no dependency on the order in which processes start. Package commands may publish
+before or after MCP starts, and multiple MCP readers can inspect the same immutable files. Turbo can
+launch the commands, but the engine neither requires nor reads Turbo's task graph.
+
+Each build context records:
+
+- `contextId`;
+- workspace-relative `packageRoot`;
+- application or library `product`;
+- optional package name and config path; and
+- environment, target, and mode.
+
+For build observations, `contextId` derives from the producer, package root, config path, product,
+environment, command, mode, and target. It therefore distinguishes several builds in one process and
+the same kind of build in different packages. Run IDs distinguish concurrent or repeated processes.
+
+A single Rslib invocation can publish several library environments. A single Rsbuild invocation can
+publish client, server, worker, or other configured environments. A workspace containing only Rslib
+packages works without an Rsbuild application; an Rsbuild-only application works without Rslib; a
+mixed workspace simply contributes both producer types to the same store.
+
+`project_status` is how an agent chooses among those builds: it returns each `runId`, descriptor,
+latest snapshot, and producer-specific freshness. Module analysis then requires that chosen
+`contextId` plus an explicit Rsdoctor `dataFile`. The current adapter does not automatically bind the
+file to the build observation; provenance labels the association `explicit-unverified` and includes
+the latest build observation when one exists.
+
+### Store layout and publication
 
 ```text
 .rstack/cache/context-v1/
@@ -674,530 +195,422 @@ partially written completed record.
                     └── <sequence>-<snapshotId>.json
 ```
 
-The resolved hierarchy is checkout → package → tool/config → product → environment → run →
-generation. A single Rslib process may therefore publish separate ESM, CJS, DTS, or bundleless
-contexts, and a single Rsbuild process may publish client, server, or worker contexts. Concurrent
-processes targeting the same context remain separate sessions; status reports ambiguity rather than
-silently choosing one.
+A producer writes an immutable run manifest followed by immutable completed snapshots. Publication
+uses a same-directory temporary file and links it to its final generation name. Readers ignore
+temporary and incomplete records. The cache is disposable; Rsdoctor source artifacts remain in
+their original project-selected location.
 
-Workspace discovery prefers the nearest package-manager workspace manifest, then a Git checkout
-marker, then the nearest package root. It requires neither Turbo nor Nx and does not parse their task
-graphs. Rstack CLI users receive adapters through resolved-config injection. Direct Rsbuild, Rspack,
-Rslib, and Rstest users must add the corresponding explicit Rstack plugin or reporter; arbitrary
-third-party processes cannot be instrumented safely by inference.
+```mermaid
+sequenceDiagram
+  participant P as Package process
+  participant S as Workspace store
+  participant M as rs mcp
+  participant A as Agent
 
-Commands may start before the MCP process, and multiple MCP processes may read the same records. Each
-broker keeps only a disposable in-memory query cache. A resident coordinator may be reconsidered if
-measured multi-client cache duplication or event throughput proves it necessary; it is not part of
-the version 1 contract.
+  P->>S: publish run.json
+  P->>S: publish completed generation
+  A->>M: project_status
+  M->>S: read manifests and completed generations
+  S-->>M: package contexts and latest snapshots
+  M-->>A: structured workspace status
+```
 
-Other transports may be reconsidered later if explicit multi-client use justifies them. They are not
-part of the version 1 contract.
+## Producers and evidence
 
-### Storage
+### Current support matrix
 
-- Completed records are immutable; incomplete run directories and temporary files are not queryable.
-- Snapshots are immutable and content-addressed where practical.
-- Individual records and queries are bounded, but cache growth is not yet bounded by deletion.
-- Source, maps, logs, coverage, and deep graphs have independent read and write caps.
-- The store is disposable cache, never the only copy of a user artifact.
-- Raw Rsdoctor artifacts stay in their project-selected output location and are not copied unless a
-  snapshot explicitly requires it.
+| Producer       | Activation                            | Current evidence                                                        |
+| -------------- | ------------------------------------- | ----------------------------------------------------------------------- |
+| Rsbuild/Rspack | `context.enabled: true` on Rstack app | Build status, hash, timing, environment, target, assets, chunks, bounds |
+| Rslib/Rspack   | `context.enabled: true` on Rstack lib | The same metadata per generated library environment                     |
+| Rsdoctor       | Explicit `dataFile` in an MCP query   | Agent CLI results and normalized artifact module graph                  |
+| Rslint         | Explicit `lint_snapshot`              | File diagnostics, totals, input digests, optional fixed-output preview  |
+| Rstest         | Explicit one-shot `test_snapshot`     | File, case, error, status, totals, and partial input provenance         |
+
+Standalone Rspack processes are not automatically observed. In this implementation, Rspack metadata
+arrives through the Rsbuild-compatible observer used by Rstack's app and library commands.
+
+### Activation
+
+Passive build metadata capture is opt-in:
+
+```ts
+export default define({
+  context: {
+    enabled: true,
+    capture: 'metadata',
+  },
+});
+```
+
+`capture` accepts `off`, `metadata`, or `deep`. The current observer implements metadata capture;
+when `deep` is selected, the snapshot records that the deep facet is unsupported rather than
+inventing deeper evidence. `RSTACK_CONTEXT=1` enables metadata capture for a command and
+`RSTACK_CONTEXT=0` disables it.
+
+### Build metadata
+
+The Rsbuild-compatible observer is appended after Rstack resolves the relevant app or library
+configuration. For every completed environment compile it records:
+
+- producer, command, mode, environment, target, watch state, and first-compile state;
+- duration, compilation hash, error state, and warning state;
+- a bounded asset list with sizes;
+- a bounded chunk list with identifiers, files, and initial state; and
+- dropped asset and chunk counts when metadata was truncated.
+
+The observer catches its own capture failure, reports one warning, and leaves the build result
+unchanged.
+
+### Rsdoctor artifact model
+
+Rsdoctor remains the build-analysis provider. The engine accepts an explicit
+`rsdoctor-data.json`-style file, invokes the supported `@rsdoctor/agent-cli` catalog in-process only
+when requested, and can link an existing HTML report or manifest. It does not require a browser or a
+report server for normal MCP queries.
+
+For reachability, the adapter normalizes the artifact's module graph into stable paths, import
+edges, entry flags, chunk membership, optimizer bounds, and parse issues. Root selection then adds:
+
+- production entries observed in the artifact;
+- mapped `package.json` contract targets for library contexts;
+- side-effect roots; and
+- conservative roots for optimizer bailouts.
+
+Published library analysis carries an open-world bound. A package contract target that cannot be
+mapped to a module is also returned as a bound instead of being silently ignored.
+
+```mermaid
+flowchart LR
+  Artifact["Explicit Rsdoctor artifact"] --> Normalize["Normalize module graph"]
+  Context["Selected application or library context"] --> Roots["Resolve product roots"]
+  Manifest["Library package.json"] --> Roots
+  Normalize --> Roots
+  Roots --> Traverse["Bounded graph traversal"]
+  Traverse --> Candidates["Unreachable module candidates"]
+  Traverse --> Explain["Shortest root path or bound"]
+  Traverse --> Impact["Dependencies or dependents"]
+```
+
+The module queries expose four state axes: production reachability, public-contract status, shipped
+chunk membership, and optimizer retention. They do not infer local-symbol reachability, export use,
+test-only use, or runtime execution.
+
+### Rslint snapshots
+
+`lint_snapshot` creates one Rslint engine, runs either `lintFiles` or `lintText`, normalizes the
+results, closes the engine, and publishes one completed snapshot. File mode defaults to the workspace
+when no patterns are supplied. Text mode records a virtual-input digest.
+
+When `includeFixPreview` is true, the snapshot may contain whole-file fixed output.
+`lint_fix_preview` returns that stored output with the original digest; it never writes the file.
+
+### Rstest snapshots
+
+`test_snapshot` runs Rstest once through its programmatic API. The request can limit files and a test
+name pattern. The resulting snapshot records normalized test files, cases, errors, totals, and the
+run status. The source-input set is marked partial because the current adapter records observed test
+files rather than a complete dependency graph.
+
+The branch does not attach to an existing watch process, control watch cycles, or keep a resident
+Rstest session.
+
+### Freshness and compatible diffs
+
+Lint and test snapshots record input digests. Query results assess those inputs against the current
+workspace and report `fresh`, `stale`, `partial`, or `unknown` with changed paths where available.
+Build, lint, and test freshness remain independent.
+
+`snapshot_diff` compares only compatible immutable snapshots:
+
+- the schema version must match;
+- the producer must match;
+- the context ID must match; and
+- both snapshots must contain the requested lint-diagnostic or test-result facet.
+
+A compatible result contains added, removed, and changed items plus the independent freshness of
+both sides. An incompatible result returns ordinary reasons and no inferred comparison.
+
+```mermaid
+flowchart LR
+  Explicit["Explicit lint_snapshot or test_snapshot"] --> Run["One-shot producer"]
+  Run --> Record["Immutable snapshot"]
+  Record --> List["snapshot_list"]
+  List --> Query["diagnostics_list or test_results"]
+  Record --> Diff["snapshot_diff"]
+  Record --> Preview["lint_fix_preview<br/>when captured"]
+```
 
 ## MCP contract
 
-### One server
+### Server lifecycle
 
-The Codex and Claude bundles register one local stdio server named `rstack`. Rsdoctor tools are
-adapted behind it; the legacy live Rsdoctor MCP server is not started.
-
-### Resources
-
-```text
-rstack://workspace/{workspaceId}/contexts
-rstack://context/{contextId}/head
-rstack://context/{contextId}/live/{kind}/{entityId}
-rstack://snapshot/{snapshotId}
-rstack://snapshot/{snapshotId}/{kind}/{entityId}
-rstack://query/{queryHandle}
-rstack://run/{runId}/events
-```
-
-Live resources resolve one head snapshot per read and may be subscribed to. Snapshot resources are
-immutable. Large catalogs are discoverable through resource templates and tool-returned links, not
-through an unbounded `resources/list`.
-
-### Read-only tools
-
-Phase 1 exposes exactly three tools:
-
-| Tool               | Purpose                                                                                        |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| `project_status`   | Return completed checkout-local build-context observations.                                    |
-| `rsdoctor_analyze` | Invoke a supported in-process Agent CLI tool against an explicit Rsdoctor data file.           |
-| `report_link`      | Return an ordinary `file:` resource link for an existing optional Rsdoctor report or manifest. |
-
-`rsdoctor_analyze` accepts an explicit `dataFile`, one of the ten pinned Agent CLI tool names, and
-optional input matching that tool's schema. The data file must contain JSON with an object-valued
-`data` field. Rstack returns the Agent CLI JSON result directly.
-
-`report_link` checks the conventional sibling `report-rsdoctor.html`, one unambiguous sibling HTML
-file, and the checkout's `.rsdoctor/manifest.json`, in that order. It starts no command or report
-server and creates no report. Missing GUI output returns an `rsdoctor_analyze` next action instead.
-
-Later phases may add findings, relationship, snapshot, diagnostics, and test/coverage queries after
-their normalized evidence is implemented.
-
-Read-only tools use `readOnlyHint: true`, `destructiveHint: false`, and `openWorldHint: false`.
-
-### Mutating tools
-
-Mutation is a later phase and remains separate:
-
-- `refresh_context` may run configured collectors only after explicit approval;
-- `run_build`, `run_lint`, and `run_test` execute repository code and require approval;
-- `apply_fix_preview` applies only a prior hash-bound preview to explicit paths;
-- snapshot pin/unpin affects context-engine cache only.
-
-Run tools are conservatively annotated as non-read-only, destructive, and open-world because project
-plugins and tests may execute arbitrary code.
-
-### Query consistency and pagination
-
-Every query without an explicit snapshot captures the current head once. A TTL-bound query handle
-pins that snapshot and authorization scope. Opaque cursors page the frozen result. Responses include
-totals, truncation, completeness, and the snapshot ID.
-
-### Progressive model presentation
-
-```mermaid
-flowchart TB
-  Hint["1. Small freshness/status hint"]
-  Skill["2. Task skill selects queries"]
-  Summary["3. Compact findings summary"]
-  Card["4. One evidence card"]
-  Path["5. Bounded path / table / source"]
-  Report["6. Optional Rsdoctor report"]
-
-  Hint --> Skill --> Summary --> Card --> Path --> Report
-```
-
-The default response is decision-ready and short:
-
-```text
-UNUSED CODE  snapshot=snap_01…  source=9a73f2 + 2 files  [PARTIAL]
-Candidates  7 exports · 2 modules · 4 high-confidence unused locals
-Strongest   packages/app/src/legacy.ts:18 `parseLegacyToken`
-Evidence    no production/test inbound path; absent from browser+node output
-Boundary    package is internal; dynamic CommonJS scan incomplete
-Next        inspect the only dynamic loader before proposing removal
-```
-
-An expanded finding is an evidence card, not a log dump:
+Both plugin bundles register one local stdio server named `rstack`:
 
 ```json
 {
-  "id": "finding_…",
-  "code": "dead-export",
-  "subject": {
-    "name": "parseLegacyToken",
-    "location": "packages/app/src/legacy.ts:18"
-  },
-  "state": {
-    "productionReachability": "unreachable",
-    "nonProductionReachability": "unreachable",
-    "publicContract": "not-required",
-    "shipped": "no",
-    "executed": "unknown"
-  },
-  "confidence": "derived",
-  "freshness": "fresh",
-  "evidence": ["ev_static_graph", "ev_rspack_browser", "ev_rspack_node"],
-  "bounds": ["dynamic CommonJS scan incomplete"],
-  "actions": ["trace dynamic loaders", "preview removal", "copy verification command"]
+  "mcpServers": {
+    "rstack": {
+      "command": "rs",
+      "args": ["mcp"]
+    }
+  }
 }
 ```
 
+The plugin runtime launches in the agent session current working directory. `rs mcp` immediately
+resolves the enclosing workspace root, so package identity comes from producer records rather than
+from the MCP launch directory. No daemon handshake, port allocation, live-process registry, or
+development-server connection is involved.
+
+The MCP server reads structured content and returns an MCP `resource_link` only for an existing
+Rsdoctor report. It does not currently register MCP resources, resource templates, prompts,
+subscriptions, or a separate Rsdoctor MCP server.
+
+### Tool catalog
+
+The implemented server exposes these 14 tools:
+
+| Tool                | Kind               | Purpose                                                               |
+| ------------------- | ------------------ | --------------------------------------------------------------------- |
+| `project_status`    | Query              | List package/build contexts and their latest completed observations.  |
+| `product_roots`     | Query              | Resolve roots for one context and explicit Rsdoctor graph.            |
+| `unused_candidates` | Query              | List artifact-scoped unreachable module candidates.                   |
+| `dead_code_explain` | Query              | Explain one module's reachability, conservative retention, or bounds. |
+| `module_impact`     | Query              | Traverse dependencies or dependents in one explicit artifact graph.   |
+| `snapshot_list`     | Query              | Page immutable snapshots by producer or context.                      |
+| `diagnostics_list`  | Query              | Page normalized Rslint or Rstest diagnostics.                         |
+| `test_results`      | Query              | Page normalized test cases from a completed Rstest snapshot.          |
+| `snapshot_diff`     | Query              | Compare diagnostics or tests from two compatible snapshots.           |
+| `lint_fix_preview`  | Query              | Return stored fixed output without applying it.                       |
+| `lint_snapshot`     | Explicit execution | Run one Rslint capture and publish its snapshot.                      |
+| `test_snapshot`     | Explicit execution | Run one one-shot Rstest capture and publish its snapshot.             |
+| `rsdoctor_analyze`  | Query              | Invoke one supported Agent CLI tool against an explicit data file.    |
+| `report_link`       | Query              | Link an existing Rsdoctor HTML report or manifest.                    |
+
+Snapshot and diagnostic/test lists use bounded limits and opaque cursors. Module traversal has
+bounded depth and visit counts and reports whether analysis or result paging truncated the answer.
+All artifact tools require an explicit `dataFile`; the server neither starts a build nor guesses
+which Rsdoctor artifact the user intended.
+
+### Module claim vocabulary
+
+The reachability tools use four classifications:
+
+| Classification                   | Meaning                                                             |
+| -------------------------------- | ------------------------------------------------------------------- |
+| `reachable`                      | A production or contract root has a path to the module.             |
+| `preserved-by-conservative-root` | An optimizer/side-effect root has a path to the module.             |
+| `unreachable-module-candidate`   | No selected root reaches it within the complete traversal.          |
+| `insufficient-evidence`          | Missing roots or traversal bounds prevent a complete module result. |
+
+An `unreachable-module-candidate` is a request for source and runtime verification, not a deletion
+decision. Export-level and local-symbol conclusions remain outside this branch.
+
 ## Plugin bundles
 
-### Codex
+### Codex bundle
 
 ```text
-rstack-codex-plugin/
-├── .codex-plugin/plugin.json
+plugins/rstack-codex/
+├── .codex-plugin/
+│   └── plugin.json
 ├── .mcp.json
-├── mcp/server.mjs
 └── skills/
-    ├── orient-rstack-project/
-    ├── find-unused-code/
-    ├── explain-dead-code/
-    ├── assess-change-impact/
     ├── analyze-build/
+    ├── assess-change-impact/
     ├── debug-dev-cycle/
-    ├── select-affected-tests/
-    └── review-build-regression/
+    ├── explain-dead-code/
+    ├── find-unused-code/
+    └── review-context-change/
 ```
 
-Codex workflows are skills. Version 1 does not require hooks, an app, a bundled LSP, or a separate
-subagent registry. The prebuilt MCP runtime and compatible Rsdoctor Agent CLI are pinned in the
-published artifact.
+The Codex manifest describes the plugin, points to the six skills, and references `.mcp.json`. The
+repository marketplace entry points at this local bundle. The bundle expects the project's `rs`
+executable on the MCP host `PATH`; it does not carry another copy of the context runtime.
 
-### Claude code
+### Claude code bundle
 
 ```text
-rstack-claude-plugin/
-├── .claude-plugin/plugin.json
+plugins/rstack-claude/
+├── .claude-plugin/
+│   └── plugin.json
 ├── .mcp.json
-├── server/context.mjs
-├── skills/
-│   ├── orient-rstack-project/
-│   ├── find-unused-code/
-│   ├── explain-dead-code/
-│   ├── assess-change-impact/
-│   ├── analyze-build/
-│   ├── debug-dev-cycle/
-│   └── select-affected-tests/
-├── agents/
-│   ├── code-explorer.md
-│   ├── change-impact-reviewer.md
-│   └── build-performance-analyst.md
-└── workflows/
-    ├── review-change.js
-    └── build-regression.js
+└── skills/
+    ├── analyze-build/
+    ├── assess-change-impact/
+    ├── debug-dev-cycle/
+    ├── explain-dead-code/
+    ├── find-unused-code/
+    └── review-context-change/
 ```
 
-Claude Code skills and agents share the same MCP schemas and evidence semantics. State is stored in
-the host-provided plugin data directory, never the immutable plugin cache. A startup hook is omitted
-until `project_status` is proven consistently fast and side-effect-free.
+The Claude Code bundle uses the same command, schemas, and workflow text. This branch does not add
+Claude-specific hooks, agents, workflows, or a second server implementation.
 
-## Skill design
+### Skill catalog
 
-Skills are the primary user-facing interface. MCP tools provide facts; skills provide workflow,
-selection policy, safety rules, and presentation.
+| Skill                   | Typical request                   | Tool sequence                                                                  |
+| ----------------------- | --------------------------------- | ------------------------------------------------------------------------------ |
+| `find-unused-code`      | "Find unused modules"             | `project_status` → `product_roots` → `unused_candidates` → `dead_code_explain` |
+| `explain-dead-code`     | "Why is this module included?"    | `dead_code_explain` with one context, artifact, and module selector            |
+| `assess-change-impact`  | "What depends on this module?"    | `module_impact` in the dependent direction                                     |
+| `analyze-build`         | "Why is this bundle large?"       | `project_status` → focused `rsdoctor_analyze` → optional `report_link`         |
+| `debug-dev-cycle`       | "What lint or tests are failing?" | status/snapshot queries, then an explicit capture only when requested          |
+| `review-context-change` | "What changed after this edit?"   | `snapshot_list` → `snapshot_diff` → optional `lint_fix_preview`                |
 
-| Skill                     | Trigger examples                                                   | Evidence workflow                                                                                                                 |
-| ------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| `orient-rstack-project`   | "How is this project structured?", "What Rstack tools are active?" | Status → products/contexts → architecture summary → freshness gaps.                                                               |
-| `find-unused-code`        | "Find dead code", "What can I remove?", "Unused exports"           | Establish products/contracts → list candidates → require independent signals → rank → inspect uncertainty → propose verification. |
-| `explain-dead-code`       | "Why is this considered dead?", "Why is this retained?"            | Resolve subject → shortest root paths → optimizer/side-effect evidence → tests/contract evidence → bounds.                        |
-| `assess-change-impact`    | "What breaks if I change this?", "Who depends on X?"               | Resolve entity → dependents across contexts → affected products/tests/chunks → stale/unknown edges.                               |
-| `analyze-build`           | "Why is the bundle large?", "Why isn't this tree-shaken?"          | Select fresh Rsdoctor artifact → summary → narrow query → ranked evidence → optional report link.                                 |
-| `debug-dev-cycle`         | "Why is dev stale?", "What failed after my edit?"                  | Correlate generation → show build/lint/test states → first actionable failure → exact rerun.                                      |
-| `select-affected-tests`   | "What tests should I run?"                                         | Static related tests → changed context → prior coverage → explicit selection rationale and gaps.                                  |
-| `review-build-regression` | "What changed in this build?"                                      | Validate comparable snapshots → diff → regressions/fixes → causal module/package paths.                                           |
+The skills keep build-artifact conclusions scoped to the selected context and file. They also keep
+querying separate from execution: `lint_snapshot` and `test_snapshot` run only when fresh results
+are requested, and the preview tool never applies a change.
 
-### Normative `find-unused-code` workflow
+### Unused-module workflow
 
 ```mermaid
 flowchart TD
-  Status["Read project status"]
-  Products["Resolve products and contract roots"]
-  Candidates["Query unused/dead candidates"]
-  Evidence["Require independent evidence families"]
-  Dynamic["Inspect dynamic, generated, and side-effect bounds"]
-  Rank["Rank by actionability, not a probability score"]
-  Plan["Return verification or hash-bound removal preview"]
-
-  Status --> Products --> Candidates --> Evidence --> Dynamic --> Rank --> Plan
+  Status["Read project_status"] --> Select["Select explicit context and artifact"]
+  Select --> Roots["Resolve product_roots"]
+  Roots --> Candidates["List unused_candidates"]
+  Candidates --> Explain["Explain strongest candidate"]
+  Explain --> Bounds["Present paths, state axes, bounds, and provenance"]
+  Bounds --> Verify["Recommend source and runtime verification"]
 ```
 
-The skill must:
-
-1. Refuse to analyze a published library as a closed world unless explicitly configured.
-2. Prefer high-confidence Rslint local findings before cross-module candidates.
-3. Distinguish unused export, unreachable source, not shipped, not executed, and optimizer bailout.
-4. Require at least two independent evidence families before recommending deletion of an exported
-   definition.
-5. Treat dynamic imports, nonliteral `require`, reflection, registration, generated code, and missing
-   contexts as uncertainty.
-6. Show the shortest evidence path and the analysis bounds.
-7. Never apply edits directly; produce a preview and verification plan.
-
-### Skill output contract
-
-Every investigative skill returns:
-
-- conclusion and finding code;
-- status, freshness, completeness, and confidence;
-- direct evidence with source locations;
-- shortest causal paths;
-- known bounds and counter-evidence;
-- one safe recommended next action;
-- snapshot/run provenance;
-- resource links for deeper inspection.
-
-## Performance budgets
-
-Passive metadata collection targets:
-
-| Metric                          | Budget                                                        |
-| ------------------------------- | ------------------------------------------------------------- |
-| One-shot build overhead         | Less than 2%                                                  |
-| Context-engine startup          | Less than 100 ms after package load                           |
-| Incremental/watch observer p95  | Less than 25 ms per generation                                |
-| MCP query-cache resident memory | Less than 50 MiB excluding explicitly retained deep artifacts |
-| Default MCP query               | Less than 500 ms warm                                         |
-| Bounded graph query             | One concurrent query, 2 s deadline, 1 MiB response cap        |
-
-High-cardinality module/resolution hooks, module sources, full reasons, source maps, deep coverage,
-and Rspack/Rsdoctor profiling are opt-in. Every snapshot records extraction time, heap delta where
-available, normalized row counts, serialized bytes, truncation, and drop counts.
-
-When a producer exceeds its queue or time budget, it coalesces progress events before diagnostics,
-emits a drop marker, degrades the relevant facet to partial, and never blocks the underlying command.
-
-## Error and lifecycle semantics
-
-- Producer failures become `collector-error` evidence and partial completeness; they do not change
-  the tool's exit status.
-- A tool failure remains a tool failure even if collection succeeded.
-- A successful Rspack compilation is not necessarily a successful Rslib build; declaration generation
-  may fail afterward.
-- Cancelled and infrastructure-failed tests are not product test failures.
-- Watch restart creates a new instance identity and preserves the prior snapshot as stale.
-- A process exit without a completion marker closes the run as aborted/unknown.
-- The status reader rejects unsupported schema majors and reports compatible minor capabilities.
-- Source changes invalidate only affected facets; unaffected results may remain fresh when their
-  dependency digest proves applicability.
-
-## Upstream work
-
-Rstack should land small upstream changes before depending on unstable private APIs.
-
-### Rsdoctor
-
-1. **Preview packages:** add `pkg.pr.new` pull-request releases so Rstack can validate upstream
-   changes before npm publication. This is tracked by
-   [web-infra-dev/rsdoctor#1900](https://github.com/web-infra-dev/rsdoctor/pull/1900).
-2. **Versioned artifact contract:** add schema version, producer version, output mode, compiler/build
-   identity, enabled features, collected sections, and capability flags to brief JSON and normal
-   manifests. Preserve the distinction between disabled and legitimately empty sections.
-3. **Export-usage ingestion:** enable Rspack's existing `exportUsageGraph`; normalize its edges into
-   Rsdoctor's dormant export, variable, side-effect, statement, and module-graph model; persist
-   declaration/reference locations and runtime bounds where supplied.
-4. **Headless parity:** expose high-value module, loader, plugin timing, package, rule, and full bundle
-   diff queries through the Agent CLI catalog using bounded filters and pagination.
-5. **Stable semantic keys and diffs:** retain process-local numeric IDs for transport, but add stable
-   module/export/package keys and export/finding deltas for cross-build comparisons.
-
-### Rspack
-
-No new Rspack feature is required for the first export-usage graph: Rspack 2 already exposes an
-experimental Rsdoctor export-usage payload. Later PRs may be required for:
-
-- complete provided-export inventory including zero-edge exports;
-- runtime-specific usage and inactive conditional edges;
-- authoritative side-effect/purity state;
-- declaration/local-binding ranges and supported inner-graph relationships;
-- module/chunk phase timings and cache status.
-
-Those facts must be exposed by Rspack rather than reconstructed from minified assets.
-
-### Rstest
-
-Add a supported API that:
-
-- appends an observer after user reporters are constructed;
-- exposes a watch-session handle with ready, cycle, rerun, cancel, close, and completion semantics;
-- includes project environment/browser identity in observer events;
-- preserves `(project, testPath)` identity in aggregate results.
-
-Until then, Rstack pins the exact Rstest patch and limits supported integration to one-shot reads and
-passive attachment where safe.
-
-## Alternatives considered
-
-### Use only the Rsdoctor GUI
-
-Rejected. It is valuable for humans but requires a browser/report server and cannot provide the
-cross-tool product, lint, test, contract, freshness, or permission model.
-
-### Ship separate MCP servers for each tool
-
-Rejected. It duplicates lifecycle, roots, transport, and discovery; gives the model conflicting
-schemas; and prevents consistent cross-producer querying.
-
-### Require a workspace coordinator daemon
-
-Deferred unless measurements justify it. A daemon can centralize query caches and event delivery, but
-it also introduces process discovery, sockets or named pipes, leases, restart recovery, version skew,
-and cross-worktree isolation before those costs are necessary. Immutable per-run files already allow
-commands and any number of root-launched MCP processes to rendezvous without a task runner or shared
-process. A future daemon must consume the same store contract rather than replace it.
-
-### Mount MCP on the Rsbuild dev server
-
-Rejected. It couples agent access to the application server lifecycle and makes context disappear
-when the dev server stops.
-
-### Parse command output only
-
-Rejected. Human output is unstable, lossy, hard to cancel, and missing structured lifecycle,
-completeness, and identity. CLI subprocess capture remains a narrow fallback for surfaces not exposed
-programmatically.
-
-### Build a knip replacement from source alone
-
-Rejected. Source reachability is valuable but cannot replace the actual configured compilation,
-runtime/chunk graph, optimizer decisions, loaders, plugins, or Rslib product contract. A future
-Knip-compatible producer can complement build evidence.
-
-### Inject collectors into stored user config
-
-Rejected. It would affect every config consumer, leak instrumentation into unrelated commands, and
-write surprising persistent changes. Injection belongs in CLI-specific resolved-config adapters.
-
-### Return raw graphs to the model
-
-Rejected. Large graph dumps waste context and obscure decisions. The query engine returns bounded
-paths, trees, tables, and evidence cards; a full visual graph is optional investigation UI.
-
-## Delivery plan
+## Delivery status
 
 ```mermaid
-flowchart TB
-  P0["Phase 0: foundation + contracts<br/>Workspace discovery + immutable records"]
-  P1A["Phase 1A: passive build context<br/>Snapshots + one read-only MCP server"]
-  P1B["Phase 1B: Rsdoctor ingestion + richer build diagnostics"]
-  P1C["Phase 1C: report links"]
-  P2["Phase 2: reachability<br/>Product roots + unused-code skills"]
-  P3["Phase 3: development intelligence<br/>Generations + Rslint + Rstest"]
-  P4["Phase 4: change workflows<br/>Snapshot diffs + CI + fix previews"]
-  P5["Phase 5: optional presentation<br/>Remote transport + thin visual summaries"]
+flowchart LR
+  P01["Phase 0/1<br/>foundation, passive build records,<br/>Rsdoctor analysis, report links<br/>implemented"]
+  P2["Phase 2<br/>module artifact reachability<br/>and plugin bundles<br/>implemented"]
+  P3["Phase 3<br/>explicit one-shot Rslint/Rstest<br/>snapshots and queries<br/>implemented"]
+  P4["Phase 4<br/>compatible diffs, lint preview,<br/>and six skills<br/>implemented"]
+  P5["Phase 5<br/>no custom GUI or remote transport;<br/>reuse headless MCP + Rsdoctor GUI<br/>resolved"]
 
-  P0 --> P1A --> P1B --> P1C --> P2 --> P3 --> P4 --> P5
+  P01 --> P2 --> P3 --> P4 --> P5
 ```
 
-### Phase 0: foundation and contracts
-
-- Implement config-path-based checkout/package discovery, the versioned workspace evidence store,
-  immutable publication, bounded validation, and the deterministic status reader.
-- Define normalized entity, edge, evidence, snapshot, finding, and compatibility schemas.
-- Land Rsdoctor preview packages and artifact metadata.
-- Contract-test the Rspack/Rsdoctor payload against pinned versions.
-
-### Phase 1A: passive build context
+### Phase 0/1: foundation and build evidence
 
 Implemented downstream:
 
-- Add metadata-only Rsbuild/Rspack and Rslib observers.
-- Implement `rs mcp` with `project_status` access to completed observations.
+- workspace/package discovery independent of Turbo or another task runner;
+- immutable run manifests and context generations;
+- deterministic status across independent package processes;
+- opt-in Rsbuild and Rslib metadata observers;
+- the root-resolving `rs mcp` stdio server;
+- explicit Rsdoctor Agent CLI analysis; and
+- optional links to existing Rsdoctor reports.
 
-### Phase 1B: Rsdoctor ingestion and richer build diagnostics
+### Phase 2: module artifact reachability and bundles
 
-Implemented downstream: ingest static Rsdoctor artifacts through the in-process Agent CLI and expose
-its direct JSON results through `rsdoctor_analyze`.
+Implemented downstream:
 
-### Phase 1C: report links
+- normalized Rsdoctor module graphs;
+- application entries, library contract targets, and conservative roots;
+- bounded root reachability, shortest explanations, and impact traversal;
+- the four module-analysis MCP tools; and
+- matching Codex and Claude Code plugin bundles.
 
-Implemented downstream: add optional file links through `report_link` without starting a report
-server or command.
+The implementation reports module candidates only. Export usage and local-symbol dead-code claims
+were not added.
 
-- Defer destructive retention until real artifact sizes and access patterns are measured and a
-  portable recovery contract exists.
+### Phase 3: explicit development snapshots
 
-### Phase 2: reachability and skills
+Implemented downstream:
 
-- Add product/contract roots, runtime-aware export usage, causal paths, completeness, and classifier.
-- Ship `find-unused-code`, `explain-dead-code`, `assess-change-impact`, and `analyze-build` skills for
-  Codex and Claude.
-- Report candidates only; no edit/apply tools.
+- one-shot Rslint snapshots with normalized diagnostics;
+- one-shot Rstest snapshots with normalized file and case results;
+- producer-specific freshness; and
+- paginated snapshot, diagnostic, and test-result queries.
 
-### Phase 3: development intelligence
+Passive lint/test attachment, watch control, resident workers, type-check/timing capture, coverage,
+and related-test graph APIs remain deferred.
 
-- Add producer-local source generations, bounded event subscriptions, MCP-process-scoped resident
-  Rslint workers, and passive Rstest attachment.
-- Ship `debug-dev-cycle` and `select-affected-tests` skills.
+### Phase 4: review workflows
 
-### Phase 4: change and mutation workflows
+Implemented downstream:
 
-- Add compatible snapshot diffs, build regression skill, CI artifacts, and budgets.
-- Add hash-bound fix previews and explicit apply/verify flow.
+- compatibility-checked diagnostic and test diffs;
+- stored lint fixed-output previews without apply;
+- `debug-dev-cycle` and `review-context-change`; and
+- the complete six-skill set in both plugin bundles.
 
-### Phase 5: optional presentation
+CI artifact exchange, performance budgets, apply tools, automatic verification, and export-level
+diffs remain deferred.
 
-- Add thin MCP-app/status views only if headless workflows prove a concrete need.
-- Continue linking the existing Rsdoctor report for rich build visualization rather than duplicating
-  it.
+### Phase 5: presentation decision
 
-## Validation strategy
+Resolved for this branch: no custom GUI, MCP app, report server, or remote transport is needed. The
+headless MCP results cover agent workflows, and `report_link` reuses an existing Rsdoctor report when
+a human needs the richer visualization. A future presentation layer should be considered only after
+a specific workflow cannot be expressed clearly through the current structured tools and report
+link.
 
-### Schema and graph correctness
+## Deferred extensions
 
-- Golden fixtures for ESM, reexports, star/default/namespace imports, type-only imports, dynamic
-  imports, literal and nonliteral CommonJS, barrels, cycles, side effects, concatenation, generated
-  code, and multiple runtimes.
-- Byte-stable normalized snapshots across repeated equivalent builds.
-- Property tests for canonicalization, public roots, and finding invariants.
-- Compatibility fixtures for each supported producer patch and schema version.
+The following are potential later work, not part of the implemented contract:
 
-### Product matrix
+- supported Rsdoctor export-usage and local-binding data;
+- direct standalone Rspack instrumentation;
+- passive Rslint/Rstest sessions and watch-cycle control;
+- related-test and coverage evidence;
+- build, lint, or test subscriptions;
+- CI artifact import/export and performance gates;
+- source mutation and apply/verify flows;
+- retention policies beyond disposable cache cleanup;
+- a coordinator daemon, remote transport, or custom visual surface; and
+- repository-wide claims that combine several artifact graphs automatically.
 
-- Rsbuild client/server and multi-environment applications.
-- Rslib ESM/CJS, bundleless, declarations, externals, published exports, and internal libraries.
-- Rstest Node, DOM, browser, projects, retries, watch cycles, snapshots, and Istanbul/V8 coverage.
-- Rslint object/function config, plugins, lint text/files, suggestions, fixes, and type checking.
-- Rsdoctor brief JSON, normal manifests, multi-compiler series, missing sections, and invalid JSON.
+These additions should continue using the same workspace, context, run, snapshot, and provenance
+identities so the file-based implementation remains the compatibility boundary.
 
-### Dead-code safety invariants
+## Validation
 
-No high-confidence dead finding may include:
+The downstream implementation includes focused coverage for:
 
-- a reachable production definition;
-- a protected published export;
-- a side-effect-only module;
-- a known dynamic-import target;
-- a target reachable in another selected environment or runtime;
-- a test/development-only definition mislabeled as globally unused;
-- a finding derived from a stale, partial, or incompatible producer without that bound displayed.
+- workspace discovery and config injection;
+- immutable store publication and record validation;
+- numeric generation ordering and project status;
+- Rsbuild/Rslib metadata capture;
+- Rsdoctor artifact selection, graph normalization, and Agent CLI loading;
+- application and library root resolution;
+- reachability, explanations, and impact traversal;
+- Rslint and Rstest snapshot normalization and freshness;
+- paging, compatible diffs, and lint previews;
+- the full MCP tool catalog and stdio behavior; and
+- both plugin manifests, MCP registration, and six-skill layouts.
 
-### Transport and lifecycle
-
-- Raw stdio JSON-RPC transcripts and MCP SDK clients.
-- Initialization ordering, schema negotiation, invalid params, cancellation, progress, pagination,
-  subscriptions, and stdout purity.
-- Concurrent readers and writers, immutable-name collisions, ignored temporary files, incomplete run
-  directories, crash recovery, schema skew, and orphan cleanup.
-- Watch tests wait for generation changes rather than sleeping.
-
-### Performance
-
-Benchmark small, medium, and large workspaces across cold, warm, and incremental runs. Track build
-overhead, incremental p95, extraction bytes, queue drops, store bytes, MCP query-cache RSS, query p95,
-and response size. Pull requests fail only on statistically meaningful regressions beyond versioned
-budgets; large stress cases run nightly.
+The branch's repository verification matrix is `pnpm check`, `pnpm check:spell`, `pnpm build`,
+`pnpm --filter rstack build:native`, and `pnpm test`.
 
 ## Acceptance criteria
 
-The first stable release is complete when:
+This lean implementation is complete when:
 
-1. Codex and Claude can answer "what is stale or failing?" from the same read-only MCP schema.
-2. A user can ask "find unused code" and receive ranked candidates with production,
-   non-production, public-contract, shipped, optimizer, freshness, confidence, and evidence bounds.
-3. A user can ask "why is this included?" and receive a bounded root-to-module/export path with
-   runtime and chunk evidence.
-4. A user can ask "what tests should I run?" and receive related tests with an explicit selection
-   rationale, without claiming exact execution unless coverage supports it.
-5. Rsbuild HMR remains independent from lint and test completion.
-6. No GUI, network listener, build, test, or indexing job starts merely because the plugin is
-   installed or an MCP client connects.
-7. Collector crashes and unsupported producer versions do not change the underlying command result.
-8. False-positive, watch, protocol, compatibility, and performance test suites meet the budgets in
-   this RFC.
+1. A root-launched agent can enumerate completed contexts from several Rslib packages and Rsbuild
+   applications without knowing their process directories.
+2. Rslib-only, Rsbuild-only, and mixed workspaces publish into the same store format.
+3. An agent can select one context and explicit Rsdoctor artifact before asking for roots,
+   candidates, explanations, impact, or focused build analysis.
+4. Every unused result is presented as an artifact-scoped module candidate with bounds and
+   provenance.
+5. Lint and test captures are explicit one-shot operations whose immutable results can be queried
+   and compared independently from build status.
+6. A lint fixed-output preview can be reviewed without applying it.
+7. Codex and Claude Code expose the same MCP command and the same six task skills.
+8. The normal workflow requires neither a daemon nor a GUI; an existing Rsdoctor report remains
+   available through `report_link`.
 
 ## References
 
 - [Astral Hawk architecture](https://github.com/astral-sh/hawk/blob/main/docs/architecture.md)
-- [Model Context Protocol resources](https://modelcontextprotocol.io/specification/2025-11-25/server/resources)
 - [Model Context Protocol tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)
 - [Rspack Stats JSON](https://rspack.rs/api/javascript-api/stats-json)
 - [Rspack tree shaking](https://rspack.rs/guide/optimization/tree-shaking)
 - [Rsbuild plugin hooks](https://rsbuild.rs/plugins/dev/hooks)
 - [Rslib JavaScript API](https://lib.rsbuild.dev/api/javascript-api/instance)
 - [Rslint JavaScript API](https://rslint.rs/guide/js-api)
-- [Rstest reporter API](https://rstest.rs/api/javascript-api/reporter)
+- [Rstest JavaScript API](https://rstest.rs/api/javascript-api)
 - [Rsdoctor AI integration](https://rsdoctor.rs/guide/start/ai)
 - [Rsdoctor pull-request preview packages](https://github.com/web-infra-dev/rsdoctor/pull/1900)
-- [Knip analysis model](https://knip.dev/explanations/how-knip-works)
 - [Codex plugin packaging](https://developers.openai.com/plugins/build/plugins)
 - [Claude Code plugin reference](https://code.claude.com/docs/en/plugins-reference)
