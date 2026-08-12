@@ -119,8 +119,9 @@ const normalizeGraph = (data: Record<string, unknown>): ObservedModuleGraph => {
   const edges: ObservedModuleGraph['edges'] = [];
   for (const row of Array.isArray(moduleGraph.dependencies) ? moduleGraph.dependencies : []) {
     if (!isObject(row)) continue;
-    const from = getId(row.issuer);
-    const to = getId(row.module);
+    const usesDependencyShape = Object.hasOwn(row, 'dependency');
+    const from = getId(usesDependencyShape ? row.module : row.issuer);
+    const to = getId(usesDependencyShape ? row.dependency : row.module);
     if (from === undefined || to === undefined) continue;
     if (!modulesById.has(from) || !modulesById.has(to)) {
       if (!issues.includes('dangling-edge')) issues.push('dangling-edge');

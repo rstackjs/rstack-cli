@@ -9,7 +9,7 @@ const applicationWorkspace = path.resolve(
   '../fixtures/context/reachability/application',
 );
 
-test('normalizes the observed module graph without interpreting export rows', async () => {
+test('normalizes real and compatibility dependency rows without interpreting exports', async () => {
   const graph = await readRsdoctorModuleGraph(applicationWorkspace, 'rsdoctor-data.json');
 
   expect(
