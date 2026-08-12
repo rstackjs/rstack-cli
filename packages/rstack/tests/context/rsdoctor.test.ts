@@ -174,16 +174,37 @@ test('rejects a Rsdoctor artifact whose data envelope is not an object', async (
   });
 });
 
-test('rejects an oversized Rsdoctor artifact before parsing it', async () => {
+test('accepts a valid Rsdoctor artifact larger than ten MiB within the approved limit', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
-    await writeArtifact(workspaceRoot, validDataFile, 'x'.repeat(10 * 1024 * 1024 + 1));
+    await writeArtifact(
+      workspaceRoot,
+      validDataFile,
+      JSON.stringify({ data: { padding: 'x'.repeat(10 * 1024 * 1024) } }),
+    );
 
     await expect(
       analyzeRsdoctorArtifact(workspaceRoot, {
         dataFile: validDataFile,
         toolName: 'build_summary',
       }),
-    ).rejects.toThrow('exceeds the 10 MiB limit');
+    ).resolves.toMatchObject({
+      dataFile: validDataFile,
+      result: { data: null, ok: true },
+      toolName: 'build_summary',
+    });
+  });
+});
+
+test('rejects a Rsdoctor artifact larger than the approved 64 MiB limit before parsing it', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await writeArtifact(workspaceRoot, validDataFile, 'x'.repeat(64 * 1024 * 1024 + 1));
+
+    await expect(
+      analyzeRsdoctorArtifact(workspaceRoot, {
+        dataFile: validDataFile,
+        toolName: 'build_summary',
+      }),
+    ).rejects.toThrow('exceeds the 64 MiB limit');
   });
 });
 
@@ -225,6 +246,57 @@ test('runs a real Rsdoctor catalog tool against a valid artifact fixture', async
   });
 });
 
+test('sanitizes untrusted errors_list output while preserving safe relative diagnostics', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const externalRoot = await mkdtemp(path.join(os.tmpdir(), 'rstack-rsdoctor-external-'));
+    const secret = 'do-not-return-this';
+
+    try {
+      await writeArtifact(
+        workspaceRoot,
+        validDataFile,
+        JSON.stringify({
+          data: {
+            errors: [
+              {
+                description: `Compile failed for src/safe.ts at ${workspaceRoot}/private/source.ts and ${externalRoot}/environment; API_TOKEN=${secret}; NODE_ENV=production.`,
+                error: {
+                  [workspaceRoot]: 'do-not-return-path-key',
+                  config: { apiKey: secret },
+                  environment: { API_TOKEN: secret, NODE_ENV: 'production' },
+                  note: 'safe relative diagnostic',
+                  relativeFile: 'src/safe.ts',
+                  source: 'function privateSource() {}',
+                },
+                id: `${workspaceRoot}/private/error.ts`,
+              },
+            ],
+          },
+        }),
+      );
+
+      const analysis = await analyzeRsdoctorArtifact(workspaceRoot, {
+        dataFile: validDataFile,
+        toolName: 'errors_list',
+      });
+      const serialized = JSON.stringify(analysis);
+
+      expect(serialized).toContain('src/safe.ts');
+      expect(serialized).toContain('safe relative diagnostic');
+      expect(serialized).toContain('<redacted absolute path>');
+      expect(serialized).toContain('<redacted secret>');
+      expect(serialized).not.toContain(workspaceRoot);
+      expect(serialized).not.toContain(externalRoot);
+      expect(serialized).not.toContain(secret);
+      expect(serialized).not.toContain('API_TOKEN');
+      expect(serialized).not.toContain('NODE_ENV');
+      expect(serialized).not.toContain('function privateSource');
+    } finally {
+      await rm(externalRoot, { force: true, recursive: true });
+    }
+  });
+});
+
 test('rejects a real Rsdoctor tool result exceeding one MiB', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     const description = 'x'.repeat(512 * 1024);
@@ -246,6 +318,6 @@ test('rejects a real Rsdoctor tool result exceeding one MiB', async () => {
         dataFile: validDataFile,
         toolName: 'errors_list',
       }),
-    ).rejects.toThrow('result exceeds the 1 MiB limit');
+    ).rejects.toThrow('filter, page, or pageSize');
   });
 });

@@ -3,9 +3,35 @@ import path from 'node:path';
 import { createInProcessRsdoctorCliToolExecutor, getToolCatalog } from '@rsdoctor/agent-cli';
 import type { JsonValue } from './model.ts';
 
-const maxArtifactBytes = 10 * 1024 * 1024;
+const maxArtifactBytes = 64 * 1024 * 1024;
 const maxResultBytes = 1024 * 1024;
 const rsdoctorDataFileName = 'rsdoctor-data.json';
+const absolutePathPattern =
+  /(?<![a-zA-Z0-9._/:\\-])\/(?:[^\s"'`<>()[\]{},;:!?]+\/)*[^\s"'`<>()[\]{},;:!?]+|[a-zA-Z]:[\\/](?:[^\s"'`<>()[\]{},;:!?]+[\\/])*[^\s"'`<>()[\]{},;:!?]+/gu;
+const environmentAssignmentPattern = /\b[A-Z][A-Z0-9_]{1,}\s*=\s*(?:"[^"]*"|'[^']*'|[^\s,;]+)/gu;
+const secretAssignmentPattern =
+  /\b(?:[a-z0-9]+[_-])?(?:api[_-]?key|token|secret|password|passwd|private[_-]?key)\b\s*[:=]\s*(?:"[^"]*"|'[^']*'|[^\s,;]+)/giu;
+const sensitiveKeyFragments = [
+  'apikey',
+  'authorization',
+  'auth',
+  'bearer',
+  'config',
+  'configuration',
+  'content',
+  'contents',
+  'environment',
+  'env',
+  'password',
+  'passwd',
+  'privatekey',
+  'processenv',
+  'secret',
+  'source',
+  'sourcemap',
+  'sourcecontent',
+  'token',
+];
 
 type RsdoctorToolDescriptor = {
   name: string;
@@ -31,15 +57,31 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
 const isAbsolutePath = (value: string): boolean =>
   path.isAbsolute(value) || path.win32.isAbsolute(value);
 
+const containsAbsolutePath = (value: string): boolean => {
+  absolutePathPattern.lastIndex = 0;
+  const matches = absolutePathPattern.test(value);
+  absolutePathPattern.lastIndex = 0;
+  return matches;
+};
+
+const isSensitiveKey = (key: string): boolean => {
+  const normalized = key.replaceAll(/[^a-zA-Z0-9]/gu, '').toLowerCase();
+  return sensitiveKeyFragments.some((fragment) => normalized.includes(fragment));
+};
+
+const sanitizeText = (value: string): string =>
+  value
+    .replace(absolutePathPattern, '<redacted absolute path>')
+    .replace(secretAssignmentPattern, '<redacted secret>')
+    .replace(environmentAssignmentPattern, '<redacted environment value>');
+
 const toJsonValue = (
   value: unknown,
   seen: WeakSet<object> = new WeakSet(),
-  redactAbsolutePaths = false,
+  sanitizeUntrustedValues = false,
 ): JsonValue => {
   if (value === null || typeof value === 'boolean' || typeof value === 'string') {
-    return redactAbsolutePaths && typeof value === 'string' && isAbsolutePath(value)
-      ? '<redacted absolute path>'
-      : value;
+    return sanitizeUntrustedValues && typeof value === 'string' ? sanitizeText(value) : value;
   }
 
   if (typeof value === 'number') {
@@ -54,7 +96,7 @@ const toJsonValue = (
       throw new Error('Rsdoctor result contains a circular value.');
     }
     seen.add(value);
-    const cloned = value.map((entry) => toJsonValue(entry, seen, redactAbsolutePaths));
+    const cloned = value.map((entry) => toJsonValue(entry, seen, sanitizeUntrustedValues));
     seen.delete(value);
     return Object.freeze(cloned) as JsonValue;
   }
@@ -66,13 +108,16 @@ const toJsonValue = (
     seen.add(value);
     const cloned: Record<string, JsonValue> = {};
     for (const [key, entry] of Object.entries(value)) {
-      if (entry === undefined) {
+      if (
+        entry === undefined ||
+        (sanitizeUntrustedValues && (containsAbsolutePath(key) || isSensitiveKey(key)))
+      ) {
         continue;
       }
       Object.defineProperty(cloned, key, {
         configurable: false,
         enumerable: true,
-        value: toJsonValue(entry, seen, redactAbsolutePaths),
+        value: toJsonValue(entry, seen, sanitizeUntrustedValues),
         writable: false,
       });
     }
@@ -172,7 +217,7 @@ const readArtifact = async (workspaceRoot: string, dataFile: string): Promise<st
   }
 
   if (fileStats.size > maxArtifactBytes) {
-    throw new Error('Rsdoctor data file exceeds the 10 MiB limit.');
+    throw new Error('Rsdoctor data file exceeds the 64 MiB limit.');
   }
 
   let contents: Buffer;
@@ -183,7 +228,7 @@ const readArtifact = async (workspaceRoot: string, dataFile: string): Promise<st
   }
 
   if (contents.byteLength > maxArtifactBytes) {
-    throw new Error('Rsdoctor data file exceeds the 10 MiB limit.');
+    throw new Error('Rsdoctor data file exceeds the 64 MiB limit.');
   }
 
   let parsed: unknown;
@@ -248,7 +293,9 @@ const analyzeRsdoctorArtifact = async (
   }
 
   if (Buffer.byteLength(JSON.stringify(result), 'utf8') > maxResultBytes) {
-    throw new Error('Rsdoctor analysis result exceeds the 1 MiB limit.');
+    throw new Error(
+      'Rsdoctor analysis result exceeds the 1 MiB limit. Use filter, page, or pageSize to reduce the response.',
+    );
   }
 
   return {
