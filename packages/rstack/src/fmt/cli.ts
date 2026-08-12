@@ -2,7 +2,7 @@ import path from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { color, logger } from 'rslog';
 import { parseArgs } from '../cli/args.ts';
-import { renderHelp } from '../cli/help.ts';
+import { printCommandHelp } from '../cli/help.ts';
 import { loadRstackConfig } from '../config.ts';
 import { ensureProjectCacheDir } from '../projectCache.ts';
 import { fmtCacheFileName } from './cacheStore.ts';
@@ -28,33 +28,6 @@ interface ParsedFmtCLIArgs {
   /** Serve formatting over the Language Server Protocol instead of exiting. */
   lsp: boolean;
 }
-
-const renderFmtHelp = (): string =>
-  renderHelp({
-    usage: 'rs fmt [options] [files/globs...]',
-    description: 'Format code',
-    sections: [
-      {
-        title: 'Options',
-        items: [
-          ['-w, --write', 'Write formatted files in place (default)'],
-          ['--check', 'Check whether files are formatted'],
-          ['-l, --list-different', 'Print paths of unformatted files'],
-          ['--ignore-path <path>', 'Path to an additional ignore file (repeatable)'],
-          ['-u, --ignore-unknown', 'Ignore unknown files'],
-          ['--no-cache', 'Disable the formatting cache'],
-          ['--cache-location <path>', 'Path to the formatting cache directory'],
-          ['--no-error-on-unmatched-pattern', 'Do not error when no files match'],
-          ['--with-node-modules', 'Process files inside node_modules'],
-          ['--parallel-workers <count>', 'Number of parallel workers'],
-          ['--stdin-filepath <path>', 'Format stdin as if it were saved at <path>'],
-          ['--lsp', 'Run a language server on stdio'],
-          ['-c, --config <path>', 'Specify Rstack config file path'],
-          ['-h, --help', 'Display this help message'],
-        ],
-      },
-    ],
-  });
 
 const parseMaxWorkers = (value: string | undefined): number | undefined => {
   if (value === undefined) {
@@ -294,7 +267,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       withNodeModules,
     } = parseFmtArgs(args);
     if (help) {
-      logger.log(renderFmtHelp());
+      await printCommandHelp('fmt');
       return;
     }
 
