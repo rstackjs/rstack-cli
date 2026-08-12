@@ -12,7 +12,10 @@ description: Diagnose current Rstack lint or test failures from stored context e
 3. State whether the selected evidence is `fresh`, `stale`, `partial`, or `unknown`, including
    changed paths when reported.
 4. Ask before running `lint_snapshot` or `test_snapshot`. These are explicit executions, not
-   passive queries. Never start watch mode.
+   passive queries. For a monorepo package, pass its checkout-relative `packageRoot`; pass
+   `configPath` only to select a nonstandard checkout-relative Rstack config. Without
+   `packageRoot`, capture defaults to the checkout root, and without `configPath`, it uses the
+   ordinary `rstack.config.ts|js|mts|mjs` in the selected package. Never start watch mode.
 5. Surface the first actionable failure with its project, path, test name or rule, and recorded
    message. Then summarize remaining failures briefly.
 6. When the user asks to select related tests, recommend

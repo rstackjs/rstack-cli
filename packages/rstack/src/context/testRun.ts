@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import type { RunRstestOptions, TestRunResult } from '@rstest/core/api';
+import { withRstackConfigTarget } from '../config.ts';
 import {
   contextStoreSchemaVersion,
   type ContextFreshness,
@@ -17,6 +18,7 @@ import {
   createExplicitContextDescriptor,
   createExplicitRun,
   recordContextInputFiles,
+  resolveExplicitCaptureTarget,
 } from './source.ts';
 import {
   readContextSnapshotById,
@@ -28,6 +30,8 @@ import {
 type TestSnapshotRequest = {
   files?: string[];
   testNamePattern?: string;
+  packageRoot?: string;
+  configPath?: string;
 };
 
 type TestResultsQuery = {
@@ -152,12 +156,12 @@ const captureTestSnapshot = async (
   request: TestSnapshotRequest,
   dependencies: TestCaptureDependencies = {},
 ): Promise<TestCaptureResult> => {
-  const configPath = path.join(import.meta.dirname, '..', 'rstestConfig.js');
+  const target = await resolveExplicitCaptureTarget(workspaceRoot, request);
+  const wrapperConfigPath = path.join(import.meta.dirname, '..', 'rstestConfig.js');
   const context = createExplicitContextDescriptor({
     producer: 'rstest',
     workspaceRoot,
-    packageRoot: workspaceRoot,
-    configPath,
+    ...target,
   });
   const now = dependencies.now ?? (() => new Date());
   const run = createExplicitRun({
@@ -168,12 +172,16 @@ const captureTestSnapshot = async (
     now,
   });
   const runRstest = dependencies.runRstest ?? (await loadRunRstest());
-  const result = await runRstest({
-    cwd: workspaceRoot,
-    config: configPath,
-    ...(request.files === undefined ? {} : { files: request.files }),
-    ...(request.testNamePattern === undefined ? {} : { testNamePattern: request.testNamePattern }),
-  });
+  const result = await withRstackConfigTarget(target.packageRoot, target.configPath, () =>
+    runRstest({
+      cwd: target.packageRoot,
+      config: wrapperConfigPath,
+      ...(request.files === undefined ? {} : { files: request.files }),
+      ...(request.testNamePattern === undefined
+        ? {}
+        : { testNamePattern: request.testNamePattern }),
+    }),
+  );
   const facet = normalizeTestFacet(workspaceRoot, result);
   const inputs = await recordContextInputFiles(workspaceRoot, [
     ...new Set(facet.files.map((file) => file.path)),

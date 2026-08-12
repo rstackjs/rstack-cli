@@ -10,7 +10,10 @@ import {
 } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { expect, test } from 'rstack/test';
 import {
+  captureLintSnapshot,
+  captureTestSnapshot,
   contextStoreSchemaVersion,
+  readProjectStatus,
   writeContextRunManifest,
   writeContextSnapshot,
   type ContextDescriptor,
@@ -19,6 +22,7 @@ import {
   type LintCaptureResult,
 } from '../../src/context/index.ts';
 import { createContextMcpServer } from '../../src/context/mcp.ts';
+import { getConfigState, loadRstackConfig } from '../../src/config.ts';
 
 const reachabilityFixture = path.resolve(
   import.meta.dirname,
@@ -853,12 +857,41 @@ test('runs explicit captures through injected producers and returns ordinary MCP
       async (client) => {
         const lint = await client.callTool({
           name: 'lint_snapshot',
-          arguments: { mode: 'files' },
+          arguments: {
+            mode: 'files',
+            packageRoot: 'packages/library',
+            configPath: 'packages/library/rstack.config.ts',
+          },
         });
         expect(lint.structuredContent).toEqual(lintResult);
         expect(captureRequests).toEqual([
-          { mode: 'files', patterns: ['.'], includeFixPreview: false },
+          {
+            mode: 'files',
+            patterns: ['.'],
+            includeFixPreview: false,
+            packageRoot: 'packages/library',
+            configPath: 'packages/library/rstack.config.ts',
+          },
         ]);
+        const lintText = await client.callTool({
+          name: 'lint_snapshot',
+          arguments: {
+            mode: 'text',
+            code: 'export {};\n',
+            filePath: 'src/index.ts',
+            packageRoot: 'packages/app',
+            configPath: 'packages/app/rstack.config.ts',
+          },
+        });
+        expect(lintText.structuredContent).toEqual(lintResult);
+        expect(captureRequests[1]).toEqual({
+          mode: 'text',
+          code: 'export {};\n',
+          filePath: 'src/index.ts',
+          includeFixPreview: false,
+          packageRoot: 'packages/app',
+          configPath: 'packages/app/rstack.config.ts',
+        });
 
         const testResult = await client.callTool({
           name: 'test_snapshot',
@@ -877,6 +910,197 @@ test('runs explicit captures through injected producers and returns ordinary MCP
         },
       },
     );
+  });
+});
+
+test('captures independent monorepo package contexts through one root MCP', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const packageRoots = ['packages/app', 'packages/library'] as const;
+    const configPaths = [
+      'packages/app/rstack.config.ts',
+      'packages/library/custom.config.ts',
+    ] as const;
+
+    for (const [index, packageRoot] of packageRoots.entries()) {
+      const absolutePackageRoot = path.join(workspaceRoot, packageRoot);
+      await mkdir(path.join(absolutePackageRoot, 'src'), { recursive: true });
+      await writeFile(
+        path.join(absolutePackageRoot, 'package.json'),
+        JSON.stringify({
+          name: index === 0 ? '@repo/app' : '@repo/library',
+          type: 'module',
+        }),
+      );
+      await writeFile(path.join(workspaceRoot, configPaths[index]), 'export default {};\n');
+      await writeFile(path.join(absolutePackageRoot, 'src/index.ts'), 'export {};\n');
+    }
+    const packageWithoutConfig = path.join(workspaceRoot, 'packages/no-config');
+    await mkdir(path.join(packageWithoutConfig, 'src'), { recursive: true });
+    await writeFile(
+      path.join(packageWithoutConfig, 'package.json'),
+      JSON.stringify({ name: '@repo/no-config' }),
+    );
+    await writeFile(path.join(packageWithoutConfig, 'src/index.ts'), 'export {};\n');
+
+    const lintCalls: unknown[] = [];
+    const testCalls: unknown[] = [];
+    const state = getConfigState();
+    const originalConfigPath = state.configPath;
+    const originalConfigRoot = state.configRoot;
+    state.configPath = 'root.config.ts';
+    state.configRoot = workspaceRoot;
+    let testSequence = 0;
+
+    try {
+      await withMcpClient(
+        workspaceRoot,
+        async (client) => {
+          const selections = packageRoots.map((packageRoot, index) => ({
+            packageRoot,
+            ...(index === 0 ? {} : { configPath: configPaths[index] }),
+          }));
+          await Promise.all(
+            selections.map(async (selection) => {
+              const lint = await client.callTool({
+                name: 'lint_snapshot',
+                arguments: { mode: 'files', ...selection },
+              });
+              expect(lint.isError).not.toBe(true);
+            }),
+          );
+          await Promise.all(
+            selections.map(async (selection) => {
+              const testResult = await client.callTool({
+                name: 'test_snapshot',
+                arguments: selection,
+              });
+              expect(testResult.isError).not.toBe(true);
+            }),
+          );
+          const lintWithoutConfig = await client.callTool({
+            name: 'lint_snapshot',
+            arguments: { mode: 'files', packageRoot: 'packages/no-config' },
+          });
+          expect(lintWithoutConfig.isError).not.toBe(true);
+          const testWithoutConfig = await client.callTool({
+            name: 'test_snapshot',
+            arguments: { packageRoot: 'packages/no-config' },
+          });
+          expect(testWithoutConfig.isError).not.toBe(true);
+
+          const status = await readProjectStatus(workspaceRoot);
+          expect(status.contexts).toHaveLength(6);
+          expect(status.contexts.map(({ context }) => context)).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                packageRoot: 'packages/app',
+                packageName: '@repo/app',
+                configPath: 'packages/app/rstack.config.ts',
+              }),
+              expect.objectContaining({
+                packageRoot: 'packages/library',
+                packageName: '@repo/library',
+                configPath: 'packages/library/custom.config.ts',
+              }),
+              expect.objectContaining({
+                packageRoot: 'packages/no-config',
+                packageName: '@repo/no-config',
+              }),
+            ]),
+          );
+          expect(
+            status.contexts
+              .filter(({ context }) => context.packageRoot === 'packages/no-config')
+              .every(({ context }) => context.configPath === undefined),
+          ).toBe(true);
+          expect(new Set(status.contexts.map(({ context }) => context.contextId)).size).toBe(6);
+        },
+        {
+          captureLintSnapshot: (root, request) =>
+            captureLintSnapshot(root, request, (options) => ({
+              lintFiles: async () => {
+                await new Promise((resolve) => setTimeout(resolve, 5));
+                lintCalls.push({
+                  cwd: options.cwd,
+                  configPath: getConfigState().configPath,
+                  loadedConfigPath: (await loadRstackConfig()).filePath,
+                });
+                return [
+                  {
+                    filePath: path.join(options.cwd!, 'src/index.ts'),
+                    errorCount: 0,
+                    warningCount: 0,
+                    fixableErrorCount: 0,
+                    fixableWarningCount: 0,
+                    messages: [],
+                  },
+                ];
+              },
+              lintText: async () => [],
+              close: async () => {},
+            })),
+          captureTestSnapshot: (root, request) => {
+            testSequence += 1;
+            const sequence = testSequence;
+            return captureTestSnapshot(root, request, {
+              runRstest: async (options) => {
+                await new Promise((resolve) => setTimeout(resolve, 5));
+                testCalls.push({
+                  cwd: options?.cwd,
+                  configPath: getConfigState().configPath,
+                  loadedConfigPath: (await loadRstackConfig()).filePath,
+                });
+                return {
+                  ok: true,
+                  files: [],
+                  stats: {
+                    tests: {
+                      total: 0,
+                      passed: 0,
+                      failed: 0,
+                      skipped: 0,
+                      todo: 0,
+                    },
+                    files: { total: 0, failed: 0 },
+                  },
+                  unhandledErrors: [],
+                  duration: { total: 0 },
+                };
+              },
+              createRunId: () => `run_test_${sequence}`,
+              createSnapshotId: () => `snap_test_${sequence}`,
+            });
+          },
+        },
+      );
+
+      const expectedCalls = [
+        {
+          cwd: path.join(workspaceRoot, 'packages/app'),
+          configPath: path.join(workspaceRoot, 'packages/app/rstack.config.ts'),
+          loadedConfigPath: path.join(workspaceRoot, 'packages/app/rstack.config.ts'),
+        },
+        {
+          cwd: path.join(workspaceRoot, 'packages/library'),
+          configPath: path.join(workspaceRoot, 'packages/library/custom.config.ts'),
+          loadedConfigPath: path.join(workspaceRoot, 'packages/library/custom.config.ts'),
+        },
+        {
+          cwd: path.join(workspaceRoot, 'packages/no-config'),
+          configPath: undefined,
+          loadedConfigPath: null,
+        },
+      ];
+      expect(lintCalls).toHaveLength(expectedCalls.length);
+      expect(lintCalls).toEqual(expect.arrayContaining(expectedCalls));
+      expect(testCalls).toHaveLength(expectedCalls.length);
+      expect(testCalls).toEqual(expect.arrayContaining(expectedCalls));
+      expect(state.configPath).toBe('root.config.ts');
+      expect(state.configRoot).toBe(workspaceRoot);
+    } finally {
+      state.configPath = originalConfigPath;
+      state.configRoot = originalConfigRoot;
+    }
   });
 });
 

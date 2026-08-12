@@ -122,6 +122,8 @@ const lintSnapshotInput = z.discriminatedUnion('mode', [
       mode: z.literal('files'),
       patterns: z.array(z.string().min(1)).default(['.']),
       includeFixPreview: z.boolean().default(false),
+      packageRoot: z.string().min(1).optional(),
+      configPath: z.string().min(1).optional(),
     })
     .strict(),
   z
@@ -130,6 +132,8 @@ const lintSnapshotInput = z.discriminatedUnion('mode', [
       code: z.string(),
       filePath: z.string().min(1),
       includeFixPreview: z.boolean().default(false),
+      packageRoot: z.string().min(1).optional(),
+      configPath: z.string().min(1).optional(),
     })
     .strict(),
 ]);
@@ -138,6 +142,8 @@ const testSnapshotInput = z
   .object({
     files: z.array(z.string().min(1)).optional(),
     testNamePattern: z.string().min(1).optional(),
+    packageRoot: z.string().min(1).optional(),
+    configPath: z.string().min(1).optional(),
   })
   .strict();
 

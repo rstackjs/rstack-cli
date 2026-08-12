@@ -7,6 +7,7 @@ import type { LintResult, RslintOptions } from '@rslint/core';
 import { beforeEach, expect, test } from 'rstack/test';
 import { contextStoreSchemaVersion, type ContextRunManifest } from '../../src/context/model.ts';
 import { captureLintSnapshot, getLintFixPreview, listDiagnostics } from '../../src/context/lint.ts';
+import { readProjectStatus } from '../../src/context/status.ts';
 import {
   readContextSnapshotById,
   writeContextRunManifest,
@@ -157,6 +158,7 @@ test('captures a deterministic file snapshot with complete inputs and fail statu
 
     const result = await captureLintSnapshot(workspaceRoot, { mode: 'files' }, createRslint);
     const stored = await readContextSnapshotById(workspaceRoot, result.snapshotId);
+    const status = await readProjectStatus(workspaceRoot);
 
     expect(mocks.options).toEqual([
       {
@@ -193,6 +195,12 @@ test('captures a deterministic file snapshot with complete inputs and fail statu
           messages: [{ message: 'first' }, { message: 'later' }],
         },
       ],
+    });
+    expect(status.contexts[0]?.context).toEqual({
+      contextId: result.contextId,
+      packageRoot: '.',
+      product: 'development',
+      environment: 'lint',
     });
   });
 });

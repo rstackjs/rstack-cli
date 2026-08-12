@@ -45,6 +45,7 @@ type ConfigSession = {
 
 type ConfigState = {
   configPath?: string;
+  configRoot?: string;
 };
 
 declare global {
@@ -73,6 +74,34 @@ export const getConfigState = (): ConfigState => {
   }
 
   return globalThis.__rstackCliState;
+};
+
+let explicitConfigCaptureTail = Promise.resolve();
+
+export const withRstackConfigTarget = async <T>(
+  configRoot: string,
+  configPath: string | undefined,
+  action: () => Promise<T>,
+): Promise<T> => {
+  const previousCapture = explicitConfigCaptureTail;
+  let releaseCapture!: () => void;
+  explicitConfigCaptureTail = new Promise<void>((resolve) => {
+    releaseCapture = resolve;
+  });
+  await previousCapture;
+
+  const state = getConfigState();
+  const previousConfigPath = state.configPath;
+  const previousConfigRoot = state.configRoot;
+  state.configPath = configPath;
+  state.configRoot = configRoot;
+  try {
+    return await action();
+  } finally {
+    state.configPath = previousConfigPath;
+    state.configRoot = previousConfigRoot;
+    releaseCapture();
+  }
 };
 
 type Define = {
@@ -169,6 +198,7 @@ export const loadRstackConfig = async ({
 }: LoadRstackConfigOptions = {}): Promise<LoadedRstackConfig> => {
   const state = getConfigState();
   const configPath = configFilePath ?? state.configPath;
+  const configRoot = state.configRoot;
   const session: ConfigSession = {
     configs: {},
     active: true,
@@ -180,6 +210,7 @@ export const loadRstackConfig = async ({
         loader: 'native',
         exportName: false,
         fresh: true,
+        ...(configRoot === undefined ? {} : { cwd: configRoot }),
         ...(configPath !== undefined
           ? { path: configPath }
           : {

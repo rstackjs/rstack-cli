@@ -35,6 +35,8 @@ define.context({
 
 在 monorepo 根目录运行一个 MCP 进程。即使构建是在各个包目录中独立启动，它也会读取该检出目录内每个包记录的运行信息。
 
+同一个根 MCP 进程可以为任意包明确捕获 lint 和测试结果。向 `lint_snapshot` 或 `test_snapshot` 传入相对于检出目录的 `packageRoot`；如果省略，捕获默认使用检出目录根。仅在需要选择非常规 Rstack 配置时，传入相对于检出目录的 `configPath`。省略 `configPath` 时，Rstack 会在所选包根目录中依次选择常规的 `rstack.config.ts`、`rstack.config.js`、`rstack.config.mts` 或 `rstack.config.mjs`。捕获会以该包作为工作目录，存储的上下文会记录包根目录、可用时的包名以及所选配置路径。
+
 它适用于仅使用 Rslib 的仓库、仅使用 Rsbuild 的仓库，以及同时使用两者的仓库。不需要 Turbo、Nx、守护进程、任务图或生产者到 MCP 的连接。
 
 ## MCP 工具 \{#mcp-tools}
@@ -58,9 +60,9 @@ define.context({
 
 开发工具复用同一个不可变的检出目录本地存储。`snapshot_list`、`diagnostics_list` 和 `test_results` 均为只读、非破坏性且封闭世界的工具。它们会在每次请求时读取存储，绝不会启动生产者。可选的 `limit` 默认为 50，取值范围为 1 到 200；返回的 `nextCursor` 会按相同的确定性顺序继续读取。
 
-`lint_snapshot` 是明确执行操作。它会针对文件模式（默认为 `['.']`）或一个给定文本缓冲区运行一次 Rslint，然后记录诊断和可选的修复输出，但不会写入源文件。其标注为 `readOnlyHint: false`、`destructiveHint: false` 和 `openWorldHint: true`，因为它会加载配置并运行 lint。调用前应先询问用户。
+`lint_snapshot` 是明确执行操作。它会针对文件模式（默认为 `['.']`）或一个给定文本缓冲区运行一次 Rslint，然后记录诊断和可选的修复输出，但不会写入源文件。可选的 `packageRoot` 和 `configPath` 会按上述规则选择 monorepo 包和 Rstack 配置。其标注为 `readOnlyHint: false`、`destructiveHint: false` 和 `openWorldHint: true`，因为它会加载配置并运行 lint。调用前应先询问用户。
 
-`test_snapshot` 也是明确执行操作。它会调用一次已安装的实验性 `runRstest()` API，可按文件或测试名称模式缩小范围，并记录结构化摘要，不启动 watch 模式，也不记录控制台流或覆盖率大对象。其标注为 `readOnlyHint: false`、`destructiveHint: true` 和 `openWorldHint: true`，因为它会执行项目配置和测试。调用前应先询问用户。
+`test_snapshot` 也是明确执行操作。它会调用一次已安装的实验性 `runRstest()` API，可按文件或测试名称模式缩小范围，并记录结构化摘要，不启动 watch 模式，也不记录控制台流或覆盖率大对象。它接受相同的可选检出目录相对路径 `packageRoot` 和 `configPath` 选择器。其标注为 `readOnlyHint: false`、`destructiveHint: true` 和 `openWorldHint: true`，因为它会执行项目配置和测试。调用前应先询问用户。
 
 新鲜度按生产者和快照分别判断：
 

@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import type { TestRunResult } from '@rstest/core/api';
 import { expect, test } from 'rstack/test';
+import { readProjectStatus } from '../../src/context/status.ts';
 import { readContextSnapshotById } from '../../src/context/store.ts';
 import {
   captureTestSnapshot,
@@ -112,6 +113,7 @@ test('captures one passing run with partial source freshness', async () => {
     ]);
 
     const stored = await readContextSnapshotById(workspaceRoot, 'snap_pass');
+    const status = await readProjectStatus(workspaceRoot);
     expect(stored?.snapshot).toMatchObject({
       status: 'pass',
       completeness: { test: 'complete' },
@@ -149,6 +151,12 @@ test('captures one passing run with partial source freshness', async () => {
           ],
         },
       },
+    });
+    expect(status.contexts[0]?.context).toEqual({
+      contextId: expect.stringMatching(/^ctx_[0-9a-f]{24}$/u),
+      packageRoot: '.',
+      product: 'development',
+      environment: 'test',
     });
 
     await expect(listTestResults(workspaceRoot, {})).resolves.toMatchObject({

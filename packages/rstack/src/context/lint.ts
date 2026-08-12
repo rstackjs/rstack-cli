@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { LintMessage, LintResult, RslintOptions } from '@rslint/core';
+import { withRstackConfigTarget } from '../config.ts';
 import {
   contextStoreSchemaVersion,
   type ContextFreshness,
@@ -18,6 +19,7 @@ import {
   assessSnapshotFreshness,
   createExplicitContextDescriptor,
   createExplicitRun,
+  resolveExplicitCaptureTarget,
 } from './source.ts';
 import {
   readContextSnapshotById,
@@ -27,12 +29,20 @@ import {
 } from './store.ts';
 
 type LintSnapshotRequest =
-  | { mode: 'files'; patterns?: string[]; includeFixPreview?: boolean }
+  | {
+      mode: 'files';
+      patterns?: string[];
+      includeFixPreview?: boolean;
+      packageRoot?: string;
+      configPath?: string;
+    }
   | {
       mode: 'text';
       code: string;
       filePath: string;
       includeFixPreview?: boolean;
+      packageRoot?: string;
+      configPath?: string;
     };
 
 type LintCaptureResult = {
@@ -180,12 +190,12 @@ const captureLintSnapshot = async (
   createRslint?: RslintFactory,
 ): Promise<LintCaptureResult> => {
   const includeFixPreview = request.includeFixPreview ?? false;
-  const configPath = path.join(import.meta.dirname, '..', 'rslintConfig.js');
+  const target = await resolveExplicitCaptureTarget(workspaceRoot, request);
+  const wrapperConfigPath = path.join(import.meta.dirname, '..', 'rslintConfig.js');
   const context = createExplicitContextDescriptor({
     producer: 'rslint',
     workspaceRoot,
-    packageRoot: workspaceRoot,
-    configPath,
+    ...target,
   });
   const run = createExplicitRun({
     producer: 'rslint',
@@ -193,21 +203,20 @@ const captureLintSnapshot = async (
     command: 'lint',
   });
   const options = {
-    cwd: workspaceRoot,
-    overrideConfigFile: configPath,
+    cwd: target.packageRoot,
+    overrideConfigFile: wrapperConfigPath,
     fix: includeFixPreview,
   } satisfies RslintOptions;
-  const engine = createRslint?.(options) ?? new (await import('@rslint/core')).Rslint(options);
-
-  let results: LintResult[];
-  try {
-    results =
-      request.mode === 'files'
+  const results = await withRstackConfigTarget(target.packageRoot, target.configPath, async () => {
+    const engine = createRslint?.(options) ?? new (await import('@rslint/core')).Rslint(options);
+    try {
+      return request.mode === 'files'
         ? await engine.lintFiles(request.patterns ?? ['.'])
         : await engine.lintText(request.code, { filePath: request.filePath });
-  } finally {
-    await engine.close();
-  }
+    } finally {
+      await engine.close();
+    }
+  });
 
   const files = (
     await Promise.all(

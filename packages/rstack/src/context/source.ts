@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
   contextStoreSchemaVersion,
@@ -26,6 +26,24 @@ type ExplicitRunOptions = {
   createRunId?: () => string;
 };
 
+type ExplicitCaptureTargetRequest = {
+  packageRoot?: string;
+  configPath?: string;
+};
+
+type ExplicitCaptureTarget = {
+  packageRoot: string;
+  packageName?: string;
+  configPath?: string;
+};
+
+const rstackConfigFileNames = [
+  'rstack.config.ts',
+  'rstack.config.js',
+  'rstack.config.mts',
+  'rstack.config.mjs',
+] as const;
+
 const toWorkspacePath = (workspaceRoot: string, filePath: string): string => {
   const relativePath = path
     .relative(path.resolve(workspaceRoot), path.resolve(workspaceRoot, filePath))
@@ -36,6 +54,54 @@ const toWorkspacePath = (workspaceRoot: string, filePath: string): string => {
 
 const digest = (content: string | Buffer): string =>
   createHash('sha256').update(content).digest('hex');
+
+const readPackageName = async (packageRoot: string): Promise<string | undefined> => {
+  try {
+    const packageJson: unknown = JSON.parse(
+      await readFile(path.join(packageRoot, 'package.json'), 'utf8'),
+    );
+    return typeof packageJson === 'object' &&
+      packageJson !== null &&
+      'name' in packageJson &&
+      typeof packageJson.name === 'string'
+      ? packageJson.name
+      : undefined;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
+    throw error;
+  }
+};
+
+const findPackageConfig = async (packageRoot: string): Promise<string | undefined> => {
+  for (const fileName of rstackConfigFileNames) {
+    const configPath = path.join(packageRoot, fileName);
+    try {
+      await access(configPath);
+      return configPath;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+    }
+  }
+  return undefined;
+};
+
+const resolveExplicitCaptureTarget = async (
+  workspaceRoot: string,
+  request: ExplicitCaptureTargetRequest,
+): Promise<ExplicitCaptureTarget> => {
+  const packageRoot = path.resolve(workspaceRoot, request.packageRoot ?? '.');
+  const configPath =
+    request.configPath === undefined
+      ? await findPackageConfig(packageRoot)
+      : path.resolve(workspaceRoot, request.configPath);
+  const packageName = await readPackageName(packageRoot);
+
+  return {
+    packageRoot,
+    ...(packageName === undefined ? {} : { packageName }),
+    ...(configPath === undefined ? {} : { configPath }),
+  };
+};
 
 const createExplicitContextDescriptor = (options: ExplicitContextOptions): ContextDescriptor => {
   const packageRoot = toWorkspacePath(options.workspaceRoot, options.packageRoot);
@@ -114,5 +180,6 @@ export {
   createExplicitContextDescriptor,
   createExplicitRun,
   recordContextInputFiles,
+  resolveExplicitCaptureTarget,
 };
 export type { ExplicitContextOptions, ExplicitRunOptions };
