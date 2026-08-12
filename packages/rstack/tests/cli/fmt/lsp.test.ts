@@ -48,9 +48,9 @@ test(
       const { capabilities } = await client.initialize();
 
       expect(capabilities.documentFormattingProvider).toBe(true);
-      // Incremental sync, filled in by the connection for the `TextDocuments`
-      // listener; without it compliant clients would never send the document.
-      expect(capabilities.textDocumentSync).toBe(2);
+      // Full document sync; without a sync capability compliant clients would
+      // never send the document.
+      expect(capabilities.textDocumentSync).toBe(1);
       expect(capabilities.documentRangeFormattingProvider).toBeUndefined();
       expect(capabilities.documentOnTypeFormattingProvider).toBeUndefined();
     });
@@ -94,20 +94,15 @@ test(
 );
 
 test(
-  'formats incremental changes sent by the client',
+  'formats changes sent by the client',
   async () => {
     await withLspServer(async (client) => {
       await client.initialize();
       const uri = openDocument(client, 'src/index.ts', 'const x = 1;\n');
-      // Replaces ` = 1` with `=2`, leaving `const x=2;` in the buffer.
+      // Full document sync: the change carries the whole new buffer.
       client.notify('textDocument/didChange', {
         textDocument: { uri, version: 2 },
-        contentChanges: [
-          {
-            range: { start: { line: 0, character: 7 }, end: { line: 0, character: 11 } },
-            text: '=2',
-          },
-        ],
+        contentChanges: [{ text: 'const x=2;\n' }],
       });
 
       const edits = await client.formatDocument(uri);

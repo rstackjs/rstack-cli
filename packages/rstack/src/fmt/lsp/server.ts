@@ -1,11 +1,10 @@
 import { fileURLToPath } from 'node:url';
 import { inspect } from 'node:util';
-import { TextDocument } from 'vscode-languageserver-textdocument';
 import {
   createConnection,
   MessageType,
   ShowMessageNotification,
-  TextDocuments,
+  TextDocumentSyncKind,
   type Connection,
   type InitializeParams,
   type TextEdit,
@@ -20,7 +19,7 @@ import { formatFmtSource } from '../format.ts';
 import { createIgnoreMatcher, type IgnorePredicate } from '../ignore.ts';
 import type { FmtPluginResolver } from '../plugins.ts';
 import type { ResolvedFmtConfig } from '../types.ts';
-import { computeMinimalEdit } from './minimalEdit.ts';
+import { computeMinimalTextEdit } from './minimalEdit.ts';
 
 interface RunFmtLspOptions {
   /** Base for relative CLI paths, and the workspace root when the client reports none. */
@@ -146,41 +145,27 @@ const formatDocumentSource = async (
 /**
  * Turns a reformat of an open buffer into the edit the editor applies.
  *
- * `TextDocuments` mutates the same document instance on every change, so the
- * buffer can move on while the formatter runs. The text is snapshotted up
- * front and the version is re-checked afterwards, which keeps the returned
- * positions describing the text the edit was computed from.
+ * The client can replace the buffer while the formatter runs, so the text is
+ * re-read afterwards: the edit stays valid exactly as long as the text it was
+ * computed from is still the text the client holds.
  */
 const createDocumentEdits = async (
-  document: TextDocument,
+  getText: () => string | undefined,
   format: (source: string) => Promise<string | undefined>,
 ): Promise<TextEdit[]> => {
-  const { version } = document;
-  const source = document.getText();
+  const source = getText();
+  if (source === undefined) {
+    return [];
+  }
+
   const formatted = await format(source);
-  // Edits for a buffer the client has already changed would be applied to text
-  // they were never computed for; the editor formats again after the change.
-  if (document.version !== version) {
+  if (getText() !== source) {
     return [];
   }
 
-  const edit = formatted === undefined ? undefined : computeMinimalEdit(source, formatted);
-  if (!edit) {
-    return [];
-  }
+  const edit = formatted === undefined ? undefined : computeMinimalTextEdit(source, formatted);
 
-  // Nothing awaits between the version check and this mapping, so the document
-  // still holds `source` and its incrementally maintained line table maps the
-  // offsets without rebuilding one from scratch.
-  return [
-    {
-      range: {
-        start: document.positionAt(edit.start),
-        end: document.positionAt(edit.end),
-      },
-      newText: edit.newText,
-    },
-  ];
+  return edit ? [edit] : [];
 };
 
 const startFmtLsp = (options: RunFmtLspOptions, onExit: () => void): void => {
@@ -193,8 +178,27 @@ const startFmtLsp = (options: RunFmtLspOptions, onExit: () => void): void => {
   // raw bytes into the JSON-RPC stream and break the client's framing parser.
   // This runs before any user code can load.
   redirectConsoleToConnection(connection);
-  // Document sync also maps offsets to UTF-16 positions for the returned edits.
-  const documents = new TextDocuments(TextDocument);
+  // Full document sync: every change carries the whole buffer, so tracking a
+  // document is replacing one string, and a dropped or reordered change heals
+  // on the next one.
+  const documents = new Map<string, string>();
+
+  connection.onDidOpenTextDocument(({ textDocument }) => {
+    documents.set(textDocument.uri, textDocument.text);
+  });
+  connection.onDidChangeTextDocument(({ textDocument, contentChanges }) => {
+    const change = contentChanges[0];
+    if (change) {
+      documents.set(textDocument.uri, change.text);
+    } else {
+      // An empty change list is a protocol violation; dropping the entry keeps
+      // stale text from standing in for the buffer until the next change.
+      documents.delete(textDocument.uri);
+    }
+  });
+  connection.onDidCloseTextDocument(({ textDocument }) => {
+    documents.delete(textDocument.uri);
+  });
 
   let root = options.cwd;
   let sessionPromise: Promise<FmtLspSession> | undefined;
@@ -229,17 +233,18 @@ const startFmtLsp = (options: RunFmtLspOptions, onExit: () => void): void => {
 
     return {
       // The project config is the single source of truth, so client formatting
-      // options are ignored. The connection fills in incremental
-      // `textDocumentSync` for the `TextDocuments` listener; nothing else is
-      // advertised.
-      capabilities: { documentFormattingProvider: true },
+      // options are ignored and nothing beyond formatting is advertised. Full
+      // sync spares the client from computing deltas the server never uses.
+      capabilities: {
+        documentFormattingProvider: true,
+        textDocumentSync: TextDocumentSyncKind.Full,
+      },
     };
   });
 
   connection.onDocumentFormatting(async ({ textDocument }): Promise<TextEdit[]> => {
-    const document = documents.get(textDocument.uri);
     const filePath = toFilePath(textDocument.uri);
-    if (!document || !filePath) {
+    if (!filePath) {
       return [];
     }
 
@@ -248,8 +253,9 @@ const startFmtLsp = (options: RunFmtLspOptions, onExit: () => void): void => {
     try {
       const session = await getSession();
 
-      return await createDocumentEdits(document, (source) =>
-        formatDocumentSource(session, filePath, source),
+      return await createDocumentEdits(
+        () => documents.get(textDocument.uri),
+        (source) => formatDocumentSource(session, filePath, source),
       );
     } catch (error) {
       connection.console.error(`Failed to format "${filePath}": ${String(error)}`);
@@ -257,7 +263,6 @@ const startFmtLsp = (options: RunFmtLspOptions, onExit: () => void): void => {
     }
   });
 
-  documents.listen(connection);
   connection.listen();
 };
 

@@ -1,14 +1,11 @@
 import { expect, test } from 'rstack/test';
-import { TextDocument } from 'vscode-languageserver-textdocument';
 import { createDocumentEdits } from '../../../src/fmt/lsp/server.ts';
 
-const createDocument = (text: string): TextDocument =>
-  TextDocument.create('file:///src/index.ts', 'typescript', 1, text);
-
 test('maps the edit onto the formatted document', async () => {
-  const document = createDocument('const a = 1;\nconst b=2;\n');
-
-  const edits = await createDocumentEdits(document, async () => 'const a = 1;\nconst b = 2;\n');
+  const edits = await createDocumentEdits(
+    () => 'const a = 1;\nconst b=2;\n',
+    async () => 'const a = 1;\nconst b = 2;\n',
+  );
 
   expect(edits).toEqual([
     {
@@ -19,24 +16,36 @@ test('maps the edit onto the formatted document', async () => {
 });
 
 test('returns no edits for an already formatted document', async () => {
-  const document = createDocument('const a = 1;\n');
+  const getText = () => 'const a = 1;\n';
 
-  expect(await createDocumentEdits(document, async () => 'const a = 1;\n')).toEqual([]);
-  expect(await createDocumentEdits(document, async () => undefined)).toEqual([]);
+  expect(await createDocumentEdits(getText, async () => 'const a = 1;\n')).toEqual([]);
+  expect(await createDocumentEdits(getText, async () => undefined)).toEqual([]);
 });
 
-// `TextDocuments` mutates the document in place, so a change arriving while the
-// formatter runs would otherwise be mapped through the new line table.
+test('returns no edits for a document that is not open', async () => {
+  expect(
+    await createDocumentEdits(
+      () => undefined,
+      async () => '',
+    ),
+  ).toEqual([]);
+});
+
+// The client can replace the buffer while the formatter runs; an edit computed
+// from the old text must not reach the new one.
 test('returns no edits when the document changes while it is formatted', async () => {
-  const document = createDocument('const a = 1;\nconst b=2;\n');
+  let text = 'const a = 1;\nconst b=2;\n';
 
-  const edits = await createDocumentEdits(document, async (source) => {
-    TextDocument.update(document, [{ text: 'const b=2;\n' }], 2);
+  const edits = await createDocumentEdits(
+    () => text,
+    async (source) => {
+      text = 'const b=2;\n';
 
-    return source.replace('const b=2;', 'const b = 2;');
-  });
+      return source.replace('const b=2;', 'const b = 2;');
+    },
+  );
 
-  // Without the version check this returns an edit for line 1, which the
+  // Without the staleness check this returns an edit for line 1, which the
   // shortened buffer no longer holds.
   expect(edits).toEqual([]);
 });
