@@ -1,71 +1,25 @@
-import { lstat, readFile, realpath } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { createInProcessRsdoctorCliToolExecutor, getToolCatalog } from '@rsdoctor/agent-cli';
 import type { JsonValue } from './model.ts';
 
-const maxArtifactBytes = 64 * 1024 * 1024;
-const maxResultBytes = 1024 * 1024;
-const rsdoctorDataFileName = 'rsdoctor-data.json';
-const absolutePathPattern =
-  /(?<![a-zA-Z0-9._/:\\-])\/(?:[^\s"'`<>()[\]{},;:!?]+\/)*[^\s"'`<>()[\]{},;:!?]+|[a-zA-Z]:[\\/](?:[^\s"'`<>()[\]{},;:!?]+[\\/])*[^\s"'`<>()[\]{},;:!?]+|\\\\[^\\\s"'`<>()[\]{},;:!?]+\\(?:[^\\\s"'`<>()[\]{},;:!?]+\\)*[^\\\s"'`<>()[\]{},;:!?]+|(?<![a-zA-Z0-9._:\\-])\\[^\\\s"'`<>()[\]{},;:!?]+(?:\\[^\\\s"'`<>()[\]{},;:!?]+)*[^\\\s"'`<>()[\]{},;:!?]+/gu;
-const environmentAssignmentPattern = /\b[A-Z][A-Z0-9_]{1,}\s*=\s*(?:"[^"]*"|'[^']*'|[^\s,;]+)/gu;
-const secretAssignmentPattern =
-  /\b(?:[a-z0-9]+[_-])?(?:access[_-]?key|api[_-]?key|token|secret|password|passwd|private[_-]?key)\b\s*[:=]\s*(?:"[^"]*"|'[^']*'|[^\s,;]+)/giu;
-const sensitiveKeyTokens = new Set([
-  'authorization',
-  'auth',
-  'bearer',
-  'config',
-  'configuration',
-  'content',
-  'contents',
-  'credential',
-  'credentials',
-  'define',
-  'environment',
-  'env',
-  'options',
-  'password',
-  'passwd',
-  'privatekey',
-  'processenv',
-  'secret',
-  'source',
-  'sourcemap',
-  'sourcecontent',
-  'sources',
-  'sourcescontent',
-  'token',
-]);
-const sensitiveKeyTokenSequences = [
-  ['access', 'key'],
-  ['api', 'key'],
-  ['private', 'key'],
+const supportedToolNames = [
+  'build_summary',
+  'bundle_optimize',
+  'chunks_list',
+  'errors_list',
+  'packages_direct_dependencies',
+  'packages_duplicates',
+  'packages_similar',
+  'tree_shaking_retained_modules',
+  'tree_shaking_side_effects',
+  'tree_shaking_summary',
 ] as const;
-const safeNumericMetricSuffixes = new Set(['count', 'duration', 'size']);
-const safeConfigurationStatuses = new Set([
-  'complete',
-  'disabled',
-  'error',
-  'fail',
-  'ok',
-  'partial',
-  'pass',
-  'pending',
-  'ready',
-  'running',
-  'success',
-  'unknown',
-  'warning',
-]);
-const safeConfigurationHashPattern = /^(?:sha256:)?[a-f0-9]{64}$/iu;
-const maxSafeConfigurationVersionLength = 128;
-const safeConfigurationVersionPattern =
-  /^(?:v)?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/u;
+
+type RsdoctorToolName = (typeof supportedToolNames)[number];
 
 type RsdoctorToolDescriptor = {
-  name: string;
+  name: RsdoctorToolName;
   description: string;
   inputSchema: Record<string, JsonValue>;
 };
@@ -87,272 +41,144 @@ type ResolvedRsdoctorArtifact = {
   resolveContainedReportFile: (file: string) => Promise<{ path: string; uri: string }>;
 };
 
+type RsdoctorAdapter = {
+  catalog: RsdoctorToolDescriptor[];
+  executor: ReturnType<
+    (typeof import('@rsdoctor/agent-cli'))['createInProcessRsdoctorCliToolExecutor']
+  >;
+};
+
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const isAbsolutePath = (value: string): boolean =>
-  path.isAbsolute(value) || path.win32.isAbsolute(value);
+const isSupportedToolName = (name: string): name is RsdoctorToolName =>
+  supportedToolNames.some((supportedName) => supportedName === name);
 
-const containsAbsolutePath = (value: string): boolean => {
-  absolutePathPattern.lastIndex = 0;
-  const matches = absolutePathPattern.test(value);
-  absolutePathPattern.lastIndex = 0;
-  return matches;
+let adapterPromise: Promise<RsdoctorAdapter> | undefined;
+
+const loadAdapter = async (): Promise<RsdoctorAdapter> => {
+  const { createInProcessRsdoctorCliToolExecutor, getToolCatalog } =
+    await import('@rsdoctor/agent-cli');
+  const packageCatalog = getToolCatalog();
+  const catalog = supportedToolNames.map((name) => {
+    const tool = packageCatalog.find((entry) => entry.name === name);
+    if (tool === undefined) {
+      throw new Error(`Rsdoctor catalog is missing ${name}.`);
+    }
+
+    return {
+      description: tool.description,
+      inputSchema: tool.inputSchema as Record<string, JsonValue>,
+      name,
+    };
+  });
+
+  return {
+    catalog,
+    executor: createInProcessRsdoctorCliToolExecutor(),
+  };
 };
 
-const tokenizeKey = (key: string): string[] =>
-  key
-    .replaceAll(/([a-z0-9])([A-Z])/gu, '$1 $2')
-    .replaceAll(/([A-Z])([A-Z][a-z])/gu, '$1 $2')
-    .split(/[^a-zA-Z0-9]+/u)
-    .filter(Boolean)
-    .map((token) => token.toLowerCase());
+const getAdapter = (): Promise<RsdoctorAdapter> => (adapterPromise ??= loadAdapter());
 
-const isSafeMetricKey = (tokens: string[], value: unknown): boolean => {
-  if (tokens.length < 2) {
-    return false;
+const listRsdoctorTools = async (): Promise<RsdoctorToolDescriptor[]> => [
+  ...(await getAdapter()).catalog,
+];
+
+const matchesSchemaType = (value: unknown, type: unknown): boolean => {
+  if (Array.isArray(type)) {
+    return type.some((entry) => matchesSchemaType(value, entry));
   }
 
-  const suffix = tokens.at(-1)!;
-  const prefix = tokens.slice(0, -1);
-  const isConfigurationMetric = prefix.length === 1 && prefix[0] === 'configuration';
-  const isSourceMetric =
-    (prefix.length === 1 && prefix[0] === 'source') ||
-    (prefix.length === 2 && prefix[0] === 'source' && prefix[1] === 'map');
-
-  if (safeNumericMetricSuffixes.has(suffix)) {
-    return (
-      (isConfigurationMetric || isSourceMetric) &&
-      typeof value === 'number' &&
-      Number.isFinite(value) &&
-      value >= 0
-    );
+  switch (type) {
+    case 'array':
+      return Array.isArray(value);
+    case 'boolean':
+      return typeof value === 'boolean';
+    case 'integer':
+      return typeof value === 'number' && Number.isInteger(value);
+    case 'null':
+      return value === null;
+    case 'number':
+      return typeof value === 'number' && Number.isFinite(value);
+    case 'object':
+      return isObject(value);
+    case 'string':
+      return typeof value === 'string';
+    default:
+      return true;
   }
-
-  if (!isConfigurationMetric || typeof value !== 'string') {
-    return false;
-  }
-
-  if (suffix === 'hash') {
-    return safeConfigurationHashPattern.test(value);
-  }
-
-  if (suffix === 'status') {
-    return safeConfigurationStatuses.has(value);
-  }
-
-  return (
-    suffix === 'version' &&
-    value.length <= maxSafeConfigurationVersionLength &&
-    safeConfigurationVersionPattern.test(value)
-  );
 };
 
-const isSensitiveKey = (key: string, value: unknown): boolean => {
-  const tokens = tokenizeKey(key);
-  if (isSafeMetricKey(tokens, value)) {
+const matchesJsonSchema = (value: unknown, schema: unknown): boolean => {
+  if (!isObject(schema) || !matchesSchemaType(value, schema.type)) {
     return false;
-  }
-
-  return (
-    tokens.some((token) => sensitiveKeyTokens.has(token)) ||
-    sensitiveKeyTokenSequences.some((sequence) =>
-      tokens.some((_, start) => sequence.every((token, index) => tokens[start + index] === token)),
-    )
-  );
-};
-
-const sanitizeText = (value: string): string =>
-  value
-    .replace(absolutePathPattern, '<redacted absolute path>')
-    .replace(secretAssignmentPattern, '<redacted secret>')
-    .replace(environmentAssignmentPattern, '<redacted environment value>');
-
-const toJsonValue = (
-  value: unknown,
-  seen: WeakSet<object> = new WeakSet(),
-  sanitizeUntrustedValues = false,
-): JsonValue => {
-  if (value === null || typeof value === 'boolean' || typeof value === 'string') {
-    return sanitizeUntrustedValues && typeof value === 'string' ? sanitizeText(value) : value;
   }
 
   if (typeof value === 'number') {
-    if (!Number.isFinite(value)) {
-      throw new Error('Rsdoctor result contains a non-JSON number.');
+    if (typeof schema.minimum === 'number' && value < schema.minimum) {
+      return false;
     }
-    return value;
+    if (typeof schema.maximum === 'number' && value > schema.maximum) {
+      return false;
+    }
   }
 
-  if (Array.isArray(value)) {
-    if (seen.has(value)) {
-      throw new Error('Rsdoctor result contains a circular value.');
-    }
-    seen.add(value);
-    const cloned = value.map((entry) => toJsonValue(entry, seen, sanitizeUntrustedValues));
-    seen.delete(value);
-    return Object.freeze(cloned) as JsonValue;
+  if (Array.isArray(value) && isObject(schema.items)) {
+    return value.every((entry) => matchesJsonSchema(entry, schema.items));
   }
 
-  if (isObject(value)) {
-    if (seen.has(value)) {
-      throw new Error('Rsdoctor result contains a circular value.');
-    }
-    seen.add(value);
-    const cloned: Record<string, JsonValue> = {};
-    for (const [key, entry] of Object.entries(value)) {
-      if (
-        entry === undefined ||
-        (sanitizeUntrustedValues && (containsAbsolutePath(key) || isSensitiveKey(key, entry)))
-      ) {
-        continue;
+  if (!isObject(value)) {
+    return true;
+  }
+
+  const properties = isObject(schema.properties) ? schema.properties : {};
+  if (
+    Array.isArray(schema.required) &&
+    schema.required.some((key) => typeof key === 'string' && !(key in value))
+  ) {
+    return false;
+  }
+
+  for (const [key, entry] of Object.entries(value)) {
+    const propertySchema = properties[key];
+    if (propertySchema !== undefined) {
+      if (!matchesJsonSchema(entry, propertySchema)) {
+        return false;
       }
-      Object.defineProperty(cloned, key, {
-        configurable: false,
-        enumerable: true,
-        value: toJsonValue(entry, seen, sanitizeUntrustedValues),
-        writable: false,
-      });
+    } else if (schema.additionalProperties === false) {
+      return false;
+    } else if (isObject(schema.additionalProperties)) {
+      if (!matchesJsonSchema(entry, schema.additionalProperties)) {
+        return false;
+      }
     }
-    seen.delete(value);
-    return Object.freeze(cloned) as JsonValue;
   }
 
-  throw new Error('Rsdoctor result contains a non-JSON value.');
+  return true;
 };
 
-const toolCatalog = Object.freeze(
-  getToolCatalog()
-    .map(({ description, inputSchema, name }) =>
-      Object.freeze({
-        description,
-        inputSchema: toJsonValue(inputSchema) as Record<string, JsonValue>,
-        name,
-      }),
-    )
-    .sort((left, right) => (left.name < right.name ? -1 : left.name > right.name ? 1 : 0)),
-);
-
-const listRsdoctorTools = (): RsdoctorToolDescriptor[] => [...toolCatalog];
-
-let executor: ReturnType<typeof createInProcessRsdoctorCliToolExecutor> | undefined;
-
-const getExecutor = (): ReturnType<typeof createInProcessRsdoctorCliToolExecutor> =>
-  (executor ??= createInProcessRsdoctorCliToolExecutor());
-
-const getRelativeDataFile = (dataFile: unknown): string => {
-  if (
-    typeof dataFile !== 'string' ||
-    dataFile.length === 0 ||
-    dataFile.includes('\\') ||
-    isAbsolutePath(dataFile) ||
-    dataFile !== path.posix.normalize(dataFile) ||
-    dataFile.split('/').includes('..')
-  ) {
-    throw new Error('Rsdoctor data file must be a normalized relative path.');
+const getInput = (input: unknown, tool: RsdoctorToolDescriptor): Record<string, unknown> => {
+  const resolvedInput = input === undefined ? {} : input;
+  if (!isObject(resolvedInput) || !matchesJsonSchema(resolvedInput, tool.inputSchema)) {
+    throw new Error('Rsdoctor tool input does not match its schema.');
   }
 
-  if (path.posix.basename(dataFile) !== rsdoctorDataFileName) {
-    throw new Error('Rsdoctor data file must be named rsdoctor-data.json.');
-  }
-
-  return dataFile;
-};
-
-const getRelativeWorkspaceFile = (file: unknown): string => {
-  if (
-    typeof file !== 'string' ||
-    file.length === 0 ||
-    file.includes('\\') ||
-    isAbsolutePath(file) ||
-    file !== path.posix.normalize(file) ||
-    file.split('/').includes('..')
-  ) {
-    throw new Error('Rsdoctor file must be a normalized relative path.');
-  }
-
-  return file;
-};
-
-const isWithin = (parent: string, candidate: string): boolean => {
-  const relative = path.relative(parent, candidate);
-  return (
-    relative !== '' &&
-    !relative.startsWith(`..${path.sep}`) &&
-    relative !== '..' &&
-    !isAbsolutePath(relative)
-  );
-};
-
-const resolveWorkspaceRoot = async (workspaceRoot: unknown): Promise<string> => {
-  if (typeof workspaceRoot !== 'string' || workspaceRoot.length === 0) {
-    throw new Error('Rsdoctor workspace root is invalid.');
-  }
-
-  try {
-    return await realpath(workspaceRoot);
-  } catch {
-    throw new Error('Rsdoctor workspace root could not be resolved.');
-  }
-};
-
-const resolveContainedFile = async (workspaceRoot: string, file: string): Promise<string> => {
-  const candidate = path.resolve(workspaceRoot, getRelativeWorkspaceFile(file));
-  if (!isWithin(workspaceRoot, candidate)) {
-    throw new Error('Rsdoctor file must stay within the workspace.');
-  }
-
-  let resolvedFile: string;
-  try {
-    resolvedFile = await realpath(candidate);
-  } catch {
-    throw new Error('Rsdoctor file could not be resolved.');
-  }
-
-  if (!isWithin(workspaceRoot, resolvedFile)) {
-    throw new Error('Rsdoctor file must stay within the workspace.');
-  }
-
-  let fileStats: Awaited<ReturnType<typeof lstat>>;
-  try {
-    fileStats = await lstat(resolvedFile);
-  } catch {
-    throw new Error('Rsdoctor file could not be read.');
-  }
-
-  if (!fileStats.isFile()) {
-    throw new Error('Rsdoctor file must be a regular file.');
-  }
-
-  return resolvedFile;
+  return resolvedInput;
 };
 
 const readArtifact = async (workspaceRoot: string, dataFile: string): Promise<string> => {
-  const resolvedArtifact = await resolveContainedFile(workspaceRoot, dataFile);
-  const fileStats = await lstat(resolvedArtifact);
-
-  if (!fileStats.isFile()) {
-    throw new Error('Rsdoctor data file must be a regular file.');
-  }
-
-  if (fileStats.size > maxArtifactBytes) {
-    throw new Error('Rsdoctor data file exceeds the 64 MiB limit.');
-  }
-
-  let contents: Buffer;
+  const artifactPath = path.resolve(workspaceRoot, dataFile);
+  let contents: string;
   try {
-    contents = await readFile(resolvedArtifact);
+    contents = await readFile(artifactPath, 'utf8');
   } catch {
     throw new Error('Rsdoctor data file could not be read.');
   }
 
-  if (contents.byteLength > maxArtifactBytes) {
-    throw new Error('Rsdoctor data file exceeds the 64 MiB limit.');
-  }
-
   let parsed: unknown;
   try {
-    parsed = JSON.parse(contents.toString('utf8'));
+    parsed = JSON.parse(contents);
   } catch {
     throw new Error('Rsdoctor data file must contain valid JSON.');
   }
@@ -361,7 +187,7 @@ const readArtifact = async (workspaceRoot: string, dataFile: string): Promise<st
     throw new Error('Rsdoctor data file must contain an object data field.');
   }
 
-  return resolvedArtifact;
+  return artifactPath;
 };
 
 const toRelativeWorkspaceFile = (workspaceRoot: string, file: string): string =>
@@ -371,32 +197,23 @@ const resolveRsdoctorArtifact = async (
   workspaceRoot: string,
   dataFile: string,
 ): Promise<ResolvedRsdoctorArtifact> => {
-  const relativeDataFile = getRelativeDataFile(dataFile);
-  const canonicalWorkspaceRoot = await resolveWorkspaceRoot(workspaceRoot);
-  const artifactPath = await readArtifact(canonicalWorkspaceRoot, relativeDataFile);
+  const artifactPath = await readArtifact(workspaceRoot, dataFile);
 
-  return Object.freeze({
-    dataFile: toRelativeWorkspaceFile(canonicalWorkspaceRoot, artifactPath),
+  return {
+    dataFile: toRelativeWorkspaceFile(workspaceRoot, artifactPath),
     resolveContainedReportFile: async (file: string): Promise<{ path: string; uri: string }> => {
-      const resolvedFile = await resolveContainedFile(canonicalWorkspaceRoot, file);
+      const resolvedFile = path.resolve(workspaceRoot, file);
+      try {
+        await access(resolvedFile);
+      } catch {
+        throw new Error('Rsdoctor file could not be resolved.');
+      }
       return {
-        path: toRelativeWorkspaceFile(canonicalWorkspaceRoot, resolvedFile),
+        path: toRelativeWorkspaceFile(workspaceRoot, resolvedFile),
         uri: pathToFileURL(resolvedFile).toString(),
       };
     },
-  });
-};
-
-const getInput = (input: unknown): Record<string, unknown> => {
-  if (input === undefined) {
-    return {};
-  }
-
-  if (!isObject(input)) {
-    throw new Error('Rsdoctor tool input must be an object.');
-  }
-
-  return input;
+  };
 };
 
 const analyzeRsdoctorArtifact = async (
@@ -406,19 +223,18 @@ const analyzeRsdoctorArtifact = async (
   if (!isObject(request) || typeof request.toolName !== 'string' || !request.toolName) {
     throw new Error('Rsdoctor tool name is invalid.');
   }
-
-  if (!toolCatalog.some((tool) => tool.name === request.toolName)) {
+  if (!isSupportedToolName(request.toolName)) {
     throw new Error('Unknown Rsdoctor tool.');
   }
 
-  const relativeDataFile = getRelativeDataFile(request.dataFile);
-  const canonicalWorkspaceRoot = await resolveWorkspaceRoot(workspaceRoot);
-  const artifactPath = await readArtifact(canonicalWorkspaceRoot, relativeDataFile);
-  const input = getInput(request.input);
+  const { catalog, executor } = await getAdapter();
+  const tool = catalog.find(({ name }) => name === request.toolName)!;
+  const input = getInput(request.input, tool);
+  const artifactPath = await readArtifact(workspaceRoot, request.dataFile);
 
-  let rawResult: unknown;
+  let result: unknown;
   try {
-    rawResult = await getExecutor().execute({
+    result = await executor.execute({
       dataFile: artifactPath,
       input,
       toolName: request.toolName,
@@ -427,22 +243,9 @@ const analyzeRsdoctorArtifact = async (
     throw new Error('Rsdoctor analysis failed.');
   }
 
-  let result: JsonValue;
-  try {
-    result = toJsonValue(rawResult, new WeakSet(), true);
-  } catch {
-    throw new Error('Rsdoctor analysis result is not JSON-safe.');
-  }
-
-  if (Buffer.byteLength(JSON.stringify(result), 'utf8') > maxResultBytes) {
-    throw new Error(
-      'Rsdoctor analysis result exceeds the 1 MiB limit. Use filter, page, or pageSize to reduce the response.',
-    );
-  }
-
   return {
-    dataFile: toRelativeWorkspaceFile(canonicalWorkspaceRoot, artifactPath),
-    result,
+    dataFile: request.dataFile,
+    result: result as JsonValue,
     toolName: request.toolName,
   };
 };

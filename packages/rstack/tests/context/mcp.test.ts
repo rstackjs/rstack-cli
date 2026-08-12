@@ -1,9 +1,13 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 // cspell:ignore modelcontextprotocol
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import {
+  getDefaultEnvironment,
+  StdioClientTransport,
+} from '@modelcontextprotocol/sdk/client/stdio.js';
 import { expect, test } from 'rstack/test';
 import {
   contextStoreSchemaVersion,
@@ -110,7 +114,7 @@ test('registers exactly the three read-only Phase 1 tools', async () => {
   });
 });
 
-test('analyzes an explicit local Rsdoctor artifact without returning workspace paths', async () => {
+test('analyzes an explicit Rsdoctor artifact', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await writeRsdoctorArtifact(workspaceRoot);
 
@@ -132,8 +136,65 @@ test('analyzes an explicit local Rsdoctor artifact without returning workspace p
         },
         toolName: 'build_summary',
       });
-      expect(JSON.stringify(result.content)).not.toContain(workspaceRoot);
     });
+  });
+});
+
+test('loads Rsdoctor only when a built MCP process receives an analysis request', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const markerFile = path.join(workspaceRoot, 'rsdoctor-loaded');
+    const hookFile = path.join(workspaceRoot, 'import-hook.mjs');
+    await writeFile(path.join(workspaceRoot, 'package.json'), '{"name":"mcp-startup-test"}');
+    await writeRsdoctorArtifact(workspaceRoot);
+    await writeFile(
+      hookFile,
+      `import { writeFileSync } from 'node:fs';
+import { registerHooks } from 'node:module';
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (specifier === '@rsdoctor/agent-cli') {
+      writeFileSync(process.env.RSTACK_RSDOCTOR_LOADED_MARKER, 'loaded');
+    }
+    return nextResolve(specifier, context);
+  },
+});
+`,
+    );
+
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: [path.resolve('bin/rs.js'), 'mcp'],
+      cwd: workspaceRoot,
+      env: {
+        ...getDefaultEnvironment(),
+        NODE_OPTIONS: `--import=${hookFile}`,
+        RSTACK_RSDOCTOR_LOADED_MARKER: markerFile,
+      },
+      stderr: 'pipe',
+    });
+    const client = new Client({
+      name: 'rstack-built-process-test',
+      version: '1.0.0',
+    });
+
+    try {
+      await client.connect(transport);
+      await client.callTool({ name: 'project_status', arguments: {} });
+      await expect(access(markerFile)).rejects.toThrow();
+
+      const result = await client.callTool({
+        name: 'rsdoctor_analyze',
+        arguments: {
+          dataFile: 'artifacts/rsdoctor-data.json',
+          toolName: 'build_summary',
+        },
+      });
+
+      expect(result.isError).not.toBe(true);
+      await expect(access(markerFile)).resolves.toBeUndefined();
+    } finally {
+      await client.close();
+    }
   });
 });
 
@@ -205,7 +266,7 @@ test('returns a portable Rsdoctor analysis next action when no GUI report exists
   });
 });
 
-test('returns redacted MCP errors for invalid Rsdoctor tool names and paths', async () => {
+test('returns an MCP error for an invalid Rsdoctor tool name', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await writeRsdoctorArtifact(workspaceRoot);
 
@@ -217,18 +278,8 @@ test('returns redacted MCP errors for invalid Rsdoctor tool names and paths', as
           toolName: 'unknown_tool',
         },
       });
-      const absolutePath = await client.callTool({
-        name: 'rsdoctor_analyze',
-        arguments: {
-          dataFile: path.join(workspaceRoot, 'artifacts', 'rsdoctor-data.json'),
-          toolName: 'build_summary',
-        },
-      });
-
       expect(unknownTool.isError).toBe(true);
-      expect(absolutePath.isError).toBe(true);
-      expect(JSON.stringify(unknownTool)).not.toContain(workspaceRoot);
-      expect(JSON.stringify(absolutePath)).not.toContain(workspaceRoot);
+      expect(unknownTool.content).toEqual([{ type: 'text', text: 'Unknown Rsdoctor tool.' }]);
     });
   });
 });

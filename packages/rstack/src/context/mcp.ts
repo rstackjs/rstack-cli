@@ -19,8 +19,13 @@ const rsdoctorAnalyzeInput = z
 
 const reportLinkInput = z.object({ dataFile: z.string().min(1) }).strict();
 
-const toMcpError = () => ({
-  content: [{ type: 'text' as const, text: 'Rsdoctor request failed.' }],
+const toMcpError = (error: unknown) => ({
+  content: [
+    {
+      type: 'text' as const,
+      text: error instanceof Error ? error.message : 'Rsdoctor request failed.',
+    },
+  ],
   isError: true,
 });
 
@@ -61,7 +66,7 @@ const createContextMcpServer = (workspaceRoot: string): McpServer => {
     'rsdoctor_analyze',
     {
       title: 'Analyze Rsdoctor artifact',
-      description: 'Analyze an explicit checkout-local Rsdoctor artifact with a catalog tool.',
+      description: 'Analyze an explicit Rsdoctor artifact with a catalog tool.',
       inputSchema: rsdoctorAnalyzeInput,
       annotations: {
         readOnlyHint: true,
@@ -85,8 +90,8 @@ const createContextMcpServer = (workspaceRoot: string): McpServer => {
           ],
           structuredContent: analysis,
         };
-      } catch {
-        return toMcpError();
+      } catch (error) {
+        return toMcpError(error);
       }
     },
   );
@@ -124,8 +129,8 @@ const createContextMcpServer = (workspaceRoot: string): McpServer => {
         }
 
         return { content, structuredContent: report };
-      } catch {
-        return toMcpError();
+      } catch (error) {
+        return toMcpError(error);
       }
     },
   );
