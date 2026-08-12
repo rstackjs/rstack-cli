@@ -22,7 +22,7 @@
     "@testing-library/preact": "^3.2.4",
     "@types/node": "^24.13.3",
     "happy-dom": "^20.11.2",
-    "rstack": "^0.4.0",
+    "rstack": "^0.5.0",
     "typescript": "^7.0.2"
   }
 }
