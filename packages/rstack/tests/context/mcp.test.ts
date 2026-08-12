@@ -1,6 +1,7 @@
 import { access, cp, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 // cspell:ignore modelcontextprotocol
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
@@ -1100,6 +1101,107 @@ test('captures independent monorepo package contexts through one root MCP', asyn
     } finally {
       state.configPath = originalConfigPath;
       state.configRoot = originalConfigRoot;
+    }
+  });
+});
+
+test('loads distinct package lint and test configs through the built root MCP', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const rstackEntry = pathToFileURL(path.resolve('dist/index.js')).href;
+    const packages = [
+      {
+        root: 'packages/app',
+        configPath: 'packages/app/rstack.config.ts',
+        lintRule: 'error',
+        testStatus: 'pass',
+      },
+      {
+        root: 'packages/library',
+        configPath: 'packages/library/custom.config.ts',
+        lintRule: 'off',
+        testStatus: 'fail',
+      },
+    ] as const;
+
+    for (const fixture of packages) {
+      const packageRoot = path.join(workspaceRoot, fixture.root);
+      await mkdir(path.join(packageRoot, 'src'), { recursive: true });
+      await writeFile(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({ name: `@repo/${path.basename(packageRoot)}`, type: 'module' }),
+      );
+      await writeFile(path.join(packageRoot, 'src/index.ts'), 'debugger;\n');
+      await writeFile(
+        path.join(workspaceRoot, fixture.configPath),
+        `import { define } from ${JSON.stringify(rstackEntry)};
+define.lint([{ files: ['src/**/*.ts'], rules: { 'no-debugger': '${fixture.lintRule}' } }]);
+define.test({ include: ['./tests/*.never.ts'], passWithNoTests: ${fixture.testStatus === 'pass'} });
+`,
+      );
+    }
+
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: [path.resolve('bin/rs.js'), 'mcp'],
+      cwd: workspaceRoot,
+      env: getDefaultEnvironment(),
+      stderr: 'pipe',
+    });
+    const client = new Client({ name: 'rstack-package-config-test', version: '1.0.0' });
+
+    try {
+      await client.connect(transport);
+      const lintResults = await Promise.all(
+        packages.map((fixture) =>
+          client.callTool({
+            name: 'lint_snapshot',
+            arguments: {
+              mode: 'files',
+              patterns: ['src/index.ts'],
+              packageRoot: fixture.root,
+              ...(fixture.root === 'packages/app' ? {} : { configPath: fixture.configPath }),
+            },
+          }),
+        ),
+      );
+      const testResults = await Promise.all(
+        packages.map((fixture) =>
+          client.callTool({
+            name: 'test_snapshot',
+            arguments: {
+              packageRoot: fixture.root,
+              ...(fixture.root === 'packages/app' ? {} : { configPath: fixture.configPath }),
+            },
+          }),
+        ),
+      );
+
+      for (const result of [...lintResults, ...testResults]) {
+        expect(result.isError).not.toBe(true);
+      }
+
+      expect(lintResults.map((result) => result.structuredContent)).toEqual([
+        expect.objectContaining({
+          status: 'fail',
+          summary: expect.objectContaining({ errors: 1 }),
+        }),
+        expect.objectContaining({
+          status: 'pass',
+          summary: expect.objectContaining({ errors: 0 }),
+        }),
+      ]);
+      expect(testResults.map((result) => result.structuredContent)).toEqual([
+        expect.objectContaining({
+          status: 'pass',
+          summary: expect.objectContaining({ files: 0, tests: 0 }),
+        }),
+        expect.objectContaining({
+          status: 'fail',
+          summary: expect.objectContaining({ files: 0, tests: 0 }),
+        }),
+      ]);
+    } finally {
+      await client.close();
     }
   });
 });

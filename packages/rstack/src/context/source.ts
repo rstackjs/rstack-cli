@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
@@ -54,6 +55,11 @@ const toWorkspacePath = (workspaceRoot: string, filePath: string): string => {
 
 const digest = (content: string | Buffer): string =>
   createHash('sha256').update(content).digest('hex');
+
+const resolveInternalConfigPath = (moduleDirectory: string, fileName: string): string => {
+  const siblingPath = path.join(moduleDirectory, fileName);
+  return existsSync(siblingPath) ? siblingPath : path.join(moduleDirectory, '..', fileName);
+};
 
 const readPackageName = async (packageRoot: string): Promise<string | undefined> => {
   try {
@@ -181,5 +187,6 @@ export {
   createExplicitRun,
   recordContextInputFiles,
   resolveExplicitCaptureTarget,
+  resolveInternalConfigPath,
 };
 export type { ExplicitContextOptions, ExplicitRunOptions };

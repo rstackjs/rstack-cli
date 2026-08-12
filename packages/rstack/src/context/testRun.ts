@@ -19,6 +19,7 @@ import {
   createExplicitRun,
   recordContextInputFiles,
   resolveExplicitCaptureTarget,
+  resolveInternalConfigPath,
 } from './source.ts';
 import {
   readContextSnapshotById,
@@ -157,7 +158,7 @@ const captureTestSnapshot = async (
   dependencies: TestCaptureDependencies = {},
 ): Promise<TestCaptureResult> => {
   const target = await resolveExplicitCaptureTarget(workspaceRoot, request);
-  const wrapperConfigPath = path.join(import.meta.dirname, '..', 'rstestConfig.js');
+  const wrapperConfigPath = resolveInternalConfigPath(import.meta.dirname, 'rstestConfig.js');
   const context = createExplicitContextDescriptor({
     producer: 'rstest',
     workspaceRoot,

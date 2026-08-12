@@ -20,6 +20,7 @@ import {
   createExplicitContextDescriptor,
   createExplicitRun,
   resolveExplicitCaptureTarget,
+  resolveInternalConfigPath,
 } from './source.ts';
 import {
   readContextSnapshotById,
@@ -191,7 +192,7 @@ const captureLintSnapshot = async (
 ): Promise<LintCaptureResult> => {
   const includeFixPreview = request.includeFixPreview ?? false;
   const target = await resolveExplicitCaptureTarget(workspaceRoot, request);
-  const wrapperConfigPath = path.join(import.meta.dirname, '..', 'rslintConfig.js');
+  const wrapperConfigPath = resolveInternalConfigPath(import.meta.dirname, 'rslintConfig.js');
   const context = createExplicitContextDescriptor({
     producer: 'rslint',
     workspaceRoot,
