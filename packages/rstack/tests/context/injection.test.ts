@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -48,10 +48,12 @@ const withConfig = async (
     kind,
     definition,
     contextEnabled,
+    symlinked = false,
   }: {
     kind: ConfigKind;
     definition: ConfigDefinition;
     contextEnabled: boolean;
+    symlinked?: boolean;
   },
   callback: (fixture: {
     configPath: string;
@@ -59,7 +61,9 @@ const withConfig = async (
     workspaceRoot: string;
   }) => Promise<void>,
 ): Promise<void> => {
-  const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'rstack-context-injection-'));
+  const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), 'rstack-context-injection-'));
+  const workspaceRoot = symlinked ? path.join(fixtureRoot, 'checkout') : fixtureRoot;
+  await mkdir(workspaceRoot, { recursive: true });
   const configPath = path.join(workspaceRoot, 'rstack.config.ts');
   const configDefinition =
     definition === 'async'
@@ -93,16 +97,22 @@ define.context({ enabled: ${contextEnabled} });
 define.${kind}(${configDefinition});
 `,
   );
-  state.configPath = configPath;
+  const loadedConfigPath = symlinked
+    ? path.join(fixtureRoot, 'linked-rstack.config.ts')
+    : configPath;
+  if (symlinked) {
+    await symlink(configPath, loadedConfigPath);
+  }
+  state.configPath = loadedConfigPath;
 
   try {
     await callback({
-      configPath,
+      configPath: loadedConfigPath,
       getHooks: () => globalThis.__rstackInjectionTestHooks!,
       workspaceRoot,
     });
   } finally {
-    await rm(workspaceRoot, { force: true, recursive: true });
+    await rm(fixtureRoot, { force: true, recursive: true });
   }
 };
 
@@ -220,6 +230,34 @@ for (const { kind, definition, producer, product } of [
         ],
       });
     });
+  });
+}
+
+for (const { kind, producer, product } of [
+  { kind: 'app', producer: 'rsbuild', product: 'application' },
+  { kind: 'lib', producer: 'rslib', product: 'library' },
+] as const) {
+  test(`canonicalizes a symlinked loaded config path for ${kind} capture`, async () => {
+    await withConfig(
+      { kind, definition: 'object', contextEnabled: true, symlinked: true },
+      async (fixture) => {
+        const config =
+          kind === 'app' ? await loadRsbuildConfig(params) : await loadRslibConfig(params);
+
+        const status = await observeBuild(config, fixture.workspaceRoot);
+        expect(status.runs).toHaveLength(1);
+        expect(status.runs[0]!.run).toMatchObject({
+          producer,
+          contexts: [
+            {
+              configPath: 'rstack.config.ts',
+              packageRoot: '.',
+              product,
+            },
+          ],
+        });
+      },
+    );
   });
 }
 

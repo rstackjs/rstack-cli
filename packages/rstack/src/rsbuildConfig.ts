@@ -1,3 +1,4 @@
+import { realpath } from 'node:fs/promises';
 import type { ConfigParams, RsbuildConfig, WatchFiles } from '@rsbuild/core';
 import { loadRstackConfig, type Configs } from './config.ts';
 import {
@@ -23,6 +24,7 @@ export const resolveRsbuildConfig = async (
 
 export const loadRsbuildConfig = async (params: ConfigParams): Promise<RsbuildConfig> => {
   const loaded = await loadRstackConfig();
+  const configPath = loaded.filePath === null ? undefined : await realpath(loaded.filePath);
   const config = await resolveRsbuildConfig(loaded.configs, params);
   const capture = resolveContextCapture(loaded.configs.context);
   const configWithContext =
@@ -34,8 +36,8 @@ export const loadRsbuildConfig = async (params: ConfigParams): Promise<RsbuildCo
             producer: 'rsbuild',
             product: 'application',
             capture,
-            workspace: await resolveContextWorkspace(loaded.filePath ?? process.cwd()),
-            configPath: loaded.filePath ?? undefined,
+            workspace: await resolveContextWorkspace(configPath ?? process.cwd()),
+            configPath,
             params,
           }),
         );

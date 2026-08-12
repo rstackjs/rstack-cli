@@ -1,3 +1,4 @@
+import { realpath } from 'node:fs/promises';
 import type { ConfigParams, RslibConfig } from '@rslib/core';
 import { loadRstackConfig, type Configs } from './config.ts';
 import {
@@ -23,12 +24,13 @@ export const resolveRslibConfig = async (
 
 export const loadRslibConfig = async (params: ConfigParams): Promise<RslibConfig> => {
   const loaded = await loadRstackConfig();
+  const configPath = loaded.filePath === null ? undefined : await realpath(loaded.filePath);
   const config = await resolveRslibConfig(loaded.configs, params);
   const capture = resolveContextCapture(loaded.configs.context);
   if (capture === 'off') {
     return config;
   }
-  const workspace = await resolveContextWorkspace(loaded.filePath ?? process.cwd());
+  const workspace = await resolveContextWorkspace(configPath ?? process.cwd());
   return appendBuildContextPlugin(
     config,
     createBuildContextPlugin({
@@ -36,7 +38,7 @@ export const loadRslibConfig = async (params: ConfigParams): Promise<RslibConfig
       product: 'library',
       capture,
       workspace,
-      configPath: loaded.filePath ?? undefined,
+      configPath,
       params,
     }),
   );

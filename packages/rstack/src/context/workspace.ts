@@ -74,6 +74,7 @@ const resolveContextWorkspace = async (startPath: string): Promise<ResolvedConte
     }
     if (checkoutRoot === undefined && (await pathExists(path.join(currentPath, '.git')))) {
       checkoutRoot = currentPath;
+      break;
     }
 
     const parentPath = path.dirname(currentPath);

@@ -88,7 +88,6 @@ const buildMetadataFacet = ({
   const json = stats.toJson({
     all: false,
     hash: true,
-    timings: true,
     assets: true,
     chunks: true,
     errors: false,
@@ -98,36 +97,56 @@ const buildMetadataFacet = ({
     chunks?: Array<{ files?: unknown; id?: unknown; initial?: unknown }>;
     hash?: unknown;
   };
-  const assets = (json.assets ?? []).flatMap((asset) => {
+  const assets: BuildMetadataFacet['assets'] = [];
+  let droppedAssets = 0;
+  for (const asset of json.assets ?? []) {
     if (typeof asset.name !== 'string' || typeof asset.size !== 'number') {
-      return [];
+      continue;
     }
     const name = normalizeMetadataPath(options.workspace.workspaceRoot, asset.name);
-    return name === undefined ? [] : [{ name, size: asset.size }];
-  });
-  const chunks = (json.chunks ?? []).flatMap((chunk) => {
-    if (!Array.isArray(chunk.files)) {
-      return [];
+    if (name === undefined) {
+      continue;
     }
-    const files = chunk.files.flatMap((file) =>
-      typeof file === 'string'
-        ? (() => {
-            const normalized = normalizeMetadataPath(options.workspace.workspaceRoot, file);
-            return normalized === undefined ? [] : [normalized];
-          })()
-        : [],
-    );
+    if (assets.length < 100) {
+      assets.push({ name, size: asset.size });
+    } else {
+      droppedAssets += 1;
+    }
+  }
 
-    return [
-      {
-        ...(typeof chunk.id === 'string' || typeof chunk.id === 'number'
-          ? { id: String(chunk.id) }
-          : {}),
-        files: files.slice(0, 20),
-        ...(typeof chunk.initial === 'boolean' ? { initial: chunk.initial } : {}),
-      },
-    ];
-  });
+  const chunks: BuildMetadataFacet['chunks'] = [];
+  let droppedChunks = 0;
+  for (const chunk of json.chunks ?? []) {
+    if (!Array.isArray(chunk.files)) {
+      continue;
+    }
+    if (chunks.length >= 100) {
+      droppedChunks += 1;
+      continue;
+    }
+
+    const files: string[] = [];
+    for (const file of chunk.files) {
+      if (typeof file !== 'string') {
+        continue;
+      }
+      const normalized = normalizeMetadataPath(options.workspace.workspaceRoot, file);
+      if (normalized !== undefined) {
+        files.push(normalized);
+        if (files.length === 20) {
+          break;
+        }
+      }
+    }
+
+    chunks.push({
+      ...(typeof chunk.id === 'string' || typeof chunk.id === 'number'
+        ? { id: String(chunk.id) }
+        : {}),
+      files,
+      ...(typeof chunk.initial === 'boolean' ? { initial: chunk.initial } : {}),
+    });
+  }
 
   return {
     producer: options.producer,
@@ -141,11 +160,11 @@ const buildMetadataFacet = ({
     ...(typeof json.hash === 'string' ? { hash: json.hash } : {}),
     hasErrors: stats.hasErrors(),
     hasWarnings: stats.hasWarnings(),
-    assets: assets.slice(0, 100),
-    chunks: chunks.slice(0, 100),
+    assets,
+    chunks,
     truncated: {
-      assets: Math.max(assets.length - 100, 0),
-      chunks: Math.max(chunks.length - 100, 0),
+      assets: droppedAssets,
+      chunks: droppedChunks,
     },
   };
 };

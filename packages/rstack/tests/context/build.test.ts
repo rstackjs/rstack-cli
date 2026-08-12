@@ -7,6 +7,7 @@ import {
   appendBuildContextPlugin,
   createBuildContextPlugin,
   readContextWorkspaceStatus,
+  type BuildMetadataFacet,
   type ResolvedContextWorkspace,
 } from '../../src/context/index.ts';
 
@@ -293,7 +294,6 @@ test('publishes an aggregate manifest once and advances sequences per environmen
       {
         all: false,
         hash: true,
-        timings: true,
         assets: true,
         chunks: true,
         errors: false,
@@ -302,7 +302,6 @@ test('publishes an aggregate manifest once and advances sequences per environmen
       {
         all: false,
         hash: true,
-        timings: true,
         assets: true,
         chunks: true,
         errors: false,
@@ -383,6 +382,80 @@ test('bounds metadata paths and distinguishes disabled deep capture from partial
   });
 });
 
+test('retains bounded valid metadata rows and counts only dropped valid rows', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const plugin = createBuildContextPlugin({
+      producer: 'rsbuild',
+      product: 'application',
+      capture: 'metadata',
+      workspace: { workspaceRoot, packageRoot: workspaceRoot },
+      params: { command: 'build', env: 'production' },
+      createRunId: () => 'run_high_cardinality',
+    });
+    const { hooks } = getObserverHarness(plugin);
+    const environment = createEnvironment('web', 'web');
+    const assets = Array.from({ length: 206 }, (_, index) =>
+      index % 2 === 0
+        ? { name: `dist/asset-${index / 2}.js`, size: index / 2 }
+        : { name: 123, size: 'invalid' },
+    );
+    const chunks = Array.from({ length: 206 }, (_, index) => {
+      if (index % 2 !== 0) {
+        return { files: 'invalid', id: `invalid-${index}` };
+      }
+
+      const chunkIndex = index / 2;
+      return {
+        files: Array.from({ length: 42 }, (_, fileIndex) =>
+          fileIndex % 2 === 0 ? `dist/chunk-${chunkIndex}-${fileIndex / 2}.js` : { invalid: true },
+        ),
+        id: chunkIndex,
+        initial: chunkIndex % 2 === 0,
+      };
+    });
+    const stats = createStats({ json: { assets, chunks } });
+
+    await hooks.beforeBuild?.({ environments: { web: environment } });
+    await invokeAfter(hooks, {
+      environment,
+      isFirstCompile: true,
+      isWatch: false,
+      stats,
+      time: 1,
+    });
+
+    const build = (await readContextWorkspaceStatus(workspaceRoot)).runs[0]!.contexts[0]!
+      .latestSnapshot!.facets.build as BuildMetadataFacet;
+    expect(build.assets).toEqual(
+      Array.from({ length: 100 }, (_, index) => ({
+        name: `dist/asset-${index}.js`,
+        size: index,
+      })),
+    );
+    expect(build.chunks).toEqual(
+      Array.from({ length: 100 }, (_, chunkIndex) => ({
+        id: String(chunkIndex),
+        files: Array.from(
+          { length: 20 },
+          (_, fileIndex) => `dist/chunk-${chunkIndex}-${fileIndex}.js`,
+        ),
+        initial: chunkIndex % 2 === 0,
+      })),
+    );
+    expect(build.truncated).toEqual({ assets: 3, chunks: 3 });
+    expect(stats.calls).toEqual([
+      {
+        all: false,
+        hash: true,
+        assets: true,
+        chunks: true,
+        errors: false,
+        warnings: false,
+      },
+    ]);
+  });
+});
+
 test('keeps capture failures out of build hooks and warns once per observer', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     const plugin = createBuildContextPlugin({
@@ -435,7 +508,10 @@ test('treats a resolved manifest-store failure as a fail-soft capture failure', 
       producer: 'rsbuild',
       product: 'application',
       capture: 'metadata',
-      workspace: { workspaceRoot, packageRoot: path.join(workspaceRoot, 'app') },
+      workspace: {
+        workspaceRoot,
+        packageRoot: path.join(workspaceRoot, 'app'),
+      },
       params: { command: 'build', env: 'production' },
       createRunId: () => 'run/invalid',
     });
@@ -445,7 +521,9 @@ test('treats a resolved manifest-store failure as a fail-soft capture failure', 
     await expect(harness.hooks.beforeBuild?.({ environments })).resolves.toBeUndefined();
     await expect(harness.hooks.beforeDevCompile?.({ environments })).resolves.toBeUndefined();
     expect(harness.warnings).toEqual(['Failed to capture Rstack build context.']);
-    expect(await readContextWorkspaceStatus(workspaceRoot)).toMatchObject({ runs: [] });
+    expect(await readContextWorkspaceStatus(workspaceRoot)).toMatchObject({
+      runs: [],
+    });
   });
 });
 
@@ -455,7 +533,10 @@ test('treats a resolved snapshot-store failure as a fail-soft capture failure', 
       producer: 'rsbuild',
       product: 'application',
       capture: 'metadata',
-      workspace: { workspaceRoot, packageRoot: path.join(workspaceRoot, 'app') },
+      workspace: {
+        workspaceRoot,
+        packageRoot: path.join(workspaceRoot, 'app'),
+      },
       params: { command: 'build', env: 'production' },
       createRunId: () => 'run_snapshot_failure',
     });
@@ -471,7 +552,10 @@ test('treats a resolved snapshot-store failure as a fail-soft capture failure', 
         isWatch: false,
         stats: createStats({
           json: {
-            assets: Array.from({ length: 100 }, () => ({ name: longAssetName, size: 1 })),
+            assets: Array.from({ length: 100 }, () => ({
+              name: longAssetName,
+              size: 1,
+            })),
           },
         }),
         time: 1,
@@ -490,7 +574,10 @@ test('serializes Stats before awaiting manifest publication', async () => {
       producer: 'rsbuild',
       product: 'application',
       capture: 'metadata',
-      workspace: { workspaceRoot, packageRoot: path.join(workspaceRoot, 'app') },
+      workspace: {
+        workspaceRoot,
+        packageRoot: path.join(workspaceRoot, 'app'),
+      },
       params: { command: 'build', env: 'production' },
       createRunId: () => 'run_synchronous_stats',
     });
@@ -520,7 +607,10 @@ test('normalizes metadata paths and excludes checkout-escaping paths', async () 
       producer: 'rsbuild',
       product: 'application',
       capture: 'metadata',
-      workspace: { workspaceRoot, packageRoot: path.join(workspaceRoot, 'app') },
+      workspace: {
+        workspaceRoot,
+        packageRoot: path.join(workspaceRoot, 'app'),
+      },
       params: { command: 'build', env: 'production' },
       createRunId: () => 'run_metadata_paths',
     });

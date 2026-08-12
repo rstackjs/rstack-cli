@@ -67,6 +67,23 @@ test('uses the checkout root when a nested package has no workspace manifest', a
   });
 });
 
+test('stops workspace discovery at the nearest checkout root', async () => {
+  await withTempDirectory(async (ancestorWorkspaceRoot) => {
+    const checkoutRoot = path.join(ancestorWorkspaceRoot, 'checkouts', 'project');
+    const packageRoot = path.join(checkoutRoot, 'packages', 'library');
+    await mkdir(path.join(checkoutRoot, '.git'), { recursive: true });
+    await mkdir(packageRoot, { recursive: true });
+    await writeFile(path.join(ancestorWorkspaceRoot, 'pnpm-workspace.yaml'), 'packages: []\n');
+    await writeFile(path.join(packageRoot, 'package.json'), JSON.stringify({ name: 'library' }));
+
+    await expect(resolveContextWorkspace(packageRoot)).resolves.toEqual({
+      workspaceRoot: checkoutRoot,
+      packageRoot,
+      packageName: 'library',
+    });
+  });
+});
+
 test('uses the start directory when no workspace markers exist', async () => {
   await withTempDirectory(async (rootPath) => {
     const sourceDirectory = path.join(rootPath, 'nested');
