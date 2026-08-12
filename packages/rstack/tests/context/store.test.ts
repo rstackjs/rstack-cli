@@ -213,7 +213,7 @@ test('uses the same snapshot validation when writing and reading', async () => {
   });
 });
 
-test('rejects snapshot records stored under a noncanonical generation name', async () => {
+test('rejects snapshot records stored under a non-canonical generation name', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await writeContextRunManifest(workspaceRoot, run);
     const generationRoot = path.join(
