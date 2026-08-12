@@ -1,5 +1,4 @@
 const contextStoreSchemaVersion = 1 as const;
-const contextStoreMaxRecordBytes: number = 1024 * 1024;
 
 type JsonPrimitive = boolean | null | number | string;
 type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
@@ -65,7 +64,7 @@ type ContextStoreWriteResult =
   { written: true; path: string } | { written: false; path: string; error: unknown };
 
 type ContextStoreIssue = {
-  code: 'invalid-record' | 'oversized-record' | 'unsupported-schema';
+  code: 'invalid-record' | 'unsupported-schema';
   path: string;
 };
 
@@ -100,7 +99,7 @@ type ProjectStatus = {
   issues: ContextStoreIssue[];
 };
 
-export { contextStoreMaxRecordBytes, contextStoreSchemaVersion };
+export { contextStoreSchemaVersion };
 export type {
   BuildMetadataFacet,
   ContextCompleteness,

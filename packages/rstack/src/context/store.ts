@@ -1,102 +1,25 @@
 import { randomUUID } from 'node:crypto';
-import { link, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { link, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { ensureProjectCacheDir, getProjectCacheDir } from '../projectCache.ts';
 import {
-  contextStoreMaxRecordBytes,
   contextStoreSchemaVersion,
-  type ContextCompleteness,
   type ContextDescriptor,
-  type ContextProducer,
   type ContextRunManifest,
-  type ContextRunStatus,
   type ContextSnapshot,
   type ContextStoreIssue,
   type ContextStoreWriteResult,
   type ContextWorkspaceStatus,
 } from './model.ts';
+import {
+  getContextSnapshotGenerationFileName,
+  isContextSnapshotGenerationFileName,
+  isRecordObject,
+  validateRunManifest,
+  validateSnapshot,
+} from './records.ts';
 
 const contextStoreDirectoryName = 'context-v1';
-const safeIdentifierPattern = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$/u;
-const producers = new Set<ContextProducer>([
-  'rsbuild',
-  'rspack',
-  'rslib',
-  'rstest',
-  'rslint',
-  'rsdoctor',
-]);
-const statuses = new Set<ContextRunStatus>([
-  'queued',
-  'running',
-  'pass',
-  'fail',
-  'cancelled',
-  'error',
-]);
-const completenessValues = new Set<ContextCompleteness>([
-  'complete',
-  'partial',
-  'disabled',
-  'unsupported',
-]);
-
-const isObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const isSafeIdentifier = (value: unknown): value is string =>
-  typeof value === 'string' && safeIdentifierPattern.test(value);
-
-const isRelativeRecordPath = (value: unknown): value is string => {
-  if (typeof value !== 'string' || value.length === 0 || value.includes('\\')) {
-    return false;
-  }
-  return (
-    value === '.' ||
-    (!path.posix.isAbsolute(value) &&
-      !value.split('/').includes('..') &&
-      path.posix.normalize(value) === value)
-  );
-};
-
-const isContextDescriptor = (value: unknown): value is ContextDescriptor =>
-  isObject(value) &&
-  isSafeIdentifier(value.contextId) &&
-  isRelativeRecordPath(value.packageRoot) &&
-  typeof value.product === 'string' &&
-  value.product.length > 0 &&
-  (value.packageName === undefined || typeof value.packageName === 'string') &&
-  (value.configPath === undefined || isRelativeRecordPath(value.configPath)) &&
-  (value.environment === undefined || typeof value.environment === 'string') &&
-  (value.target === undefined || typeof value.target === 'string') &&
-  (value.mode === undefined || typeof value.mode === 'string');
-
-const isContextRunManifest = (value: unknown): value is ContextRunManifest =>
-  isObject(value) &&
-  value.schemaVersion === contextStoreSchemaVersion &&
-  isSafeIdentifier(value.runId) &&
-  producers.has(value.producer as ContextProducer) &&
-  typeof value.command === 'string' &&
-  typeof value.startedAt === 'string' &&
-  Array.isArray(value.contexts) &&
-  value.contexts.length > 0 &&
-  value.contexts.every(isContextDescriptor);
-
-const isCompleteness = (value: unknown): value is Record<string, ContextCompleteness> =>
-  isObject(value) && Object.values(value).every((entry) => completenessValues.has(entry as never));
-
-const isContextSnapshot = (value: unknown): value is ContextSnapshot =>
-  isObject(value) &&
-  value.schemaVersion === contextStoreSchemaVersion &&
-  isSafeIdentifier(value.snapshotId) &&
-  isSafeIdentifier(value.runId) &&
-  isSafeIdentifier(value.contextId) &&
-  Number.isSafeInteger(value.sequence) &&
-  (value.sequence as number) >= 0 &&
-  typeof value.observedAt === 'string' &&
-  statuses.has(value.status as ContextRunStatus) &&
-  isCompleteness(value.completeness) &&
-  isObject(value.facets);
 
 const getContextStoreRoot = (workspaceRoot: string): string =>
   path.join(getProjectCacheDir(workspaceRoot), contextStoreDirectoryName);
@@ -113,16 +36,10 @@ const getSnapshotPath = (storeRoot: string, snapshot: ContextSnapshot): string =
     'contexts',
     snapshot.contextId,
     'generations',
-    `${snapshot.sequence.toString().padStart(10, '0')}-${snapshot.snapshotId}.json`,
+    getContextSnapshotGenerationFileName(snapshot),
   );
 
-const serializeRecord = (record: unknown): string => {
-  const content = `${JSON.stringify(record)}\n`;
-  if (Buffer.byteLength(content) > contextStoreMaxRecordBytes) {
-    throw new Error(`Context record exceeds ${contextStoreMaxRecordBytes} bytes.`);
-  }
-  return content;
-};
+const serializeRecord = (record: unknown): string => `${JSON.stringify(record)}\n`;
 
 const publishImmutableRecord = async (
   filePath: string,
@@ -155,7 +72,7 @@ const writeContextRunManifest = async (
   workspaceRoot: string,
   run: ContextRunManifest,
 ): Promise<ContextStoreWriteResult> => {
-  if (!isContextRunManifest(run)) {
+  if (validateRunManifest(run) === undefined) {
     return unavailableWrite(workspaceRoot, new Error('Invalid context run manifest.'));
   }
 
@@ -177,7 +94,7 @@ const writeContextSnapshot = async (
   workspaceRoot: string,
   snapshot: ContextSnapshot,
 ): Promise<ContextStoreWriteResult> => {
-  if (!isContextSnapshot(snapshot)) {
+  if (validateSnapshot(snapshot) === undefined) {
     return unavailableWrite(workspaceRoot, new Error('Invalid context snapshot.'));
   }
 
@@ -202,9 +119,6 @@ type ReadRecordResult =
 
 const readRecord = async (filePath: string, relativePath: string): Promise<ReadRecordResult> => {
   try {
-    if ((await stat(filePath)).size > contextStoreMaxRecordBytes) {
-      return { status: 'issue', issue: { code: 'oversized-record', path: relativePath } };
-    }
     return { status: 'value', value: JSON.parse(await readFile(filePath, 'utf8')) as unknown };
   } catch (error) {
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
@@ -244,12 +158,11 @@ const readLatestSnapshot = async (
   try {
     fileNames = (await readdir(generationRoot))
       .filter((fileName) => fileName.endsWith('.json'))
-      .sort();
+      .sort((left, right) => right.localeCompare(left));
   } catch {
     return undefined;
   }
 
-  let latestSnapshot: ContextSnapshot | undefined;
   for (const fileName of fileNames) {
     const relativePath = path.posix.join(relativeGenerationRoot, fileName);
     const record = await readRecord(path.join(generationRoot, fileName), relativePath);
@@ -257,27 +170,21 @@ const readLatestSnapshot = async (
       issues.push(record.issue);
       continue;
     }
+    const snapshot = record.status === 'value' ? validateSnapshot(record.value) : undefined;
     if (
-      record.status !== 'value' ||
-      !isContextSnapshot(record.value) ||
-      record.value.runId !== run.runId ||
-      record.value.contextId !== context.contextId
+      snapshot === undefined ||
+      snapshot.runId !== run.runId ||
+      snapshot.contextId !== context.contextId ||
+      !isContextSnapshotGenerationFileName(fileName, snapshot)
     ) {
       if (record.status === 'value') {
         issues.push({ code: 'invalid-record', path: relativePath });
       }
       continue;
     }
-    if (
-      latestSnapshot === undefined ||
-      record.value.sequence > latestSnapshot.sequence ||
-      (record.value.sequence === latestSnapshot.sequence &&
-        record.value.snapshotId > latestSnapshot.snapshotId)
-    ) {
-      latestSnapshot = record.value;
-    }
+    return snapshot;
   }
-  return latestSnapshot;
+  return undefined;
 };
 
 const readContextWorkspaceStatus = async (
@@ -297,19 +204,19 @@ const readContextWorkspaceStatus = async (
     if (record.status === 'missing') {
       continue;
     }
-    if (!isObject(record.value) || record.value.schemaVersion !== contextStoreSchemaVersion) {
+    if (!isRecordObject(record.value) || record.value.schemaVersion !== contextStoreSchemaVersion) {
       issues.push({
-        code: isObject(record.value) ? 'unsupported-schema' : 'invalid-record',
+        code: isRecordObject(record.value) ? 'unsupported-schema' : 'invalid-record',
         path: relativePath,
       });
       continue;
     }
-    if (!isContextRunManifest(record.value) || record.value.runId !== runId) {
+    const run = validateRunManifest(record.value);
+    if (run === undefined || run.runId !== runId) {
       issues.push({ code: 'invalid-record', path: relativePath });
       continue;
     }
 
-    const run = record.value;
     runs.push({
       run,
       contexts: await Promise.all(

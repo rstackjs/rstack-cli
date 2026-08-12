@@ -3,7 +3,6 @@ import os from 'node:os';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import {
-  contextStoreMaxRecordBytes,
   contextStoreSchemaVersion,
   readContextWorkspaceStatus,
   writeContextRunManifest,
@@ -64,7 +63,9 @@ const withTempWorkspace = async (
 
 test('publishes immutable run snapshots and reads the latest context state', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
-    expect(await writeContextRunManifest(workspaceRoot, run)).toMatchObject({ written: true });
+    expect(await writeContextRunManifest(workspaceRoot, run)).toMatchObject({
+      written: true,
+    });
     expect(await writeContextSnapshot(workspaceRoot, firstSnapshot)).toMatchObject({
       written: true,
     });
@@ -148,22 +149,38 @@ test('reports malformed completed records and ignores temporary files', async ()
   });
 });
 
-test('rejects records larger than the store limit', async () => {
+test('uses the same manifest validation when writing and reading', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
-    await writeContextRunManifest(workspaceRoot, run);
+    const invalidRun = {
+      ...run,
+      contexts: [context, { ...context, packageRoot: 'packages/other' }],
+    };
     expect(
-      await writeContextSnapshot(workspaceRoot, {
-        ...firstSnapshot,
-        snapshotId: 'snap_oversized',
-        facets: { payload: 'x'.repeat(contextStoreMaxRecordBytes) },
-      }),
+      await writeContextRunManifest(workspaceRoot, invalidRun as ContextRunManifest),
     ).toMatchObject({ written: false });
+
+    const runRoot = path.join(workspaceRoot, '.rstack', 'cache', 'context-v1', 'runs', run.runId);
+    await mkdir(runRoot, { recursive: true });
+    await writeFile(path.join(runRoot, 'run.json'), JSON.stringify(invalidRun));
+
+    const status = await readContextWorkspaceStatus(workspaceRoot);
+    expect(status.issues).toEqual([
+      {
+        code: 'invalid-record',
+        path: path.posix.join('runs', run.runId, 'run.json'),
+      },
+    ]);
   });
 });
 
-test('reports oversized records without parsing them', async () => {
+test('uses the same snapshot validation when writing and reading', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await writeContextRunManifest(workspaceRoot, run);
+    const invalidSnapshot = { ...firstSnapshot, status: 'unknown' };
+    expect(
+      await writeContextSnapshot(workspaceRoot, invalidSnapshot as ContextSnapshot),
+    ).toMatchObject({ written: false });
+
     const generationRoot = path.join(
       workspaceRoot,
       '.rstack',
@@ -175,21 +192,14 @@ test('reports oversized records without parsing them', async () => {
       context.contextId,
       'generations',
     );
-    const fileName = '0000000001-snap_oversized.json';
+    const fileName = '0000000001-snap_library_1.json';
     await mkdir(generationRoot, { recursive: true });
-    await writeFile(
-      path.join(generationRoot, fileName),
-      JSON.stringify({
-        ...firstSnapshot,
-        snapshotId: 'snap_oversized',
-        facets: { payload: 'x'.repeat(contextStoreMaxRecordBytes) },
-      }),
-    );
+    await writeFile(path.join(generationRoot, fileName), JSON.stringify(invalidSnapshot));
 
     const status = await readContextWorkspaceStatus(workspaceRoot);
     expect(status.issues).toEqual([
       {
-        code: 'oversized-record',
+        code: 'invalid-record',
         path: path.posix.join(
           'runs',
           run.runId,
@@ -203,24 +213,90 @@ test('reports oversized records without parsing them', async () => {
   });
 });
 
-test('rejects unsafe identifiers and escaping record paths', async () => {
+test('rejects snapshot records stored under a noncanonical generation name', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
-    expect(
-      await writeContextRunManifest(workspaceRoot, {
-        ...run,
-        runId: '../outside',
-      }),
-    ).toMatchObject({ written: false });
-    expect(
-      await writeContextRunManifest(workspaceRoot, {
-        ...run,
-        contexts: [{ ...context, packageRoot: '../outside' }],
-      }),
-    ).toMatchObject({ written: false });
-    await expect(readContextWorkspaceStatus(workspaceRoot)).resolves.toEqual({
-      schemaVersion: contextStoreSchemaVersion,
-      runs: [],
-      issues: [],
+    await writeContextRunManifest(workspaceRoot, run);
+    const generationRoot = path.join(
+      workspaceRoot,
+      '.rstack',
+      'cache',
+      'context-v1',
+      'runs',
+      run.runId,
+      'contexts',
+      context.contextId,
+      'generations',
+    );
+    const fileName = '0000000009-snap_library_1.json';
+    await mkdir(generationRoot, { recursive: true });
+    await writeFile(path.join(generationRoot, fileName), JSON.stringify(firstSnapshot));
+
+    const status = await readContextWorkspaceStatus(workspaceRoot);
+    expect(status.issues).toEqual([
+      {
+        code: 'invalid-record',
+        path: path.posix.join(
+          'runs',
+          run.runId,
+          'contexts',
+          context.contextId,
+          'generations',
+          fileName,
+        ),
+      },
+    ]);
+    expect(status.runs[0]?.contexts[0]?.latestSnapshot).toBeUndefined();
+  });
+});
+
+test('stops reading generations after the newest valid snapshot', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await writeContextRunManifest(workspaceRoot, run);
+    const latestSnapshot = {
+      ...secondSnapshot,
+      snapshotId: 'snap_library_4',
+      sequence: 4,
+    } satisfies ContextSnapshot;
+    await writeContextSnapshot(workspaceRoot, {
+      ...secondSnapshot,
+      snapshotId: 'snap_library_2',
+      sequence: 2,
     });
+    await writeContextSnapshot(workspaceRoot, {
+      ...secondSnapshot,
+      snapshotId: 'snap_library_3',
+      sequence: 3,
+    });
+    await writeContextSnapshot(workspaceRoot, latestSnapshot);
+
+    const generationRoot = path.join(
+      workspaceRoot,
+      '.rstack',
+      'cache',
+      'context-v1',
+      'runs',
+      run.runId,
+      'contexts',
+      context.contextId,
+      'generations',
+    );
+    await writeFile(path.join(generationRoot, '0000000001-broken.json'), '{broken');
+    await writeFile(path.join(generationRoot, '0000000005-broken.json'), '{broken');
+
+    const status = await readContextWorkspaceStatus(workspaceRoot);
+    expect(status.issues).toEqual([
+      {
+        code: 'invalid-record',
+        path: path.posix.join(
+          'runs',
+          run.runId,
+          'contexts',
+          context.contextId,
+          'generations',
+          '0000000005-broken.json',
+        ),
+      },
+    ]);
+    expect(status.runs[0]?.contexts[0]?.latestSnapshot).toEqual(latestSnapshot);
   });
 });

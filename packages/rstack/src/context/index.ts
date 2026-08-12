@@ -1,5 +1,4 @@
 export {
-  contextStoreMaxRecordBytes,
   contextStoreSchemaVersion,
   type BuildMetadataFacet,
   type ContextCompleteness,
