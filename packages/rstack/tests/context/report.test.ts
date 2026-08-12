@@ -1,15 +1,12 @@
-import { exec as execCallback } from 'node:child_process';
-import { mkdtemp, mkdir, realpath, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { promisify } from 'node:util';
 import { expect, test } from 'rstack/test';
 import { resolveRsdoctorReport } from '../../src/context/report.ts';
 import { resolveRsdoctorArtifact } from '../../src/context/rsdoctor.ts';
 
 const validDataFile = 'artifacts/rsdoctor-data.json';
-const exec = promisify(execCallback);
 
 const withTempWorkspace = async (
   callback: (workspaceRoot: string) => Promise<void>,
@@ -18,19 +15,6 @@ const withTempWorkspace = async (
 
   try {
     await callback(workspaceRoot);
-  } finally {
-    await rm(workspaceRoot, { force: true, recursive: true });
-  }
-};
-
-const withCheckoutWorkspace = async (
-  callback: (checkoutRoot: string, workspaceRoot: string) => Promise<void>,
-): Promise<void> => {
-  const checkoutRoot = await realpath(path.resolve(process.cwd(), '../..'));
-  const workspaceRoot = await mkdtemp(path.join(checkoutRoot, ".rstack-rsdoctor-report-' space-"));
-
-  try {
-    await callback(checkoutRoot, workspaceRoot);
   } finally {
     await rm(workspaceRoot, { force: true, recursive: true });
   }
@@ -118,50 +102,54 @@ test('returns a safe no-report response for ambiguous sibling HTML reports', asy
     await writeWorkspaceFile(workspaceRoot, 'artifacts/second.html', '<html></html>');
 
     await expect(resolveRsdoctorReport(workspaceRoot, validDataFile)).resolves.toEqual({
-      nextCommand: `pnpm --filter rstack exec rsdoctor-agent query build_summary --data-file '../../${validDataFile}'`,
       dataFile: validDataFile,
+      nextAction: {
+        arguments: { dataFile: validDataFile, input: {}, toolName: 'build_summary' },
+        tool: 'rsdoctor_analyze',
+      },
       reason: 'Multiple sibling HTML reports were found; select one explicitly.',
     });
   });
 });
 
-test('returns a safe no-report response when no report artifact exists', async () => {
+test('returns a portable next action for a standalone workspace without a GUI report', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await writeDataFile(workspaceRoot);
 
-    await expect(resolveRsdoctorReport(workspaceRoot, validDataFile)).resolves.toEqual({
-      nextCommand: `pnpm --filter rstack exec rsdoctor-agent query build_summary --data-file '../../${validDataFile}'`,
+    const result = await resolveRsdoctorReport(workspaceRoot, validDataFile);
+
+    expect(result).toEqual({
       dataFile: validDataFile,
+      nextAction: {
+        arguments: { dataFile: validDataFile, input: {}, toolName: 'build_summary' },
+        tool: 'rsdoctor_analyze',
+      },
       reason:
-        'No contained Rsdoctor HTML or manifest report artifact was found. The command inspects data and does not generate a report.',
+        'No GUI report was found; a GUI report is optional. Use rsdoctor_analyze for static inspection.',
     });
+    expect(JSON.stringify(result)).not.toContain('pnpm');
+    expect(JSON.stringify(result)).not.toContain('packages/rstack');
   });
 });
 
-test('returns a checkout-executable static inspection command for an apostrophe-and-space path', async () => {
-  await withCheckoutWorkspace(async (checkoutRoot, workspaceRoot) => {
-    await writeDataFile(workspaceRoot);
-    const dataFile = path
-      .relative(checkoutRoot, path.join(workspaceRoot, validDataFile))
-      .split(path.sep)
-      .join('/');
+test('returns the same portable next action for a monorepo-like artifact path', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const dataFile = 'packages/consumer-app/artifacts/rsdoctor-data.json';
+    await writeWorkspaceFile(workspaceRoot, dataFile, '{"data":{}}');
 
-    const result = await resolveRsdoctorReport(checkoutRoot, dataFile);
+    const result = await resolveRsdoctorReport(workspaceRoot, dataFile);
 
-    if (!('nextCommand' in result)) {
-      throw new Error('Expected a static Rsdoctor inspection command.');
-    }
-
-    expect(result.dataFile).toBe(dataFile);
-    expect(result.nextCommand).toMatch(
-      /^pnpm --filter rstack exec rsdoctor-agent query build_summary --data-file '/u,
-    );
-    expect(result.nextCommand).toContain("\\'");
-    expect(result.nextCommand).not.toContain(checkoutRoot);
-
-    const { stdout } = await exec(result.nextCommand, { cwd: checkoutRoot });
-
-    expect(JSON.parse(stdout)).toMatchObject({ ok: true });
+    expect(result).toEqual({
+      dataFile,
+      nextAction: {
+        arguments: { dataFile, input: {}, toolName: 'build_summary' },
+        tool: 'rsdoctor_analyze',
+      },
+      reason:
+        'No GUI report was found; a GUI report is optional. Use rsdoctor_analyze for static inspection.',
+    });
+    expect(JSON.stringify(result)).not.toContain('pnpm');
+    expect(JSON.stringify(result)).not.toContain('packages/rstack');
   });
 });
 

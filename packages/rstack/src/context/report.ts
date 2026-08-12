@@ -8,23 +8,30 @@ type RsdoctorReport = {
   uri: string;
 };
 
+type RsdoctorAnalyzeNextAction = {
+  arguments: {
+    dataFile: string;
+    input: Record<string, never>;
+    toolName: 'build_summary';
+  };
+  tool: 'rsdoctor_analyze';
+};
+
 type RsdoctorReportResult =
   | {
       dataFile: string;
       report: RsdoctorReport;
     }
   | {
-      nextCommand: string;
       dataFile: string;
+      nextAction: RsdoctorAnalyzeNextAction;
       reason: string;
     };
 
-const quotePosixArgument = (argument: string): string => `'${argument.replaceAll("'", "'\\''")}'`;
-
-const rstackPackagePath = 'packages/rstack';
-
-const inspectCommand = (dataFile: string): string =>
-  `pnpm --filter rstack exec rsdoctor-agent query build_summary --data-file ${quotePosixArgument(path.posix.relative(rstackPackagePath, dataFile))}`;
+const createRsdoctorAnalyzeNextAction = (dataFile: string): RsdoctorAnalyzeNextAction => ({
+  arguments: { dataFile, input: {}, toolName: 'build_summary' },
+  tool: 'rsdoctor_analyze',
+});
 
 const getSiblingHtmlReports = async (directory: string): Promise<string[]> => {
   try {
@@ -78,7 +85,7 @@ const resolveRsdoctorReport = async (
 
   if (htmlReports.length > 1) {
     return {
-      nextCommand: inspectCommand(artifact.dataFile),
+      nextAction: createRsdoctorAnalyzeNextAction(artifact.dataFile),
       dataFile: artifact.dataFile,
       reason: 'Multiple sibling HTML reports were found; select one explicitly.',
     };
@@ -96,10 +103,10 @@ const resolveRsdoctorReport = async (
   }
 
   return {
-    nextCommand: inspectCommand(artifact.dataFile),
+    nextAction: createRsdoctorAnalyzeNextAction(artifact.dataFile),
     dataFile: artifact.dataFile,
     reason:
-      'No contained Rsdoctor HTML or manifest report artifact was found. The command inspects data and does not generate a report.',
+      'No GUI report was found; a GUI report is optional. Use rsdoctor_analyze for static inspection.',
   };
 };
 

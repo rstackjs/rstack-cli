@@ -119,7 +119,7 @@ missing report, symlink escape, and absolute-path redaction.
 
 Reuse the artifact boundary helper rather than duplicating containment logic. Return a relative POSIX
 path and a `file:` URI only for an existing contained report. Otherwise return a concise reason and
-the explicit safe CLI command for generating or opening a report; never start a server.
+the explicit structured `rsdoctor_analyze` next action; never start a server.
 
 - [ ] **Step 3: write MCP protocol tests and verify RED**
 

@@ -169,6 +169,41 @@ test('returns a contained report resource link only for an existing report', asy
   });
 });
 
+test('returns a portable Rsdoctor analysis next action when no GUI report exists', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await writeRsdoctorArtifact(workspaceRoot);
+
+    await withMcpClient(workspaceRoot, async (client) => {
+      const result = await client.callTool({
+        name: 'report_link',
+        arguments: { dataFile: 'artifacts/rsdoctor-data.json' },
+      });
+
+      expect(result.structuredContent).toEqual({
+        dataFile: 'artifacts/rsdoctor-data.json',
+        nextAction: {
+          arguments: {
+            dataFile: 'artifacts/rsdoctor-data.json',
+            input: {},
+            toolName: 'build_summary',
+          },
+          tool: 'rsdoctor_analyze',
+        },
+        reason:
+          'No GUI report was found; a GUI report is optional. Use rsdoctor_analyze for static inspection.',
+      });
+      expect(result.content).toEqual([
+        {
+          type: 'text',
+          text: 'No GUI report was found; a GUI report is optional. Use rsdoctor_analyze for static inspection.',
+        },
+      ]);
+      expect(JSON.stringify(result)).not.toContain(workspaceRoot);
+      expect(JSON.stringify(result)).not.toContain('pnpm');
+    });
+  });
+});
+
 test('returns redacted MCP errors for invalid Rsdoctor tool names and paths', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await writeRsdoctorArtifact(workspaceRoot);
