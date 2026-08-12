@@ -75,6 +75,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "catalog:",
     "@rsbuild/core": "catalog:",
+    "@rsdoctor/agent-cli": "catalog:",
     "@rslib/core": "catalog:",
     "@rslint/core": "catalog:",
     "@rstest/core": "catalog:",

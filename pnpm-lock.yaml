@@ -22,6 +22,9 @@ catalogs:
     '@rsbuild/plugin-sass':
       specifier: ^2.0.1
       version: 2.0.1
+    '@rsdoctor/agent-cli':
+      specifier: 0.1.1
+      version: 0.1.1
     '@rslib/core':
       specifier: ~1.0.0-beta.2
       version: 1.0.0-beta.2
@@ -355,6 +358,9 @@ importers:
       '@rsbuild/core':
         specifier: 'catalog:'
         version: 2.1.10
+      '@rsdoctor/agent-cli':
+        specifier: 'catalog:'
+        version: 0.1.1
       '@rslib/core':
         specifier: 'catalog:'
         version: 1.0.0-beta.2(typescript@7.0.2)
@@ -1265,6 +1271,10 @@ packages:
     peerDependenciesMeta:
       '@rsbuild/core':
         optional: true
+
+  '@rsdoctor/agent-cli@0.1.1':
+    resolution: {integrity: sha512-5bLoaIvvrlVcDRKGQFKXf5OiQkpcoHivVxqy+93ujxcATc6quWiJ3il9rLLzEV0mP0cF3IEsFpituVzHtBy6MA==}
+    hasBin: true
 
   '@rslib/core@1.0.0-beta.2':
     resolution: {integrity: sha512-A0j3MBP8Kga8Qrh7znO2UKf00Sga37PJCiTGUqVVBHb+u58fNoGXZtFAgeH6qKjf5eU1wYt4WptXX/1blOAfRw==}
@@ -4019,6 +4029,8 @@ snapshots:
       sass-embedded: 1.100.0
     optionalDependencies:
       '@rsbuild/core': 2.1.10
+
+  '@rsdoctor/agent-cli@0.1.1': {}
 
   '@rslib/core@1.0.0-beta.2(typescript@7.0.2)':
     dependencies:

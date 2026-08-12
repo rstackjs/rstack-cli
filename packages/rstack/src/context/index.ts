@@ -30,3 +30,10 @@ export {
 } from './build.ts';
 export { readProjectStatus } from './status.ts';
 export { resolveContextWorkspace, type ResolvedContextWorkspace } from './workspace.ts';
+export {
+  analyzeRsdoctorArtifact,
+  listRsdoctorTools,
+  type RsdoctorAnalysisRequest,
+  type RsdoctorAnalysisResult,
+  type RsdoctorToolDescriptor,
+} from './rsdoctor.ts';
