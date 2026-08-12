@@ -40,29 +40,6 @@ type McpConfiguration = {
   mcpServers: { rstack: { command: string; args: string[] } };
 };
 
-const mcpLauncher = [
-  "import { createRequire } from 'node:module';",
-  "import { dirname, join, resolve } from 'node:path';",
-  "import { pathToFileURL } from 'node:url';",
-  "const require = createRequire(join(process.cwd(), 'package.json'));",
-  "const packageJsonPath = require.resolve('rstack/package.json');",
-  'const { bin } = require(packageJsonPath);',
-  "const binPath = typeof bin === 'string' ? bin : (bin.rs ?? bin.rstack);",
-  "if (!binPath) throw new Error('The workspace-local rstack package does not declare an rs binary.');",
-  'const cliPath = resolve(dirname(packageJsonPath), binPath);',
-  "process.argv = [process.execPath, cliPath, 'mcp'];",
-  'await import(pathToFileURL(cliPath).href);',
-].join(' ');
-
-const expectedMcpConfiguration: McpConfiguration = {
-  mcpServers: {
-    rstack: {
-      command: 'node',
-      args: ['--input-type=module', '--eval', mcpLauncher],
-    },
-  },
-};
-
 const readJson = async <T>(relativePath: string): Promise<T> =>
   JSON.parse(await readFile(path.join(repositoryRoot, relativePath), 'utf8')) as T;
 
@@ -70,28 +47,43 @@ const runConfiguredMcpServer = async (
   configuration: McpConfiguration,
   cwd: string,
   recordPath: string,
-): Promise<void> => {
+  options: { pathEntries?: string[]; stdin?: string; exitCode?: number } = {},
+): Promise<{
+  code: number | null;
+  signal: NodeJS.Signals | null;
+  stdout: string;
+  stderr: string;
+}> => {
   const { command, args } = configuration.mcpServers.rstack;
 
-  await new Promise<void>((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd,
       env: {
         ...process.env,
-        PATH: path.dirname(process.execPath),
+        PATH: [...(options.pathEntries ?? []), path.dirname(process.execPath)].join(path.delimiter),
         RSTACK_LAUNCH_RECORD: recordPath,
+        RSTACK_LAUNCH_EXIT_CODE: String(options.exitCode ?? 0),
       },
-      stdio: 'ignore',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
+    child.stdout.on('data', (chunk: string) => {
+      stdout += chunk;
+    });
+    child.stderr.on('data', (chunk: string) => {
+      stderr += chunk;
     });
 
     child.once('error', reject);
-    child.once('exit', (code, signal) => {
-      if (code === 0) {
-        resolve();
-      } else {
-        reject(new Error(`MCP launcher exited with code ${code} and signal ${signal}`));
-      }
+    child.once('close', (code, signal) => {
+      resolve({ code, signal, stdout, stderr });
     });
+    child.stdin.end(options.stdin);
   });
 };
 
@@ -125,12 +117,21 @@ test('publishes host-valid plugin manifests and MCP launch configurations', asyn
     mcpServers: './.mcp.json',
   });
 
-  await expect(readJson('plugins/rstack-codex/.mcp.json')).resolves.toEqual(
-    expectedMcpConfiguration,
-  );
-  await expect(readJson('plugins/rstack-claude/.mcp.json')).resolves.toEqual(
-    expectedMcpConfiguration,
-  );
+  const [codexMcpSource, claudeMcpSource] = await Promise.all([
+    readFile(path.join(repositoryRoot, 'plugins/rstack-codex/.mcp.json'), 'utf8'),
+    readFile(path.join(repositoryRoot, 'plugins/rstack-claude/.mcp.json'), 'utf8'),
+  ]);
+  const codexMcpConfiguration = JSON.parse(codexMcpSource) as McpConfiguration;
+
+  expect(claudeMcpSource).toBe(codexMcpSource);
+  expect(codexMcpConfiguration).toEqual({
+    mcpServers: {
+      rstack: {
+        command: 'node',
+        args: ['--input-type=module', '--eval', expect.any(String)],
+      },
+    },
+  });
 
   await Promise.all(
     [
@@ -174,13 +175,72 @@ test('launches each MCP configuration through the workspace-local rstack package
       const recordPath = path.join(workspace, `${host}-launch.json`);
       const configuration = await readJson<McpConfiguration>(configurationPath);
 
-      await runConfiguredMcpServer(configuration, workspace, recordPath);
+      await expect(runConfiguredMcpServer(configuration, workspace, recordPath)).resolves.toEqual({
+        code: 0,
+        signal: null,
+        stdout: '',
+        stderr: '',
+      });
 
       await expect(
         readFile(recordPath, 'utf8').then(
           (contents) => JSON.parse(contents) as { args: string[]; cwd: string },
         ),
       ).resolves.toEqual({ args: ['mcp'], cwd: workspace });
+    }
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test('falls back to the PATH rs executable with inherited stdio and exit status', async () => {
+  const workspace = await mkdtemp(path.join(os.tmpdir(), 'rstack-plugin-path-launch-'));
+  const binPath = path.join(workspace, 'bin');
+
+  try {
+    await mkdir(binPath);
+    await writeFile(
+      path.join(binPath, 'rs'),
+      [
+        '#!/usr/bin/env node',
+        "const { writeFileSync } = require('node:fs');",
+        "let stdin = '';",
+        "process.stdin.setEncoding('utf8');",
+        "process.stdin.on('data', (chunk) => { stdin += chunk; });",
+        "process.stdin.on('end', () => {",
+        '  writeFileSync(process.env.RSTACK_LAUNCH_RECORD, JSON.stringify({ args: process.argv.slice(2), cwd: process.cwd(), stdin }));',
+        "  process.stdout.write('fallback stdout');",
+        "  process.stderr.write('fallback stderr');",
+        '  process.exitCode = Number(process.env.RSTACK_LAUNCH_EXIT_CODE);',
+        '});',
+      ].join('\n'),
+      { mode: 0o755 },
+    );
+
+    for (const [host, configurationPath] of [
+      ['codex', 'plugins/rstack-codex/.mcp.json'],
+      ['claude', 'plugins/rstack-claude/.mcp.json'],
+    ] as const) {
+      const recordPath = path.join(workspace, `${host}-path-launch.json`);
+      const configuration = await readJson<McpConfiguration>(configurationPath);
+
+      await expect(
+        runConfiguredMcpServer(configuration, workspace, recordPath, {
+          pathEntries: [binPath],
+          stdin: 'fallback stdin',
+          exitCode: 23,
+        }),
+      ).resolves.toEqual({
+        code: 23,
+        signal: null,
+        stdout: 'fallback stdout',
+        stderr: 'fallback stderr',
+      });
+      await expect(
+        readFile(recordPath, 'utf8').then(
+          (contents) => JSON.parse(contents) as { args: string[]; cwd: string; stdin: string },
+        ),
+      ).resolves.toEqual({ args: ['mcp'], cwd: workspace, stdin: 'fallback stdin' });
     }
   } finally {
     await rm(workspace, { recursive: true, force: true });

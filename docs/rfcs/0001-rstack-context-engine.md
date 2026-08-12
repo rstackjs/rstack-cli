@@ -345,23 +345,17 @@ flowchart LR
 
 ### Server lifecycle
 
-Both plugin bundles register one local stdio server named `rstack`:
-
-```json
-{
-  "mcpServers": {
-    "rstack": {
-      "command": "rs",
-      "args": ["mcp"]
-    }
-  }
-}
-```
+Both plugin bundles register one local stdio server named `rstack`. Their Node launcher first
+resolves the workspace-root local `rstack` package and invokes its `rs` binary directly. When that
+package is unavailable from the workspace root, the launcher falls back to `rs mcp` from the MCP
+host `PATH`, inheriting standard input, output, and error and propagating the delegated process
+result.
 
 The plugin runtime launches in the agent session current working directory. `rs mcp` immediately
 resolves the enclosing workspace root, so package identity comes from producer records rather than
-from the MCP launch directory. No daemon handshake, port allocation, live-process registry, or
-development-server connection is involved.
+from the MCP launch directory. The fallback also supports installations exposed through `PATH`,
+including package-scoped monorepo tooling. No daemon handshake, port allocation, live-process
+registry, or development-server connection is involved.
 
 The MCP server reads structured content and returns an MCP `resource_link` only for an existing
 Rsdoctor report. It does not currently register MCP resources, resource templates, prompts,
@@ -426,8 +420,9 @@ plugins/rstack-codex/
 ```
 
 The Codex manifest describes the plugin, points to the six skills, and references `.mcp.json`. The
-repository marketplace entry points at this local bundle. The bundle expects the project's `rs`
-executable on the MCP host `PATH`; it does not carry another copy of the context runtime.
+repository marketplace entry points at this local bundle. The bundle uses the workspace-root local
+`rstack` package when available and otherwise expects `rs` on the MCP host `PATH`; it does not carry
+another copy of the context runtime.
 
 ### Claude code bundle
 
