@@ -1,4 +1,14 @@
-import { lstat, mkdir, mkdtemp, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises';
+import {
+  lstat,
+  mkdir,
+  mkdtemp,
+  rename,
+  rm,
+  stat,
+  symlink,
+  utimes,
+  writeFile,
+} from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
@@ -12,6 +22,7 @@ import {
   type ContextRunManifest,
   type ContextSnapshot,
 } from '../../src/context/index.ts';
+import { setContextRetentionTestHooks } from '../../src/context/retention.ts';
 
 const now = new Date('2026-08-12T12:00:00.000Z');
 const oldAt = new Date('2026-07-01T12:00:00.000Z');
@@ -25,13 +36,19 @@ const runRoot = (workspaceRoot: string, runId: string): string =>
 const manifestPath = (workspaceRoot: string, runId: string): string =>
   path.join(runRoot(workspaceRoot, runId), 'run.json');
 
-const generationPath = (workspaceRoot: string, runId: string, contextId: string): string =>
+const generationPath = (
+  workspaceRoot: string,
+  runId: string,
+  contextId: string,
+  sequence = 1,
+  snapshotId = `snapshot_${runId}`,
+): string =>
   path.join(
     runRoot(workspaceRoot, runId),
     'contexts',
     contextId,
     'generations',
-    `0000000001-snapshot_${runId}.json`,
+    `${sequence.toString().padStart(10, '0')}-${snapshotId}.json`,
   );
 
 const withTempWorkspace = async (
@@ -50,8 +67,9 @@ const createCompletedRun = async (
   workspaceRoot: string,
   sequence: number,
   observedAt: Date = oldAt,
+  runIdOverride?: string,
 ): Promise<ContextRunManifest> => {
-  const runId = `run_${sequence.toString().padStart(2, '0')}`;
+  const runId = runIdOverride ?? `run_${sequence.toString().padStart(2, '0')}`;
   const context: ContextDescriptor = {
     contextId: `context_${runId}`,
     packageRoot: 'packages/example',
@@ -90,6 +108,34 @@ const createCompletedRun = async (
   return run;
 };
 
+const appendGeneration = async (
+  workspaceRoot: string,
+  run: ContextRunManifest,
+  sequence: number,
+  observedAt: Date,
+): Promise<void> => {
+  const context = run.contexts[0]!;
+  const snapshotId = `snapshot_${run.runId}_${sequence}`;
+  const snapshot: ContextSnapshot = {
+    schemaVersion: contextStoreSchemaVersion,
+    snapshotId,
+    runId: run.runId,
+    contextId: context.contextId,
+    sequence,
+    observedAt: observedAt.toISOString(),
+    status: 'pass',
+    completeness: { build: 'complete' },
+    facets: { summary: { errors: 0 } },
+  };
+
+  expect(await writeContextSnapshot(workspaceRoot, snapshot)).toMatchObject({ written: true });
+  await utimes(
+    generationPath(workspaceRoot, run.runId, context.contextId, sequence, snapshotId),
+    observedAt,
+    observedAt,
+  );
+};
+
 test('uses the default bounds deterministically and never selects the newest ten runs', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     for (let sequence = 1; sequence <= 41; sequence += 1) {
@@ -113,10 +159,44 @@ test('uses the default bounds deterministically and never selects the newest ten
         {
           manifestDigest: expect.stringMatching(/^[a-f0-9]{64}$/u),
           runPath: 'runs/run_01',
+          stateDigest: expect.stringMatching(/^[a-f0-9]{64}$/u),
         },
       ],
     });
     expect(JSON.stringify(secondPlan)).toBe(JSON.stringify(firstPlan));
+  });
+});
+
+test('uses a code-unit tie-breaker for equal-mtime run paths', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const runIds = [
+      'run-9',
+      'run-A',
+      'run-B',
+      'run-C',
+      'run-Z',
+      'run-a',
+      'run-b',
+      'run-z',
+      'run.8',
+      'run.9',
+      'run_8',
+      'run_9',
+    ];
+    await Promise.all(
+      runIds.map((runId, sequence) =>
+        createCompletedRun(workspaceRoot, sequence + 1, oldAt, runId),
+      ),
+    );
+
+    const plan = await planContextRetention(workspaceRoot, {
+      maxAgeMs: 14 * 24 * 60 * 60 * 1000,
+      maxBytes: 256 * 1024 * 1024,
+      maxRuns: 10,
+      now,
+    });
+
+    expect(plan.runs.map((run) => run.runPath)).toEqual(['runs/run-A', 'runs/run-9']);
   });
 });
 
@@ -245,6 +325,145 @@ test('deletes only exact selected run directories and leaves store roots intact'
     await expect(stat(runRoot(workspaceRoot, 'run_12'))).resolves.toMatchObject({
       isDirectory: expect.any(Function),
     });
+  });
+});
+
+test('skips a planned run when a valid current generation is appended after planning', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const runs = await Promise.all(
+      Array.from({ length: 11 }, async (_, index) =>
+        createCompletedRun(workspaceRoot, index + 1, new Date(oldAt.getTime() + index * 1000)),
+      ),
+    );
+    const plan = await planContextRetention(workspaceRoot, {
+      maxAgeMs: 14 * 24 * 60 * 60 * 1000,
+      maxBytes: 256 * 1024 * 1024,
+      maxRuns: 10,
+      now,
+    });
+    await appendGeneration(workspaceRoot, runs[0]!, 2, now);
+
+    await expect(applyContextRetention(workspaceRoot, plan)).resolves.toEqual({
+      deleted: [],
+      skipped: ['runs/run_01'],
+    });
+    await expect(stat(runRoot(workspaceRoot, 'run_01'))).resolves.toMatchObject({
+      isDirectory: expect.any(Function),
+    });
+  });
+});
+
+test('skips a direct run swapped after final validation without deleting its replacement', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    for (let sequence = 1; sequence <= 11; sequence += 1) {
+      await createCompletedRun(
+        workspaceRoot,
+        sequence,
+        new Date(oldAt.getTime() + sequence * 1000),
+      );
+    }
+    const plan = await planContextRetention(workspaceRoot, {
+      maxAgeMs: 14 * 24 * 60 * 60 * 1000,
+      maxBytes: 256 * 1024 * 1024,
+      maxRuns: 10,
+      now,
+    });
+    const selectedPath = runRoot(workspaceRoot, 'run_01');
+    const movedPath = path.join(workspaceRoot, 'moved-run');
+
+    setContextRetentionTestHooks({
+      beforeQuarantineRename: async () => {
+        await rename(selectedPath, movedPath);
+        await mkdir(selectedPath);
+        await writeFile(path.join(selectedPath, 'replacement.txt'), 'preserve');
+      },
+    });
+    try {
+      await expect(applyContextRetention(workspaceRoot, plan)).resolves.toEqual({
+        deleted: [],
+        skipped: ['runs/run_01'],
+      });
+    } finally {
+      setContextRetentionTestHooks(undefined);
+    }
+
+    await expect(stat(path.join(selectedPath, 'replacement.txt'))).resolves.toMatchObject({
+      isFile: expect.any(Function),
+    });
+    await expect(stat(path.join(movedPath, 'run.json'))).resolves.toMatchObject({
+      isFile: expect.any(Function),
+    });
+  });
+});
+
+test('refuses a record that becomes a symlink before its no-follow open', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    for (let sequence = 1; sequence <= 11; sequence += 1) {
+      await createCompletedRun(
+        workspaceRoot,
+        sequence,
+        new Date(oldAt.getTime() + sequence * 1000),
+      );
+    }
+    const selectedManifest = manifestPath(workspaceRoot, 'run_01');
+    const externalRecord = path.join(workspaceRoot, 'external-record.json');
+    await writeFile(externalRecord, '{}');
+
+    setContextRetentionTestHooks({
+      beforeRecordOpen: async (filePath) => {
+        if (filePath === selectedManifest) {
+          await rm(filePath);
+          await symlink(externalRecord, filePath, 'file');
+        }
+      },
+    });
+    try {
+      await expect(
+        planContextRetention(workspaceRoot, {
+          maxAgeMs: 14 * 24 * 60 * 60 * 1000,
+          maxBytes: 256 * 1024 * 1024,
+          maxRuns: 10,
+          now,
+        }),
+      ).resolves.toMatchObject({ runs: [] });
+    } finally {
+      setContextRetentionTestHooks(undefined);
+    }
+  });
+});
+
+test('fails safely when direct run entries exceed the inspection cap', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const runsDirectory = path.join(storeRoot(workspaceRoot), 'runs');
+    await mkdir(runsDirectory, { recursive: true });
+    await Promise.all(
+      Array.from({ length: 257 }, async (_, index) =>
+        mkdir(path.join(runsDirectory, `run_limit_${index.toString().padStart(3, '0')}`)),
+      ),
+    );
+
+    await expect(planContextRetention(workspaceRoot, { now })).resolves.toMatchObject({ runs: [] });
+  });
+});
+
+test('fails safely when retention would return more than the plan-entry cap', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    for (let sequence = 1; sequence <= 43; sequence += 1) {
+      await createCompletedRun(
+        workspaceRoot,
+        sequence,
+        new Date(oldAt.getTime() + sequence * 1000),
+      );
+    }
+
+    await expect(
+      planContextRetention(workspaceRoot, {
+        maxAgeMs: 14 * 24 * 60 * 60 * 1000,
+        maxBytes: 256 * 1024 * 1024,
+        maxRuns: 10,
+        now,
+      }),
+    ).resolves.toMatchObject({ runs: [] });
   });
 });
 

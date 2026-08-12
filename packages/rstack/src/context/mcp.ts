@@ -19,6 +19,7 @@ const rsdoctorAnalyzeInput = z
   .strict();
 
 const reportLinkInput = z.object({ dataFile: z.string().min(1) }).strict();
+const maxContextPruneResponseBytes = 16 * 1024;
 
 const contextPruneInput = z
   .object({
@@ -36,6 +37,19 @@ const contextPruneInput = z
 
 const toMcpError = () => ({
   content: [{ type: 'text' as const, text: 'Rsdoctor request failed.' }],
+  isError: true,
+});
+
+const isBoundedContextPruneResponse = (value: unknown): boolean => {
+  try {
+    return Buffer.byteLength(JSON.stringify(value)) <= maxContextPruneResponseBytes;
+  } catch {
+    return false;
+  }
+};
+
+const toContextPruneError = () => ({
+  content: [{ type: 'text' as const, text: 'Context retention request failed.' }],
   isError: true,
 });
 
@@ -162,6 +176,10 @@ const createContextMcpServer = (workspaceRoot: string): McpServer => {
       try {
         const plan = await planContextRetention(workspaceRoot, policy);
         if (dryRun) {
+          const structuredContent = { dryRun: true, plan };
+          if (!isBoundedContextPruneResponse(structuredContent)) {
+            return toContextPruneError();
+          }
           return {
             content: [
               {
@@ -169,10 +187,14 @@ const createContextMcpServer = (workspaceRoot: string): McpServer => {
                 text: 'Context retention plan generated; no files were deleted.',
               },
             ],
-            structuredContent: { dryRun: true, plan },
+            structuredContent,
           };
         }
         const result = await applyContextRetention(workspaceRoot, plan);
+        const structuredContent = { dryRun: false, plan, result };
+        if (!isBoundedContextPruneResponse(structuredContent)) {
+          return toContextPruneError();
+        }
         return {
           content: [
             {
@@ -180,18 +202,10 @@ const createContextMcpServer = (workspaceRoot: string): McpServer => {
               text: `Context retention applied; deleted ${result.deleted.length} run(s) and skipped ${result.skipped.length}.`,
             },
           ],
-          structuredContent: { dryRun: false, plan, result },
+          structuredContent,
         };
       } catch {
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: 'Context retention request failed.',
-            },
-          ],
-          isError: true,
-        };
+        return toContextPruneError();
       }
     },
   );

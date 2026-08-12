@@ -1,5 +1,6 @@
-import { createHash } from 'node:crypto';
-import { lstat, readdir, readFile, realpath, rm } from 'node:fs/promises';
+import { createHash, randomUUID } from 'node:crypto';
+import { constants } from 'node:fs';
+import { lstat, mkdir, open, opendir, realpath, rename, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { getProjectCacheDir } from '../projectCache.ts';
 import {
@@ -14,8 +15,15 @@ import {
 } from './model.ts';
 
 const contextStoreDirectoryName = 'context-v1';
+const quarantineDirectoryName = 'retention-quarantine';
 const gracePeriodMs = 60 * 60 * 1000;
 const protectedRunCount = 10;
+const maxDirectRuns = 256;
+const maxContextsPerRun = 128;
+const maxGenerationsPerContext = 512;
+const maxInspectedEntries = 16 * 1024;
+const maxInspectedBytes = 16 * 1024 * 1024;
+const maxPlanEntries = 32;
 const safeIdentifierPattern = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$/u;
 const producers = new Set<ContextProducer>([
   'rsbuild',
@@ -49,7 +57,7 @@ type ContextRetentionPolicy = {
 
 type ContextRetentionPlan = {
   policy: Omit<ContextRetentionPolicy, 'now'>;
-  runs: Array<{ runPath: string; manifestDigest: string }>;
+  runs: Array<{ runPath: string; manifestDigest: string; stateDigest: string }>;
 };
 
 type ContextRetentionResult = {
@@ -58,18 +66,41 @@ type ContextRetentionResult = {
 };
 
 type RetentionRoots = {
+  workspaceRoot: string;
   storeRoot: string;
   runsRoot: string;
+  workspaceIdentity: FileIdentity;
+  storeIdentity: FileIdentity;
+  runsIdentity: FileIdentity;
 };
+
+type FileIdentity = { device: number; inode: number };
 
 type ObservedRun = {
   runPath: string;
   canonicalPath: string;
   manifestDigest: string;
+  stateDigest: string;
   newestMtimeMs: number;
   bytes: number;
-  device: number;
-  inode: number;
+  identity: FileIdentity;
+};
+
+type InspectionBudget = {
+  bytes: number;
+  entries: number;
+};
+
+type QuarantineTarget = {
+  parentPath: string;
+  parentIdentity: FileIdentity;
+  targetPath: string;
+  placeholderIdentity: FileIdentity;
+};
+
+type RetentionTestHooks = {
+  beforeQuarantineRename?: (runPath: string) => Promise<void> | void;
+  beforeRecordOpen?: (filePath: string) => Promise<void> | void;
 };
 
 const defaultPolicy: Omit<ContextRetentionPolicy, 'now'> = {
@@ -77,6 +108,8 @@ const defaultPolicy: Omit<ContextRetentionPolicy, 'now'> = {
   maxAgeMs: 14 * 24 * 60 * 60 * 1000,
   maxBytes: 256 * 1024 * 1024,
 };
+
+let retentionTestHooks: RetentionTestHooks | undefined;
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -136,6 +169,9 @@ const isContextSnapshot = (value: unknown): value is ContextSnapshot =>
   isCompleteness(value.completeness) &&
   isObject(value.facets);
 
+const compareCodeUnits = (left: string, right: string): number =>
+  left === right ? 0 : left < right ? -1 : 1;
+
 const isContainedBy = (parentPath: string, candidatePath: string): boolean => {
   const relativePath = path.relative(parentPath, candidatePath);
   return (
@@ -145,6 +181,14 @@ const isContainedBy = (parentPath: string, candidatePath: string): boolean => {
       !path.isAbsolute(relativePath))
   );
 };
+
+const hasIdentity = (stats: { dev: number; ino: number }, identity: FileIdentity): boolean =>
+  stats.dev === identity.device && stats.ino === identity.inode;
+
+const toIdentity = (stats: { dev: number; ino: number }): FileIdentity => ({
+  device: stats.dev,
+  inode: stats.ino,
+});
 
 const isNonNegativeSafeInteger = (value: unknown): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
@@ -176,6 +220,10 @@ const resolveRetentionRoots = async (
 ): Promise<RetentionRoots | undefined> => {
   try {
     const canonicalWorkspaceRoot = await realpath(workspaceRoot);
+    const workspaceStats = await lstat(canonicalWorkspaceRoot);
+    if (!workspaceStats.isDirectory() || workspaceStats.isSymbolicLink()) {
+      return undefined;
+    }
     const storePath = path.join(
       getProjectCacheDir(canonicalWorkspaceRoot),
       contextStoreDirectoryName,
@@ -198,7 +246,61 @@ const resolveRetentionRoots = async (
     if (path.dirname(runsRoot) !== storeRoot || !isContainedBy(storeRoot, runsRoot)) {
       return undefined;
     }
-    return { storeRoot, runsRoot };
+    return {
+      workspaceRoot: canonicalWorkspaceRoot,
+      storeRoot,
+      runsRoot,
+      workspaceIdentity: toIdentity(workspaceStats),
+      storeIdentity: toIdentity(storeStats),
+      runsIdentity: toIdentity(runsStats),
+    };
+  } catch {
+    return undefined;
+  }
+};
+
+const rootsAreCurrent = async (roots: RetentionRoots): Promise<boolean> => {
+  try {
+    const [workspaceStats, storeStats, runsStats] = await Promise.all([
+      lstat(roots.workspaceRoot),
+      lstat(roots.storeRoot),
+      lstat(roots.runsRoot),
+    ]);
+    return (
+      workspaceStats.isDirectory() &&
+      !workspaceStats.isSymbolicLink() &&
+      hasIdentity(workspaceStats, roots.workspaceIdentity) &&
+      storeStats.isDirectory() &&
+      !storeStats.isSymbolicLink() &&
+      hasIdentity(storeStats, roots.storeIdentity) &&
+      runsStats.isDirectory() &&
+      !runsStats.isSymbolicLink() &&
+      hasIdentity(runsStats, roots.runsIdentity) &&
+      (await realpath(roots.storeRoot)) === roots.storeRoot &&
+      (await realpath(roots.runsRoot)) === roots.runsRoot &&
+      path.dirname(roots.runsRoot) === roots.storeRoot
+    );
+  } catch {
+    return false;
+  }
+};
+
+const readDirectNames = async (
+  directoryPath: string,
+  limit: number,
+  budget: InspectionBudget,
+): Promise<string[] | undefined> => {
+  try {
+    const directory = await opendir(directoryPath);
+    const names: string[] = [];
+    for await (const entry of directory) {
+      budget.entries += 1;
+      if (names.length >= limit || budget.entries > maxInspectedEntries) {
+        return undefined;
+      }
+      names.push(entry.name);
+    }
+    return names.sort(compareCodeUnits);
   } catch {
     return undefined;
   }
@@ -206,57 +308,97 @@ const resolveRetentionRoots = async (
 
 const readImmutableRecord = async (
   filePath: string,
-): Promise<{ value: unknown; bytes: number; mtimeMs: number; content: Buffer } | undefined> => {
-  try {
-    const fileStats = await lstat(filePath);
-    if (
-      !fileStats.isFile() ||
-      fileStats.isSymbolicLink() ||
-      fileStats.size > contextStoreMaxRecordBytes
-    ) {
-      return undefined;
+  budget: InspectionBudget,
+): Promise<
+  | {
+      value: unknown;
+      bytes: number;
+      mtimeMs: number;
+      contentDigest: string;
     }
-    const content = await readFile(filePath);
-    return {
-      value: JSON.parse(content.toString('utf8')) as unknown,
-      bytes: fileStats.size,
-      mtimeMs: fileStats.mtimeMs,
-      content,
-    };
-  } catch {
+  | undefined
+> => {
+  if (typeof constants.O_NOFOLLOW !== 'number') {
     return undefined;
   }
-};
-
-const readDirectNames = async (directoryPath: string): Promise<string[] | undefined> => {
   try {
-    return (await readdir(directoryPath)).sort();
+    await retentionTestHooks?.beforeRecordOpen?.(filePath);
+    const file = await open(filePath, constants.O_RDONLY | constants.O_NOFOLLOW);
+    try {
+      const before = await file.stat();
+      if (
+        !before.isFile() ||
+        before.size > contextStoreMaxRecordBytes ||
+        budget.bytes + before.size > maxInspectedBytes
+      ) {
+        return undefined;
+      }
+      const content = await file.readFile();
+      const after = await file.stat();
+      if (
+        !after.isFile() ||
+        !hasIdentity(after, toIdentity(before)) ||
+        after.size !== before.size ||
+        content.byteLength !== before.size
+      ) {
+        return undefined;
+      }
+      budget.bytes += before.size;
+      return {
+        value: JSON.parse(content.toString('utf8')) as unknown,
+        bytes: before.size,
+        mtimeMs: before.mtimeMs,
+        contentDigest: createHash('sha256').update(content).digest('hex'),
+      };
+    } finally {
+      await file.close();
+    }
   } catch {
     return undefined;
   }
 };
 
-const inspectDirectRun = async (
+const addDirectoryState = (
+  state: string[],
+  relativePath: string,
+  stats: { mtimeMs: number; size: number },
+): void => {
+  state.push(`directory\0${relativePath}\0${stats.size}\0${stats.mtimeMs}`);
+};
+
+const addFileState = (
+  state: string[],
+  relativePath: string,
+  record: { bytes: number; mtimeMs: number; contentDigest: string },
+): void => {
+  state.push(`file\0${relativePath}\0${record.bytes}\0${record.mtimeMs}\0${record.contentDigest}`);
+};
+
+const digestState = (state: string[]): string =>
+  createHash('sha256').update(state.sort(compareCodeUnits).join('\n')).digest('hex');
+
+const inspectRun = async (
   roots: RetentionRoots,
+  parentPath: string,
   runId: string,
+  budget: InspectionBudget,
 ): Promise<ObservedRun | undefined> => {
-  if (!isSafeIdentifier(runId)) {
+  if (!isSafeIdentifier(runId) || !(await rootsAreCurrent(roots))) {
     return undefined;
   }
   try {
-    const directPath = path.join(roots.runsRoot, runId);
+    const directPath = path.join(parentPath, runId);
     const runStats = await lstat(directPath);
     if (!runStats.isDirectory() || runStats.isSymbolicLink()) {
       return undefined;
     }
     const canonicalPath = await realpath(directPath);
-    if (
-      path.dirname(canonicalPath) !== roots.runsRoot ||
-      !isContainedBy(roots.runsRoot, canonicalPath)
-    ) {
+    if (path.dirname(canonicalPath) !== parentPath || !isContainedBy(parentPath, canonicalPath)) {
       return undefined;
     }
-    const rootNames = await readDirectNames(canonicalPath);
+    const state: string[] = [];
+    addDirectoryState(state, '.', runStats);
+    const rootNames = await readDirectNames(canonicalPath, 2, budget);
     if (
       rootNames === undefined ||
       rootNames.length !== 2 ||
@@ -266,7 +408,7 @@ const inspectDirectRun = async (
       return undefined;
     }
 
-    const manifest = await readImmutableRecord(path.join(canonicalPath, 'run.json'));
+    const manifest = await readImmutableRecord(path.join(canonicalPath, 'run.json'), budget);
     if (
       manifest === undefined ||
       !isContextRunManifest(manifest.value) ||
@@ -274,6 +416,7 @@ const inspectDirectRun = async (
     ) {
       return undefined;
     }
+    addFileState(state, 'run.json', manifest);
     let bytes = manifest.bytes;
     let newestMtimeMs = manifest.mtimeMs;
     const contextsRoot = path.join(canonicalPath, 'contexts');
@@ -281,8 +424,11 @@ const inspectDirectRun = async (
     if (!contextsStats.isDirectory() || contextsStats.isSymbolicLink()) {
       return undefined;
     }
-    const contextNames = await readDirectNames(contextsRoot);
-    const expectedContextNames = manifest.value.contexts.map((context) => context.contextId).sort();
+    addDirectoryState(state, 'contexts', contextsStats);
+    const contextNames = await readDirectNames(contextsRoot, maxContextsPerRun, budget);
+    const expectedContextNames = manifest.value.contexts
+      .map((context) => context.contextId)
+      .sort(compareCodeUnits);
     if (
       contextNames === undefined ||
       contextNames.length !== expectedContextNames.length ||
@@ -297,7 +443,8 @@ const inspectDirectRun = async (
       if (!contextStats.isDirectory() || contextStats.isSymbolicLink()) {
         return undefined;
       }
-      const contextNames = await readDirectNames(contextRoot);
+      addDirectoryState(state, path.posix.join('contexts', context.contextId), contextStats);
+      const contextNames = await readDirectNames(contextRoot, 1, budget);
       if (
         contextNames === undefined ||
         contextNames.length !== 1 ||
@@ -310,7 +457,13 @@ const inspectDirectRun = async (
       if (!generationsStats.isDirectory() || generationsStats.isSymbolicLink()) {
         return undefined;
       }
-      const generationNames = await readDirectNames(generationsRoot);
+      const relativeGenerationRoot = path.posix.join('contexts', context.contextId, 'generations');
+      addDirectoryState(state, relativeGenerationRoot, generationsStats);
+      const generationNames = await readDirectNames(
+        generationsRoot,
+        maxGenerationsPerContext,
+        budget,
+      );
       if (generationNames === undefined || generationNames.length === 0) {
         return undefined;
       }
@@ -319,7 +472,10 @@ const inspectDirectRun = async (
         if (!generationName.endsWith('.json')) {
           return undefined;
         }
-        const generation = await readImmutableRecord(path.join(generationsRoot, generationName));
+        const generation = await readImmutableRecord(
+          path.join(generationsRoot, generationName),
+          budget,
+        );
         if (
           generation === undefined ||
           !isContextSnapshot(generation.value) ||
@@ -330,40 +486,52 @@ const inspectDirectRun = async (
         ) {
           return undefined;
         }
+        addFileState(state, path.posix.join(relativeGenerationRoot, generationName), generation);
         bytes += generation.bytes;
         newestMtimeMs = Math.max(newestMtimeMs, generation.mtimeMs);
       }
     }
 
+    const finalStats = await lstat(directPath);
+    if (
+      !finalStats.isDirectory() ||
+      finalStats.isSymbolicLink() ||
+      !hasIdentity(finalStats, toIdentity(runStats)) ||
+      (await realpath(directPath)) !== canonicalPath ||
+      !(await rootsAreCurrent(roots))
+    ) {
+      return undefined;
+    }
     return {
       runPath: path.posix.join('runs', runId),
       canonicalPath,
-      manifestDigest: createHash('sha256').update(manifest.content).digest('hex'),
+      manifestDigest: manifest.contentDigest,
+      stateDigest: digestState(state),
       newestMtimeMs,
       bytes,
-      device: runStats.dev,
-      inode: runStats.ino,
+      identity: toIdentity(runStats),
     };
   } catch {
     return undefined;
   }
 };
 
-const readObservedRuns = async (roots: RetentionRoots): Promise<ObservedRun[]> => {
-  const runIds = await readDirectNames(roots.runsRoot);
+const readObservedRuns = async (roots: RetentionRoots): Promise<ObservedRun[] | undefined> => {
+  const budget: InspectionBudget = { bytes: 0, entries: 0 };
+  const runIds = await readDirectNames(roots.runsRoot, maxDirectRuns, budget);
   if (runIds === undefined) {
-    return [];
+    return undefined;
   }
   const runs: ObservedRun[] = [];
   for (const runId of runIds) {
-    const run = await inspectDirectRun(roots, runId);
+    const run = await inspectRun(roots, roots.runsRoot, runId, budget);
     if (run !== undefined) {
       runs.push(run);
     }
   }
   return runs.sort(
     (left, right) =>
-      right.newestMtimeMs - left.newestMtimeMs || right.runPath.localeCompare(left.runPath),
+      right.newestMtimeMs - left.newestMtimeMs || compareCodeUnits(right.runPath, left.runPath),
   );
 };
 
@@ -377,9 +545,11 @@ const planContextRetention = async (
     return { policy: resolvedPolicy, runs: [] };
   }
 
-  const runs = (await readObservedRuns(roots)).filter(
-    (run) => run.newestMtimeMs < now.getTime() - gracePeriodMs,
-  );
+  const observedRuns = await readObservedRuns(roots);
+  if (observedRuns === undefined) {
+    return { policy: resolvedPolicy, runs: [] };
+  }
+  const runs = observedRuns.filter((run) => run.newestMtimeMs < now.getTime() - gracePeriodMs);
   const plannedRuns: ContextRetentionPlan['runs'] = [];
   let retainedBytes = 0;
   const nowMs = now.getTime();
@@ -392,9 +562,13 @@ const planContextRetention = async (
     const exceedsAge = run.newestMtimeMs < nowMs - resolvedPolicy.maxAgeMs;
     const exceedsBytes = retainedBytes + run.bytes > resolvedPolicy.maxBytes;
     if (exceedsCount || exceedsAge || exceedsBytes) {
+      if (plannedRuns.length >= maxPlanEntries) {
+        return { policy: resolvedPolicy, runs: [] };
+      }
       plannedRuns.push({
         runPath: run.runPath,
         manifestDigest: run.manifestDigest,
+        stateDigest: run.stateDigest,
       });
       continue;
     }
@@ -403,11 +577,14 @@ const planContextRetention = async (
   return { policy: resolvedPolicy, runs: plannedRuns };
 };
 
-const readPlannedRunId = (entry: unknown): string | undefined => {
+const readPlannedRun = (
+  entry: unknown,
+): { runId: string; runPath: string; manifestDigest: string; stateDigest: string } | undefined => {
   if (
     !isObject(entry) ||
     typeof entry.runPath !== 'string' ||
-    typeof entry.manifestDigest !== 'string'
+    typeof entry.manifestDigest !== 'string' ||
+    typeof entry.stateDigest !== 'string'
   ) {
     return undefined;
   }
@@ -416,23 +593,147 @@ const readPlannedRunId = (entry: unknown): string | undefined => {
     parts.length !== 2 ||
     parts[0] !== 'runs' ||
     !isSafeIdentifier(parts[1]) ||
-    !/^[a-f0-9]{64}$/u.test(entry.manifestDigest)
+    !/^[a-f0-9]{64}$/u.test(entry.manifestDigest) ||
+    !/^[a-f0-9]{64}$/u.test(entry.stateDigest)
   ) {
     return undefined;
   }
-  return parts[1];
+  return {
+    runId: parts[1],
+    runPath: entry.runPath,
+    manifestDigest: entry.manifestDigest,
+    stateDigest: entry.stateDigest,
+  };
 };
 
-const rootsAreCurrent = async (roots: RetentionRoots): Promise<boolean> => {
+const hasPlannedState = (
+  observedRun: ObservedRun | undefined,
+  plannedRun: { manifestDigest: string; stateDigest: string },
+  now: Date,
+): observedRun is ObservedRun =>
+  observedRun !== undefined &&
+  observedRun.manifestDigest === plannedRun.manifestDigest &&
+  observedRun.stateDigest === plannedRun.stateDigest &&
+  observedRun.newestMtimeMs < now.getTime() - gracePeriodMs;
+
+const createQuarantineTarget = async (
+  roots: RetentionRoots,
+  runId: string,
+): Promise<QuarantineTarget | undefined> => {
   try {
-    const storeStats = await lstat(roots.storeRoot);
-    const runsStats = await lstat(roots.runsRoot);
+    const quarantineRoot = path.join(roots.storeRoot, quarantineDirectoryName);
+    await mkdir(quarantineRoot, { mode: 0o700, recursive: true });
+    const rootStats = await lstat(quarantineRoot);
+    if (!rootStats.isDirectory() || rootStats.isSymbolicLink() || (rootStats.mode & 0o077) !== 0) {
+      return undefined;
+    }
+    const canonicalQuarantineRoot = await realpath(quarantineRoot);
+    if (path.dirname(canonicalQuarantineRoot) !== roots.storeRoot) {
+      return undefined;
+    }
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const parentPath = path.join(canonicalQuarantineRoot, `q-${randomUUID()}`);
+      try {
+        await mkdir(parentPath, { mode: 0o700 });
+      } catch {
+        continue;
+      }
+      const parentStats = await lstat(parentPath);
+      const canonicalParentPath = await realpath(parentPath);
+      if (
+        !parentStats.isDirectory() ||
+        parentStats.isSymbolicLink() ||
+        (parentStats.mode & 0o077) !== 0 ||
+        path.dirname(canonicalParentPath) !== canonicalQuarantineRoot
+      ) {
+        return undefined;
+      }
+      const targetPath = path.join(canonicalParentPath, runId);
+      try {
+        await mkdir(targetPath, { mode: 0o700 });
+        const targetStats = await lstat(targetPath);
+        const targetNames = await readDirectNames(targetPath, 0, { bytes: 0, entries: 0 });
+        if (
+          !targetStats.isDirectory() ||
+          targetStats.isSymbolicLink() ||
+          targetNames === undefined ||
+          targetNames.length !== 0 ||
+          path.dirname(await realpath(targetPath)) !== canonicalParentPath
+        ) {
+          return undefined;
+        }
+        return {
+          parentPath: canonicalParentPath,
+          parentIdentity: toIdentity(parentStats),
+          targetPath,
+          placeholderIdentity: toIdentity(targetStats),
+        };
+      } catch {
+        continue;
+      }
+    }
+    return undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const isExactQuarantinePlaceholder = async (quarantine: QuarantineTarget): Promise<boolean> => {
+  try {
+    const [parentStats, targetStats] = await Promise.all([
+      lstat(quarantine.parentPath),
+      lstat(quarantine.targetPath),
+    ]);
+    const targetNames = await readDirectNames(quarantine.targetPath, 0, { bytes: 0, entries: 0 });
     return (
-      storeStats.isDirectory() &&
-      !storeStats.isSymbolicLink() &&
-      runsStats.isDirectory() &&
-      !runsStats.isSymbolicLink() &&
-      (await realpath(roots.runsRoot)) === roots.runsRoot
+      parentStats.isDirectory() &&
+      !parentStats.isSymbolicLink() &&
+      hasIdentity(parentStats, quarantine.parentIdentity) &&
+      targetStats.isDirectory() &&
+      !targetStats.isSymbolicLink() &&
+      hasIdentity(targetStats, quarantine.placeholderIdentity) &&
+      targetNames !== undefined &&
+      targetNames.length === 0 &&
+      path.dirname(await realpath(quarantine.targetPath)) === quarantine.parentPath
+    );
+  } catch {
+    return false;
+  }
+};
+
+const isExactDirectRun = async (
+  roots: RetentionRoots,
+  observedRun: ObservedRun,
+): Promise<boolean> => {
+  try {
+    const stats = await lstat(observedRun.canonicalPath);
+    return (
+      stats.isDirectory() &&
+      !stats.isSymbolicLink() &&
+      hasIdentity(stats, observedRun.identity) &&
+      path.dirname(await realpath(observedRun.canonicalPath)) === roots.runsRoot &&
+      (await rootsAreCurrent(roots))
+    );
+  } catch {
+    return false;
+  }
+};
+
+const isExactQuarantinedRun = async (
+  quarantine: QuarantineTarget,
+  identity: FileIdentity,
+): Promise<boolean> => {
+  try {
+    const stats = await lstat(quarantine.targetPath);
+    const parentStats = await lstat(quarantine.parentPath);
+    return (
+      stats.isDirectory() &&
+      !stats.isSymbolicLink() &&
+      hasIdentity(stats, identity) &&
+      parentStats.isDirectory() &&
+      !parentStats.isSymbolicLink() &&
+      hasIdentity(parentStats, quarantine.parentIdentity) &&
+      path.dirname(await realpath(quarantine.targetPath)) === quarantine.parentPath
     );
   } catch {
     return false;
@@ -446,62 +747,90 @@ const applyContextRetention = async (
   const deleted: string[] = [];
   const skipped: string[] = [];
   const roots = await resolveRetentionRoots(workspaceRoot);
-  if (!isObject(plan) || !Array.isArray(plan.runs)) {
+  if (!isObject(plan) || !Array.isArray(plan.runs) || plan.runs.length > maxPlanEntries) {
     return { deleted, skipped };
   }
   const seenRunPaths = new Set<string>();
+  const now = new Date();
 
-  for (const plannedRun of plan.runs) {
-    const runId = readPlannedRunId(plannedRun);
+  for (const entry of plan.runs) {
+    const plannedRun = readPlannedRun(entry);
     if (
-      runId === undefined ||
-      seenRunPaths.has((plannedRun as { runPath?: string }).runPath ?? '') ||
+      plannedRun === undefined ||
+      seenRunPaths.has(plannedRun.runPath) ||
       roots === undefined ||
       !(await rootsAreCurrent(roots))
     ) {
-      if (isObject(plannedRun) && typeof plannedRun.runPath === 'string') {
-        skipped.push(plannedRun.runPath);
+      if (isObject(entry) && typeof entry.runPath === 'string') {
+        skipped.push(entry.runPath);
       }
       continue;
     }
-    seenRunPaths.add(plannedRun.runPath as string);
-    const observedRun = await inspectDirectRun(roots, runId);
-    if (
-      observedRun === undefined ||
-      observedRun.manifestDigest !== plannedRun.manifestDigest ||
-      !(await rootsAreCurrent(roots))
-    ) {
-      skipped.push(plannedRun.runPath as string);
+    seenRunPaths.add(plannedRun.runPath);
+    const initialBudget: InspectionBudget = { bytes: 0, entries: 0 };
+    const initiallyObserved = await inspectRun(
+      roots,
+      roots.runsRoot,
+      plannedRun.runId,
+      initialBudget,
+    );
+    if (!hasPlannedState(initiallyObserved, plannedRun, now)) {
+      skipped.push(plannedRun.runPath);
       continue;
     }
+
     try {
-      const currentStats = await lstat(observedRun.canonicalPath);
-      if (
-        !currentStats.isDirectory() ||
-        currentStats.isSymbolicLink() ||
-        currentStats.dev !== observedRun.device ||
-        currentStats.ino !== observedRun.inode ||
-        path.dirname(await realpath(observedRun.canonicalPath)) !== roots.runsRoot
-      ) {
-        skipped.push(observedRun.runPath);
+      await retentionTestHooks?.beforeQuarantineRename?.(plannedRun.runPath);
+      if (!(await isExactDirectRun(roots, initiallyObserved))) {
+        skipped.push(plannedRun.runPath);
         continue;
       }
-      await rm(observedRun.canonicalPath, {
-        force: true,
-        recursive: true,
-        maxRetries: 0,
-      });
-      deleted.push(observedRun.runPath);
+      const quarantine = await createQuarantineTarget(roots, plannedRun.runId);
+      if (
+        quarantine === undefined ||
+        !(await isExactDirectRun(roots, initiallyObserved)) ||
+        !(await isExactQuarantinePlaceholder(quarantine))
+      ) {
+        skipped.push(plannedRun.runPath);
+        continue;
+      }
+      await rename(initiallyObserved.canonicalPath, quarantine.targetPath);
+      if (!(await isExactQuarantinedRun(quarantine, initiallyObserved.identity))) {
+        skipped.push(plannedRun.runPath);
+        continue;
+      }
+      const quarantinedBudget: InspectionBudget = { bytes: 0, entries: 0 };
+      const quarantinedRun = await inspectRun(
+        roots,
+        quarantine.parentPath,
+        plannedRun.runId,
+        quarantinedBudget,
+      );
+      if (!hasPlannedState(quarantinedRun, plannedRun, now)) {
+        skipped.push(plannedRun.runPath);
+        continue;
+      }
+      if (!(await isExactQuarantinedRun(quarantine, quarantinedRun.identity))) {
+        skipped.push(plannedRun.runPath);
+        continue;
+      }
+      await rm(quarantine.targetPath, { force: false, maxRetries: 0, recursive: true });
+      deleted.push(plannedRun.runPath);
     } catch {
-      skipped.push(observedRun.runPath);
+      skipped.push(plannedRun.runPath);
     }
   }
   return { deleted, skipped };
 };
 
+const setContextRetentionTestHooks = (hooks: RetentionTestHooks | undefined): void => {
+  retentionTestHooks = hooks;
+};
+
 export {
   applyContextRetention,
   planContextRetention,
+  setContextRetentionTestHooks,
   type ContextRetentionPlan,
   type ContextRetentionPolicy,
   type ContextRetentionResult,
