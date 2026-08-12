@@ -1,4 +1,6 @@
-import { access, readFile, readdir } from 'node:fs/promises';
+import { spawn } from 'node:child_process';
+import { access, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
 
@@ -34,8 +36,64 @@ type ClaudeMarketplace = {
   plugins: Array<{ name: string; source: string }>;
 };
 
+type McpConfiguration = {
+  mcpServers: { rstack: { command: string; args: string[] } };
+};
+
+const mcpLauncher = [
+  "import { createRequire } from 'node:module';",
+  "import { dirname, join, resolve } from 'node:path';",
+  "import { pathToFileURL } from 'node:url';",
+  "const require = createRequire(join(process.cwd(), 'package.json'));",
+  "const packageJsonPath = require.resolve('rstack/package.json');",
+  'const { bin } = require(packageJsonPath);',
+  "const binPath = typeof bin === 'string' ? bin : (bin.rs ?? bin.rstack);",
+  "if (!binPath) throw new Error('The workspace-local rstack package does not declare an rs binary.');",
+  'const cliPath = resolve(dirname(packageJsonPath), binPath);',
+  "process.argv = [process.execPath, cliPath, 'mcp'];",
+  'await import(pathToFileURL(cliPath).href);',
+].join(' ');
+
+const expectedMcpConfiguration: McpConfiguration = {
+  mcpServers: {
+    rstack: {
+      command: 'node',
+      args: ['--input-type=module', '--eval', mcpLauncher],
+    },
+  },
+};
+
 const readJson = async <T>(relativePath: string): Promise<T> =>
   JSON.parse(await readFile(path.join(repositoryRoot, relativePath), 'utf8')) as T;
+
+const runConfiguredMcpServer = async (
+  configuration: McpConfiguration,
+  cwd: string,
+  recordPath: string,
+): Promise<void> => {
+  const { command, args } = configuration.mcpServers.rstack;
+
+  await new Promise<void>((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd,
+      env: {
+        ...process.env,
+        PATH: path.dirname(process.execPath),
+        RSTACK_LAUNCH_RECORD: recordPath,
+      },
+      stdio: 'ignore',
+    });
+
+    child.once('error', reject);
+    child.once('exit', (code, signal) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`MCP launcher exited with code ${code} and signal ${signal}`));
+      }
+    });
+  });
+};
 
 test('publishes host-valid plugin manifests and MCP launch configurations', async () => {
   const codexManifest = await readJson<PluginManifest>(
@@ -65,12 +123,12 @@ test('publishes host-valid plugin manifests and MCP launch configurations', asyn
     mcpServers: './.mcp.json',
   });
 
-  await expect(readJson('plugins/rstack-codex/.mcp.json')).resolves.toEqual({
-    mcpServers: { rstack: { command: 'rs', args: ['mcp'] } },
-  });
-  await expect(readJson('plugins/rstack-claude/.mcp.json')).resolves.toEqual({
-    mcpServers: { rstack: { command: 'rs', args: ['mcp'] } },
-  });
+  await expect(readJson('plugins/rstack-codex/.mcp.json')).resolves.toEqual(
+    expectedMcpConfiguration,
+  );
+  await expect(readJson('plugins/rstack-claude/.mcp.json')).resolves.toEqual(
+    expectedMcpConfiguration,
+  );
 
   await Promise.all(
     [
@@ -82,6 +140,49 @@ test('publishes host-valid plugin manifests and MCP launch configurations', asyn
       ),
     ),
   );
+});
+
+test('launches each MCP configuration through the workspace-local rstack package', async () => {
+  const workspace = await mkdtemp(path.join(os.tmpdir(), 'rstack-plugin-launch-'));
+  const packageRoot = path.join(workspace, 'node_modules/rstack');
+
+  try {
+    await mkdir(path.join(packageRoot, 'bin'), { recursive: true });
+    await writeFile(
+      path.join(packageRoot, 'package.json'),
+      JSON.stringify({
+        name: 'rstack',
+        type: 'module',
+        exports: { './package.json': './package.json' },
+        bin: { rs: './bin/rs.js', rstack: './bin/rs.js' },
+      }),
+    );
+    await writeFile(
+      path.join(packageRoot, 'bin/rs.js'),
+      [
+        "import { writeFile } from 'node:fs/promises';",
+        'await writeFile(process.env.RSTACK_LAUNCH_RECORD, JSON.stringify({ args: process.argv.slice(2), cwd: process.cwd() }));',
+      ].join('\n'),
+    );
+
+    for (const [host, configurationPath] of [
+      ['codex', 'plugins/rstack-codex/.mcp.json'],
+      ['claude', 'plugins/rstack-claude/.mcp.json'],
+    ] as const) {
+      const recordPath = path.join(workspace, `${host}-launch.json`);
+      const configuration = await readJson<McpConfiguration>(configurationPath);
+
+      await runConfiguredMcpServer(configuration, workspace, recordPath);
+
+      await expect(
+        readFile(recordPath, 'utf8').then(
+          (contents) => JSON.parse(contents) as { args: string[]; cwd: string },
+        ),
+      ).resolves.toEqual({ args: ['mcp'], cwd: workspace });
+    }
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
 });
 
 test('registers each bundle in its repository marketplace', async () => {

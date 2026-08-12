@@ -48,7 +48,7 @@ rs build --config ./configs/rstack.config.ts
 
 执行会使用 Rstack 配置的命令时，Rstack 会加载并执行配置文件，然后只解析当前命令需要的配置函数。
 
-> [`rs mcp`](./cli/mcp) 是只读的存储读取器。它根据启动所在目录解析检出目录，不会加载或执行 `rstack.config.*`；请改为在生产者命令 [`rs dev`](./cli/dev)、[`rs build`](./cli/build) 和 [`rs lib`](./cli/lib) 上启用捕获。
+> [`rs mcp`](./cli/mcp) 提供的查询工具会读取已完成的记录，而不会加载或执行 `rstack.config.*`。显式调用 `lint_snapshot` 和 `test_snapshot` 工具时则会加载所选项目的配置，并运行对应的 lint 或测试生产者。请在 [`rs dev`](./cli/dev)、[`rs build`](./cli/build) 和 [`rs lib`](./cli/lib) 上启用构建上下文捕获。
 
 如果配置需要导入插件或其他工具专属依赖，请使用异步配置函数，并在函数内通过动态 `import()` 加载这些依赖。这样只有解析该配置时才会加载相关依赖。
 
@@ -126,7 +126,7 @@ define.context({
 
 除非 `enabled` 为 `true` 或设置了 `RSTACK_CONTEXT=1`，否则捕获会保持禁用。`RSTACK_CONTEXT=0` 始终会禁用捕获；即使已启用，`capture: 'off'` 也会禁用捕获。启用捕获但省略 `capture` 时，默认值为 `metadata`；`deep` 仍会捕获元数据，并在 Phase 1A 中将深度捕获记录为不受支持。
 
-使用 [`rs mcp`](./cli/mcp) 通过本地只读 MCP 服务器读取已完成的观测结果。
+使用 [`rs mcp`](./cli/mcp) 提供的查询工具读取已完成的观测结果。显式调用 `lint_snapshot` 和 `test_snapshot` 工具时会加载所选项目的配置，并运行对应的 lint 或测试生产者。
 
 ### `define.doc()` \{#define-doc}
 

@@ -1,8 +1,12 @@
 {
   "mcpServers": {
     "rstack": {
-      "command": "rs",
-      "args": ["mcp"]
+      "command": "node",
+      "args": [
+        "--input-type=module",
+        "--eval",
+        "import { createRequire } from 'node:module'; import { dirname, join, resolve } from 'node:path'; import { pathToFileURL } from 'node:url'; const require = createRequire(join(process.cwd(), 'package.json')); const packageJsonPath = require.resolve('rstack/package.json'); const { bin } = require(packageJsonPath); const binPath = typeof bin === 'string' ? bin : (bin.rs ?? bin.rstack); if (!binPath) throw new Error('The workspace-local rstack package does not declare an rs binary.'); const cliPath = resolve(dirname(packageJsonPath), binPath); process.argv = [process.execPath, cliPath, 'mcp']; await import(pathToFileURL(cliPath).href);"
+      ]
     }
   }
 }

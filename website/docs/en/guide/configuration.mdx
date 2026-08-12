@@ -48,7 +48,7 @@ rs build --config ./configs/rstack.config.ts
 
 Commands that consume Rstack configuration load and execute the Rstack configuration file, then resolve only the configuration functions needed by that command.
 
-> [`rs mcp`](./cli/mcp) is a read-only store reader. It resolves the checkout from its launch directory and does not load or execute `rstack.config.*`; enable capture on the producer commands, [`rs dev`](./cli/dev), [`rs build`](./cli/build), and [`rs lib`](./cli/lib), instead.
+> The query tools exposed by [`rs mcp`](./cli/mcp) read completed records without loading or executing `rstack.config.*`. The explicit `lint_snapshot` and `test_snapshot` tools instead load the selected project's configuration and run their lint or test producer. Enable build-context capture on [`rs dev`](./cli/dev), [`rs build`](./cli/build), and [`rs lib`](./cli/lib).
 
 When a configuration needs to import plugins or other tool-specific dependencies, use an async configuration function and load those dependencies with dynamic `import()` inside it. This ensures that they are loaded only when the configuration is resolved.
 
@@ -126,7 +126,7 @@ define.context({
 
 Capture is disabled unless `enabled` is `true` or `RSTACK_CONTEXT=1` is set. `RSTACK_CONTEXT=0` always disables capture, and `capture: 'off'` disables it even when it is enabled. When capture is enabled and omitted, it defaults to `metadata`; `deep` still captures metadata and records deep capture as unsupported in Phase 1A.
 
-Use [`rs mcp`](./cli/mcp) to read the completed observations through the local read-only MCP server.
+Use the query tools exposed by [`rs mcp`](./cli/mcp) to read completed observations. Its explicit `lint_snapshot` and `test_snapshot` tools load the selected project's configuration and run their lint or test producer.
 
 ### `define.doc()` \{#define-doc}
 

@@ -1,7 +1,7 @@
 {
   "name": "rstack-context-claude",
   "version": "0.1.0",
-  "description": "Analyze Rstack module reachability, change impact, and build artifacts.",
+  "description": "Analyze Rstack project context, reachability and dead-code candidates, change impact, builds and Rsdoctor artifacts; capture lint and test snapshots, debug development cycles, and review snapshot changes with six supplied skills.",
   "author": {
     "name": "Rstack"
   },
