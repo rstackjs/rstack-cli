@@ -30,45 +30,19 @@ type BuildContextPluginOptions = {
   now?: () => Date;
 };
 
-const normalizeWorkspacePath = (workspaceRoot: string, value: string): string => {
-  const normalized = path.relative(workspaceRoot, value).split(path.sep).join('/');
-
-  if (normalized === '..' || normalized.startsWith('../') || path.isAbsolute(normalized)) {
-    throw new Error('Context paths must remain within the workspace.');
-  }
-
-  return normalized || '.';
-};
+const normalizeWorkspacePath = (workspaceRoot: string, value: string): string =>
+  path.relative(workspaceRoot, value).split(path.sep).join('/') || '.';
 
 const getTarget = (environment: EnvironmentContext): string => environment.config.output.target;
 
 const getMode = (params: ConfigParams): string => params.envMode ?? params.env;
 
-const normalizeMetadataPath = (workspaceRoot: string, value: string): string | undefined => {
-  let normalized: string;
-
-  try {
-    normalized = path.isAbsolute(value)
+const normalizeMetadataPath = (workspaceRoot: string, value: string): string =>
+  path.posix.normalize(
+    path.isAbsolute(value)
       ? normalizeWorkspacePath(workspaceRoot, value)
-      : value.split(path.sep).join('/').replaceAll('\\', '/');
-  } catch {
-    return undefined;
-  }
-
-  normalized = path.posix.normalize(normalized);
-
-  if (
-    normalized === '.' ||
-    normalized === '..' ||
-    normalized.startsWith('../') ||
-    path.posix.isAbsolute(normalized) ||
-    /^[A-Za-z]:\//u.test(normalized)
-  ) {
-    return undefined;
-  }
-
-  return normalized;
-};
+      : value.split(path.sep).join('/').replaceAll('\\', '/'),
+  );
 
 const buildMetadataFacet = ({
   options,
@@ -104,9 +78,6 @@ const buildMetadataFacet = ({
       continue;
     }
     const name = normalizeMetadataPath(options.workspace.workspaceRoot, asset.name);
-    if (name === undefined) {
-      continue;
-    }
     if (assets.length < 100) {
       assets.push({ name, size: asset.size });
     } else {
@@ -130,13 +101,7 @@ const buildMetadataFacet = ({
       if (typeof file !== 'string') {
         continue;
       }
-      const normalized = normalizeMetadataPath(options.workspace.workspaceRoot, file);
-      if (normalized !== undefined) {
-        files.push(normalized);
-        if (files.length === 20) {
-          break;
-        }
-      }
+      files.push(normalizeMetadataPath(options.workspace.workspaceRoot, file));
     }
 
     chunks.push({

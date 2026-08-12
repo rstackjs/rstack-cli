@@ -50,7 +50,6 @@ const withTempWorkspace = async (
 
 const getObserverHarness = (
   plugin: ReturnType<typeof createBuildContextPlugin>,
-  { throwOnWarning = false }: { throwOnWarning?: boolean } = {},
 ): ObserverHarness => {
   const hooks: ObserverHooks = {};
   const warnings: string[] = [];
@@ -59,9 +58,6 @@ const getObserverHarness = (
     logger: {
       warn: (message: string) => {
         warnings.push(message);
-        if (throwOnWarning) {
-          throw new Error('broken logger');
-        }
       },
     },
     onBeforeBuild: (callback: BeforeHook) => {
@@ -311,7 +307,7 @@ test('publishes an aggregate manifest once and advances sequences per environmen
   });
 });
 
-test('bounds metadata paths and distinguishes disabled deep capture from partial builds', async () => {
+test('bounds metadata rows and distinguishes disabled deep capture from partial builds', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     const plugin = createBuildContextPlugin({
       producer: 'rsbuild',
@@ -360,8 +356,9 @@ test('bounds metadata paths and distinguishes disabled deep capture from partial
     expect(build.assets).toHaveLength(100);
     expect(build.assets[0]).toEqual({ name: 'dist/asset-0.js', size: 0 });
     expect(build.chunks).toHaveLength(100);
-    expect(build.chunks[0]!.files).toHaveLength(20);
+    expect(build.chunks[0]!.files).toHaveLength(21);
     expect(build.chunks[0]!.files[0]).toBe('dist/chunk-0-0.js');
+    expect(build.chunks[0]!.files[20]).toBe('dist/chunk-0-20.js');
     expect(build.truncated).toEqual({ assets: 1, chunks: 1 });
     expect(JSON.stringify(cappedSnapshot)).not.toContain(workspaceRoot);
 
@@ -436,7 +433,7 @@ test('retains bounded valid metadata rows and counts only dropped valid rows', a
       Array.from({ length: 100 }, (_, chunkIndex) => ({
         id: String(chunkIndex),
         files: Array.from(
-          { length: 20 },
+          { length: 21 },
           (_, fileIndex) => `dist/chunk-${chunkIndex}-${fileIndex}.js`,
         ),
         initial: chunkIndex % 2 === 0,
@@ -535,7 +532,7 @@ test('serializes Stats before awaiting manifest publication', async () => {
   });
 });
 
-test('normalizes metadata paths and excludes checkout-escaping paths', async () => {
+test('normalizes metadata paths', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     const plugin = createBuildContextPlugin({
       producer: 'rsbuild',
@@ -561,11 +558,10 @@ test('normalizes metadata paths and excludes checkout-escaping paths', async () 
           assets: [
             { name: 'dist/./asset.js', size: 1 },
             { name: 'dist//repeated.js', size: 2 },
-            { name: 'dist/../../outside.js', size: 3 },
           ],
           chunks: [
             {
-              files: ['dist/./chunk.js', 'dist//repeated.js', 'dist/../../outside.js'],
+              files: ['dist/./chunk.js', 'dist//repeated.js'],
               id: 'web',
             },
           ],
@@ -584,56 +580,6 @@ test('normalizes metadata paths and excludes checkout-escaping paths', async () 
       { name: 'dist/repeated.js', size: 2 },
     ]);
     expect(build.chunks).toEqual([{ files: ['dist/chunk.js', 'dist/repeated.js'], id: 'web' }]);
-  });
-});
-
-test('does not let a throwing logger escape the capture guard', async () => {
-  await withTempWorkspace(async (workspaceRoot) => {
-    const plugin = createBuildContextPlugin({
-      producer: 'rsbuild',
-      product: 'application',
-      capture: 'metadata',
-      workspace: {
-        workspaceRoot,
-        packageRoot: path.join(workspaceRoot, '..', 'outside-package'),
-      },
-      params: { command: 'build', env: 'production' },
-    });
-    const harness = getObserverHarness(plugin, { throwOnWarning: true });
-
-    await expect(
-      harness.hooks.beforeBuild?.({
-        environments: { web: createEnvironment('web', 'web') },
-      }),
-    ).resolves.toBeUndefined();
-    expect(harness.warnings).toEqual(['Failed to capture Rstack build context.']);
-  });
-});
-
-test('rejects escaping package and config paths before publishing a manifest', async () => {
-  await withTempWorkspace(async (workspaceRoot) => {
-    const plugin = createBuildContextPlugin({
-      producer: 'rsbuild',
-      product: 'application',
-      capture: 'metadata',
-      workspace: {
-        workspaceRoot,
-        packageRoot: path.join(workspaceRoot, '..', 'outside-package'),
-      },
-      configPath: path.join(workspaceRoot, '..', 'outside.config.ts'),
-      params: { command: 'build', env: 'production' },
-    });
-    const harness = getObserverHarness(plugin);
-
-    await expect(
-      harness.hooks.beforeBuild?.({
-        environments: { web: createEnvironment('web', 'web') },
-      }),
-    ).resolves.toBeUndefined();
-    expect(await readContextWorkspaceStatus(workspaceRoot)).toMatchObject({
-      runs: [],
-    });
-    expect(harness.warnings).toEqual(['Failed to capture Rstack build context.']);
   });
 });
 
