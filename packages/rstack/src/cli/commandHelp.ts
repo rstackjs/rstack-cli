@@ -22,31 +22,6 @@ type HelpDefinition = {
   sections?: readonly HelpSection[];
 };
 
-export type HelpTopic =
-  | 'root'
-  | 'check'
-  | 'dev'
-  | 'build'
-  | 'preview'
-  | 'doc'
-  | 'doc build'
-  | 'doc preview'
-  | 'doc eject'
-  | 'test'
-  | 'test run'
-  | 'test watch'
-  | 'test list'
-  | 'test merge-reports'
-  | 'test init'
-  | 'lib'
-  | 'lib build'
-  | 'lib inspect'
-  | 'lib mf-dev'
-  | 'lint'
-  | 'fmt'
-  | 'staged'
-  | 'setup';
-
 const CONFIG_OPTION: HelpItem = ['-c, --config <path>', 'Specify Rstack config file path'];
 const HELP_OPTION: HelpItem = ['-h, --help', 'Display this help message'];
 const VERSION_OPTION: HelpItem = ['-v, --version', 'Display version number'];
@@ -116,7 +91,7 @@ const HELP_DEFINITIONS = {
         items: [CONFIG_OPTION, HELP_OPTION, VERSION_OPTION],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   check: {
     usage: 'rs check [options]',
     description: 'Run static checks, including lint and format',
@@ -126,7 +101,7 @@ const HELP_DEFINITIONS = {
         items: [['--type-check', 'Enable TypeScript type checking'], ...CONFIG_HELP_OPTIONS],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   dev: {
     usage: 'rs dev [options]',
     description: 'Run the app dev server',
@@ -136,7 +111,7 @@ const HELP_DEFINITIONS = {
         items: [...SERVER_OPTIONS, ...CONFIG_HELP_OPTIONS],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   build: {
     usage: 'rs build [options]',
     description: 'Build the app for production',
@@ -151,7 +126,7 @@ const HELP_DEFINITIONS = {
         ],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   preview: {
     usage: 'rs preview [options]',
     description: 'Preview the app production build',
@@ -161,7 +136,7 @@ const HELP_DEFINITIONS = {
         items: [...SERVER_OPTIONS, ...CONFIG_HELP_OPTIONS],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   doc: {
     usage: 'rs doc [command] [root] [options]',
     sections: [
@@ -180,7 +155,7 @@ const HELP_DEFINITIONS = {
         items: [PORT_OPTION, HOST_OPTION, BASE_OPTION, ...CONFIG_HELP_OPTIONS],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   'doc build': {
     usage: 'rs doc build [root] [options]',
     description: 'Build docs for production',
@@ -190,7 +165,7 @@ const HELP_DEFINITIONS = {
         items: [BASE_OPTION, ...CONFIG_HELP_OPTIONS],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   'doc preview': {
     usage: 'rs doc preview [root] [options]',
     description: 'Preview the docs production build',
@@ -200,7 +175,7 @@ const HELP_DEFINITIONS = {
         items: [PORT_OPTION, HOST_OPTION, BASE_OPTION, ...CONFIG_HELP_OPTIONS],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   'doc eject': {
     usage: 'rs doc eject [component] [options]',
     description: 'Eject a theme component',
@@ -210,7 +185,7 @@ const HELP_DEFINITIONS = {
         items: [HELP_OPTION],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   test: {
     usage: 'rs test [command] [...filters] [options]',
     sections: [
@@ -231,7 +206,7 @@ const HELP_DEFINITIONS = {
         items: [['-w, --watch', 'Enable watch mode'], ...TEST_OPTIONS, ...CONFIG_HELP_OPTIONS],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   'test run': {
     usage: 'rs test run [...filters] [options]',
     description: 'Run tests once',
@@ -247,7 +222,7 @@ const HELP_DEFINITIONS = {
         ],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   'test watch': {
     usage: 'rs test watch [...filters] [options]',
     description: 'Run tests in watch mode',
@@ -257,7 +232,7 @@ const HELP_DEFINITIONS = {
         items: [...TEST_OPTIONS, ...CONFIG_HELP_OPTIONS],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   'test list': {
     usage: 'rs test list [...filters] [options]',
     description: 'List matching tests',
@@ -278,7 +253,7 @@ const HELP_DEFINITIONS = {
         ],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   'test merge-reports': {
     usage: 'rs test merge-reports [path] [options]',
     description: 'Merge blob reports',
@@ -293,7 +268,7 @@ const HELP_DEFINITIONS = {
         ],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   'test init': {
     usage: 'rs test init [project] [options]',
     description: 'Initialize Rstest configuration',
@@ -303,7 +278,7 @@ const HELP_DEFINITIONS = {
         items: [['--yes', 'Use default options without prompts'], HELP_OPTION],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   lib: {
     usage: 'rs lib [command] [options]',
     sections: [
@@ -321,7 +296,7 @@ const HELP_DEFINITIONS = {
         items: [...LIB_BUILD_OPTIONS, ...CONFIG_HELP_OPTIONS],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   'lib build': {
     usage: 'rs lib build [options]',
     description: 'Build the library for production',
@@ -331,7 +306,7 @@ const HELP_DEFINITIONS = {
         items: [...LIB_BUILD_OPTIONS, ...CONFIG_HELP_OPTIONS],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   'lib inspect': {
     usage: 'rs lib inspect [options]',
     description: 'Inspect Rslib, Rsbuild, and Rspack configs',
@@ -345,7 +320,7 @@ const HELP_DEFINITIONS = {
         ],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   'lib mf-dev': {
     usage: 'rs lib mf-dev [options]',
     description: 'Start Rsbuild dev server for Module Federation',
@@ -355,7 +330,7 @@ const HELP_DEFINITIONS = {
         items: [...CONFIG_HELP_OPTIONS],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   lint: {
     usage: 'rs lint [options] [files...]',
     description: 'Lint code',
@@ -377,7 +352,7 @@ const HELP_DEFINITIONS = {
         ],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   fmt: {
     usage: 'rs fmt [options] [files/globs...]',
     description: 'Format code',
@@ -401,7 +376,7 @@ const HELP_DEFINITIONS = {
         ],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   staged: {
     usage: 'rs staged [options]',
     description: 'Run tasks on staged Git files',
@@ -427,7 +402,7 @@ const HELP_DEFINITIONS = {
         ],
       },
     ],
-  },
+  } satisfies HelpDefinition as HelpDefinition,
   setup: {
     usage: 'rs setup [options]',
     description: 'Install Git hooks in the current repository',
@@ -440,8 +415,10 @@ const HELP_DEFINITIONS = {
         ],
       },
     ],
-  },
-} satisfies Record<HelpTopic, HelpDefinition>;
+  } satisfies HelpDefinition as HelpDefinition,
+};
+
+export type HelpTopic = keyof typeof HELP_DEFINITIONS;
 
 const renderItems = (items: readonly HelpItem[]): string => {
   const labelWidth = items.reduce((width, [label]) => Math.max(width, label.length), 0);
