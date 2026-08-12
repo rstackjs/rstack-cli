@@ -14,6 +14,7 @@ import {
   type ContextDescriptor,
   type ContextRunManifest,
   type ContextSnapshot,
+  type ContextStoreWriteResult,
 } from './model.ts';
 import { writeContextRunManifest, writeContextSnapshot } from './store.ts';
 import type { ResolvedContextWorkspace } from './workspace.ts';
@@ -54,10 +55,13 @@ const normalizeMetadataPath = (workspaceRoot: string, value: string): string | u
     return undefined;
   }
 
+  normalized = path.posix.normalize(normalized);
+
   if (
+    normalized === '.' ||
     normalized === '..' ||
     normalized.startsWith('../') ||
-    path.isAbsolute(normalized) ||
+    path.posix.isAbsolute(normalized) ||
     /^[A-Za-z]:\//u.test(normalized)
   ) {
     return undefined;
@@ -146,6 +150,47 @@ const buildMetadataFacet = ({
   };
 };
 
+const captureSnapshot = ({
+  options,
+  environment,
+  isFirstCompile,
+  isWatch,
+  stats,
+  time,
+}: Parameters<OnAfterEnvironmentCompileFn>[0] & {
+  options: BuildContextPluginOptions;
+}): Pick<ContextSnapshot, 'completeness' | 'facets' | 'status'> => {
+  const deep = options.capture === 'deep' ? 'unsupported' : 'disabled';
+
+  if (stats === undefined) {
+    return {
+      completeness: { build: 'partial', deep },
+      facets: {},
+      status: 'error',
+    };
+  }
+
+  const build = buildMetadataFacet({
+    options,
+    environment,
+    isFirstCompile,
+    isWatch,
+    stats,
+    time,
+  });
+  return {
+    completeness: { build: 'complete', deep },
+    facets: { build },
+    status: build.hasErrors ? 'fail' : 'pass',
+  };
+};
+
+const ensureContextWrite = (result: ContextStoreWriteResult): void => {
+  if (!result.written) {
+    throw result.error;
+  }
+};
+
 const createContextDescriptor = (
   options: BuildContextPluginOptions,
   environment: EnvironmentContext,
@@ -212,7 +257,11 @@ const createBuildContextPlugin = (options: BuildContextPluginOptions): RsbuildPl
           } catch {
             if (!warned) {
               warned = true;
-              api.logger.warn('Failed to capture Rstack build context.');
+              try {
+                api.logger.warn('Failed to capture Rstack build context.');
+              } catch {
+                return;
+              }
             }
           }
         };
@@ -241,64 +290,61 @@ const createBuildContextPlugin = (options: BuildContextPluginOptions): RsbuildPl
           contexts.map((context) => [context.environment!, context]),
         );
         runPromise = writeContextRunManifest(options.workspace.workspaceRoot, nextRun).then(
-          () => undefined,
+          ensureContextWrite,
         );
         await runPromise;
       };
 
-      const publishSnapshot: OnAfterEnvironmentCompileFn = async ({
+      const publishSnapshot: OnAfterEnvironmentCompileFn = ({
         environment,
         isFirstCompile,
         isWatch,
         stats,
         time,
       }) => {
-        if (
-          runPromise === undefined ||
-          run === undefined ||
-          descriptorsByEnvironment === undefined
-        ) {
-          throw new Error('Build context run has not started.');
-        }
+        const capture = captureSnapshot({
+          options,
+          environment,
+          isFirstCompile,
+          isWatch,
+          stats,
+          time,
+        });
+        const environmentName = environment.name;
+        const currentRun = run;
+        const currentRunPromise = runPromise;
+        const currentDescriptorsByEnvironment = descriptorsByEnvironment;
 
-        await runPromise;
-        const descriptor = descriptorsByEnvironment.get(environment.name);
-        if (descriptor === undefined) {
-          throw new Error('Build environment is missing from the run manifest.');
-        }
+        return (async (): Promise<void> => {
+          if (
+            currentRunPromise === undefined ||
+            currentRun === undefined ||
+            currentDescriptorsByEnvironment === undefined
+          ) {
+            throw new Error('Build context run has not started.');
+          }
 
-        const sequence = (sequencesByContext.get(descriptor.contextId) ?? 0) + 1;
-        sequencesByContext.set(descriptor.contextId, sequence);
-        const now = options.now ?? (() => new Date());
-        const completeness = {
-          build: stats === undefined ? 'partial' : 'complete',
-          deep: options.capture === 'deep' ? 'unsupported' : 'disabled',
-        } as const;
-        const snapshot: ContextSnapshot = {
-          schemaVersion: contextStoreSchemaVersion,
-          snapshotId: `snap_${run.runId}_${descriptor.contextId}_${sequence}`,
-          runId: run.runId,
-          contextId: descriptor.contextId,
-          sequence,
-          observedAt: now().toISOString(),
-          status: stats?.hasErrors() === true ? 'fail' : stats === undefined ? 'error' : 'pass',
-          completeness,
-          facets:
-            stats === undefined
-              ? {}
-              : {
-                  build: buildMetadataFacet({
-                    options,
-                    environment,
-                    isFirstCompile,
-                    isWatch,
-                    stats,
-                    time,
-                  }),
-                },
-        };
+          await currentRunPromise;
+          const descriptor = currentDescriptorsByEnvironment.get(environmentName);
+          if (descriptor === undefined) {
+            throw new Error('Build environment is missing from the run manifest.');
+          }
 
-        await writeContextSnapshot(options.workspace.workspaceRoot, snapshot);
+          const sequence = (sequencesByContext.get(descriptor.contextId) ?? 0) + 1;
+          const now = options.now ?? (() => new Date());
+          const snapshot: ContextSnapshot = {
+            schemaVersion: contextStoreSchemaVersion,
+            snapshotId: `snap_${currentRun.runId}_${descriptor.contextId}_${sequence}`,
+            runId: currentRun.runId,
+            contextId: descriptor.contextId,
+            sequence,
+            observedAt: now().toISOString(),
+            ...capture,
+          };
+
+          ensureContextWrite(await writeContextSnapshot(options.workspace.workspaceRoot, snapshot));
+          sequencesByContext.set(descriptor.contextId, sequence);
+        })();
       };
 
       api.onBeforeBuild(guard(ensureRun));

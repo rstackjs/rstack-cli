@@ -49,12 +49,20 @@ const withTempWorkspace = async (
 
 const getObserverHarness = (
   plugin: ReturnType<typeof createBuildContextPlugin>,
+  { throwOnWarning = false }: { throwOnWarning?: boolean } = {},
 ): ObserverHarness => {
   const hooks: ObserverHooks = {};
   const warnings: string[] = [];
 
   plugin.setup?.({
-    logger: { warn: (message: string) => warnings.push(message) },
+    logger: {
+      warn: (message: string) => {
+        warnings.push(message);
+        if (throwOnWarning) {
+          throw new Error('broken logger');
+        }
+      },
+    },
     onBeforeBuild: (callback: BeforeHook) => {
       hooks.beforeBuild = callback;
     },
@@ -112,6 +120,7 @@ const collectContextId = async ({
   workspaceRoot,
   workspace,
   configPath,
+  producer = 'rsbuild',
   product = 'application',
   params = { command: 'build', env: 'production' },
   environment = 'web',
@@ -120,6 +129,7 @@ const collectContextId = async ({
   workspaceRoot: string;
   workspace: ResolvedContextWorkspace;
   configPath: string;
+  producer?: 'rsbuild' | 'rslib';
   product?: 'application' | 'library';
   params?: Pick<ConfigParams, 'command' | 'env' | 'envMode'>;
   environment?: string;
@@ -127,7 +137,7 @@ const collectContextId = async ({
 }): Promise<string> => {
   const runId = `run_${Math.random().toString(16).slice(2)}`;
   const plugin = createBuildContextPlugin({
-    producer: product === 'application' ? 'rsbuild' : 'rslib',
+    producer,
     product,
     capture: 'metadata',
     workspace,
@@ -419,6 +429,163 @@ test('keeps capture failures out of build hooks and warns once per observer', as
   });
 });
 
+test('treats a resolved manifest-store failure as a fail-soft capture failure', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const plugin = createBuildContextPlugin({
+      producer: 'rsbuild',
+      product: 'application',
+      capture: 'metadata',
+      workspace: { workspaceRoot, packageRoot: path.join(workspaceRoot, 'app') },
+      params: { command: 'build', env: 'production' },
+      createRunId: () => 'run/invalid',
+    });
+    const harness = getObserverHarness(plugin);
+    const environments = { web: createEnvironment('web', 'web') };
+
+    await expect(harness.hooks.beforeBuild?.({ environments })).resolves.toBeUndefined();
+    await expect(harness.hooks.beforeDevCompile?.({ environments })).resolves.toBeUndefined();
+    expect(harness.warnings).toEqual(['Failed to capture Rstack build context.']);
+    expect(await readContextWorkspaceStatus(workspaceRoot)).toMatchObject({ runs: [] });
+  });
+});
+
+test('treats a resolved snapshot-store failure as a fail-soft capture failure', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const plugin = createBuildContextPlugin({
+      producer: 'rsbuild',
+      product: 'application',
+      capture: 'metadata',
+      workspace: { workspaceRoot, packageRoot: path.join(workspaceRoot, 'app') },
+      params: { command: 'build', env: 'production' },
+      createRunId: () => 'run_snapshot_failure',
+    });
+    const harness = getObserverHarness(plugin);
+    const environment = createEnvironment('web', 'web');
+    const longAssetName = `dist/${'a'.repeat(12_000)}.js`;
+
+    await harness.hooks.beforeBuild?.({ environments: { web: environment } });
+    await expect(
+      invokeAfter(harness.hooks, {
+        environment,
+        isFirstCompile: true,
+        isWatch: false,
+        stats: createStats({
+          json: {
+            assets: Array.from({ length: 100 }, () => ({ name: longAssetName, size: 1 })),
+          },
+        }),
+        time: 1,
+      }),
+    ).resolves.toBeUndefined();
+    expect(harness.warnings).toEqual(['Failed to capture Rstack build context.']);
+    expect(
+      (await readContextWorkspaceStatus(workspaceRoot)).runs[0]!.contexts[0]!.latestSnapshot,
+    ).toBeUndefined();
+  });
+});
+
+test('serializes Stats before awaiting manifest publication', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const plugin = createBuildContextPlugin({
+      producer: 'rsbuild',
+      product: 'application',
+      capture: 'metadata',
+      workspace: { workspaceRoot, packageRoot: path.join(workspaceRoot, 'app') },
+      params: { command: 'build', env: 'production' },
+      createRunId: () => 'run_synchronous_stats',
+    });
+    const { hooks } = getObserverHarness(plugin);
+    const environment = createEnvironment('web', 'web');
+    const stats = createStats({ json: { assets: [] } });
+
+    const before = hooks.beforeBuild!({ environments: { web: environment } });
+    const after = hooks.afterEnvironmentCompile!({
+      environment,
+      isFirstCompile: true,
+      isWatch: false,
+      stats,
+      time: 1,
+    });
+
+    const synchronousCallCount = stats.calls.length;
+    await before;
+    await after;
+    expect(synchronousCallCount).toBe(1);
+  });
+});
+
+test('normalizes metadata paths and excludes checkout-escaping paths', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const plugin = createBuildContextPlugin({
+      producer: 'rsbuild',
+      product: 'application',
+      capture: 'metadata',
+      workspace: { workspaceRoot, packageRoot: path.join(workspaceRoot, 'app') },
+      params: { command: 'build', env: 'production' },
+      createRunId: () => 'run_metadata_paths',
+    });
+    const { hooks } = getObserverHarness(plugin);
+    const environment = createEnvironment('web', 'web');
+
+    await hooks.beforeBuild?.({ environments: { web: environment } });
+    await invokeAfter(hooks, {
+      environment,
+      isFirstCompile: true,
+      isWatch: false,
+      stats: createStats({
+        json: {
+          assets: [
+            { name: 'dist/./asset.js', size: 1 },
+            { name: 'dist//repeated.js', size: 2 },
+            { name: 'dist/../../outside.js', size: 3 },
+          ],
+          chunks: [
+            {
+              files: ['dist/./chunk.js', 'dist//repeated.js', 'dist/../../outside.js'],
+              id: 'web',
+            },
+          ],
+        },
+      }),
+      time: 1,
+    });
+
+    const build = (await readContextWorkspaceStatus(workspaceRoot)).runs[0]!.contexts[0]!
+      .latestSnapshot!.facets.build as {
+      assets: Array<{ name: string; size: number }>;
+      chunks: Array<{ files: string[] }>;
+    };
+    expect(build.assets).toEqual([
+      { name: 'dist/asset.js', size: 1 },
+      { name: 'dist/repeated.js', size: 2 },
+    ]);
+    expect(build.chunks).toEqual([{ files: ['dist/chunk.js', 'dist/repeated.js'], id: 'web' }]);
+  });
+});
+
+test('does not let a throwing logger escape the capture guard', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const plugin = createBuildContextPlugin({
+      producer: 'rsbuild',
+      product: 'application',
+      capture: 'metadata',
+      workspace: {
+        workspaceRoot,
+        packageRoot: path.join(workspaceRoot, '..', 'outside-package'),
+      },
+      params: { command: 'build', env: 'production' },
+    });
+    const harness = getObserverHarness(plugin, { throwOnWarning: true });
+
+    await expect(
+      harness.hooks.beforeBuild?.({
+        environments: { web: createEnvironment('web', 'web') },
+      }),
+    ).resolves.toBeUndefined();
+    expect(harness.warnings).toEqual(['Failed to capture Rstack build context.']);
+  });
+});
+
 test('rejects escaping package and config paths before publishing a manifest', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     const plugin = createBuildContextPlugin({
@@ -463,6 +630,13 @@ test('derives stable IDs from normalized identity inputs and separates every ide
     const stable = await collectContextId(base);
     expect(stable).toMatch(/^ctx_[a-f0-9]{24}$/u);
     expect(await collectContextId(base)).toBe(stable);
+    await expect(
+      collectContextId({
+        ...base,
+        workspace: { ...workspace, packageRoot: `${workspace.packageRoot}/./` },
+        configPath: `${path.dirname(configPath)}/../app/rstack.config.ts`,
+      }),
+    ).resolves.toBe(stable);
 
     await expect(collectContextId({ ...base, environment: 'node' })).resolves.not.toBe(stable);
     await expect(
@@ -480,7 +654,12 @@ test('derives stable IDs from normalized identity inputs and separates every ide
         configPath: path.join(workspaceRoot, 'other.config.ts'),
       }),
     ).resolves.not.toBe(stable);
-    await expect(collectContextId({ ...base, product: 'library' })).resolves.not.toBe(stable);
+    await expect(
+      collectContextId({ ...base, product: 'library', producer: 'rsbuild' }),
+    ).resolves.not.toBe(stable);
+    await expect(
+      collectContextId({ ...base, product: 'application', producer: 'rslib' }),
+    ).resolves.not.toBe(stable);
     await expect(
       collectContextId({
         ...base,
