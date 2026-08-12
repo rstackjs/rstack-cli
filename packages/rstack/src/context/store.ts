@@ -7,9 +7,11 @@ import {
   type ContextDescriptor,
   type ContextRunManifest,
   type ContextSnapshot,
+  type ContextProducer,
   type ContextStoreIssue,
   type ContextStoreWriteResult,
   type ContextWorkspaceStatus,
+  type StoredContextSnapshot,
 } from './model.ts';
 import {
   compareContextSnapshotGenerationFileNames,
@@ -120,12 +122,18 @@ type ReadRecordResult =
 
 const readRecord = async (filePath: string, relativePath: string): Promise<ReadRecordResult> => {
   try {
-    return { status: 'value', value: JSON.parse(await readFile(filePath, 'utf8')) as unknown };
+    return {
+      status: 'value',
+      value: JSON.parse(await readFile(filePath, 'utf8')) as unknown,
+    };
   } catch (error) {
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
       return { status: 'missing' };
     }
-    return { status: 'issue', issue: { code: 'invalid-record', path: relativePath } };
+    return {
+      status: 'issue',
+      issue: { code: 'invalid-record', path: relativePath },
+    };
   }
 };
 
@@ -188,6 +196,94 @@ const readLatestSnapshot = async (
   return undefined;
 };
 
+type ContextSnapshotFilters = {
+  producer?: ContextProducer;
+  contextId?: string;
+};
+
+const readRunSnapshots = async (
+  storeRoot: string,
+  run: ContextRunManifest,
+): Promise<StoredContextSnapshot[]> => {
+  const snapshots: StoredContextSnapshot[] = [];
+  for (const context of run.contexts) {
+    const generationRoot = path.join(
+      getRunRoot(storeRoot, run.runId),
+      'contexts',
+      context.contextId,
+      'generations',
+    );
+    let fileNames: string[];
+    try {
+      fileNames = (await readdir(generationRoot))
+        .filter((fileName) => fileName.endsWith('.json'))
+        .sort(compareContextSnapshotGenerationFileNames);
+    } catch {
+      continue;
+    }
+    for (const fileName of fileNames) {
+      const record = await readRecord(path.join(generationRoot, fileName), fileName);
+      const snapshot = record.status === 'value' ? validateSnapshot(record.value) : undefined;
+      if (
+        snapshot !== undefined &&
+        snapshot.status !== 'queued' &&
+        snapshot.status !== 'running' &&
+        snapshot.runId === run.runId &&
+        snapshot.contextId === context.contextId &&
+        isContextSnapshotGenerationFileName(fileName, snapshot)
+      ) {
+        snapshots.push({ run, context, snapshot });
+      }
+    }
+  }
+  return snapshots;
+};
+
+const compareStoredSnapshots = (
+  left: StoredContextSnapshot,
+  right: StoredContextSnapshot,
+): number =>
+  compareDescending(left.snapshot.observedAt, right.snapshot.observedAt) ||
+  compareDescending(left.run.startedAt, right.run.startedAt) ||
+  compareDescending(left.snapshot.snapshotId, right.snapshot.snapshotId);
+
+const compareDescending = (left: string, right: string): number =>
+  left === right ? 0 : left > right ? -1 : 1;
+
+const readContextSnapshots = async (
+  workspaceRoot: string,
+  filters: ContextSnapshotFilters = {},
+): Promise<StoredContextSnapshot[]> => {
+  const storeRoot = getContextStoreRoot(workspaceRoot);
+  const snapshots: StoredContextSnapshot[] = [];
+  for (const runId of await readDirectoryNames(path.join(storeRoot, 'runs'))) {
+    const record = await readRecord(getRunManifestPath(storeRoot, runId), 'run.json');
+    const run = record.status === 'value' ? validateRunManifest(record.value) : undefined;
+    if (
+      run === undefined ||
+      run.runId !== runId ||
+      (filters.producer !== undefined && run.producer !== filters.producer)
+    ) {
+      continue;
+    }
+    const runSnapshots = await readRunSnapshots(storeRoot, run);
+    snapshots.push(
+      ...runSnapshots.filter(
+        ({ context }) => filters.contextId === undefined || context.contextId === filters.contextId,
+      ),
+    );
+  }
+  return snapshots.sort(compareStoredSnapshots);
+};
+
+const readContextSnapshotById = async (
+  workspaceRoot: string,
+  snapshotId: string,
+): Promise<StoredContextSnapshot | undefined> =>
+  (await readContextSnapshots(workspaceRoot)).find(
+    ({ snapshot }) => snapshot.snapshotId === snapshotId,
+  );
+
 const readContextWorkspaceStatus = async (
   workspaceRoot: string,
 ): Promise<ContextWorkspaceStatus> => {
@@ -240,4 +336,11 @@ const readContextWorkspaceStatus = async (
   return { schemaVersion: contextStoreSchemaVersion, runs, issues };
 };
 
-export { readContextWorkspaceStatus, writeContextRunManifest, writeContextSnapshot };
+export {
+  readContextSnapshotById,
+  readContextSnapshots,
+  readContextWorkspaceStatus,
+  writeContextRunManifest,
+  writeContextSnapshot,
+};
+export type { ContextSnapshotFilters };

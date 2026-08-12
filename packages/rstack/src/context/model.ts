@@ -7,6 +7,21 @@ type ContextProducer = 'rsbuild' | 'rspack' | 'rslib' | 'rstest' | 'rslint' | 'r
 type ContextRunStatus = 'queued' | 'running' | 'pass' | 'fail' | 'cancelled' | 'error';
 type ContextCompleteness = 'complete' | 'partial' | 'disabled' | 'unsupported';
 
+type ContextInputFile = { path: string; digest: string };
+type ContextInputCompleteness = 'complete' | 'partial';
+type ContextFreshness = {
+  state: 'fresh' | 'stale' | 'partial' | 'unknown';
+  changedPaths: string[];
+};
+
+type ContextSnapshotSource = {
+  revision?: string;
+  dirtyDigest?: string;
+  inputs?: ContextInputFile[];
+  inputCompleteness?: ContextInputCompleteness;
+  virtualInputDigest?: string;
+};
+
 type ContextDescriptor = {
   contextId: string;
   packageRoot: string;
@@ -35,6 +50,96 @@ type BuildMetadataFacet = {
   truncated: { assets: number; chunks: number };
 };
 
+type LintMessageRecord = {
+  ruleId: string | null;
+  severity: 1 | 2;
+  message: string;
+  messageId?: string;
+  line: number;
+  column: number;
+  endLine?: number;
+  endColumn?: number;
+  fix?: { range: [number, number]; text: string };
+  suggestions?: Array<{
+    messageId?: string;
+    data?: Record<string, string>;
+    desc: string;
+    fix: { range: [number, number]; text: string };
+  }>;
+};
+
+type LintFileRecord = {
+  path: string;
+  digest: string;
+  errorCount: number;
+  warningCount: number;
+  fixableErrorCount: number;
+  fixableWarningCount: number;
+  messages: LintMessageRecord[];
+  fixedOutput?: string;
+};
+
+type LintFacet = {
+  producer: 'rslint';
+  mode: 'files' | 'text';
+  fixPreviewCaptured: boolean;
+  files: LintFileRecord[];
+  totals: {
+    files: number;
+    errors: number;
+    warnings: number;
+    fixableErrors: number;
+    fixableWarnings: number;
+  };
+};
+
+type TestErrorRecord = {
+  name: string;
+  message: string;
+  stack?: string;
+  diff?: string;
+  actual?: string;
+  expected?: string;
+  retryCount?: number;
+};
+
+type TestCaseRecord = {
+  project: string;
+  path: string;
+  name: string;
+  parentNames?: string[];
+  status: 'skip' | 'pass' | 'fail' | 'todo';
+  durationMs?: number;
+  errors?: TestErrorRecord[];
+  retryErrors?: TestErrorRecord[];
+  retryCount?: number;
+};
+
+type TestFileRecord = {
+  project: string;
+  path: string;
+  status: 'skip' | 'pass' | 'fail' | 'todo';
+  durationMs?: number;
+  tests: TestCaseRecord[];
+};
+
+type TestFacet = {
+  producer: 'rstest';
+  files: TestFileRecord[];
+  stats: {
+    tests: {
+      total: number;
+      passed: number;
+      failed: number;
+      skipped: number;
+      todo: number;
+    };
+    files: { total: number; failed: number };
+  };
+  durationMs: number;
+  unhandledErrors: TestErrorRecord[];
+};
+
 type ContextRunManifest = {
   schemaVersion: typeof contextStoreSchemaVersion;
   runId: string;
@@ -54,10 +159,13 @@ type ContextSnapshot = {
   status: ContextRunStatus;
   completeness: Record<string, ContextCompleteness>;
   facets: Record<string, JsonValue>;
-  source?: {
-    revision?: string;
-    dirtyDigest?: string;
-  };
+  source?: ContextSnapshotSource;
+};
+
+type StoredContextSnapshot = {
+  run: ContextRunManifest;
+  context: ContextDescriptor;
+  snapshot: ContextSnapshot;
 };
 
 type ContextStoreWriteResult =
@@ -90,6 +198,7 @@ type ProjectContextStatus = {
   context: ContextDescriptor;
   state: 'ready' | 'pending';
   latestSnapshot?: ContextSnapshot;
+  freshness?: ContextFreshness;
 };
 
 type ProjectStatus = {
@@ -104,16 +213,28 @@ export type {
   BuildMetadataFacet,
   ContextCompleteness,
   ContextDescriptor,
+  ContextFreshness,
+  ContextInputCompleteness,
+  ContextInputFile,
   ContextProducer,
   ContextRunManifest,
   ContextRunStatus,
   ContextRunStatusEntry,
   ContextSnapshot,
+  ContextSnapshotSource,
   ContextStatus,
   ContextStoreIssue,
   ContextStoreWriteResult,
   ContextWorkspaceStatus,
   JsonValue,
+  LintFacet,
+  LintFileRecord,
+  LintMessageRecord,
   ProjectContextStatus,
   ProjectStatus,
+  StoredContextSnapshot,
+  TestCaseRecord,
+  TestErrorRecord,
+  TestFacet,
+  TestFileRecord,
 };

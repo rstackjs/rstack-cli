@@ -132,6 +132,7 @@ test('projects every monorepo run context in deterministic order without workspa
         context: libraryContext,
         state: 'ready',
         latestSnapshot: snapshot,
+        freshness: { state: 'unknown', changedPaths: [] },
       },
     ]);
     expect(JSON.stringify(status)).not.toContain(workspaceRoot);

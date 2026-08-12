@@ -10,6 +10,7 @@ import {
   type ContextRunManifest,
   type ContextSnapshot,
 } from '../../src/context/index.ts';
+import { readContextSnapshotById, readContextSnapshots } from '../../src/context/store.ts';
 
 const context = {
   contextId: 'ctx_library_esm',
@@ -109,6 +110,69 @@ test('does not replace an immutable snapshot record', async () => {
 
     const status = await readContextWorkspaceStatus(workspaceRoot);
     expect(status.runs[0]?.contexts[0]?.latestSnapshot).toEqual(firstSnapshot);
+  });
+});
+
+test('lists every immutable snapshot newest-first and filters or finds exact records', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const newerRun = {
+      ...run,
+      runId: 'run_library_lint',
+      producer: 'rslint',
+      command: 'lint',
+      startedAt: '2026-08-12T06:00:00.000Z',
+    } satisfies ContextRunManifest;
+    const older = {
+      ...firstSnapshot,
+      snapshotId: 'snap_older',
+    } satisfies ContextSnapshot;
+    const latestInFirstRun = {
+      ...secondSnapshot,
+      snapshotId: 'snap_latest_in_first_run',
+      observedAt: '2026-08-12T07:00:00.000Z',
+    } satisfies ContextSnapshot;
+    const newerRunSnapshot = {
+      ...firstSnapshot,
+      runId: newerRun.runId,
+      snapshotId: 'snap_newer_run',
+      observedAt: '2026-08-12T07:00:00.000Z',
+    } satisfies ContextSnapshot;
+    const pendingSnapshot = {
+      ...secondSnapshot,
+      snapshotId: 'snap_pending',
+      sequence: 3,
+      observedAt: '2026-08-12T08:00:00.000Z',
+      status: 'running',
+    } satisfies ContextSnapshot;
+
+    await writeContextRunManifest(workspaceRoot, run);
+    await writeContextRunManifest(workspaceRoot, newerRun);
+    await writeContextSnapshot(workspaceRoot, older);
+    await writeContextSnapshot(workspaceRoot, latestInFirstRun);
+    await writeContextSnapshot(workspaceRoot, newerRunSnapshot);
+    await writeContextSnapshot(workspaceRoot, pendingSnapshot);
+
+    const snapshots = await readContextSnapshots(workspaceRoot);
+    expect(snapshots).toEqual([
+      { run: newerRun, context, snapshot: newerRunSnapshot },
+      { run, context, snapshot: latestInFirstRun },
+      { run, context, snapshot: older },
+    ]);
+    await expect(
+      readContextSnapshots(workspaceRoot, {
+        producer: 'rslint',
+        contextId: context.contextId,
+      }),
+    ).resolves.toEqual([{ run: newerRun, context, snapshot: newerRunSnapshot }]);
+    await expect(readContextSnapshotById(workspaceRoot, older.snapshotId)).resolves.toEqual({
+      run,
+      context,
+      snapshot: older,
+    });
+    await expect(
+      readContextSnapshotById(workspaceRoot, pendingSnapshot.snapshotId),
+    ).resolves.toBeUndefined();
+    await expect(readContextSnapshotById(workspaceRoot, 'snap_missing')).resolves.toBeUndefined();
   });
 });
 

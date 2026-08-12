@@ -3,8 +3,10 @@ import { contextStoreSchemaVersion } from '../../src/context/model.ts';
 import {
   getContextSnapshotGenerationFileName,
   isContextSnapshotGenerationFileName,
+  validateLintFacet,
   validateRunManifest,
   validateSnapshot,
+  validateTestFacet,
 } from '../../src/context/records.ts';
 
 const context = {
@@ -72,6 +74,165 @@ test('rejects duplicate context IDs in a run manifest', () => {
 
 test('validates complete snapshots', () => {
   expect(validateSnapshot(snapshot)).toEqual(snapshot);
+});
+
+test('validates lint and test facets with captured source inputs', () => {
+  const lint = {
+    producer: 'rslint',
+    mode: 'files',
+    fixPreviewCaptured: true,
+    files: [
+      {
+        path: 'src/index.ts',
+        digest: 'a'.repeat(64),
+        errorCount: 1,
+        warningCount: 0,
+        fixableErrorCount: 1,
+        fixableWarningCount: 0,
+        messages: [
+          {
+            ruleId: 'no-debugger',
+            severity: 2,
+            message: 'Unexpected debugger statement.',
+            messageId: 'unexpected',
+            line: 1,
+            column: 1,
+            endLine: 1,
+            endColumn: 9,
+            fix: { range: [0, 8], text: '' },
+            suggestions: [
+              {
+                messageId: 'remove',
+                data: { statement: 'debugger' },
+                desc: 'Remove debugger.',
+                fix: { range: [0, 8], text: '' },
+              },
+            ],
+          },
+        ],
+        fixedOutput: '',
+      },
+    ],
+    totals: {
+      files: 1,
+      errors: 1,
+      warnings: 0,
+      fixableErrors: 1,
+      fixableWarnings: 0,
+    },
+  } as const;
+  const testFacet = {
+    producer: 'rstest',
+    files: [
+      {
+        project: 'unit',
+        path: 'src/index.test.ts',
+        status: 'fail',
+        durationMs: 4,
+        tests: [
+          {
+            project: 'unit',
+            path: 'src/index.test.ts',
+            name: 'works',
+            parentNames: ['suite'],
+            status: 'fail',
+            durationMs: 3,
+            errors: [{ name: 'AssertionError', message: 'failed', retryCount: 1 }],
+            retryErrors: [{ name: 'AssertionError', message: 'first attempt' }],
+            retryCount: 1,
+          },
+        ],
+      },
+    ],
+    stats: {
+      tests: { total: 1, passed: 0, failed: 1, skipped: 0, todo: 0 },
+      files: { total: 1, failed: 1 },
+    },
+    durationMs: 5,
+    unhandledErrors: [],
+  } as const;
+  const captured = {
+    ...snapshot,
+    source: {
+      inputs: [{ path: 'src/index.ts', digest: 'b'.repeat(64) }],
+      inputCompleteness: 'complete',
+    },
+    facets: { lint, test: testFacet },
+  };
+
+  expect(validateLintFacet(lint)).toEqual(lint);
+  expect(validateTestFacet(testFacet)).toEqual(testFacet);
+  expect(validateSnapshot(captured)).toEqual(captured);
+});
+
+test('rejects malformed known facets and unpaired source input metadata', () => {
+  const lint = {
+    producer: 'rslint',
+    mode: 'files',
+    fixPreviewCaptured: false,
+    files: [],
+    totals: {
+      files: 0,
+      errors: 0,
+      warnings: 0,
+      fixableErrors: 0,
+      fixableWarnings: 0,
+    },
+  } as const;
+  const testFacet = {
+    producer: 'rstest',
+    files: [],
+    stats: {
+      tests: { total: 0, passed: 0, failed: 0, skipped: 0, todo: 0 },
+      files: { total: 0, failed: 0 },
+    },
+    durationMs: 0,
+    unhandledErrors: [],
+  } as const;
+
+  expect(validateLintFacet({ ...lint, mode: 'watch' })).toBeUndefined();
+  expect(validateLintFacet({ ...lint, files: [{ path: 'a.ts' }] })).toBeUndefined();
+  expect(validateTestFacet({ ...testFacet, durationMs: -1 })).toBeUndefined();
+  expect(
+    validateTestFacet({
+      ...testFacet,
+      files: [{ project: 'unit', path: 'a.test.ts', status: 'unknown', tests: [] }],
+    }),
+  ).toBeUndefined();
+  expect(
+    validateSnapshot({
+      ...snapshot,
+      source: { inputs: [{ path: 'src/index.ts', digest: 'not-a-digest' }] },
+    }),
+  ).toBeUndefined();
+  expect(
+    validateSnapshot({
+      ...snapshot,
+      source: { inputCompleteness: 'complete' },
+    }),
+  ).toBeUndefined();
+  expect(
+    validateSnapshot({
+      ...snapshot,
+      facets: { lint: { ...lint, mode: 'watch' } },
+    }),
+  ).toBeUndefined();
+  expect(
+    validateSnapshot({
+      ...snapshot,
+      facets: { test: { ...testFacet, durationMs: -1 } },
+    }),
+  ).toBeUndefined();
+});
+
+test('keeps legacy sources and unknown JSON facets valid', () => {
+  const legacy = {
+    ...snapshot,
+    source: { revision: 'abc123', dirtyDigest: 'dirty' },
+    facets: { future: { producer: 'future', values: [true, null, 1, 'one'] } },
+  };
+
+  expect(validateSnapshot(legacy)).toEqual(legacy);
 });
 
 test('rejects malformed snapshots', () => {

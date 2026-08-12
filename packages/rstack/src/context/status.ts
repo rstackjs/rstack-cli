@@ -1,11 +1,8 @@
 import { createHash } from 'node:crypto';
 import { realpath } from 'node:fs/promises';
 import { type ProjectContextStatus, type ProjectStatus } from './model.ts';
+import { assessSnapshotFreshness } from './source.ts';
 import { readContextWorkspaceStatus } from './store.ts';
-
-type ProjectContextStatusWithStart = ProjectContextStatus & {
-  startedAt: string;
-};
 
 const compareStrings = (left: string, right: string): number =>
   left === right ? 0 : left < right ? -1 : 1;
@@ -33,22 +30,27 @@ const readProjectStatus = async (workspaceRoot: string): Promise<ProjectStatus> 
   const workspace = await readContextWorkspaceStatus(workspaceRoot);
   const workspacePath = await realpath(workspaceRoot);
   const workspaceId = `ws_${createHash('sha256').update(workspacePath).digest('hex').slice(0, 24)}`;
-  const contexts = workspace.runs
-    .flatMap(({ run, contexts: runContexts }) =>
-      runContexts.map(
-        ({ context, latestSnapshot }) =>
-          ({
-            runId: run.runId,
-            producer: run.producer,
-            context,
-            state: latestSnapshot === undefined ? 'pending' : 'ready',
-            ...(latestSnapshot === undefined ? {} : { latestSnapshot }),
-            startedAt: run.startedAt,
-          }) satisfies ProjectContextStatusWithStart,
+  const contexts = (
+    await Promise.all(
+      workspace.runs.flatMap(({ run, contexts: runContexts }) =>
+        runContexts.map(async ({ context, latestSnapshot }) => ({
+          runId: run.runId,
+          producer: run.producer,
+          context,
+          state: latestSnapshot === undefined ? ('pending' as const) : ('ready' as const),
+          ...(latestSnapshot === undefined
+            ? {}
+            : {
+                latestSnapshot,
+                freshness: await assessSnapshotFreshness(workspaceRoot, latestSnapshot),
+              }),
+          startedAt: run.startedAt,
+        })),
       ),
     )
+  )
     .sort(compareProjectContexts)
-    .map(({ startedAt: _, ...context }) => context);
+    .map(({ startedAt: _, ...context }) => context satisfies ProjectContextStatus);
 
   return {
     schemaVersion: workspace.schemaVersion,
