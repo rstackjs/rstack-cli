@@ -1,0 +1,21 @@
+{
+  "name": "rstack-context-codex",
+  "version": "0.1.0",
+  "description": "Analyze Rstack module reachability, change impact, and build artifacts.",
+  "author": {
+    "name": "Rstack"
+  },
+  "repository": "https://github.com/rstackjs/rstack-cli",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Rstack Context",
+    "shortDescription": "Inspect reachability, impact, and builds.",
+    "longDescription": "Use checkout-local Rstack evidence to inspect module reachability, change impact, and Rsdoctor build artifacts.",
+    "developerName": "Rstack",
+    "category": "Developer Tools",
+    "capabilities": ["Read-only analysis"],
+    "defaultPrompt": "Analyze my Rstack project using the available checkout-local evidence."
+  },
+  "mcpServers": "./.mcp.json"
+}

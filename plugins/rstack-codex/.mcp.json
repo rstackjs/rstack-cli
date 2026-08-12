@@ -1,0 +1,6 @@
+{
+  "rstack": {
+    "command": "rs",
+    "args": ["mcp"]
+  }
+}

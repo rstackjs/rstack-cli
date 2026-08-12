@@ -1,0 +1,12 @@
+{
+  "name": "rstack-context-claude",
+  "version": "0.1.0",
+  "description": "Analyze Rstack module reachability, change impact, and build artifacts.",
+  "author": {
+    "name": "Rstack"
+  },
+  "repository": "https://github.com/rstackjs/rstack-cli",
+  "license": "MIT",
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
+}

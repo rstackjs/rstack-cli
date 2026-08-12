@@ -1,0 +1,15 @@
+{
+  "name": "rstack",
+  "description": "Rstack plugins for build-context analysis.",
+  "owner": {
+    "name": "Rstack"
+  },
+  "plugins": [
+    {
+      "name": "rstack-context-claude",
+      "source": "./plugins/rstack-claude",
+      "description": "Analyze Rstack module reachability, change impact, and build artifacts.",
+      "version": "0.1.0"
+    }
+  ]
+}

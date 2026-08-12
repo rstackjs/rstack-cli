@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "rstack": {
+      "command": "rs",
+      "args": ["mcp"]
+    }
+  }
+}
