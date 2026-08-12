@@ -10,18 +10,18 @@ import {
 } from './helpers.ts';
 
 const mocks = rs.hoisted(() => ({
-  createFmtWorkerPoolCalls: [] as [number, number | undefined][],
+  workerPoolCalls: [] as [number, number | undefined][],
 }));
 
 rs.mock('../../src/fmt/workerPool.ts', () => ({
-  createFmtWorkerPool: (fileCount: number, maxWorkers?: number) => {
-    mocks.createFmtWorkerPoolCalls.push([fileCount, maxWorkers]);
+  createWorkerPool: (fileCount: number, maxWorkers?: number) => {
+    mocks.workerPoolCalls.push([fileCount, maxWorkers]);
     return Promise.reject(new Error('worker startup failed'));
   },
 }));
 
 beforeEach(() => {
-  mocks.createFmtWorkerPoolCalls.length = 0;
+  mocks.workerPoolCalls.length = 0;
 });
 
 const createCachedUnsupportedFile = async (rootPath: string, fileName: string) => {
@@ -55,7 +55,7 @@ test('does not start the worker pool when every parser result is cached as unsup
       files: [],
       processedFileCount: 0,
     });
-    expect(mocks.createFmtWorkerPoolCalls).toEqual([]);
+    expect(mocks.workerPoolCalls).toEqual([]);
   });
 });
 
@@ -70,6 +70,6 @@ test('starts the worker pool for a path-only unsupported entry without an extens
         cache,
       }),
     ).rejects.toThrow('worker startup failed');
-    expect(mocks.createFmtWorkerPoolCalls).toEqual([[1, undefined]]);
+    expect(mocks.workerPoolCalls).toEqual([[1, undefined]]);
   });
 });

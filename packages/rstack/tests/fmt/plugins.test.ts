@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'node:url';
 import { expect, test } from 'rstack/test';
-import { createFingerprintResolver, createFmtPluginResolver } from '../../src/fmt/plugins.ts';
+import { createFingerprintResolver, createPluginResolver } from '../../src/fmt/plugins.ts';
 import { withTempProject, writeProjectFile } from './helpers.ts';
 
 test('resolves plugin specifiers from the config root', async () => {
@@ -40,7 +40,7 @@ test('resolves plugin specifiers from the config root', async () => {
       ],
     };
 
-    const resolved = createFmtPluginResolver(rootPath)(options);
+    const resolved = createPluginResolver(rootPath)(options);
 
     expect(resolved.plugins).toEqual([
       pathToFileURL(packageEntry).href,
@@ -56,7 +56,7 @@ test('resolves plugin specifiers from the config root', async () => {
 test('rejects imported plugin objects', () => {
   const options = { plugins: [{ languages: [] }] };
 
-  expect(() => createFmtPluginResolver(import.meta.dirname)(options)).toThrow(
+  expect(() => createPluginResolver(import.meta.dirname)(options)).toThrow(
     'Prettier plugin objects are not supported. Use a package name, path, or URL instead.',
   );
 });

@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { createFmtOptionsResolver } from './config.ts';
+import { createOptionsResolver } from './config.ts';
 import {
   createFileRequest,
   createLazyPluginResolver,
@@ -84,7 +84,7 @@ const runFmtStdin = async ({
   }
 
   const file = await resolveFileRequestPlugins(
-    createFileRequest(absolutePath, createFmtOptionsResolver(config)),
+    createFileRequest(absolutePath, createOptionsResolver(config)),
     createLazyPluginResolver(config.rootPath),
   );
   const result = await formatFmtSource(file, () => source);

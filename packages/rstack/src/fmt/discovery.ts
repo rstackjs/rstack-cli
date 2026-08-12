@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { createFmtOptionsResolver, type FmtOptionsResolver } from './config.ts';
+import { createOptionsResolver, type FmtOptionsResolver } from './config.ts';
 import { discoverFmtPaths } from './discoverPaths.ts';
 import { createIgnoreMatcher } from './ignore.ts';
 import type { FmtPluginResolver } from './plugins.ts';
@@ -21,7 +21,7 @@ const createLazyPluginResolver = (rootPath: string): (() => Promise<FmtPluginRes
     (resolver ??= import(
       /* rspackChunkName: 'fmtPlugins' */
       './plugins.ts'
-    ).then(({ createFmtPluginResolver }) => createFmtPluginResolver(rootPath)));
+    ).then(({ createPluginResolver }) => createPluginResolver(rootPath)));
 };
 
 /** Resolves the plugin specifiers of a request whose options configure plugins. */
@@ -63,7 +63,7 @@ const discoverFmtFiles = async ({
     return [];
   }
 
-  const resolveOptions = createFmtOptionsResolver(config);
+  const resolveOptions = createOptionsResolver(config);
   const getPluginResolver = createLazyPluginResolver(config.rootPath);
 
   return Promise.all(
