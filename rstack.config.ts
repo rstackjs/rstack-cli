@@ -1,4 +1,5 @@
 // Rstack configuration guide: https://rstack.rs/config
+import globals from 'globals';
 import { define } from 'rstack';
 
 define.lint(async () => {
@@ -6,6 +7,37 @@ define.lint(async () => {
   return [
     js.configs.recommended,
     ts.configs.recommended,
+    {
+      files: [
+        '**/*.config.{js,cjs,mjs}',
+        '.agents/skills/**/scripts/**/*.{js,cjs,mjs}',
+        'packages/rstack/bin/**/*.{js,cjs,mjs}',
+        'scripts/**/*.{js,cjs,mjs}',
+      ],
+      languageOptions: {
+        globals: globals.node,
+      },
+    },
+    {
+      files: [
+        'packages/create-rstack/template-app-*/{src,tests}/**/*.{js,jsx}',
+        'packages/create-rstack/template-lib-{react,solid,svelte,vue}/{src,tests}/**/*.{js,jsx}',
+      ],
+      languageOptions: {
+        globals: globals.browser,
+      },
+    },
+    {
+      files: ['packages/rstack/tests/**/src/**/*.js'],
+      languageOptions: {
+        globals: {
+          ...globals.browser,
+          DEFINE_APP_TEST_VALUE: 'readonly',
+          DEFINE_LIB_TEST_VALUE: 'readonly',
+          DEFINE_VALUE: 'readonly',
+        },
+      },
+    },
     // Source imports use .ts for Node.js native TypeScript execution; builds rewrite them to .js.
     {
       files: ['packages/rstack/src/**/*.ts'],

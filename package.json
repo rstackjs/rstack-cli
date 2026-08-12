@@ -20,6 +20,7 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "cspell-ban-words": "catalog:",
+    "globals": "catalog:",
     "heading-case": "catalog:",
     "prettier": "catalog:",
     "rstack": "workspace:*",
