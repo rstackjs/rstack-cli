@@ -12,6 +12,7 @@ import {
   type ContextWorkspaceStatus,
 } from './model.ts';
 import {
+  compareContextSnapshotGenerationFileNames,
   getContextSnapshotGenerationFileName,
   isContextSnapshotGenerationFileName,
   isRecordObject,
@@ -158,7 +159,7 @@ const readLatestSnapshot = async (
   try {
     fileNames = (await readdir(generationRoot))
       .filter((fileName) => fileName.endsWith('.json'))
-      .sort((left, right) => right.localeCompare(left));
+      .sort(compareContextSnapshotGenerationFileNames);
   } catch {
     return undefined;
   }

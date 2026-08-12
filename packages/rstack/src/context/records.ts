@@ -94,12 +94,59 @@ const getContextSnapshotGenerationFileName = (
   snapshot: Pick<ContextSnapshot, 'sequence' | 'snapshotId'>,
 ): string => `${snapshot.sequence.toString().padStart(10, '0')}-${snapshot.snapshotId}.json`;
 
+const parseContextSnapshotGenerationFileName = (
+  fileName: string,
+): Pick<ContextSnapshot, 'sequence' | 'snapshotId'> | undefined => {
+  const separatorIndex = fileName.indexOf('-');
+  if (separatorIndex < 1 || !fileName.endsWith('.json')) {
+    return undefined;
+  }
+
+  const sequenceText = fileName.slice(0, separatorIndex);
+  const sequence = Number(sequenceText);
+  const snapshotId = fileName.slice(separatorIndex + 1, -'.json'.length);
+  if (
+    !Number.isSafeInteger(sequence) ||
+    sequence < 0 ||
+    sequenceText !== sequence.toString().padStart(10, '0') ||
+    snapshotId.length === 0
+  ) {
+    return undefined;
+  }
+  return { sequence, snapshotId };
+};
+
+const compareDescending = (left: string, right: string): number =>
+  left === right ? 0 : left > right ? -1 : 1;
+
+const compareContextSnapshotGenerationFileNames = (left: string, right: string): number => {
+  const leftGeneration = parseContextSnapshotGenerationFileName(left);
+  const rightGeneration = parseContextSnapshotGenerationFileName(right);
+  if (leftGeneration === undefined || rightGeneration === undefined) {
+    if (leftGeneration !== undefined) {
+      return -1;
+    }
+    if (rightGeneration !== undefined) {
+      return 1;
+    }
+    return compareDescending(left, right);
+  }
+  if (leftGeneration.sequence !== rightGeneration.sequence) {
+    return leftGeneration.sequence > rightGeneration.sequence ? -1 : 1;
+  }
+  return (
+    compareDescending(leftGeneration.snapshotId, rightGeneration.snapshotId) ||
+    compareDescending(left, right)
+  );
+};
+
 const isContextSnapshotGenerationFileName = (
   fileName: string,
   snapshot: Pick<ContextSnapshot, 'sequence' | 'snapshotId'>,
 ): boolean => fileName === getContextSnapshotGenerationFileName(snapshot);
 
 export {
+  compareContextSnapshotGenerationFileNames,
   getContextSnapshotGenerationFileName,
   isContextSnapshotGenerationFileName,
   isRecordObject,

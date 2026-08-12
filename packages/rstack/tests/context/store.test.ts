@@ -300,3 +300,45 @@ test('stops reading generations after the newest valid snapshot', async () => {
     expect(status.runs[0]?.contexts[0]?.latestSnapshot).toEqual(latestSnapshot);
   });
 });
+
+test('orders generation sequences numerically across the ten-digit boundary', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await writeContextRunManifest(workspaceRoot, run);
+    const olderSnapshot = {
+      ...secondSnapshot,
+      snapshotId: 'snap_library_old',
+      sequence: 9_999_999_999,
+    } satisfies ContextSnapshot;
+    const newerSnapshot = {
+      ...secondSnapshot,
+      snapshotId: 'snap_library_new',
+      sequence: 10_000_000_000,
+    } satisfies ContextSnapshot;
+    await writeContextSnapshot(workspaceRoot, olderSnapshot);
+    await writeContextSnapshot(workspaceRoot, newerSnapshot);
+
+    const status = await readContextWorkspaceStatus(workspaceRoot);
+    expect(status.runs[0]?.contexts[0]?.latestSnapshot).toEqual(newerSnapshot);
+  });
+});
+
+test('breaks equal generation sequence ties by raw snapshot ID descending', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await writeContextRunManifest(workspaceRoot, run);
+    const lowerSnapshotId = {
+      ...secondSnapshot,
+      snapshotId: 'snap_Z',
+      sequence: 7,
+    } satisfies ContextSnapshot;
+    const higherSnapshotId = {
+      ...secondSnapshot,
+      snapshotId: 'snap_a',
+      sequence: 7,
+    } satisfies ContextSnapshot;
+    await writeContextSnapshot(workspaceRoot, lowerSnapshotId);
+    await writeContextSnapshot(workspaceRoot, higherSnapshotId);
+
+    const status = await readContextWorkspaceStatus(workspaceRoot);
+    expect(status.runs[0]?.contexts[0]?.latestSnapshot).toEqual(higherSnapshotId);
+  });
+});
