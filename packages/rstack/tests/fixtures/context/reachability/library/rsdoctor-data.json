@@ -1,0 +1,40 @@
+{
+  "data": {
+    "moduleGraph": {
+      "modules": [
+        {
+          "id": 13,
+          "path": "/repo/packages/library/src/generated.ts",
+          "name": "generated-source"
+        },
+        {
+          "id": 12,
+          "path": "/repo/packages/library/src/internal.ts",
+          "name": "internal"
+        },
+        {
+          "id": 11,
+          "path": "/repo/packages/library/dist/feature.js",
+          "name": "feature",
+          "chunks": ["feature"],
+          "isEntry": true
+        },
+        {
+          "id": 14,
+          "path": "/repo/packages/library/dist/cli.js",
+          "name": "cli",
+          "chunks": ["cli"]
+        },
+        {
+          "id": 10,
+          "path": "/repo/packages/library/dist/index.js",
+          "name": "index",
+          "chunks": ["index"],
+          "isEntry": true
+        }
+      ],
+      "dependencies": [{ "module": 12, "issuer": 10 }],
+      "exports": []
+    }
+  }
+}

@@ -35,6 +35,11 @@ type RsdoctorAnalysisResult = {
   result: JsonValue;
 };
 
+type RsdoctorArtifact = {
+  path: string;
+  data: Record<string, unknown>;
+};
+
 type RsdoctorAdapter = {
   catalog: RsdoctorToolDescriptor[];
   executor: ReturnType<
@@ -159,7 +164,10 @@ const getInput = (input: unknown, tool: RsdoctorToolDescriptor): Record<string, 
   return resolvedInput;
 };
 
-const readArtifact = async (workspaceRoot: string, dataFile: string): Promise<string> => {
+const readRsdoctorArtifact = async (
+  workspaceRoot: string,
+  dataFile: string,
+): Promise<RsdoctorArtifact> => {
   const artifactPath = path.resolve(workspaceRoot, dataFile);
   let contents: string;
   try {
@@ -179,7 +187,7 @@ const readArtifact = async (workspaceRoot: string, dataFile: string): Promise<st
     throw new Error('Rsdoctor data file must contain an object data field.');
   }
 
-  return artifactPath;
+  return { path: artifactPath, data: parsed.data };
 };
 
 const toRelativeWorkspaceFile = (workspaceRoot: string, file: string): string =>
@@ -189,8 +197,8 @@ const resolveRsdoctorDataFile = async (
   workspaceRoot: string,
   dataFile: string,
 ): Promise<string> => {
-  const artifactPath = await readArtifact(workspaceRoot, dataFile);
-  return toRelativeWorkspaceFile(workspaceRoot, artifactPath);
+  const artifact = await readRsdoctorArtifact(workspaceRoot, dataFile);
+  return toRelativeWorkspaceFile(workspaceRoot, artifact.path);
 };
 
 const analyzeRsdoctorArtifact = async (
@@ -207,12 +215,12 @@ const analyzeRsdoctorArtifact = async (
   const { catalog, executor } = await getAdapter();
   const tool = catalog.find(({ name }) => name === request.toolName)!;
   const input = getInput(request.input, tool);
-  const artifactPath = await readArtifact(workspaceRoot, request.dataFile);
+  const artifact = await readRsdoctorArtifact(workspaceRoot, request.dataFile);
 
   let result: unknown;
   try {
     result = await executor.execute({
-      dataFile: artifactPath,
+      dataFile: artifact.path,
       input,
       toolName: request.toolName,
     });
@@ -227,5 +235,10 @@ const analyzeRsdoctorArtifact = async (
   };
 };
 
-export { analyzeRsdoctorArtifact, listRsdoctorToolNames, resolveRsdoctorDataFile };
-export type { RsdoctorAnalysisRequest, RsdoctorAnalysisResult };
+export {
+  analyzeRsdoctorArtifact,
+  listRsdoctorToolNames,
+  readRsdoctorArtifact,
+  resolveRsdoctorDataFile,
+};
+export type { RsdoctorAnalysisRequest, RsdoctorAnalysisResult, RsdoctorArtifact };
