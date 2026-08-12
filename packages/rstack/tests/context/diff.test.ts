@@ -296,6 +296,60 @@ test('diffs lint diagnostics by location and reports all observable changes', ()
   );
 });
 
+test('preserves duplicate lint diagnostics when only one occurrence is removed', () => {
+  const diagnostic = {
+    ruleId: 'duplicate-rule',
+    severity: 2 as const,
+    message: 'duplicate',
+    line: 1,
+    column: 1,
+  };
+  const leftFacet = emptyLintFacet();
+  leftFacet.files = [
+    {
+      path: 'src/duplicate.ts',
+      digest: 'a'.repeat(64),
+      errorCount: 2,
+      warningCount: 0,
+      fixableErrorCount: 0,
+      fixableWarningCount: 0,
+      messages: [diagnostic, { ...diagnostic }],
+    },
+  ];
+  const rightFacet = emptyLintFacet();
+  rightFacet.files = [
+    {
+      path: 'src/duplicate.ts',
+      digest: 'b'.repeat(64),
+      errorCount: 1,
+      warningCount: 0,
+      fixableErrorCount: 0,
+      fixableWarningCount: 0,
+      messages: [{ ...diagnostic }],
+    },
+  ];
+
+  const result = compare(
+    storedSnapshot({ snapshotId: 'snap_left', producer: 'rslint', facet: leftFacet }),
+    storedSnapshot({ snapshotId: 'snap_right', producer: 'rslint', facet: rightFacet }),
+    'diagnostics',
+  );
+
+  expect(result).toMatchObject({
+    compatible: true,
+    added: [],
+    removed: [
+      {
+        path: 'src/duplicate.ts',
+        ruleId: 'duplicate-rule',
+        message: 'duplicate',
+      },
+    ],
+    changed: [],
+    summary: { added: 0, removed: 1, changed: 0 },
+  });
+});
+
 test('diffs project-qualified test results and reports execution changes', () => {
   const leftFacet = emptyTestFacet();
   leftFacet.files = [
@@ -406,6 +460,48 @@ test('diffs project-qualified test results and reports execution changes', () =>
       },
     ],
     summary: { added: 1, removed: 1, changed: 1 },
+  });
+});
+
+test('preserves duplicate test results when only one occurrence is removed', () => {
+  const duplicate = {
+    project: 'unit',
+    path: 'duplicate.test.ts',
+    parentNames: ['suite'],
+    name: 'duplicate',
+    status: 'pass' as const,
+  };
+  const leftFacet = emptyTestFacet();
+  leftFacet.files = [
+    {
+      project: 'unit',
+      path: 'duplicate.test.ts',
+      status: 'pass',
+      tests: [duplicate, { ...duplicate }],
+    },
+  ];
+  const rightFacet = emptyTestFacet();
+  rightFacet.files = [
+    {
+      project: 'unit',
+      path: 'duplicate.test.ts',
+      status: 'pass',
+      tests: [{ ...duplicate }],
+    },
+  ];
+
+  const result = compare(
+    storedSnapshot({ snapshotId: 'snap_left', producer: 'rstest', facet: leftFacet }),
+    storedSnapshot({ snapshotId: 'snap_right', producer: 'rstest', facet: rightFacet }),
+    'tests',
+  );
+
+  expect(result).toMatchObject({
+    compatible: true,
+    added: [],
+    removed: [duplicate],
+    changed: [],
+    summary: { added: 0, removed: 1, changed: 0 },
   });
 });
 

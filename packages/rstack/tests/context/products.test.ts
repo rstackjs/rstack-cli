@@ -74,6 +74,58 @@ test('collects library contracts and seeds only exact runtime module matches', a
   ]);
 });
 
+test('does not match a library contract to a dependency with the same output suffix', async () => {
+  const workspaceRoot = path.join(fixtureRoot, 'library');
+  const graph = await readRsdoctorModuleGraph(workspaceRoot, 'rsdoctor-data.json');
+  graph.modules.push({
+    id: '99',
+    path: '/repo/node_modules/other-library/dist/index.js',
+    name: 'other-library',
+    chunks: ['other-library'],
+    isEntry: false,
+  });
+
+  const product = await resolveProductRoots(
+    workspaceRoot,
+    context('ctx_library', 'library'),
+    graph,
+  );
+
+  expect(
+    product.contractTargets.find(
+      ({ field, target }) => field === 'exports' && target === './dist/index.js',
+    )?.matchedModuleIds,
+  ).toEqual(['10']);
+  expect(product.roots.some(({ module }) => module.id === '99')).toBe(false);
+});
+
+test('matches a library contract only within the selected monorepo package', async () => {
+  const graph = await readRsdoctorModuleGraph(
+    path.join(fixtureRoot, 'library'),
+    'rsdoctor-data.json',
+  );
+  graph.modules.push({
+    id: '99',
+    path: '/repo/packages/other-library/dist/index.js',
+    name: 'other-library',
+    chunks: ['other-library'],
+    isEntry: false,
+  });
+
+  const product = await resolveProductRoots(
+    fixtureRoot,
+    { ...context('ctx_library', 'library'), packageRoot: 'library' },
+    graph,
+  );
+
+  expect(
+    product.contractTargets.find(
+      ({ field, target }) => field === 'exports' && target === './dist/index.js',
+    )?.matchedModuleIds,
+  ).toEqual(['10']);
+  expect(product.packageRoot).toBe('library');
+});
+
 test('does not guess generated output to source module mappings', async () => {
   const workspaceRoot = path.join(fixtureRoot, 'library');
   const graph = await readRsdoctorModuleGraph(workspaceRoot, 'rsdoctor-data.json');

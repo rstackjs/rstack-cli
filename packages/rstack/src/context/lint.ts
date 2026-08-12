@@ -322,7 +322,7 @@ const testDiagnostic = (
 const testDiagnostics = (facet: TestFacet): DiagnosticRecord[] => [
   ...facet.files.flatMap((file) => [
     ...file.tests.flatMap((testCase) =>
-      [...(testCase.errors ?? []), ...(testCase.retryErrors ?? [])].map((error) =>
+      (testCase.errors ?? []).map((error) =>
         testDiagnostic(error, {
           path: testCase.path,
           project: testCase.project,

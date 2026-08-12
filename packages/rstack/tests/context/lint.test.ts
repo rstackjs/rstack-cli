@@ -325,6 +325,95 @@ test('paginates and filters diagnostics from one frozen snapshot deterministical
   });
 });
 
+test('reports only terminal test failures as current diagnostics', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const context = {
+      contextId: 'ctx_test',
+      packageRoot: '.',
+      product: 'development',
+    } as const;
+    const run = {
+      schemaVersion: contextStoreSchemaVersion,
+      runId: 'run_test_diagnostics',
+      producer: 'rstest',
+      command: 'test',
+      startedAt: '2026-08-12T08:00:00.000Z',
+      contexts: [context],
+    } satisfies ContextRunManifest;
+    await writeContextRunManifest(workspaceRoot, run);
+    await writeContextSnapshot(workspaceRoot, {
+      schemaVersion: contextStoreSchemaVersion,
+      snapshotId: 'snap_test_diagnostics',
+      runId: run.runId,
+      contextId: context.contextId,
+      sequence: 0,
+      observedAt: '2026-08-12T08:00:01.000Z',
+      status: 'fail',
+      completeness: { test: 'complete' },
+      facets: {
+        test: {
+          producer: 'rstest',
+          files: [
+            {
+              project: 'unit',
+              path: 'src/recovered.test.ts',
+              status: 'pass',
+              tests: [
+                {
+                  project: 'unit',
+                  path: 'src/recovered.test.ts',
+                  name: 'recovers',
+                  status: 'pass',
+                  retryErrors: [{ name: 'AssertionError', message: 'recovered attempt' }],
+                  retryCount: 1,
+                },
+              ],
+            },
+            {
+              project: 'unit',
+              path: 'src/failing.test.ts',
+              status: 'fail',
+              tests: [
+                {
+                  project: 'unit',
+                  path: 'src/failing.test.ts',
+                  parentNames: ['suite'],
+                  name: 'fails',
+                  status: 'fail',
+                  errors: [{ name: 'AssertionError', message: 'terminal failure' }],
+                  retryErrors: [{ name: 'AssertionError', message: 'earlier attempt' }],
+                  retryCount: 1,
+                },
+              ],
+            },
+          ],
+          stats: {
+            tests: { total: 2, passed: 1, failed: 1, skipped: 0, todo: 0 },
+            files: { total: 2, failed: 1 },
+          },
+          durationMs: 3,
+          unhandledErrors: [],
+        },
+      },
+    });
+
+    await expect(
+      listDiagnostics(workspaceRoot, { snapshotId: 'snap_test_diagnostics' }),
+    ).resolves.toMatchObject({
+      total: 1,
+      items: [
+        {
+          producer: 'rstest',
+          path: 'src/failing.test.ts',
+          project: 'unit',
+          name: 'suite > fails',
+          message: 'terminal failure',
+        },
+      ],
+    });
+  });
+});
+
 test('selects the newest diagnostic snapshot rather than an unrelated newer build', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     const filePath = path.join(workspaceRoot, 'a.ts');

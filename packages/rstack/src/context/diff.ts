@@ -86,21 +86,35 @@ const diffItems = <T extends SnapshotDiffItem>(
   rightItems: T[],
   identity: (item: T) => string,
 ): Pick<Extract<SnapshotDiffResult, { compatible: true }>, 'added' | 'removed' | 'changed'> => {
-  const leftByIdentity = new Map(leftItems.map((item) => [identity(item), item]));
-  const rightByIdentity = new Map(rightItems.map((item) => [identity(item), item]));
+  const leftByIdentity = new Map<string, T[]>();
+  const rightByIdentity = new Map<string, T[]>();
+  for (const item of leftItems) {
+    const itemIdentity = identity(item);
+    leftByIdentity.set(itemIdentity, [...(leftByIdentity.get(itemIdentity) ?? []), item]);
+  }
+  for (const item of rightItems) {
+    const itemIdentity = identity(item);
+    rightByIdentity.set(itemIdentity, [...(rightByIdentity.get(itemIdentity) ?? []), item]);
+  }
   const identities = [...new Set([...leftByIdentity.keys(), ...rightByIdentity.keys()])].sort();
   const added: T[] = [];
   const removed: T[] = [];
   const changed: Array<{ before: T; after: T }> = [];
 
   for (const itemIdentity of identities) {
-    const before = leftByIdentity.get(itemIdentity);
-    const after = rightByIdentity.get(itemIdentity);
-    if (before === undefined && after !== undefined) added.push(after);
-    else if (before !== undefined && after === undefined) removed.push(before);
-    else if (before !== undefined && after !== undefined && !isDeepStrictEqual(before, after)) {
-      changed.push({ before, after });
+    const after = [...(rightByIdentity.get(itemIdentity) ?? [])];
+    const before = (leftByIdentity.get(itemIdentity) ?? []).filter((item) => {
+      const exactIndex = after.findIndex((candidate) => isDeepStrictEqual(item, candidate));
+      if (exactIndex === -1) return true;
+      after.splice(exactIndex, 1);
+      return false;
+    });
+    const changedCount = Math.min(before.length, after.length);
+    for (let index = 0; index < changedCount; index += 1) {
+      changed.push({ before: before[index]!, after: after[index]! });
     }
+    removed.push(...before.slice(changedCount));
+    added.push(...after.slice(changedCount));
   }
   return { added, removed, changed };
 };

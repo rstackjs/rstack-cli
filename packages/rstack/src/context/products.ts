@@ -60,10 +60,16 @@ const readContractTargets = async (
 const normalizeTarget = (value: string): string =>
   path.posix.normalize(value.replaceAll('\\', '/')).replace(/^\.\//u, '');
 
-const matchesTarget = (module: ObservedModule, target: string): boolean => {
+const matchesTarget = (module: ObservedModule, target: string, packageRoot: string): boolean => {
   const modulePath = normalizeTarget(module.path);
   const normalizedTarget = normalizeTarget(target);
-  return modulePath === normalizedTarget || modulePath.endsWith(`/${normalizedTarget}`);
+  if (modulePath.split('/').includes('node_modules')) return false;
+  const normalizedPackageRoot = normalizeTarget(packageRoot);
+  const scopedTarget =
+    normalizedPackageRoot === '.'
+      ? normalizedTarget
+      : normalizeTarget(`${normalizedPackageRoot}/${normalizedTarget}`);
+  return modulePath === scopedTarget || modulePath.endsWith(`/${scopedTarget}`);
 };
 
 const toRootModule = ({ isEntry: _, optimizerBound: __, ...module }: ObservedModule) => module;
@@ -106,7 +112,7 @@ const resolveProductRoots = async (
         field,
         target,
         matchedModuleIds: graph.modules
-          .filter((module) => matchesTarget(module, target))
+          .filter((module) => matchesTarget(module, target, context.packageRoot))
           .map(({ id }) => id),
       }));
       for (const target of contractTargets) {
