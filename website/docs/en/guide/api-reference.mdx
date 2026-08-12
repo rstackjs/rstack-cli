@@ -6,7 +6,7 @@ Rstack provides a unified configuration API and re-exports the public APIs of Rs
 
 | Import path              | Contents                                          | Use case                                |
 | ------------------------ | ------------------------------------------------- | --------------------------------------- |
-| `rstack`                 | Rstack configuration API                          | Register tool configurations            |
+| `rstack`                 | Rstack configuration and plugin APIs              | Configure and extend Rstack             |
 | `rstack/app`             | Public APIs from `@rsbuild/core`                  | Build applications and extend Rsbuild   |
 | `rstack/lib`             | Public APIs from `@rslib/core`                    | Build libraries and extend Rslib        |
 | `rstack/test`            | Public APIs from `@rstest/core`                   | Write tests and configure test projects |
@@ -19,7 +19,9 @@ Rstack provides a unified configuration API and re-exports the public APIs of Rs
 
 ### `define`
 
-Import `define` from `rstack` to register tool configurations in `rstack.config.ts`; see [Configuration APIs](./configuration#configuration-apis) for details.
+Import `define` from `rstack` to register tool configurations and plugins in `rstack.config.ts`; see [Configuration APIs](./configuration#configuration-apis) and [Plugins](./plugins) for details.
+
+The main entry point also exports the public plugin types, including `RstackPlugin`, `RstackPluginAPI`, `RstackPluginContext`, `RstackConfigMap`, `FmtConfig`, and `StagedConfig`.
 
 ## Re-exports
 

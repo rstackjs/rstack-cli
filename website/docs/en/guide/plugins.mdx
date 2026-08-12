@@ -1,0 +1,194 @@
+# Plugins \{#plugins}
+
+Rstack plugins extend the Rstack CLI as a whole. A plugin can register a new `rs` command and transform the native configuration passed to any tool that Rstack orchestrates.
+
+This API complements the extension systems of the underlying tools. Use an Rsbuild or Rslib plugin for build hooks, an Rstest reporter for test results, an Rslint plugin or its programmatic API for lint behavior, and an Rspress plugin for documentation hooks. Use an Rstack plugin when one package needs to register a command or contribute to several of those tools from the shared Rstack configuration.
+
+## Registering plugins \{#registering-plugins}
+
+Register plugins explicitly with `define.plugins()` in `rstack.config.ts`:
+
+```ts title="rstack.config.ts"
+import { pluginAcme } from '@acme/rstack-plugin';
+import { define } from 'rstack';
+
+define.plugins([pluginAcme()]);
+```
+
+Rstack does not scan dependencies or discover plugins by package name. Plugin entries may be nested, asynchronous, or conditional; falsy entries are ignored:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.plugins([
+  import('@acme/rstack-plugin').then(({ pluginAcme }) => pluginAcme()),
+  process.env.CI ? import('@acme/rstack-ci').then(({ pluginCI }) => pluginCI()) : false,
+]);
+```
+
+Like the other `define.*()` APIs, `define.plugins()` can be called at most once per configuration file.
+
+## Creating a plugin \{#creating-a-plugin}
+
+A plugin has a unique name and a `setup` function. The setup function receives the Rstack plugin API:
+
+```ts title="src/pluginAcme.ts"
+import type { RstackPlugin } from 'rstack';
+
+export const pluginAcme = (): RstackPlugin => ({
+  name: 'acme',
+  setup(api) {
+    api.addCommand({
+      name: 'acme-info',
+      async handler(args) {
+        await printWorkspaceInfo(api.context.cwd, args);
+      },
+    });
+
+    api.modifyConfig('app', (config) => ({
+      ...config,
+      source: {
+        ...config.source,
+        define: {
+          ...config.source?.define,
+          ACME_CHANNEL: JSON.stringify('stable'),
+        },
+      },
+    }));
+
+    api.modifyConfig('test', (config) => ({
+      ...config,
+      reporters: [...(config.reporters ?? []), createAcmeReporter()],
+    }));
+  },
+});
+```
+
+The package owns `printWorkspaceInfo` and `createAcmeReporter`; Rstack only provides registration and configuration composition. `RstackPlugin`, `RstackPluginAPI`, `RstackPluginContext`, `RstackConfigMap`, `FmtConfig`, `StagedConfig`, and the other supporting types are exported from `rstack`.
+
+## Plugin lifecycle \{#plugin-lifecycle}
+
+For a command that loads project configuration, Rstack performs these steps in order:
+
+1. Load `rstack.config.*` and capture the registered tool configurations and plugins.
+2. Flatten plugin entries in declaration order.
+3. Validate every plugin, then run each `setup` function sequentially.
+4. Resolve the native configuration factory required by the selected command.
+5. Run matching configuration modifiers sequentially.
+6. Apply Rstack's internal configuration and start the underlying tool.
+
+A modifier may mutate its input, return a replacement, or return a promise. When it returns `undefined`, Rstack keeps the current configuration. Errors from setup, command handlers, and modifiers stop the invocation.
+
+Root help and version output do not load project configuration. Other commands initialize plugins only when they load a configuration.
+
+## Registering commands \{#registering-commands}
+
+Use `addCommand()` to add a top-level `rs` command:
+
+```ts
+import type { RstackPlugin } from 'rstack';
+
+export const pluginInspect = (): RstackPlugin => ({
+  name: 'inspect',
+  setup({ addCommand, context, logger }) {
+    addCommand({
+      name: 'inspect-workspace',
+      async handler(args) {
+        logger.info(`Inspecting ${context.cwd}`);
+        await inspectWorkspace(args);
+      },
+    });
+  },
+});
+```
+
+Command names use lowercase kebab case. A plugin cannot replace a built-in command or alias, and duplicate command names are rejected.
+
+The command handler receives the arguments after the command name. Global `--config` or `-c` options parsed by Rstack are removed first. The plugin owns command-specific parsing and help output.
+
+The read-only `context` exposes:
+
+- `cwd`: the working directory where Rstack was invoked.
+- `command`: the selected command name.
+- `args`: the same command arguments available during setup.
+- `configFilePath`: the resolved Rstack configuration path, or `null` when no file was found.
+
+## Modifying tool configurations \{#modifying-tool-configurations}
+
+Use `modifyConfig()` to contribute directly to a tool's native configuration. The `kind` selects the configuration type and keeps the handler typed.
+
+### Configuration kinds \{#configuration-kinds}
+
+| Kind     | Native configuration | Initialized by                     |
+| -------- | -------------------- | ---------------------------------- |
+| `app`    | Rsbuild              | `rs dev`, `rs build`, `rs preview` |
+| `lib`    | Rslib                | `rs lib`                           |
+| `doc`    | Rspress              | `rs doc`                           |
+| `test`   | Rstest               | `rs test`                          |
+| `lint`   | Rslint               | `rs lint`                          |
+| `fmt`    | Rstack/Prettier      | `rs fmt`                           |
+| `staged` | lint-staged          | `rs staged`                        |
+
+Tool configuration factories resolve before their matching modifiers. Existing command-line overlays still run in the underlying tool afterward, so explicit CLI options keep their normal precedence.
+
+### Mutation and replacement \{#mutation-and-replacement}
+
+Modifiers run in registration order. Both mutation and replacement are supported:
+
+```ts
+setup({ modifyConfig }) {
+  modifyConfig('app', (config) => {
+    config.plugins ??= [];
+    config.plugins.push(createRsbuildPlugin());
+  });
+
+  modifyConfig('lint', async (config) => [
+    ...config,
+    await createRslintConfig(),
+  ]);
+}
+```
+
+When no `define.*()` value exists, modifiers receive the native empty configuration: an empty array for `lint` and an empty object for the other kinds. `staged` keeps its missing-configuration error unless a staged modifier is registered.
+
+### Rstest inheritance \{#rstest-inheritance}
+
+When Rstest uses Rstack's automatic application or library inheritance, Rstack applies the matching `app` or `lib` modifiers before constructing the Rstest `extends` value. It then applies `test` modifiers after automatic inheritance. This lets one plugin contribute native build configuration and an Rstest reporter without applying either contribution twice.
+
+Explicit Rstest `extends` values continue to opt out of automatic application or library inheritance.
+
+## Underlying tool extensions \{#underlying-tool-extensions}
+
+Configuration modifiers do not replace native extension APIs. They contribute native values before the tool starts:
+
+- Add Rsbuild or Rslib plugins through the `plugins` field and use their hook APIs for build lifecycle work.
+- Add Rstest reporters through `reporters`, or use Rstest's programmatic API when a separate process needs structured test results.
+- Add Rslint flat-config entries and plugins through `lint`, or use the Rslint programmatic API for direct lint execution.
+- Add Rspress plugins through the Rspress configuration.
+- Add Prettier plugins through `fmt` and lint-staged tasks through `staged`.
+
+Build hooks, test results, lint results, and documentation lifecycle events remain owned by the underlying tools. Rstack does not normalize those results into a cross-tool lifecycle.
+
+## Configuration loading and reloads \{#configuration-loading-and-reloads}
+
+Plugins initialize once for each loaded Rstack configuration. Rsbuild's configuration watch entries are added after plugin modifiers; when Rsbuild reloads a changed configuration, Rstack loads it again and initializes a fresh plugin set.
+
+Registration is local to the selected configuration file. Rstack does not merge plugins from another workspace root or a parent configuration.
+
+## Compatibility \{#compatibility}
+
+The exported Rstack plugin types and setup contract follow Rstack's semantic-versioning policy. Plugin packages should declare a peer dependency range for the Rstack versions they support.
+
+Configuration values remain native to the integrated tool versions. A plugin that uses a particular Rsbuild, Rslib, Rstest, Rslint, Rspress, Prettier, or lint-staged feature should also follow that tool's compatibility guidance.
+
+## Non-goals \{#non-goals}
+
+The initial SPI intentionally does not provide:
+
+- automatic package discovery or scanning;
+- replacement of built-in commands;
+- global before/after command hooks or middleware;
+- plugin ordering descriptors or a plugin-to-plugin service registry;
+- a cross-tool result or event abstraction.
+
+Use the native tool APIs for domain-specific lifecycle and result processing.
