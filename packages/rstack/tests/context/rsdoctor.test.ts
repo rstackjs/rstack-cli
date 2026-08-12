@@ -297,6 +297,98 @@ test('sanitizes untrusted errors_list output while preserving safe relative diag
   });
 });
 
+test('sanitizes Windows paths and credential/configuration fields in real errors_list output', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const accessKey = 'windows-access-key';
+    const credentialSecret = 'windows-credential-secret';
+    const optionSecret = 'windows-option-secret';
+    const rootedPath = String.raw`\repo\private.ts`;
+    const uncPath = String.raw`\\server\share\repo\private.ts`;
+
+    await writeArtifact(
+      workspaceRoot,
+      validDataFile,
+      JSON.stringify({
+        data: {
+          errors: [
+            {
+              description: `Windows failure at ${uncPath} and ${rootedPath}; accessKey=${accessKey}.`,
+              error: {
+                [rootedPath]: 'rooted path key',
+                [uncPath]: 'UNC path key',
+                accessKey,
+                credentials: { password: credentialSecret },
+                options: { define: { PRIVATE_VALUE: optionSecret } },
+                relativeFile: 'src/safe-windows.ts',
+              },
+              id: uncPath,
+            },
+          ],
+        },
+      }),
+    );
+
+    const analysis = await analyzeRsdoctorArtifact(workspaceRoot, {
+      dataFile: validDataFile,
+      toolName: 'errors_list',
+    });
+    const serialized = JSON.stringify(analysis);
+
+    expect(serialized).toContain('src/safe-windows.ts');
+    expect(serialized).toContain('<redacted absolute path>');
+    expect(serialized).not.toContain(uncPath);
+    expect(serialized).not.toContain(rootedPath);
+    expect(serialized).not.toContain(accessKey);
+    expect(serialized).not.toContain(credentialSecret);
+    expect(serialized).not.toContain(optionSecret);
+    expect(serialized).not.toContain('accessKey');
+    expect(serialized).not.toContain('credentials');
+    expect(serialized).not.toContain('options');
+  });
+});
+
+test('preserves safe sourceSize metadata from a real retained-modules tool result', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await writeArtifact(
+      workspaceRoot,
+      validDataFile,
+      JSON.stringify({
+        data: {
+          chunkGraph: { assets: [], chunks: [] },
+          moduleGraph: {
+            modules: [
+              {
+                bailoutReason: 'side effect',
+                id: 'safe-module',
+                path: 'src/safe.ts',
+                size: { gzipSize: 24, parsedSize: 48, sourceSize: 96 },
+              },
+            ],
+          },
+        },
+      }),
+    );
+
+    await expect(
+      analyzeRsdoctorArtifact(workspaceRoot, {
+        dataFile: validDataFile,
+        toolName: 'tree_shaking_retained_modules',
+      }),
+    ).resolves.toMatchObject({
+      result: {
+        data: {
+          items: [
+            {
+              path: 'src/safe.ts',
+              size: { gzipSize: 24, parsedSize: 48, sourceSize: 96 },
+            },
+          ],
+        },
+      },
+    });
+  });
+});
+
 test('rejects a real Rsdoctor tool result exceeding one MiB', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     const description = 'x'.repeat(512 * 1024);

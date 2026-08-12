@@ -7,21 +7,29 @@ const maxArtifactBytes = 64 * 1024 * 1024;
 const maxResultBytes = 1024 * 1024;
 const rsdoctorDataFileName = 'rsdoctor-data.json';
 const absolutePathPattern =
-  /(?<![a-zA-Z0-9._/:\\-])\/(?:[^\s"'`<>()[\]{},;:!?]+\/)*[^\s"'`<>()[\]{},;:!?]+|[a-zA-Z]:[\\/](?:[^\s"'`<>()[\]{},;:!?]+[\\/])*[^\s"'`<>()[\]{},;:!?]+/gu;
+  /(?<![a-zA-Z0-9._/:\\-])\/(?:[^\s"'`<>()[\]{},;:!?]+\/)*[^\s"'`<>()[\]{},;:!?]+|[a-zA-Z]:[\\/](?:[^\s"'`<>()[\]{},;:!?]+[\\/])*[^\s"'`<>()[\]{},;:!?]+|\\\\[^\\\s"'`<>()[\]{},;:!?]+\\(?:[^\\\s"'`<>()[\]{},;:!?]+\\)*[^\\\s"'`<>()[\]{},;:!?]+|(?<![a-zA-Z0-9._:\\-])\\[^\\\s"'`<>()[\]{},;:!?]+(?:\\[^\\\s"'`<>()[\]{},;:!?]+)*[^\\\s"'`<>()[\]{},;:!?]+/gu;
 const environmentAssignmentPattern = /\b[A-Z][A-Z0-9_]{1,}\s*=\s*(?:"[^"]*"|'[^']*'|[^\s,;]+)/gu;
 const secretAssignmentPattern =
-  /\b(?:[a-z0-9]+[_-])?(?:api[_-]?key|token|secret|password|passwd|private[_-]?key)\b\s*[:=]\s*(?:"[^"]*"|'[^']*'|[^\s,;]+)/giu;
-const sensitiveKeyFragments = [
+  /\b(?:[a-z0-9]+[_-])?(?:access[_-]?key|api[_-]?key|token|secret|password|passwd|private[_-]?key)\b\s*[:=]\s*(?:"[^"]*"|'[^']*'|[^\s,;]+)/giu;
+const sensitiveKeyNames = new Set([
+  'accesskey',
+  'accesskeyid',
   'apikey',
   'authorization',
   'auth',
+  'awsaccesskeyid',
   'bearer',
+  'clientsecret',
   'config',
   'configuration',
   'content',
   'contents',
+  'credential',
+  'credentials',
+  'define',
   'environment',
   'env',
+  'options',
   'password',
   'passwd',
   'privatekey',
@@ -30,8 +38,10 @@ const sensitiveKeyFragments = [
   'source',
   'sourcemap',
   'sourcecontent',
+  'sources',
+  'sourcescontent',
   'token',
-];
+]);
 
 type RsdoctorToolDescriptor = {
   name: string;
@@ -66,7 +76,7 @@ const containsAbsolutePath = (value: string): boolean => {
 
 const isSensitiveKey = (key: string): boolean => {
   const normalized = key.replaceAll(/[^a-zA-Z0-9]/gu, '').toLowerCase();
-  return sensitiveKeyFragments.some((fragment) => normalized.includes(fragment));
+  return sensitiveKeyNames.has(normalized);
 };
 
 const sanitizeText = (value: string): string =>
