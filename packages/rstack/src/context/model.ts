@@ -68,6 +68,21 @@ type ContextWorkspaceStatus = {
   issues: ContextStoreIssue[];
 };
 
+type ProjectContextStatus = {
+  runId: string;
+  producer: ContextProducer;
+  context: ContextDescriptor;
+  state: 'ready' | 'pending';
+  latestSnapshot?: ContextSnapshot;
+};
+
+type ProjectStatus = {
+  schemaVersion: typeof contextStoreSchemaVersion;
+  workspaceId: string;
+  contexts: ProjectContextStatus[];
+  issues: ContextStoreIssue[];
+};
+
 export { contextStoreMaxRecordBytes, contextStoreSchemaVersion };
 export type {
   ContextCompleteness,
@@ -82,4 +97,6 @@ export type {
   ContextStoreWriteResult,
   ContextWorkspaceStatus,
   JsonValue,
+  ProjectContextStatus,
+  ProjectStatus,
 };

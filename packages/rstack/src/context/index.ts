@@ -13,10 +13,14 @@ export {
   type ContextStoreWriteResult,
   type ContextWorkspaceStatus,
   type JsonValue,
+  type ProjectContextStatus,
+  type ProjectStatus,
 } from './model.ts';
 export {
   readContextWorkspaceStatus,
   writeContextRunManifest,
   writeContextSnapshot,
 } from './store.ts';
+export { resolveContextCapture, type ContextCaptureTier, type ContextConfig } from './config.ts';
+export { readProjectStatus } from './status.ts';
 export { resolveContextWorkspace, type ResolvedContextWorkspace } from './workspace.ts';

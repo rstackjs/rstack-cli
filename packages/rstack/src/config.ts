@@ -5,6 +5,7 @@ import type { RslibConfigDefinition } from '@rslib/core';
 import type { RslintConfig } from '@rslint/core';
 import type { UserConfig, UserConfigAsyncFn } from '@rspress/core';
 import type { RstestConfigExport } from '@rstest/core';
+import type { ContextConfig } from './context/config.ts';
 import type { FmtConfigDefinition } from './fmt/types.ts';
 import type { StagedConfig } from './staged.ts';
 
@@ -14,6 +15,7 @@ export type RspressConfigDefinition = UserConfig | UserConfigAsyncFn;
 export type Configs = {
   app?: RsbuildConfigDefinition;
   lib?: RslibConfigDefinition;
+  context?: ContextConfig;
   doc?: RspressConfigDefinition;
   test?: RstestConfigExport;
   lint?: RslintConfigDefinition;
@@ -90,6 +92,8 @@ type Define = {
    * @see {@link https://rstack.rs/config | Rstack configuration guide}
    */
   lib: (config: RslibConfigDefinition) => void;
+  /** Defines trusted passive build-context collection settings. */
+  context: (config: ContextConfig) => void;
   /**
    * Defines the Rspress config for documentation.
    *
@@ -152,6 +156,7 @@ const setConfig = <T extends keyof Configs>(type: T, config: Configs[T]): void =
 export const define: Define = {
   app: (config) => setConfig('app', config),
   lib: (config) => setConfig('lib', config),
+  context: (config) => setConfig('context', config),
   doc: (config) => setConfig('doc', config),
   test: (config) => setConfig('test', config),
   lint: (config) => setConfig('lint', config),
