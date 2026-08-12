@@ -19,6 +19,23 @@ type ContextDescriptor = {
   mode?: string;
 };
 
+type BuildMetadataFacet = {
+  producer: 'rsbuild' | 'rslib';
+  command: string;
+  mode?: string;
+  environment: string;
+  target: string[];
+  isWatch: boolean;
+  isFirstCompile: boolean;
+  durationMs: number;
+  hash?: string;
+  hasErrors: boolean;
+  hasWarnings: boolean;
+  assets: Array<{ name: string; size: number }>;
+  chunks: Array<{ id?: string; files: string[]; initial?: boolean }>;
+  truncated: { assets: number; chunks: number };
+};
+
 type ContextRunManifest = {
   schemaVersion: typeof contextStoreSchemaVersion;
   runId: string;
@@ -85,6 +102,7 @@ type ProjectStatus = {
 
 export { contextStoreMaxRecordBytes, contextStoreSchemaVersion };
 export type {
+  BuildMetadataFacet,
   ContextCompleteness,
   ContextDescriptor,
   ContextProducer,

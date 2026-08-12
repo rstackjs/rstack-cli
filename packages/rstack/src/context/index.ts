@@ -1,6 +1,7 @@
 export {
   contextStoreMaxRecordBytes,
   contextStoreSchemaVersion,
+  type BuildMetadataFacet,
   type ContextCompleteness,
   type ContextDescriptor,
   type ContextProducer,
@@ -22,5 +23,10 @@ export {
   writeContextSnapshot,
 } from './store.ts';
 export { resolveContextCapture, type ContextCaptureTier, type ContextConfig } from './config.ts';
+export {
+  appendBuildContextPlugin,
+  createBuildContextPlugin,
+  type BuildContextPluginOptions,
+} from './build.ts';
 export { readProjectStatus } from './status.ts';
 export { resolveContextWorkspace, type ResolvedContextWorkspace } from './workspace.ts';
