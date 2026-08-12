@@ -1,8 +1,10 @@
+import { spawnSync } from 'node:child_process';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import type { LintResult, RslintOptions } from '@rslint/core';
-import { beforeEach, expect, rs, test } from 'rstack/test';
+import { beforeEach, expect, test } from 'rstack/test';
 import { contextStoreSchemaVersion, type ContextRunManifest } from '../../src/context/model.ts';
 import { captureLintSnapshot, getLintFixPreview, listDiagnostics } from '../../src/context/lint.ts';
 import {
@@ -11,38 +13,35 @@ import {
   writeContextSnapshot,
 } from '../../src/context/store.ts';
 
-const mocks = rs.hoisted(() => ({
+const mocks = {
   closeCalls: 0,
   lintFilesCalls: [] as Array<string | string[]>,
   lintTextCalls: [] as Array<[string, { filePath?: string } | undefined]>,
   options: [] as RslintOptions[],
   results: [] as LintResult[],
   lintError: undefined as Error | undefined,
-}));
+};
 
-rs.mock('@rslint/core', () => ({
-  Rslint: class {
-    constructor(options: RslintOptions) {
-      mocks.options.push(options);
-    }
-
+const createRslint = (options: RslintOptions) => {
+  mocks.options.push(options);
+  return {
     async lintFiles(patterns: string | string[]): Promise<LintResult[]> {
       mocks.lintFilesCalls.push(patterns);
       if (mocks.lintError !== undefined) throw mocks.lintError;
       return mocks.results;
-    }
+    },
 
     async lintText(code: string, options?: { filePath?: string }): Promise<LintResult[]> {
       mocks.lintTextCalls.push([code, options]);
       if (mocks.lintError !== undefined) throw mocks.lintError;
       return mocks.results;
-    }
+    },
 
     async close(): Promise<void> {
       mocks.closeCalls += 1;
-    }
-  },
-}));
+    },
+  };
+};
 
 beforeEach(() => {
   mocks.closeCalls = 0;
@@ -63,6 +62,49 @@ const withTempWorkspace = async (
     await rm(workspaceRoot, { force: true, recursive: true });
   }
 };
+
+test('loading lint queries does not load the Rslint runtime', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const markerFile = path.join(workspaceRoot, 'rslint-loaded');
+    const hookFile = path.join(workspaceRoot, 'import-hook.mjs');
+    await writeFile(
+      hookFile,
+      `import { writeFileSync } from 'node:fs';
+import { registerHooks } from 'node:module';
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (specifier === '@rslint/core') {
+      writeFileSync(process.env.RSTACK_RSLINT_LOADED_MARKER, 'loaded');
+    }
+    return nextResolve(specifier, context);
+  },
+});
+`,
+    );
+    const moduleUrl = pathToFileURL(path.resolve('src/context/lint.ts')).toString();
+    const result = spawnSync(
+      process.execPath,
+      [
+        '--import',
+        hookFile,
+        '--input-type=module',
+        '--eval',
+        `const { listDiagnostics } = await import(${JSON.stringify(moduleUrl)});
+await listDiagnostics(${JSON.stringify(workspaceRoot)}).catch(() => undefined);`,
+      ],
+      {
+        encoding: 'utf8',
+        env: { ...process.env, RSTACK_RSLINT_LOADED_MARKER: markerFile },
+      },
+    );
+
+    expect(result.stderr).toBe('');
+    expect(result.status).toBe(0);
+    await expect(
+      import('node:fs/promises').then(({ access }) => access(markerFile)),
+    ).rejects.toThrow();
+  });
+});
 
 test('captures a deterministic file snapshot with complete inputs and fail status', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
@@ -113,7 +155,7 @@ test('captures a deterministic file snapshot with complete inputs and fail statu
       },
     ];
 
-    const result = await captureLintSnapshot(workspaceRoot, { mode: 'files' });
+    const result = await captureLintSnapshot(workspaceRoot, { mode: 'files' }, createRslint);
     const stored = await readContextSnapshotById(workspaceRoot, result.snapshotId);
 
     expect(mocks.options).toEqual([
@@ -178,12 +220,16 @@ test('captures text without persisting the input and exposes only stored fix out
       },
     ];
 
-    const result = await captureLintSnapshot(workspaceRoot, {
-      mode: 'text',
-      code,
-      filePath: 'src/buffer.ts',
-      includeFixPreview: true,
-    });
+    const result = await captureLintSnapshot(
+      workspaceRoot,
+      {
+        mode: 'text',
+        code,
+        filePath: 'src/buffer.ts',
+        includeFixPreview: true,
+      },
+      createRslint,
+    );
     const stored = await readContextSnapshotById(workspaceRoot, result.snapshotId);
 
     expect(mocks.options[0]).toMatchObject({ cwd: workspaceRoot, fix: true });
@@ -233,10 +279,14 @@ test('paginates and filters diagnostics from one frozen snapshot deterministical
         ],
       },
     ];
-    const capture = await captureLintSnapshot(workspaceRoot, {
-      mode: 'files',
-      patterns: ['src/**/*.ts'],
-    });
+    const capture = await captureLintSnapshot(
+      workspaceRoot,
+      {
+        mode: 'files',
+        patterns: ['src/**/*.ts'],
+      },
+      createRslint,
+    );
 
     const first = await listDiagnostics(workspaceRoot, {
       snapshotId: capture.snapshotId,
@@ -281,7 +331,7 @@ test('selects the newest diagnostic snapshot rather than an unrelated newer buil
         messages: [{ ruleId: 'a', severity: 2, message: 'error', line: 1, column: 1 }],
       },
     ];
-    const lintCapture = await captureLintSnapshot(workspaceRoot, { mode: 'files' });
+    const lintCapture = await captureLintSnapshot(workspaceRoot, { mode: 'files' }, createRslint);
     const context = { contextId: 'ctx_build', packageRoot: '.', product: 'application' } as const;
     const run = {
       schemaVersion: contextStoreSchemaVersion,
@@ -325,7 +375,7 @@ test('rejects a malformed diagnostics cursor', async () => {
         messages: [],
       },
     ];
-    const capture = await captureLintSnapshot(workspaceRoot, { mode: 'files' });
+    const capture = await captureLintSnapshot(workspaceRoot, { mode: 'files' }, createRslint);
 
     await expect(
       listDiagnostics(workspaceRoot, { snapshotId: capture.snapshotId, cursor: '?' }),
@@ -349,9 +399,13 @@ test('reports preview availability without rerunning or applying Rslint', async 
       },
     ];
 
-    const notCaptured = await captureLintSnapshot(workspaceRoot, {
-      mode: 'files',
-    });
+    const notCaptured = await captureLintSnapshot(
+      workspaceRoot,
+      {
+        mode: 'files',
+      },
+      createRslint,
+    );
     await expect(getLintFixPreview(workspaceRoot, notCaptured.snapshotId, 'a.ts')).resolves.toEqual(
       {
         available: false,
@@ -361,10 +415,14 @@ test('reports preview availability without rerunning or applying Rslint', async 
       },
     );
 
-    const noChange = await captureLintSnapshot(workspaceRoot, {
-      mode: 'files',
-      includeFixPreview: true,
-    });
+    const noChange = await captureLintSnapshot(
+      workspaceRoot,
+      {
+        mode: 'files',
+        includeFixPreview: true,
+      },
+      createRslint,
+    );
     await expect(getLintFixPreview(workspaceRoot, noChange.snapshotId, 'a.ts')).resolves.toEqual({
       available: false,
       reason: 'no-change',
@@ -379,9 +437,9 @@ test('always closes the one capture engine when linting fails', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     mocks.lintError = new Error('lint failed');
 
-    await expect(captureLintSnapshot(workspaceRoot, { mode: 'files' })).rejects.toThrow(
-      'lint failed',
-    );
+    await expect(
+      captureLintSnapshot(workspaceRoot, { mode: 'files' }, createRslint),
+    ).rejects.toThrow('lint failed');
     expect(mocks.options).toHaveLength(1);
     expect(mocks.closeCalls).toBe(1);
   });

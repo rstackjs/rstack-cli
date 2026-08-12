@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { Rslint, type LintMessage, type LintResult } from '@rslint/core';
+import type { LintMessage, LintResult, RslintOptions } from '@rslint/core';
 import {
   contextStoreSchemaVersion,
   type ContextFreshness,
@@ -43,6 +43,14 @@ type LintCaptureResult = {
   freshness: ContextFreshness;
   summary: LintFacet['totals'];
 };
+
+type RslintEngine = {
+  lintFiles: (patterns: string | string[]) => Promise<LintResult[]>;
+  lintText: (code: string, options?: { filePath?: string }) => Promise<LintResult[]>;
+  close: () => Promise<void>;
+};
+
+type RslintFactory = (options: RslintOptions) => RslintEngine;
 
 type DiagnosticsQuery = {
   snapshotId?: string;
@@ -169,6 +177,7 @@ const ensureWritten = (result: Awaited<ReturnType<typeof writeContextSnapshot>>)
 const captureLintSnapshot = async (
   workspaceRoot: string,
   request: LintSnapshotRequest,
+  createRslint?: RslintFactory,
 ): Promise<LintCaptureResult> => {
   const includeFixPreview = request.includeFixPreview ?? false;
   const configPath = path.join(import.meta.dirname, '..', 'rslintConfig.js');
@@ -183,11 +192,12 @@ const captureLintSnapshot = async (
     context,
     command: 'lint',
   });
-  const engine = new Rslint({
+  const options = {
     cwd: workspaceRoot,
     overrideConfigFile: configPath,
     fix: includeFixPreview,
-  });
+  } satisfies RslintOptions;
+  const engine = createRslint?.(options) ?? new (await import('@rslint/core')).Rslint(options);
 
   let results: LintResult[];
   try {
@@ -439,4 +449,5 @@ export type {
   LintCaptureResult,
   LintFixPreviewResult,
   LintSnapshotRequest,
+  RslintFactory,
 };
