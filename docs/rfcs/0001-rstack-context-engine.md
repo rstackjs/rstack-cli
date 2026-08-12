@@ -328,10 +328,6 @@ export default define({
     ],
     capture: 'metadata',
     tests: 'attach',
-    retention: {
-      snapshots: 20,
-      maxBytes: 100 * 1024 * 1024,
-    },
   },
 });
 ```
@@ -707,8 +703,8 @@ binding.
 
 - Completed records are immutable; incomplete run directories and temporary files are not queryable.
 - Snapshots are immutable and content-addressed where practical.
-- Only a bounded latest history is retained by default.
-- Source, maps, logs, coverage, and deep graphs have independent caps and retention policies.
+- Individual records and queries are bounded, but cache growth is not yet bounded by deletion.
+- Source, maps, logs, coverage, and deep graphs have independent read and write caps.
 - The store is disposable cache, never the only copy of a user artifact.
 - Raw Rsdoctor artifacts stay in their project-selected output location and are not copied unless a
   snapshot explicitly requires it.
@@ -1098,7 +1094,7 @@ flowchart TB
   P0["Phase 0: foundation + contracts<br/>Workspace discovery + immutable records"]
   P1A["Phase 1A: passive build context<br/>Snapshots + one read-only MCP server"]
   P1B["Phase 1B: Rsdoctor ingestion + richer build diagnostics"]
-  P1C["Phase 1C: bounded retention + report links"]
+  P1C["Phase 1C: report links"]
   P2["Phase 2: reachability<br/>Product roots + unused-code skills"]
   P3["Phase 3: development intelligence<br/>Generations + Rslint + Rstest"]
   P4["Phase 4: change workflows<br/>Snapshot diffs + CI + fix previews"]
@@ -1125,10 +1121,11 @@ flowchart TB
 - Ingest static Rsdoctor artifacts through the in-process Agent CLI.
 - Add richer build diagnostics.
 
-### Phase 1C: bounded retention and report links
+### Phase 1C: report links
 
-- Add bounded retention after real artifact sizes and access patterns are measured.
 - Add report links.
+- Defer destructive retention until real artifact sizes and access patterns are measured and a
+  portable recovery contract exists.
 
 ### Phase 2: reachability and skills
 
@@ -1192,7 +1189,7 @@ No high-confidence dead finding may include:
 - Initialization ordering, schema negotiation, invalid params, cancellation, progress, pagination,
   subscriptions, and stdout purity.
 - Concurrent readers and writers, immutable-name collisions, ignored temporary files, incomplete run
-  directories, crash recovery, bounded retention, schema skew, and orphan cleanup.
+  directories, crash recovery, schema skew, and orphan cleanup.
 - Watch tests wait for generation changes rather than sleeping.
 
 ### Security

@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm, stat, utimes, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 // cspell:ignore modelcontextprotocol
@@ -60,7 +60,7 @@ const writeRsdoctorArtifact = async (workspaceRoot: string): Promise<void> => {
   await writeFile(dataFile, JSON.stringify({ data: { summary: { costs: [{ costs: 12 }] } } }));
 };
 
-test('registers the read-only tools and the explicit destructive context pruning tool', async () => {
+test('registers exactly the three read-only Phase 1 tools', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await withMcpClient(workspaceRoot, async (client) => {
       const { tools } = await client.listTools();
@@ -69,8 +69,8 @@ test('registers the read-only tools and the explicit destructive context pruning
         'project_status',
         'rsdoctor_analyze',
         'report_link',
-        'context_prune',
       ]);
+      expect(tools.map((tool) => tool.name)).not.toContain('context_prune');
       expect(tools[0]).toMatchObject({
         name: 'project_status',
         title: 'Rstack project status',
@@ -106,99 +106,6 @@ test('registers the read-only tools and the explicit destructive context pruning
           required: ['dataFile'],
         },
       });
-      expect(tools[3]).toMatchObject({
-        name: 'context_prune',
-        annotations: {
-          readOnlyHint: false,
-          destructiveHint: true,
-          openWorldHint: false,
-        },
-        inputSchema: {
-          additionalProperties: false,
-        },
-      });
-    });
-  });
-});
-
-test('plans context pruning by default and applies only an explicit dryRun:false request', async () => {
-  await withTempWorkspace(async (workspaceRoot) => {
-    const context = {
-      contextId: 'ctx_retention',
-      packageRoot: 'packages/example',
-      product: 'application',
-    } as const;
-    const oldAt = new Date('2026-07-01T12:00:00.000Z');
-    for (let sequence = 1; sequence <= 11; sequence += 1) {
-      const run = createRun(`run_retention_${sequence.toString().padStart(2, '0')}`, context);
-      const snapshot = {
-        schemaVersion: contextStoreSchemaVersion,
-        snapshotId: `snapshot_retention_${sequence.toString().padStart(2, '0')}`,
-        runId: run.runId,
-        contextId: context.contextId,
-        sequence: 1,
-        observedAt: oldAt.toISOString(),
-        status: 'pass',
-        completeness: { build: 'complete' },
-        facets: { summary: { errors: 0 } },
-      } satisfies ContextSnapshot;
-      await writeContextRunManifest(workspaceRoot, run);
-      await writeContextSnapshot(workspaceRoot, snapshot);
-      const runDirectory = path.join(
-        workspaceRoot,
-        '.rstack',
-        'cache',
-        'context-v1',
-        'runs',
-        run.runId,
-      );
-      const generation = path.join(
-        runDirectory,
-        'contexts',
-        context.contextId,
-        'generations',
-        `0000000001-${snapshot.snapshotId}.json`,
-      );
-      const observedAt = new Date(oldAt.getTime() + sequence * 1000);
-      await Promise.all([
-        utimes(path.join(runDirectory, 'run.json'), observedAt, observedAt),
-        utimes(generation, observedAt, observedAt),
-      ]);
-    }
-
-    await withMcpClient(workspaceRoot, async (client) => {
-      const dryRun = await client.callTool({
-        name: 'context_prune',
-        arguments: {},
-      });
-
-      expect(dryRun.structuredContent).toMatchObject({
-        dryRun: true,
-        plan: {
-          runs: [{ runPath: 'runs/run_retention_01' }],
-        },
-      });
-      await expect(
-        stat(
-          path.join(workspaceRoot, '.rstack', 'cache', 'context-v1', 'runs', 'run_retention_01'),
-        ),
-      ).resolves.toMatchObject({ isDirectory: expect.any(Function) });
-
-      const applied = await client.callTool({
-        name: 'context_prune',
-        arguments: { dryRun: false },
-      });
-
-      expect(applied.structuredContent).toMatchObject({
-        dryRun: false,
-        result: { deleted: ['runs/run_retention_01'], skipped: [] },
-      });
-      await expect(
-        stat(
-          path.join(workspaceRoot, '.rstack', 'cache', 'context-v1', 'runs', 'run_retention_01'),
-        ),
-      ).rejects.toMatchObject({ code: 'ENOENT' });
-      expect(JSON.stringify({ dryRun, applied })).not.toContain(workspaceRoot);
     });
   });
 });

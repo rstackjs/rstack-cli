@@ -1,4 +1,4 @@
-# Rsdoctor context and retention implementation plan
+# Rsdoctor context implementation plan
 
 <!-- cspell:ignore modelcontextprotocol rsdoctor -->
 
@@ -6,13 +6,12 @@
 > (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox
 > (`- [ ]`) syntax for tracking.
 
-**Goal:** Complete RFC phases 1B and 1C by adding workspace-bounded static Rsdoctor analysis,
-bounded context-store retention, and safe report links behind the existing single Rstack MCP server.
+**Goal:** Complete RFC phases 1B and 1C by adding workspace-bounded static Rsdoctor analysis and
+report links behind the existing single Rstack MCP server.
 
 **Architecture:** A narrow adapter dynamically loads pinned `@rsdoctor/agent-cli@0.1.1`, validates
 an explicit checkout-local `rsdoctor-data.json`, and invokes only names from the package's public tool
-catalog. The MCP remains stateless and stdio-only. Retention is an explicit cache operation with a
-dry-run default; it never runs merely because an MCP client connects.
+catalog. The MCP remains stateless and stdio-only.
 
 **Tech stack:** TypeScript, Node.js 22+, Rstest, MCP TypeScript SDK 1.29.0,
 `@rsdoctor/agent-cli@0.1.1`, immutable context-v1 records.
@@ -30,10 +29,8 @@ dry-run default; it never runs merely because an MCP client connects.
   callers to filters/pagination when exceeded.
 - Treat artifact/report contents as untrusted; never return bundled source, raw configuration,
   environment values, or absolute checkout paths.
-- Retention defaults to dry-run and may delete only completed immutable run directories selected by
-  an explicit policy. It never follows symlinks or deletes the current context store root.
-- Retention policy defaults: keep 40 runs, keep records newer than 14 days, maximum 256 MiB; keep at
-  least the newest 10 runs regardless of age/bytes.
+- Destructive context-store retention is deferred until real artifact sizes and access patterns are
+  measured and a portable recovery contract exists.
 - English and Chinese documentation remain aligned in structure, meaning, links, and anchors.
 
 ---
@@ -140,55 +137,15 @@ Run focused tests and `pnpm check`; commit as `feat(rstack): expose Rsdoctor con
 
 ---
 
-### Task 3: implement explicit bounded context-store retention
+### Task 3: defer destructive context-store retention
 
-**Files:**
-
-- Create: `packages/rstack/src/context/retention.ts`
-- Create: `packages/rstack/tests/context/retention.test.ts`
-- Modify: `packages/rstack/src/context/index.ts`
-- Modify: `packages/rstack/src/context/mcp.ts`
-- Modify: `packages/rstack/tests/context/mcp.test.ts`
-
-**Interfaces:**
-
-- Produces:
-  `planContextRetention(workspaceRoot: string, policy?: Partial<ContextRetentionPolicy>): Promise<ContextRetentionPlan>`.
-- Produces:
-  `applyContextRetention(workspaceRoot: string, plan: ContextRetentionPlan): Promise<ContextRetentionResult>`.
-- MCP adds non-read-only `context_prune` with `dryRun` defaulting to `true`.
-
-- [ ] **Step 1: write deterministic policy tests and verify RED**
-
-Cover count, age, byte, newest-ten floor, malformed/temp files, concurrent-looking recent runs,
-symlink run directories, canonical root containment, and byte-stable plans. Use injected `now` in the
-planner rather than sleeping.
-
-- [ ] **Step 2: implement pure planning**
-
-Inspect only direct `runs/<safe-id>` directories with `lstat`; never follow symlinks. A run is
-eligible only when its manifest and every generation are valid immutable records and its newest file
-is older than one hour. Sort newest first, retain the newest ten, then apply 40-run/14-day/256-MiB
-bounds. The plan contains relative run paths and observed manifest digests.
-
-- [ ] **Step 3: write stale-plan/apply tests and verify RED**
-
-Assert dry-run never writes, apply revalidates every relative path and manifest digest, skips changed
-or missing runs, deletes only selected run directories, and never deletes the store/runs roots.
-
-- [ ] **Step 4: implement guarded apply and MCP tool**
-
-`context_prune` returns the plan for dry-run. `dryRun:false` is annotated non-read-only,
-destructive, closed-world and applies only the just-computed plan in the same request. No automatic
-pruning occurs at server startup or status reads.
-
-- [ ] **Step 5: commit Task 3**
-
-Run focused tests and `pnpm check`; commit as `feat(rstack): add bounded context retention`.
+Do not ship a deletion API or `context_prune` MCP tool in Phase 1. Continue bounding individual
+reads and writes, but do not claim that cache growth is bounded by deletion. Revisit retention only
+after real artifact sizes and access patterns are measured and a portable recovery contract exists.
 
 ---
 
-### Task 4: document and verify phases 1B and 1C
+### Task 4: document and verify Rsdoctor context tools
 
 **Files:**
 
@@ -198,9 +155,9 @@ Run focused tests and `pnpm check`; commit as `feat(rstack): add bounded context
 
 - [ ] **Step 1: document the exact trust and lifecycle model**
 
-Document explicit artifact selection, supported catalog names, output/path caps, report-link behavior,
-dry-run retention, destructive approval, and the fact that MCP never starts builds/report servers.
-Keep EN/ZH headings and examples aligned.
+Document explicit artifact selection, supported catalog names, output/path caps, report-link
+behavior, and the fact that MCP never starts builds/report servers. Keep EN/ZH headings and examples
+aligned.
 
 - [ ] **Step 2: mark delivery status honestly**
 
@@ -210,4 +167,4 @@ capability-marked; do not imply Rstack can derive facts absent from the artifact
 - [ ] **Step 3: run full verification and commit**
 
 Run `pnpm check`, `pnpm check:spell`, `pnpm build`, `pnpm --filter rstack build:native`, and
-`pnpm test`. Commit as `docs: document Rsdoctor context and retention`.
+`pnpm test`. Commit as `docs: document Rsdoctor context tools`.

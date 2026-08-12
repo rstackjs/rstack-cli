@@ -4,7 +4,6 @@ import type { ContentBlock } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import { analyzeRsdoctorArtifact } from './rsdoctor.ts';
 import { resolveRsdoctorReport } from './report.ts';
-import { applyContextRetention, planContextRetention } from './retention.ts';
 import { readProjectStatus } from './status.ts';
 
 const renderProjectStatus = (status: Awaited<ReturnType<typeof readProjectStatus>>): string =>
@@ -19,37 +18,9 @@ const rsdoctorAnalyzeInput = z
   .strict();
 
 const reportLinkInput = z.object({ dataFile: z.string().min(1) }).strict();
-const maxContextPruneResponseBytes = 16 * 1024;
-
-const contextPruneInput = z
-  .object({
-    dryRun: z.boolean().optional(),
-    policy: z
-      .object({
-        maxAgeMs: z.number().int().nonnegative().optional(),
-        maxBytes: z.number().int().nonnegative().optional(),
-        maxRuns: z.number().int().nonnegative().optional(),
-      })
-      .strict()
-      .optional(),
-  })
-  .strict();
 
 const toMcpError = () => ({
   content: [{ type: 'text' as const, text: 'Rsdoctor request failed.' }],
-  isError: true,
-});
-
-const isBoundedContextPruneResponse = (value: unknown): boolean => {
-  try {
-    return Buffer.byteLength(JSON.stringify(value)) <= maxContextPruneResponseBytes;
-  } catch {
-    return false;
-  }
-};
-
-const toContextPruneError = () => ({
-  content: [{ type: 'text' as const, text: 'Context retention request failed.' }],
   isError: true,
 });
 
@@ -155,57 +126,6 @@ const createContextMcpServer = (workspaceRoot: string): McpServer => {
         return { content, structuredContent: report };
       } catch {
         return toMcpError();
-      }
-    },
-  );
-
-  server.registerTool(
-    'context_prune',
-    {
-      title: 'Prune retained context runs',
-      description:
-        'Plan bounded checkout-local context retention; dryRun defaults to true and dryRun:false may delete selected immutable runs.',
-      inputSchema: contextPruneInput,
-      annotations: {
-        readOnlyHint: false,
-        destructiveHint: true,
-        openWorldHint: false,
-      },
-    },
-    async ({ dryRun = true, policy }) => {
-      try {
-        const plan = await planContextRetention(workspaceRoot, policy);
-        if (dryRun) {
-          const structuredContent = { dryRun: true, plan };
-          if (!isBoundedContextPruneResponse(structuredContent)) {
-            return toContextPruneError();
-          }
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'Context retention plan generated; no files were deleted.',
-              },
-            ],
-            structuredContent,
-          };
-        }
-        const result = await applyContextRetention(workspaceRoot, plan);
-        const structuredContent = { dryRun: false, plan, result };
-        if (!isBoundedContextPruneResponse(structuredContent)) {
-          return toContextPruneError();
-        }
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: `Context retention applied; deleted ${result.deleted.length} run(s) and skipped ${result.skipped.length}.`,
-            },
-          ],
-          structuredContent,
-        };
-      } catch {
-        return toContextPruneError();
       }
     },
   );
