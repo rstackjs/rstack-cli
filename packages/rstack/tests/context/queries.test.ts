@@ -196,6 +196,48 @@ test('applies candidate result limits separately from analysis truncation', asyn
   });
 });
 
+test('keeps rootless modules unknown instead of deriving unreachable candidates', async () => {
+  await withFixtureWorkspace('application', async (workspaceRoot) => {
+    const context = {
+      contextId: 'ctx_app',
+      packageRoot: '.',
+      product: 'application',
+    } as const;
+    await recordBuild(workspaceRoot, context, 'run_app', '2026-08-12T04:00:01.000Z');
+    await writeFile(
+      path.join(workspaceRoot, 'rsdoctor-data.json'),
+      JSON.stringify({
+        data: {
+          moduleGraph: {
+            modules: [{ id: 2, path: 'src/orphan.ts', name: 'orphan' }],
+            dependencies: [],
+          },
+        },
+      }),
+    );
+
+    const candidates = await findUnusedCandidates(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+    });
+    const explanation = await explainDeadCodeCandidate(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+      module: '2',
+    });
+
+    expect(candidates.analysisTruncated).toBe(false);
+    expect(candidates.total).toBe(0);
+    expect(candidates.candidates).toEqual([]);
+    expect(candidates.bounds).toContain('no-production-entry-roots');
+    expect(explanation.classification).toBe('insufficient-evidence');
+    expect(explanation.state.productionReachability).toBe('unknown');
+    expect(explanation.evidence).toEqual([
+      'No production entry roots were observed in this artifact graph.',
+    ]);
+  });
+});
+
 test('explains reachable, candidate, and conservatively preserved modules', async () => {
   await withFixtureWorkspace('application', async (workspaceRoot) => {
     const context = {

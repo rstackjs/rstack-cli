@@ -183,7 +183,7 @@ const moduleState = (
   return {
     productionReachability: productionLive
       ? 'live'
-      : traversals.production.truncated
+      : traversals.production.truncated || product.bounds.includes('no-production-entry-roots')
         ? 'unknown'
         : 'unreachable',
     publicContract:
@@ -202,7 +202,12 @@ const moduleState = (
   };
 };
 
-const isCandidate = (moduleId: string, traversals: RootTraversals): boolean =>
+const isCandidate = (
+  moduleId: string,
+  product: ProductRootSet,
+  traversals: RootTraversals,
+): boolean =>
+  !product.bounds.includes('no-production-entry-roots') &&
   !traversals.production.truncated &&
   !traversals.contract.truncated &&
   !traversals.conservative.truncated &&
@@ -289,7 +294,7 @@ const findUnusedCandidates = async (
   );
   const bounds = traversalBounds(product, traversals);
   const candidates = graph.modules
-    .filter(({ id }) => isCandidate(id, traversals))
+    .filter(({ id }) => isCandidate(id, product, traversals))
     .map((module): ModuleCandidate => ({
       subject: toSubject(module),
       classification: 'unreachable-module-candidate',
@@ -360,14 +365,18 @@ const explainDeadCodeCandidate = async (
     evidence = [
       'The module is reachable from a conservative optimizer root in this artifact graph.',
     ];
-  } else if (isCandidate(module.id, traversals)) {
+  } else if (isCandidate(module.id, product, traversals)) {
     classification = 'unreachable-module-candidate';
     paths = [];
     evidence = ['No path from selected roots in this artifact graph.'];
   } else {
     classification = 'insufficient-evidence';
     paths = [];
-    evidence = ['Traversal bounds prevented a complete reachability result for this module.'];
+    evidence = [
+      product.bounds.includes('no-production-entry-roots')
+        ? 'No production entry roots were observed in this artifact graph.'
+        : 'Traversal bounds prevented a complete reachability result for this module.',
+    ];
   }
 
   return {
