@@ -4,13 +4,13 @@
 > (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox
 > (`- [ ]`) syntax for tracking.
 
-**Goal:** Reduce the context-engine branch to a bounded, read-only foundation with a narrow optional
+**Goal:** Reduce the context-engine branch to a simple read-only foundation with an optional
 Rsdoctor adapter, while preserving passive build evidence and the single stdio MCP server.
 
-**Architecture:** Remove the premature destructive retention surface instead of hardening it further.
-Move persisted-record validation and safe file access into one internal boundary used by the writer and
-status reader. Keep MCP responses as small projections. Lazy-load Rsdoctor and validate/project each
-supported catalog tool instead of recursively filtering arbitrary output with a denylist.
+**Architecture:** Remove the premature destructive retention surface and the branch-specific security
+layer. Move duplicated persisted-record validation into one internal module used by the writer and
+status reader. Lazy-load Rsdoctor, validate functional tool inputs, and return its JSON result without
+redaction or security projection.
 
 **Tech Stack:** TypeScript, Node.js 22+, pnpm, Rstest, Rslint, MCP SDK 1.29.0, Zod 4.4.3,
 `@rsdoctor/agent-cli` 0.1.1.
@@ -22,8 +22,10 @@ supported catalog tool instead of recursively filtering arbitrary output with a 
 - Keep one local stdio MCP server. Do not add a daemon, HTTP listener, dev-server route, report
   server, build invocation, or startup mutation.
 - The Phase 1 MCP surface is read-only: `project_status`, `rsdoctor_analyze`, and `report_link` only.
-- Treat persisted records and Rsdoctor artifacts as untrusted checkout-local input.
-- No response may exceed 1 MiB. All paths returned to callers are checkout-relative POSIX paths.
+- Do not add a security threat model or security-only implementation/tests/docs. Remove prompt/secret
+  redaction, traversal/symlink defenses, adversarial size/graph/log protections, capability/env/network
+  hardening, and stale-token/outside-root security cases introduced on this branch.
+- Keep only ordinary type/shape validation needed for functional errors and stable data contracts.
 - Keep English and Chinese documentation aligned in structure, meaning, examples, and anchors.
 - Prefer deletion and shared validation over new wrappers. Do not preserve an abstraction solely
   because earlier commits introduced it.
@@ -65,9 +67,8 @@ not replace them with another deletion mechanism.
 
 - [ ] **Step 4: correct the design record**
 
-Mark destructive retention as deferred until real size/access measurements and a portable recovery
-contract exist. Keep bounded reads/writes as current work; do not claim cache growth is already
-bounded by deletion.
+Mark destructive retention as deferred until real size/access measurements and product semantics
+exist. Do not claim cache growth is already bounded by deletion.
 
 - [ ] **Step 5: verify and commit**
 
@@ -76,7 +77,7 @@ Run the focused MCP tests and `pnpm check`; commit as
 
 ---
 
-### Task 2: unify and bound the persisted-record boundary
+### Task 2: unify persisted-record validation
 
 **Files:**
 
@@ -84,59 +85,38 @@ Run the focused MCP tests and `pnpm check`; commit as
 - Create: `packages/rstack/tests/context/records.test.ts`
 - Modify: `packages/rstack/src/context/store.ts`
 - Modify: `packages/rstack/src/context/model.ts`
-- Modify: `packages/rstack/src/context/status.ts`
-- Modify: `packages/rstack/src/context/mcp.ts`
 - Modify: `packages/rstack/tests/context/store.test.ts`
-- Modify: `packages/rstack/tests/context/status.test.ts`
-- Modify: `packages/rstack/tests/context/mcp.test.ts`
 
 **Interfaces:**
 
 - Produces `validateRunManifest(value): ContextRunManifest | undefined`.
 - Produces `validateSnapshot(value): ContextSnapshot | undefined`.
-- Produces `readImmutableJsonFile(path, budget): Promise<unknown | undefined>` using
-  `O_NOFOLLOW`, a file handle, pre/post identity and size checks, and the existing 1 MiB record cap.
 - Produces canonical generation filename validation
   `<sequence padded to 10>-<snapshotId>.json`.
-- `ContextWorkspaceStatus` and `ProjectStatus` add
-  `truncated: { runs: number; contexts: number; generations: number }`.
+- Removes the branch-added per-record byte limit and `oversized-record` issue variant.
 
-- [ ] **Step 1: write schema-parity and handle-bound I/O tests**
+- [ ] **Step 1: write schema-parity tests**
 
-Cover duplicate manifest context IDs, noncanonical generation names, record symlinks, symlinked
-store parents, record replacement between open/stat/read, oversized records, and writer/reader
-acceptance parity. Verify RED against the current duplicated validators and pathname reads.
+Cover valid/invalid manifests and snapshots, duplicate manifest context IDs, canonical generation
+names, writer/reader acceptance parity, and ordinary JSON parse failure. Delete oversized-record and
+adversarial filesystem cases. Verify RED against the current duplicated validators.
 
 - [ ] **Step 2: implement the shared record module**
 
-Move identifier/path/producer/status/completeness validation out of `store.ts`. Validate finite
-numbers and ISO date strings, bound descriptor strings to 4 KiB, bound contexts per manifest to 64,
-and accept only object-valued facets whose persisted record remains within 1 MiB. Keep functions
-internal to the context implementation rather than exporting them through `context/index.ts`.
+Move identifier/path/producer/status/completeness validation out of `store.ts`. Validate the current
+model's required primitive/object fields and unique context IDs. Keep the functions internal to the
+context implementation rather than exporting them through `context/index.ts`.
 
-- [ ] **Step 3: make publication refuse symlinked store components**
+- [ ] **Step 3: use shared validation in reads and writes**
 
-Create `.rstack`, `cache`, `context-v1`, and `runs` one component at a time. For every existing or
-created component, require `lstat().isDirectory()`, reject symlinks, compare `realpath`, and require
-containment by the canonical workspace. On failure return the existing fail-soft
-`{ written:false }` result and never write outside the workspace cache.
+Keep the existing straightforward atomic publication and JSON reads. Use the shared validators and
+canonical generation-name helper in both paths. Delete the duplicate sets and predicates from
+`store.ts`. Remove pre-read byte checks and their model/test surface.
 
-- [ ] **Step 4: add bounded status scanning and projection**
+- [ ] **Step 4: verify and commit**
 
-Scan at most 64 direct runs, 64 contexts per manifest, and 256 generation entries per context, with
-an aggregate 16 MiB read budget. Select only canonical files. Return the latest valid snapshot, but
-project `facets` to a validated `build` facet only; drop unknown facets. Record skipped counts in the
-new `truncated` fields and bounded issues rather than returning raw data.
-
-- [ ] **Step 5: cap MCP status serialization**
-
-Serialize once. If the projected status still exceeds 1 MiB, return an MCP error with no partial raw
-payload. Do not duplicate the full object in two separately generated serializations.
-
-- [ ] **Step 6: verify and commit**
-
-Run record/store/status/MCP tests and `pnpm check`; commit as
-`fix(rstack): bound context store status`.
+Run record/store/status tests and `pnpm check`; commit as
+`refactor(rstack): share context record validation`.
 
 ---
 
@@ -174,11 +154,10 @@ Run build/injection tests and `pnpm check`; commit as
 
 ---
 
-### Task 4: replace generic Rsdoctor filtering with a narrow lazy adapter
+### Task 4: remove Rsdoctor security filtering and lazy-load the adapter
 
 **Files:**
 
-- Create: `packages/rstack/src/context/rsdoctorCatalog.ts`
 - Modify: `packages/rstack/src/context/rsdoctor.ts`
 - Modify: `packages/rstack/src/context/mcp.ts`
 - Modify: `packages/rstack/src/context/index.ts`
@@ -187,31 +166,29 @@ Run build/injection tests and `pnpm check`; commit as
 
 **Interfaces:**
 
-- Supported tool names are the pinned ten-agent catalog names, but every name has a local strict
-  input schema and output projector.
+- Supported tool names remain exactly the pinned ten-agent catalog names.
 - `@rsdoctor/agent-cli` is loaded with dynamic `import()` only on the first analysis request.
-- Projectors return only finite numbers, booleans, bounded identifiers/package names, relative paths,
-  known enum-like status/category/code fields, and bounded arrays. Unknown keys and raw
-  configuration/environment/source/message text are omitted.
-- Maximum projected depth is 8, nodes 10,000, string length 4 KiB, and serialized result 1 MiB.
+- Tool input is validated against the selected catalog entry's JSON schema for functional errors.
+- Tool output is returned as JSON without path, environment, configuration, source, prompt, or secret
+  filtering and without branch-added artifact/result size caps.
 
-- [ ] **Step 1: capture pinned catalog fixtures and write contract tests**
+- [ ] **Step 1: rewrite tests for the direct functional contract**
 
-Use the public root API to execute every supported tool against bounded fixtures. Assert each input
-schema rejects unknown keys and out-of-range pagination, including page size greater than 1000.
-Assert outputs contain no absolute paths, raw configuration/environment/source fields, or arbitrary
-unknown keys.
+Keep catalog-name, valid-artifact, malformed-JSON, wrong-envelope, and unknown-tool coverage. Delete
+absolute/external path, symlink, secret/environment/source redaction, huge-artifact, deep/wide-result,
+and response-cap tests. Add a real-tool test proving returned strings and fields are not redacted.
 
 - [ ] **Step 2: verify RED**
 
-Run Rsdoctor/MCP tests. Expected: generic `Record<string, unknown>` input and denylist-cloned output
-accept cases the new contract rejects.
+Run Rsdoctor/MCP tests. Expected: current output still redacts or removes the fixture's values and the
+package is still loaded eagerly.
 
-- [ ] **Step 3: implement the catalog adapter and lazy load**
+- [ ] **Step 3: delete security helpers and lazy-load the package**
 
-Keep the ten external tool names unchanged. Use a discriminated request parser keyed by `toolName`.
-Delete tokenized sensitive-key heuristics and the eager catalog/executor initialization. The MCP tool
-validates through this adapter and returns the projected local result only.
+Delete artifact/result byte caps, path containment/realpath checks, path/secret/environment regexes,
+key tokenization, safe-metric exceptions, and recursive sanitization. Resolve the explicit data file
+with ordinary `path.resolve`, parse JSON, and invoke the selected pinned catalog tool. Dynamically
+import the package and cache its catalog/executor on first use.
 
 - [ ] **Step 4: verify startup isolation**
 
@@ -221,11 +198,11 @@ Add a built-process test showing status-only MCP initialization does not load
 - [ ] **Step 5: verify and commit**
 
 Run Rsdoctor/MCP tests and `pnpm check`; commit as
-`refactor(rstack): narrow Rsdoctor analysis`.
+`refactor(rstack): simplify Rsdoctor analysis`.
 
 ---
 
-### Task 5: type contained report lookup and align documentation
+### Task 5: simplify report lookup and align documentation
 
 **Files:**
 
@@ -238,26 +215,27 @@ Run Rsdoctor/MCP tests and `pnpm check`; commit as
 
 **Interfaces:**
 
-- Contained lookup returns a discriminated `missing | file | invalid` result instead of requiring
-  callers to inspect exception messages.
-- Report links remain contained file URIs; no server or command is started.
+- Report lookup returns a discriminated `missing | file` result instead of requiring callers to
+  inspect exception messages.
+- Report links use ordinary resolved file URIs; no server or command is started.
 
 - [ ] **Step 1: write typed-outcome report tests and verify RED**
 
-Cover missing conventional report, invalid/symlink report, one valid sibling, ambiguous siblings,
-and manifest fallback. Assert no control flow depends on an exception message.
+Cover missing conventional report, one valid sibling, ambiguous siblings, and manifest fallback.
+Delete symlink/path-escape cases and assert no control flow depends on an exception message.
 
 - [ ] **Step 2: implement the typed boundary**
 
-Open/validate contained files through the shared no-follow record/file helper where applicable and
-return discriminated outcomes. Delete the closure-bearing artifact report resolver and exception-text
-matching.
+Use ordinary resolved paths and `stat` to return discriminated outcomes. Delete the closure-bearing
+artifact report resolver, containment checks, and exception-text matching.
 
 - [ ] **Step 3: align English, Chinese, and RFC status**
 
-Document the exact three-tool Phase 1 surface, bounded/projected status, narrow Rsdoctor contract,
-optional GUI links, and deferred retention. Remove any claim that arbitrary catalog JSON is returned
-or deletion is available.
+Document the exact three-tool Phase 1 surface, direct Rsdoctor JSON contract, optional GUI links, and
+deferred retention. Remove the RFC security/privacy and security-validation sections and every
+branch-added claim or requirement about prompt injection, secrets, traversal, symlinks, adversarial
+sizes/graphs/logs, capability denial, environment/network hardening, or stale-token/outside-root
+mutation.
 
 - [ ] **Step 4: run full verification and commit**
 
