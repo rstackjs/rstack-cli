@@ -21,10 +21,10 @@ interface FmtWorkerPool {
  * plateau before all CPU cores are occupied, while additional workers increase
  * scheduling and memory pressure.
  */
-const getFmtWorkerCount = (fileCount: number, maxWorkers?: number): number =>
+const getWorkerCount = (fileCount: number, maxWorkers?: number): number =>
   Math.min(fileCount, maxWorkers ?? Math.min(8, Math.max(1, availableParallelism() - 1)));
 
-const getFmtWorkerUrl = (): URL => {
+const getWorkerUrl = (): URL => {
   // Source tests run after build and exercise the same worker artifact as the CLI.
   const workerPath = new URL(import.meta.url).pathname.endsWith('.ts')
     ? '../../dist/fmtWorker.js'
@@ -33,13 +33,10 @@ const getFmtWorkerUrl = (): URL => {
 };
 
 /** Creates and starts every worker before formatting can begin. */
-const createFmtWorkerPool = async (
-  fileCount: number,
-  maxWorkers?: number,
-): Promise<FmtWorkerPool> => {
-  const workerCount = getFmtWorkerCount(fileCount, maxWorkers);
+const createWorkerPool = async (fileCount: number, maxWorkers?: number): Promise<FmtWorkerPool> => {
+  const workerCount = getWorkerCount(fileCount, maxWorkers);
   const pool = new Tinypool({
-    filename: getFmtWorkerUrl().href,
+    filename: getWorkerUrl().href,
     name: 'initializeFmtWorker',
     minThreads: workerCount,
     maxThreads: workerCount,
@@ -64,5 +61,5 @@ const createFmtWorkerPool = async (
   };
 };
 
-export { createFmtWorkerPool };
+export { createWorkerPool };
 export type { FmtWorkerPool };

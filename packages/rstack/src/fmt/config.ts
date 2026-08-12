@@ -90,7 +90,7 @@ const normalizeFmtConfig = (config: FmtConfig | undefined, rootPath: string): Re
 };
 
 /** Creates a reusable resolver for applying per-file formatter overrides. */
-const createFmtOptionsResolver = (config: ResolvedFmtConfig): FmtOptionsResolver => {
+const createOptionsResolver = (config: ResolvedFmtConfig): FmtOptionsResolver => {
   if (config.overrides.length === 0) {
     return () => config.baseOptions;
   }
@@ -127,5 +127,5 @@ const resolveFmtConfig = async ({
   return normalizeFmtConfig(config, rootPath);
 };
 
-export { createFmtOptionsResolver, normalizeFmtConfig, resolveFmtConfig };
+export { createOptionsResolver, normalizeFmtConfig, resolveFmtConfig };
 export type { FmtOptionsResolver };

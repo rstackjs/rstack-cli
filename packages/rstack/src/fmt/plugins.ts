@@ -92,7 +92,7 @@ const createFingerprintResolver = (): FingerprintResolver => {
 };
 
 /** Creates a project-root resolver for plugins in final per-file options. */
-const createFmtPluginResolver = (rootPath: string): FmtPluginResolver => {
+const createPluginResolver = (rootPath: string): FmtPluginResolver => {
   const parentUrl = pathToFileURL(join(rootPath, 'index.js'));
   const cache = new Map<string, string>();
 
@@ -143,5 +143,5 @@ const createFmtPluginResolver = (rootPath: string): FmtPluginResolver => {
   };
 };
 
-export { createFingerprintResolver, createFmtPluginResolver };
+export { createFingerprintResolver, createPluginResolver };
 export type { FingerprintResolver, FmtPluginResolver };

@@ -89,7 +89,7 @@ const loadPluginFingerprints = async (
 };
 
 /** Resolves the portable cache identity before work is dispatched. */
-const createFmtFileRunTask = (file: FmtFileRequest, cache?: RunCache): FmtFileRunTask => {
+const createRunTask = (file: FmtFileRequest, cache?: RunCache): FmtFileRunTask => {
   let key: string | undefined;
   let fileCache: FmtFileCache | undefined;
 
@@ -160,7 +160,7 @@ const runFmtFile = async (
 };
 
 /** Starts slower Markdown parsers first while preserving order within both priority groups. */
-const runPriorityFmtFiles = async (
+const runPriorityTasks = async (
   tasks: FmtFileRunTask[],
   shouldWrite: boolean,
   formatFile: FormatFile,
@@ -184,13 +184,13 @@ const runPriorityFmtFiles = async (
 };
 
 /** Processes files in a worker pool while preserving input order. */
-const runFmtFilesInWorkerPool = async (
+const runWithWorkers = async (
   files: FmtFileRequest[],
   shouldWrite: boolean,
   maxWorkers?: number,
   cache?: RunCache,
 ): Promise<FmtWorkerPoolResult> => {
-  const tasks = files.map((file) => createFmtFileRunTask(file, cache));
+  const tasks = files.map((file) => createRunTask(file, cache));
   const pendingFileCount = tasks.reduce(
     (count, task) => count + (isCachedUnsupported(task) ? 0 : 1),
     0,
@@ -199,13 +199,13 @@ const runFmtFilesInWorkerPool = async (
     return { files: [], processedFileCount: 0 };
   }
 
-  const { createFmtWorkerPool } = await import('./workerPool.ts');
-  const workerPool = await createFmtWorkerPool(pendingFileCount, maxWorkers);
+  const { createWorkerPool } = await import('./workerPool.ts');
+  const workerPool = await createWorkerPool(pendingFileCount, maxWorkers);
 
   try {
     const results =
       workerPool.workerCount >= minPriorityWorkers
-        ? await runPriorityFmtFiles(tasks, shouldWrite, workerPool.formatFile)
+        ? await runPriorityTasks(tasks, shouldWrite, workerPool.formatFile)
         : await Promise.all(
             tasks.map((task) => runFmtFile(task, shouldWrite, workerPool.formatFile)),
           );
@@ -233,7 +233,7 @@ const runFmtFilesInWorkerPool = async (
 };
 
 /** Maps file results to the Prettier-compatible CLI exit code. */
-const getFmtExitCode = (files: FmtFileResult[]): FmtExitCode => {
+const getExitCode = (files: FmtFileResult[]): FmtExitCode => {
   let exitCode: FmtExitCode = 0;
 
   for (const file of files) {
@@ -272,13 +272,12 @@ const runFmtFiles = async ({
   const result =
     files.length === 0
       ? { files: [], processedFileCount: 0 }
-      : await runFmtFilesInWorkerPool(files, shouldWrite, maxWorkers, runCache);
+      : await runWithWorkers(files, shouldWrite, maxWorkers, runCache);
   await runCache?.store.save().catch(() => false);
 
   return {
     ...result,
-    exitCode:
-      files.length > 0 && result.processedFileCount === 0 ? 2 : getFmtExitCode(result.files),
+    exitCode: files.length > 0 && result.processedFileCount === 0 ? 2 : getExitCode(result.files),
   };
 };
 

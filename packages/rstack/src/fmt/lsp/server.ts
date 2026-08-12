@@ -9,7 +9,7 @@ import {
   type InitializeParams,
   type TextEdit,
 } from 'vscode-languageserver/node';
-import { createFmtOptionsResolver, type FmtOptionsResolver } from '../config.ts';
+import { createOptionsResolver, type FmtOptionsResolver } from '../config.ts';
 import {
   createFileRequest,
   createLazyPluginResolver,
@@ -122,7 +122,7 @@ const createFmtLspSession = async ({
 
   return {
     isIgnored,
-    resolveOptions: createFmtOptionsResolver(config),
+    resolveOptions: createOptionsResolver(config),
     getPluginResolver: createLazyPluginResolver(config.rootPath),
   };
 };

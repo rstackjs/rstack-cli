@@ -82,7 +82,7 @@ const assertExclusiveMode = (option: string, hasMode: boolean, positionals: stri
   }
 };
 
-const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
+const parseFmtArgs = (args: string[]): ParsedFmtCLIArgs => {
   const { values, positionals } = parseArgs({
     args,
     options: {
@@ -292,7 +292,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       patterns,
       stdinFilepath,
       withNodeModules,
-    } = parseFmtCLIArgs(args);
+    } = parseFmtArgs(args);
     if (help) {
       logger.log(renderFmtHelp());
       return;
