@@ -1,8 +1,10 @@
+import { spawnSync } from 'node:child_process';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { expect, test } from 'rstack/test';
-import { analyzeRsdoctorArtifact, listRsdoctorTools } from '../../src/context/index.ts';
+import { analyzeRsdoctorArtifact, listRsdoctorToolNames } from '../../src/context/index.ts';
 
 const validDataFile = 'artifacts/rsdoctor-data.json';
 
@@ -28,10 +30,10 @@ const writeArtifact = async (
   await writeFile(artifactPath, contents);
 };
 
-test('lists the complete pinned Rsdoctor tool catalog as sorted unique descriptors', async () => {
-  const tools = await listRsdoctorTools();
+test('lists the complete pinned Rsdoctor tool names', () => {
+  const toolNames = listRsdoctorToolNames();
 
-  expect(tools.map((tool) => tool.name)).toEqual([
+  expect(toolNames).toEqual([
     'build_summary',
     'bundle_optimize',
     'chunks_list',
@@ -43,13 +45,50 @@ test('lists the complete pinned Rsdoctor tool catalog as sorted unique descripto
     'tree_shaking_side_effects',
     'tree_shaking_summary',
   ]);
-  expect(new Set(tools.map((tool) => tool.name)).size).toBe(tools.length);
+  expect(new Set(toolNames).size).toBe(toolNames.length);
+});
 
-  for (const tool of tools) {
-    expect(tool.inputSchema).toBeTypeOf('object');
-    expect(tool.inputSchema).not.toBeNull();
-    expect(Array.isArray(tool.inputSchema)).toBe(false);
-  }
+test('listing the pinned Rsdoctor tools does not load the adapter package', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const markerFile = path.join(workspaceRoot, 'rsdoctor-loaded');
+    const hookFile = path.join(workspaceRoot, 'import-hook.mjs');
+    await writeFile(
+      hookFile,
+      `import { writeFileSync } from 'node:fs';
+import { registerHooks } from 'node:module';
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (specifier === '@rsdoctor/agent-cli') {
+      writeFileSync(process.env.RSTACK_RSDOCTOR_LOADED_MARKER, 'loaded');
+    }
+    return nextResolve(specifier, context);
+  },
+});
+`,
+    );
+    const moduleUrl = pathToFileURL(path.resolve('src/context/index.ts')).toString();
+    const result = spawnSync(
+      process.execPath,
+      [
+        '--import',
+        hookFile,
+        '--input-type=module',
+        '--eval',
+        `const { listRsdoctorToolNames } = await import(${JSON.stringify(moduleUrl)});
+listRsdoctorToolNames();`,
+      ],
+      {
+        encoding: 'utf8',
+        env: { ...process.env, RSTACK_RSDOCTOR_LOADED_MARKER: markerFile },
+      },
+    );
+
+    expect(result.stderr).toBe('');
+    expect(result.status).toBe(0);
+    await expect(
+      import('node:fs/promises').then(({ access }) => access(markerFile)),
+    ).rejects.toThrow();
+  });
 });
 
 test('rejects a missing Rsdoctor artifact', async () => {

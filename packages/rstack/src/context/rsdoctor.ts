@@ -75,9 +75,7 @@ const loadAdapter = async (): Promise<RsdoctorAdapter> => {
 
 const getAdapter = (): Promise<RsdoctorAdapter> => (adapterPromise ??= loadAdapter());
 
-const listRsdoctorTools = async (): Promise<RsdoctorToolDescriptor[]> => [
-  ...(await getAdapter()).catalog,
-];
+const listRsdoctorToolNames = (): RsdoctorToolName[] => [...supportedToolNames];
 
 const matchesSchemaType = (value: unknown, type: unknown): boolean => {
   if (Array.isArray(type)) {
@@ -229,5 +227,5 @@ const analyzeRsdoctorArtifact = async (
   };
 };
 
-export { analyzeRsdoctorArtifact, listRsdoctorTools, resolveRsdoctorDataFile };
-export type { RsdoctorAnalysisRequest, RsdoctorAnalysisResult, RsdoctorToolDescriptor };
+export { analyzeRsdoctorArtifact, listRsdoctorToolNames, resolveRsdoctorDataFile };
+export type { RsdoctorAnalysisRequest, RsdoctorAnalysisResult };
