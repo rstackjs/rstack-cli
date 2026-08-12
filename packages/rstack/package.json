@@ -95,8 +95,10 @@
     "is-binary-path": "catalog:",
     "lint-staged": "catalog:",
     "micromatch": "catalog:",
+    "prettier-plugin-svelte": "catalog:",
     "rslog": "catalog:",
     "sort-package-json": "catalog:",
+    "svelte": "catalog:",
     "tiny-readdir": "catalog:",
     "typescript": "catalog:"
   },
