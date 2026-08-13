@@ -254,7 +254,7 @@ export const loadRstackConfig = async ({
     active: true,
   };
 
-  const loaded = await getConfigSessionStorage().run(session, async () => {
+  const loadedConfig = await getConfigSessionStorage().run(session, async () => {
     try {
       const { filePath, dependencies } = await loadConfig({
         loader: 'native',
@@ -277,14 +277,14 @@ export const loadRstackConfig = async ({
         state.invocation.configFilePath = filePath;
       }
 
-      const loaded = {
+      const result = {
         configs: session.configs,
         plugins: session.plugins,
         filePath,
         dependencies,
       };
-      loadedConfigDirectories.set(loaded, resolve(cwd ?? process.cwd()));
-      return loaded;
+      loadedConfigDirectories.set(result, resolve(cwd ?? process.cwd()));
+      return result;
     } finally {
       session.active = false;
       session.configs = {};
@@ -293,6 +293,6 @@ export const loadRstackConfig = async ({
     }
   });
 
-  await getRstackPluginRuntime(loaded);
-  return loaded;
+  await getRstackPluginRuntime(loadedConfig);
+  return loadedConfig;
 };

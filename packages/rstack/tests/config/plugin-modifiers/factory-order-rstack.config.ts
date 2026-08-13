@@ -2,7 +2,7 @@ import { define } from 'rstack';
 
 let setupComplete = false;
 
-const assertSetupComplete = (): Record<string, never> => {
+const createConfig = () => {
   if (!setupComplete) {
     throw new Error('plugin setup must run before config factories');
   }
@@ -18,9 +18,9 @@ define.plugins([
   },
 ]);
 
-define.app(assertSetupComplete);
-define.lib(assertSetupComplete);
-define.doc(async () => assertSetupComplete());
-define.test(assertSetupComplete);
-define.lint(async () => [assertSetupComplete()]);
-define.fmt(assertSetupComplete);
+define.app(createConfig);
+define.lib(createConfig);
+define.doc(async () => createConfig());
+define.test(createConfig);
+define.lint(async () => [createConfig()]);
+define.fmt(createConfig);

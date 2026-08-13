@@ -8,18 +8,20 @@ test('applies fmt modifiers after resolving the native config definition', () =>
     'rstack.config.ts',
     `import { define } from 'rstack';
 
+let setupComplete = false;
+
 define.plugins([
   {
     name: 'fmt-modifier',
     setup({ modifyConfig }) {
-      globalThis.__fmtPluginSetupComplete = true;
+      setupComplete = true;
       modifyConfig('fmt', async (config) => ({ ...config, singleQuote: true }));
     },
   },
 ]);
 
 define.fmt(() => {
-  if (!globalThis.__fmtPluginSetupComplete) {
+  if (!setupComplete) {
     throw new Error('plugin setup must run before config factories');
   }
   return {};
