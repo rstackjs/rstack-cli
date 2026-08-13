@@ -322,7 +322,7 @@ test('persists a thrown Rstest configuration error as a completed diagnostic sna
     expect(stored?.snapshot).toMatchObject({
       runId: 'run_thrown',
       status: 'error',
-      completeness: { test: 'complete' },
+      completeness: { test: 'partial' },
       facets: {
         test: {
           producer: 'rstest',

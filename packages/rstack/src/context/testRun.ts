@@ -213,7 +213,7 @@ const captureTestSnapshot = async (
       sequence: 0,
       observedAt: now().toISOString(),
       status: 'error',
-      completeness: { test: 'complete' },
+      completeness: { test: 'partial' },
       facets: { test: facet as unknown as JsonValue },
       source: { inputs: [], inputCompleteness: 'partial' },
     };
