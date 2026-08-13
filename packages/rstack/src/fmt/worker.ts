@@ -1,7 +1,7 @@
 // Derived from @prettier/cli, see THIRD_PARTY_NOTICES.md
 
+import { hash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { createCacheHash } from './cacheHash.ts';
 import type { FmtCacheEntry } from './cacheStore.ts';
 import { hasDottedBasename } from './pathHelpers.ts';
 import type { FmtFileCache, FmtFileRequest, FmtWorkerResult } from './types.ts';
@@ -11,6 +11,9 @@ interface FormatFileTask {
   shouldWrite: boolean;
   cache?: FmtFileCache;
 }
+
+const hashContent = (content: string | Uint8Array): string =>
+  hash('sha256', content, 'base64url').slice(0, 16);
 
 /**
  * Use synchronous direct I/O inside the dedicated worker to avoid libuv
@@ -35,7 +38,7 @@ const formatFile = async ({
     }
 
     sourceBuffer = readFileSync(file.path);
-    contentHash = createCacheHash(sourceBuffer);
+    contentHash = hashContent(sourceBuffer);
     return sourceBuffer.toString('utf8');
   };
 
@@ -48,14 +51,14 @@ const formatFile = async ({
         }
       } else {
         sourceBuffer = readFileSync(file.path);
-        contentHash = createCacheHash(sourceBuffer);
+        contentHash = hashContent(sourceBuffer);
         if (entry[0] === contentHash) {
           return { status: 'unsupported' };
         }
       }
     } else {
       sourceBuffer = readFileSync(file.path);
-      contentHash = createCacheHash(sourceBuffer);
+      contentHash = hashContent(sourceBuffer);
       if (entry[0] === contentHash && (!shouldWrite || entry[2] === 'clean')) {
         return { status: entry[2] === 'clean' ? 'unchanged' : 'changed' };
       }
@@ -71,7 +74,7 @@ const formatFile = async ({
           cacheEntry: [
             hasDottedBasename(file.path)
               ? ''
-              : (contentHash ?? createCacheHash(sourceBuffer ?? readFileSync(file.path))),
+              : (contentHash ?? hashContent(sourceBuffer ?? readFileSync(file.path))),
             cache.optionsHash,
             'unsupported',
           ],
@@ -92,8 +95,8 @@ const formatFile = async ({
 
   const cacheHash =
     shouldWrite && !unchanged
-      ? createCacheHash(result.formatted)
-      : (contentHash ?? createCacheHash(result.source));
+      ? hashContent(result.formatted)
+      : (contentHash ?? hashContent(result.source));
   const cacheEntry: FmtCacheEntry = [
     cacheHash,
     cache.optionsHash,

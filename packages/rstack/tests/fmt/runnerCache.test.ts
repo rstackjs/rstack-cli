@@ -2,8 +2,12 @@ import { readFileSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { expect, test } from 'rstack/test';
-import { cacheHashLength, createCacheHash } from '../../src/fmt/cacheHash.ts';
-import { cacheNamespace, createOptionsHasher } from '../../src/fmt/cacheIdentity.ts';
+import {
+  cacheHashLength,
+  cacheNamespace,
+  createCacheHash,
+  createOptionsHasher,
+} from '../../src/fmt/cacheIdentity.ts';
 import { loadFmtCacheStore } from '../../src/fmt/cacheStore.ts';
 import { runFmtFiles } from '../../src/fmt/runner.ts';
 import type { FmtCacheContext, FmtFileRequest, FmtMode } from '../../src/fmt/types.ts';

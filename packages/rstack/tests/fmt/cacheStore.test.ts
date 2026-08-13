@@ -1,7 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
-import { createCacheHash } from '../../src/fmt/cacheHash.ts';
 import {
   fmtCacheFileName,
   fmtCacheVersion,
@@ -11,12 +10,12 @@ import {
 import { withTempProject } from './helpers.ts';
 
 const namespace = 'test-namespace';
-const contentA = createCacheHash('content-a');
-const contentB = createCacheHash('content-b');
-const contentC = createCacheHash('content-c');
-const optionsA = createCacheHash('options-a');
-const optionsB = createCacheHash('options-b');
-const optionsC = createCacheHash('options-c');
+const contentA = 'content-a';
+const contentB = 'content-b';
+const contentC = 'content-c';
+const optionsA = 'options-a';
+const optionsB = 'options-b';
+const optionsC = 'options-c';
 const firstEntry = [contentA, optionsA, 'clean'] as const;
 const secondEntry = [contentB, optionsB, 'dirty'] as const;
 const unsupportedEntry = ['', optionsC, 'unsupported'] as const;

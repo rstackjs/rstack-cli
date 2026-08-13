@@ -3,9 +3,10 @@ import { pathToFileURL } from 'node:url';
 import prettierPkgJson from 'prettier/package.json' with { type: 'json' };
 import { expect, test } from 'rstack/test';
 import pkgJson from '../../package.json' with { type: 'json' };
-import { cacheHashLength, createCacheHash } from '../../src/fmt/cacheHash.ts';
 import {
+  cacheHashLength,
   cacheNamespace,
+  createCacheHash,
   createCacheKeyResolver,
   createOptionsHasher,
 } from '../../src/fmt/cacheIdentity.ts';

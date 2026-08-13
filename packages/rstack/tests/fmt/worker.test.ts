@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { readFileSync } from 'node:fs';
 import { expect, test } from 'rstack/test';
-import { createCacheHash } from '../../src/fmt/cacheHash.ts';
+import { createCacheHash } from '../../src/fmt/cacheIdentity.ts';
 import { formatFile } from '../../src/fmt/worker.ts';
 import { withTempProject, writeProjectFile } from './helpers.ts';
 
