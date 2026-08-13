@@ -181,7 +181,7 @@ test('binds v1 artifact metadata to the selected build snapshot on an exact iden
       compiler: { name: 'web', type: 'rspack', version: '1.7.0' },
       compilationHash: 'compilation-web',
       environment: 'web',
-      target: 'web',
+      target: ['web', 'es2017'],
     });
 
     const roots = await readProductRoots(workspaceRoot, {

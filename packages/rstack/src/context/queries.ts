@@ -65,13 +65,12 @@ const getTargets = (value: unknown): string[] =>
     .filter((entry): entry is string => typeof entry === 'string' && entry.length > 0)
     .sort(compareStrings);
 
-const targetsMatch = (left: unknown, right: unknown): boolean => {
-  const leftTargets = getTargets(left);
-  const rightTargets = getTargets(right);
-  return (
-    leftTargets.length === rightTargets.length &&
-    leftTargets.every((target, index) => target === rightTargets[index])
-  );
+const artifactTargetsIncludeSnapshot = (
+  artifactTarget: unknown,
+  snapshotTarget: unknown,
+): boolean => {
+  const artifactTargets = new Set(getTargets(artifactTarget));
+  return getTargets(snapshotTarget).every((target) => artifactTargets.has(target));
 };
 
 const bindArtifactToSnapshot = (
@@ -121,7 +120,7 @@ const bindArtifactToSnapshot = (
   if (
     identity.target !== undefined &&
     getTargets(snapshotTarget).length > 0 &&
-    !targetsMatch(identity.target, snapshotTarget)
+    !artifactTargetsIncludeSnapshot(identity.target, snapshotTarget)
   ) {
     return 'mismatch';
   }
