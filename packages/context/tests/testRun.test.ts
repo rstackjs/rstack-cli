@@ -2,16 +2,16 @@ import { mkdir, mkdtemp, readFile, rm, unlink, writeFile } from 'node:fs/promise
 import os from 'node:os';
 import path from 'node:path';
 import type { TestRunResult } from '@rstest/core/api';
-import { expect, test } from 'rstack/test';
-import { listDiagnostics } from '../../src/context/lint.ts';
-import { readProjectStatus } from '../../src/context/status.ts';
-import { readContextSnapshotById } from '../../src/context/store.ts';
+import { expect, test } from '@rstest/core';
+import { listDiagnostics } from '../src/lint.ts';
+import { readProjectStatus } from '../src/status.ts';
+import { readContextSnapshotById } from '../src/store.ts';
 import {
   captureTestSnapshot,
   listTestResults,
   type TestCaptureDependencies,
   type TestSnapshotRequest,
-} from '../../src/context/testRun.ts';
+} from '../src/testRun.ts';
 
 const withTempWorkspace = async (
   callback: (workspaceRoot: string) => Promise<void>,
@@ -53,7 +53,7 @@ const createDependencies = (
 
 test('publishes the Istanbul provider as an exact required peer', async () => {
   const packageJson = JSON.parse(
-    await readFile(new URL('../../package.json', import.meta.url), 'utf8'),
+    await readFile(new URL('../package.json', import.meta.url), 'utf8'),
   ) as {
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;

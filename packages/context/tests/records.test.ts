@@ -1,5 +1,5 @@
-import { expect, test } from 'rstack/test';
-import { contextStoreSchemaVersion } from '../../src/context/model.ts';
+import { expect, test } from '@rstest/core';
+import { contextStoreSchemaVersion } from '../src/model.ts';
 import {
   getContextSnapshotGenerationFileName,
   isContextSnapshotGenerationFileName,
@@ -8,7 +8,7 @@ import {
   validateRunManifest,
   validateSnapshot,
   validateTestFacet,
-} from '../../src/context/records.ts';
+} from '../src/records.ts';
 
 const context = {
   contextId: 'ctx_library_esm',

@@ -9,12 +9,11 @@ import {
   getDefaultEnvironment,
   StdioClientTransport,
 } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { expect, test } from 'rstack/test';
-import pkgJson from '../../package.json' with { type: 'json' };
 import {
   captureLintSnapshot,
   captureTestSnapshot,
   contextStoreSchemaVersion,
+  createContextMcpServer,
   readProjectStatus,
   writeContextRunManifest,
   writeContextSnapshot,
@@ -22,13 +21,14 @@ import {
   type ContextRunManifest,
   type ContextSnapshot,
   type LintCaptureResult,
-} from '../../src/context/index.ts';
-import { createContextMcpServer } from '../../src/context/mcp.ts';
-import { getConfigState, loadRstackConfig } from '../../src/config.ts';
+} from '@rstackjs/context';
+import { expect, test } from 'rstack/test';
+import pkgJson from '../../package.json' with { type: 'json' };
+import { getConfigState, loadRstackConfig, withRstackConfigTarget } from '../../src/config.ts';
 
 const reachabilityFixture = path.resolve(
   import.meta.dirname,
-  '../fixtures/context/reachability/application',
+  '../../../context/fixtures/context/reachability/application',
 );
 
 const withTempWorkspace = async (
@@ -1560,32 +1560,42 @@ test('captures independent monorepo package contexts through one root MCP', asyn
         },
         {
           captureLintSnapshot: (root, request) =>
-            captureLintSnapshot(root, request, (options) => ({
-              lintFiles: async () => {
-                await new Promise((resolve) => setTimeout(resolve, 5));
-                lintCalls.push({
-                  cwd: options.cwd,
-                  configPath: getConfigState().configPath,
-                  loadedConfigPath: (await loadRstackConfig()).filePath,
-                });
-                return [
-                  {
-                    filePath: path.join(options.cwd!, 'src/index.ts'),
-                    errorCount: 0,
-                    warningCount: 0,
-                    fixableErrorCount: 0,
-                    fixableWarningCount: 0,
-                    messages: [],
-                  },
-                ];
+            captureLintSnapshot(
+              root,
+              request,
+              (options) => ({
+                lintFiles: async () => {
+                  await new Promise((resolve) => setTimeout(resolve, 5));
+                  lintCalls.push({
+                    cwd: options.cwd,
+                    configPath: getConfigState().configPath,
+                    loadedConfigPath: (await loadRstackConfig()).filePath,
+                  });
+                  return [
+                    {
+                      filePath: path.join(options.cwd!, 'src/index.ts'),
+                      errorCount: 0,
+                      warningCount: 0,
+                      fixableErrorCount: 0,
+                      fixableWarningCount: 0,
+                      messages: [],
+                    },
+                  ];
+                },
+                lintText: async () => [],
+                close: async () => {},
+              }),
+              {
+                wrapperConfigPath: path.join(import.meta.dirname, '../../dist/rslintConfig.js'),
+                withConfigTarget: withRstackConfigTarget,
               },
-              lintText: async () => [],
-              close: async () => {},
-            })),
+            ),
           captureTestSnapshot: (root, request) => {
             testSequence += 1;
             const sequence = testSequence;
             return captureTestSnapshot(root, request, {
+              wrapperConfigPath: path.join(import.meta.dirname, '../../dist/rstestConfig.js'),
+              withConfigTarget: withRstackConfigTarget,
               runRstest: async (options) => {
                 await new Promise((resolve) => setTimeout(resolve, 5));
                 testCalls.push({

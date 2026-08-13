@@ -5,7 +5,7 @@ import type { RslibConfigDefinition } from '@rslib/core';
 import type { RslintConfig } from '@rslint/core';
 import type { UserConfig, UserConfigAsyncFn } from '@rspress/core';
 import type { RstestConfigExport } from '@rstest/core';
-import type { ContextConfig } from './context/config.ts';
+import type { ContextConfig } from '@rstackjs/context';
 import type { FmtConfigDefinition } from './fmt/types.ts';
 import type { StagedConfig } from './staged.ts';
 

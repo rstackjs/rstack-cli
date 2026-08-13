@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import type { RunRstestOptions, TestRunResult } from '@rstest/core/api';
-import { withRstackConfigTarget } from '../config.ts';
 import {
   contextStoreSchemaVersion,
   type ContextFreshness,
@@ -26,6 +25,7 @@ import {
   recordContextInputFiles,
   resolveExplicitCaptureTarget,
   resolveInternalConfigPath,
+  type ConfigTargetRunner,
 } from './source.ts';
 import {
   readContextSnapshotById,
@@ -79,6 +79,8 @@ type TestCaptureDependencies = {
   createRunId?: () => string;
   createSnapshotId?: () => string;
   now?: () => Date;
+  wrapperConfigPath?: string;
+  withConfigTarget?: ConfigTargetRunner;
 };
 
 const toWorkspacePath = (workspaceRoot: string, filePath: string): string =>
@@ -171,7 +173,9 @@ const captureTestSnapshot = async (
 ): Promise<TestCaptureResult> => {
   validateExecutionRequest(request.execution);
   const target = await resolveExplicitCaptureTarget(workspaceRoot, request);
-  const wrapperConfigPath = resolveInternalConfigPath(import.meta.dirname, 'rstestConfig.js');
+  const wrapperConfigPath =
+    dependencies.wrapperConfigPath ??
+    resolveInternalConfigPath(import.meta.dirname, 'rstestConfig.js');
   const context = createExplicitContextDescriptor({
     producer: 'rstest',
     workspaceRoot,
@@ -189,7 +193,15 @@ const captureTestSnapshot = async (
   let result: TestRunResult;
   try {
     const runRstest = dependencies.runRstest ?? (await loadRunRstest());
-    result = await withRstackConfigTarget(target.packageRoot, target.configPath, () =>
+    const withConfigTarget =
+      dependencies.withConfigTarget ??
+      (async (_configRoot, _configPath, action) => {
+        if (dependencies.runRstest === undefined) {
+          throw new Error('Rstack test capture requires a config adapter.');
+        }
+        return action();
+      });
+    result = await withConfigTarget(target.packageRoot, target.configPath, () =>
       runRstest({
         cwd: target.packageRoot,
         config: wrapperConfigPath,

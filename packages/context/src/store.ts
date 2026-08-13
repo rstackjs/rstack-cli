@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { link, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { ensureProjectCacheDir, getProjectCacheDir } from '../projectCache.ts';
+import { ensureProjectCacheDir, getProjectCacheDir } from './cache.ts';
 import {
   contextStoreSchemaVersion,
   type ContextDescriptor,

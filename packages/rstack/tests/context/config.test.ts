@@ -2,8 +2,8 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
+import { resolveContextCapture } from '@rstackjs/context';
 import { loadRstackConfig } from '../../src/config.ts';
-import { resolveContextCapture } from '../../src/context/config.ts';
 
 const withTempConfig = async (
   source: string,

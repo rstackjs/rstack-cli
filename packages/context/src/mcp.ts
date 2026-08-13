@@ -19,7 +19,7 @@ import { readProjectStatus } from './status.ts';
 import { readContextSnapshots } from './store.ts';
 import { captureTestSnapshot, listTestResults, type TestSnapshotRequest } from './testRun.ts';
 
-declare const RSTACK_VERSION: string;
+declare const RSTACK_CONTEXT_VERSION: string;
 
 const renderProjectStatus = (status: Awaited<ReturnType<typeof readProjectStatus>>): string =>
   `Rstack project status: ${status.contexts.length} current context${status.contexts.length === 1 ? '' : 's'} (${status.contexts.filter(({ state }) => state === 'ready').length} ready, ${status.contexts.filter(({ state }) => state === 'pending').length} pending); ${status.issues.length} context-store/read issue${status.issues.length === 1 ? '' : 's'}. See structuredContent for details.`;
@@ -463,7 +463,7 @@ const createContextMcpServer = (
   const server = new McpServer(
     {
       name: 'rstack-context',
-      version: dependencies.serverVersion ?? RSTACK_VERSION,
+      version: dependencies.serverVersion ?? RSTACK_CONTEXT_VERSION,
     },
     {
       instructions:

@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { expect, test } from 'rstack/test';
+import { expect, test } from '@rstest/core';
 import {
   contextStoreSchemaVersion,
   readContextWorkspaceStatus,
@@ -9,8 +9,8 @@ import {
   writeContextSnapshot,
   type ContextRunManifest,
   type ContextSnapshot,
-} from '../../src/context/index.ts';
-import { readContextSnapshotById, readContextSnapshots } from '../../src/context/store.ts';
+} from '../src/index.ts';
+import { readContextSnapshotById, readContextSnapshots } from '../src/store.ts';
 
 const context = {
   contextId: 'ctx_library_esm',

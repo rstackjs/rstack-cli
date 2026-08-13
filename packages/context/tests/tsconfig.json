@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "outDir": "../dist-tests",
+    "types": ["node", "@rstest/core/globals"]
+  },
+  "include": ["../src", "."]
+}

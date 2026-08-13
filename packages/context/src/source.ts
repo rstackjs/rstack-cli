@@ -38,6 +38,12 @@ type ExplicitCaptureTarget = {
   configPath?: string;
 };
 
+type ConfigTargetRunner = <T>(
+  configRoot: string,
+  configPath: string | undefined,
+  action: () => Promise<T>,
+) => Promise<T>;
+
 const rstackConfigFileNames = [
   'rstack.config.ts',
   'rstack.config.js',
@@ -189,4 +195,4 @@ export {
   resolveExplicitCaptureTarget,
   resolveInternalConfigPath,
 };
-export type { ExplicitContextOptions, ExplicitRunOptions };
+export type { ConfigTargetRunner, ExplicitContextOptions, ExplicitRunOptions };

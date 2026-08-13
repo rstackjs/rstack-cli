@@ -1,7 +1,7 @@
 import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { expect, test } from 'rstack/test';
+import { expect, test } from '@rstest/core';
 import {
   contextStoreSchemaVersion,
   writeContextRunManifest,
@@ -9,13 +9,13 @@ import {
   type ContextDescriptor,
   type ContextRunManifest,
   type ContextSnapshot,
-} from '../../src/context/index.ts';
+} from '../src/index.ts';
 import {
   explainDeadCodeCandidate,
   findUnusedCandidates,
   readProductRoots,
   traceModuleImpact,
-} from '../../src/context/queries.ts';
+} from '../src/queries.ts';
 
 const fixtureRoot = path.resolve(import.meta.dirname, '../fixtures/context/reachability');
 

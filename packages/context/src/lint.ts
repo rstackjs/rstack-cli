@@ -2,7 +2,6 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { LintMessage, LintResult, RslintOptions } from '@rslint/core';
-import { withRstackConfigTarget } from '../config.ts';
 import {
   contextStoreSchemaVersion,
   type ContextFreshness,
@@ -21,6 +20,7 @@ import {
   createExplicitRun,
   resolveExplicitCaptureTarget,
   resolveInternalConfigPath,
+  type ConfigTargetRunner,
 } from './source.ts';
 import {
   readContextSnapshotById,
@@ -62,6 +62,11 @@ type RslintEngine = {
 };
 
 type RslintFactory = (options: RslintOptions) => RslintEngine;
+
+type LintCaptureAdapter = {
+  wrapperConfigPath: string;
+  withConfigTarget: ConfigTargetRunner;
+};
 
 type DiagnosticsQuery = {
   snapshotId?: string;
@@ -194,10 +199,12 @@ const captureLintSnapshot = async (
   workspaceRoot: string,
   request: LintSnapshotRequest,
   createRslint?: RslintFactory,
+  adapter?: LintCaptureAdapter,
 ): Promise<LintCaptureResult> => {
   const includeFixPreview = request.includeFixPreview ?? false;
   const target = await resolveExplicitCaptureTarget(workspaceRoot, request);
-  const wrapperConfigPath = resolveInternalConfigPath(import.meta.dirname, 'rslintConfig.js');
+  const wrapperConfigPath =
+    adapter?.wrapperConfigPath ?? resolveInternalConfigPath(import.meta.dirname, 'rslintConfig.js');
   const context = createExplicitContextDescriptor({
     producer: 'rslint',
     workspaceRoot,
@@ -221,7 +228,15 @@ const captureLintSnapshot = async (
   }
   let results: LintResult[];
   try {
-    results = await withRstackConfigTarget(target.packageRoot, target.configPath, async () => {
+    const withConfigTarget =
+      adapter?.withConfigTarget ??
+      (async (_configRoot, _configPath, action) => {
+        if (createRslint === undefined) {
+          throw new Error('Rstack lint capture requires a config adapter.');
+        }
+        return action();
+      });
+    results = await withConfigTarget(target.packageRoot, target.configPath, async () => {
       const engine = createRslint?.(options) ?? new (await import('@rslint/core')).Rslint(options);
       try {
         return request.mode === 'files'
@@ -528,6 +543,7 @@ export type {
   DiagnosticRecord,
   DiagnosticsQuery,
   LintCaptureResult,
+  LintCaptureAdapter,
   LintFixPreviewResult,
   LintSnapshotRequest,
   RslintFactory,

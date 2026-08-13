@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import type { ConfigParams, RsbuildConfig } from '@rsbuild/core';
-import { expect, test } from 'rstack/test';
+import { expect, test } from '@rstest/core';
 import {
   appendBuildContextPlugin,
   createBuildContextPlugin,
@@ -10,7 +10,7 @@ import {
   recordContextInputFiles,
   type BuildMetadataFacet,
   type ResolvedContextWorkspace,
-} from '../../src/context/index.ts';
+} from '../src/index.ts';
 
 type BeforeHook = (context: { environments: Record<string, unknown> }) => Promise<void> | void;
 

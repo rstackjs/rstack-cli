@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { expect, test } from 'rstack/test';
+import { expect, test } from '@rstest/core';
 import {
   contextStoreSchemaVersion,
   readProjectStatus,
@@ -10,7 +10,7 @@ import {
   type ContextDescriptor,
   type ContextRunManifest,
   type ContextSnapshot,
-} from '../../src/context/index.ts';
+} from '../src/index.ts';
 
 const withTempWorkspace = async (
   callback: (workspaceRoot: string) => Promise<void>,

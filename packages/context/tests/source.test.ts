@@ -1,15 +1,15 @@
 import { mkdir, mkdtemp, rm, unlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { expect, test } from 'rstack/test';
-import { contextStoreSchemaVersion, type ContextSnapshot } from '../../src/context/model.ts';
-import { validateRunManifest } from '../../src/context/records.ts';
+import { expect, test } from '@rstest/core';
+import { contextStoreSchemaVersion, type ContextSnapshot } from '../src/model.ts';
+import { validateRunManifest } from '../src/records.ts';
 import {
   assessSnapshotFreshness,
   createExplicitContextDescriptor,
   createExplicitRun,
   recordContextInputFiles,
-} from '../../src/context/source.ts';
+} from '../src/source.ts';
 
 const withTempWorkspace = async (
   callback: (workspaceRoot: string) => Promise<void>,

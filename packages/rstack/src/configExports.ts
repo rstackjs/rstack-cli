@@ -5,4 +5,4 @@ export {
   type LoadedRstackConfig,
   type LoadRstackConfigOptions,
 } from './config.ts';
-export type { ContextCaptureTier, ContextConfig } from './context/config.ts';
+export type { ContextCaptureTier, ContextConfig } from '@rstackjs/context';

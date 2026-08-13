@@ -1,13 +1,13 @@
 import { realpath } from 'node:fs/promises';
 import type { ConfigParams, RsbuildConfig, WatchFiles } from '@rsbuild/core';
-import { loadRstackConfig, type Configs } from './config.ts';
 import {
   appendBuildContextPlugin,
   createBuildContextPlugin,
   recordContextInputFiles,
   resolveContextCapture,
   resolveContextWorkspace,
-} from './context/index.ts';
+} from '@rstackjs/context';
+import { loadRstackConfig, type Configs } from './config.ts';
 
 export const resolveRsbuildConfig = async (
   configs: Configs,

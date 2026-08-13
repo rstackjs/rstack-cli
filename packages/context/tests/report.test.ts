@@ -2,8 +2,8 @@ import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { expect, test } from 'rstack/test';
-import { resolveReportFile, resolveRsdoctorReport } from '../../src/context/report.ts';
+import { expect, test } from '@rstest/core';
+import { resolveReportFile, resolveRsdoctorReport } from '../src/report.ts';
 
 const validDataFile = 'artifacts/rsdoctor-data.json';
 

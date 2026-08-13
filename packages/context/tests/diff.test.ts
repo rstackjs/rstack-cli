@@ -2,12 +2,12 @@ import { createHash } from 'node:crypto';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { expect, test } from 'rstack/test';
+import { expect, test } from '@rstest/core';
 import {
   diffContextSnapshots,
   diffStoredContextSnapshots,
   type SnapshotDiffKind,
-} from '../../src/context/diff.ts';
+} from '../src/diff.ts';
 import {
   contextStoreSchemaVersion,
   type ContextDescriptor,
@@ -18,8 +18,8 @@ import {
   type LintFacet,
   type StoredContextSnapshot,
   type TestFacet,
-} from '../../src/context/model.ts';
-import { writeContextRunManifest, writeContextSnapshot } from '../../src/context/store.ts';
+} from '../src/model.ts';
+import { writeContextRunManifest, writeContextSnapshot } from '../src/store.ts';
 
 const unknownFreshness: ContextFreshness = {
   state: 'unknown',

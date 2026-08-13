@@ -38,6 +38,10 @@
       "types": "./dist/lint.d.ts",
       "default": "./dist/lint.js"
     },
+    "./context": {
+      "types": "./dist/context.d.ts",
+      "default": "./dist/context.js"
+    },
     "./types": {
       "types": "./types/index.d.ts"
     },
@@ -75,14 +79,13 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "catalog:",
     "@rsbuild/core": "catalog:",
-    "@rsdoctor/agent-cli": "catalog:",
     "@rslib/core": "catalog:",
     "@rslint/core": "catalog:",
+    "@rstackjs/context": "workspace:*",
     "@rstest/core": "catalog:",
     "prettier": "catalog:",
     "tinypool": "catalog:",
-    "yuku-parser": "catalog:",
-    "zod": "catalog:"
+    "yuku-parser": "catalog:"
   },
   "devDependencies": {
     "@napi-rs/cli": "catalog:",

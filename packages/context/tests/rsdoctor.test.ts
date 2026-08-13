@@ -3,8 +3,8 @@ import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { expect, test } from 'rstack/test';
-import { analyzeRsdoctorArtifact, listRsdoctorToolNames } from '../../src/context/index.ts';
+import { expect, test } from '@rstest/core';
+import { analyzeRsdoctorArtifact, listRsdoctorToolNames } from '../src/index.ts';
 
 const validDataFile = 'artifacts/rsdoctor-data.json';
 
@@ -97,7 +97,7 @@ registerHooks({
 });
 `,
     );
-    const moduleUrl = pathToFileURL(path.resolve('src/context/index.ts')).toString();
+    const moduleUrl = pathToFileURL(path.resolve('src/index.ts')).toString();
     const result = spawnSync(
       process.execPath,
       [

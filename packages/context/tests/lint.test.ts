@@ -4,16 +4,16 @@ import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { LintResult, RslintOptions } from '@rslint/core';
-import { beforeEach, expect, test } from 'rstack/test';
-import { contextStoreSchemaVersion, type ContextRunManifest } from '../../src/context/model.ts';
-import { captureLintSnapshot, getLintFixPreview, listDiagnostics } from '../../src/context/lint.ts';
-import { readProjectStatus } from '../../src/context/status.ts';
+import { beforeEach, expect, test } from '@rstest/core';
+import { captureLintSnapshot, getLintFixPreview, listDiagnostics } from '../src/lint.ts';
+import { contextStoreSchemaVersion, type ContextRunManifest } from '../src/model.ts';
+import { readProjectStatus } from '../src/status.ts';
 import {
   readContextSnapshotById,
   readContextSnapshots,
   writeContextRunManifest,
   writeContextSnapshot,
-} from '../../src/context/store.ts';
+} from '../src/store.ts';
 
 const mocks = {
   closeCalls: 0,
@@ -83,7 +83,7 @@ registerHooks({
 });
 `,
     );
-    const moduleUrl = pathToFileURL(path.resolve('src/context/lint.ts')).toString();
+    const moduleUrl = pathToFileURL(path.resolve('src/lint.ts')).toString();
     const result = spawnSync(
       process.execPath,
       [
@@ -165,7 +165,7 @@ test('captures a deterministic file snapshot with complete inputs and fail statu
       {
         cwd: workspaceRoot,
         fix: false,
-        overrideConfigFile: expect.stringMatching(/\/src\/rslintConfig\.js$/u),
+        overrideConfigFile: expect.stringMatching(/\/rslintConfig\.js$/u),
       },
     ]);
     expect(mocks.lintFilesCalls).toEqual([['.']]);

@@ -4,9 +4,9 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { RsbuildConfig } from '@rsbuild/core';
 import type { RslibConfig } from '@rslib/core';
+import { readContextWorkspaceStatus, readProjectStatus } from '@rstackjs/context';
 import { afterEach, expect, test } from 'rstack/test';
 import { getConfigState } from '../../src/config.ts';
-import { readContextWorkspaceStatus, readProjectStatus } from '../../src/context/index.ts';
 import defaultLoadRsbuildConfig, {
   loadRsbuildConfig,
   resolveRsbuildConfig,

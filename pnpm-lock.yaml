@@ -346,6 +346,43 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
+  packages/context:
+    dependencies:
+      '@modelcontextprotocol/sdk':
+        specifier: 'catalog:'
+        version: 1.29.0(supports-color@8.1.1)(zod@4.4.3)
+      '@rsbuild/core':
+        specifier: 'catalog:'
+        version: 2.1.10
+      '@rsdoctor/agent-cli':
+        specifier: 'catalog:'
+        version: 0.1.1
+      '@rslint/core':
+        specifier: 'catalog:'
+        version: 0.7.3
+      '@rstest/core':
+        specifier: 'catalog:'
+        version: 0.11.6(happy-dom@20.11.2)
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      '@rslib/core':
+        specifier: 'catalog:'
+        version: 1.0.0-beta.2(typescript@7.0.2)
+      '@rstest/coverage-istanbul':
+        specifier: 'catalog:'
+        version: 0.11.6(@rstest/core@0.11.6)(supports-color@8.1.1)
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.13.3
+      fast-json-stable-stringify:
+        specifier: 'catalog:'
+        version: 2.1.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
   packages/create-rstack:
     dependencies:
       '@rstackjs/create-toolkit':
@@ -370,15 +407,15 @@ importers:
       '@rsbuild/core':
         specifier: 'catalog:'
         version: 2.1.10
-      '@rsdoctor/agent-cli':
-        specifier: 'catalog:'
-        version: 0.1.1
       '@rslib/core':
         specifier: 'catalog:'
         version: 1.0.0-beta.2(typescript@7.0.2)
       '@rslint/core':
         specifier: 'catalog:'
         version: 0.7.3
+      '@rstackjs/context':
+        specifier: workspace:*
+        version: link:../context
       '@rstest/core':
         specifier: 'catalog:'
         version: 0.11.6(happy-dom@20.11.2)
@@ -391,9 +428,6 @@ importers:
       yuku-parser:
         specifier: 'catalog:'
         version: 0.8.4
-      zod:
-        specifier: 'catalog:'
-        version: 4.4.3
     devDependencies:
       '@napi-rs/cli':
         specifier: 'catalog:'

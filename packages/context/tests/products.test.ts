@@ -1,8 +1,8 @@
 import path from 'node:path';
-import { expect, test } from 'rstack/test';
-import type { ContextDescriptor } from '../../src/context/model.ts';
-import { resolveProductRoots } from '../../src/context/products.ts';
-import { readRsdoctorModuleGraph } from '../../src/context/rsdoctorGraph.ts';
+import { expect, test } from '@rstest/core';
+import type { ContextDescriptor } from '../src/model.ts';
+import { resolveProductRoots } from '../src/products.ts';
+import { readRsdoctorModuleGraph } from '../src/rsdoctorGraph.ts';
 
 const fixtureRoot = path.resolve(import.meta.dirname, '../fixtures/context/reachability');
 

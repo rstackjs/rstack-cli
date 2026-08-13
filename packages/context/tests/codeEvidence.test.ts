@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { expect, test } from 'rstack/test';
+import { expect, test } from '@rstest/core';
 import {
   contextStoreSchemaVersion,
   writeContextRunManifest,
@@ -14,9 +14,9 @@ import {
   type JsonValue,
   type LintFacet,
   type TestFacet,
-} from '../../src/context/index.ts';
-import { readCodeEvidence } from '../../src/context/codeEvidence.ts';
-import type { TestExecutionFacet } from '../../src/context/model.ts';
+} from '../src/index.ts';
+import { readCodeEvidence } from '../src/codeEvidence.ts';
+import type { TestExecutionFacet } from '../src/model.ts';
 
 const fixtureRoot = path.resolve(
   import.meta.dirname,

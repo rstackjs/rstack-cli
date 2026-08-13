@@ -1,6 +1,6 @@
-import { expect, test } from 'rstack/test';
-import type { ObservedModuleGraph } from '../../src/context/analysisModel.ts';
-import { traceModuleGraph } from '../../src/context/reachability.ts';
+import { expect, test } from '@rstest/core';
+import type { ObservedModuleGraph } from '../src/analysisModel.ts';
+import { traceModuleGraph } from '../src/reachability.ts';
 
 const graph: ObservedModuleGraph = {
   modules: [

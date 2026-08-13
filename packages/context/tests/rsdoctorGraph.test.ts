@@ -1,8 +1,8 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { expect, test } from 'rstack/test';
-import { readRsdoctorModuleGraph } from '../../src/context/rsdoctorGraph.ts';
+import { expect, test } from '@rstest/core';
+import { readRsdoctorModuleGraph } from '../src/rsdoctorGraph.ts';
 
 const applicationWorkspace = path.resolve(
   import.meta.dirname,

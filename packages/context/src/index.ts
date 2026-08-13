@@ -63,6 +63,7 @@ export {
   type DiagnosticRecord,
   type DiagnosticsQuery,
   type LintCaptureResult,
+  type LintCaptureAdapter,
   type LintFixPreviewResult,
   type LintSnapshotRequest,
   type RslintFactory,
@@ -85,3 +86,4 @@ export {
   type SnapshotDiffRequest,
   type SnapshotDiffResult,
 } from './diff.ts';
+export { createContextMcpServer, type ContextMcpDependencies } from './mcp.ts';

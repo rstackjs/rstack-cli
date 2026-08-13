@@ -1,13 +1,13 @@
 import { realpath } from 'node:fs/promises';
 import type { ConfigParams, RslibConfig } from '@rslib/core';
-import { loadRstackConfig, type Configs } from './config.ts';
 import {
   appendBuildContextPlugin,
   createBuildContextPlugin,
   recordContextInputFiles,
   resolveContextCapture,
   resolveContextWorkspace,
-} from './context/index.ts';
+} from '@rstackjs/context';
+import { loadRstackConfig, type Configs } from './config.ts';
 
 export const resolveRslibConfig = async (
   configs: Configs,
