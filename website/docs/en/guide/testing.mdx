@@ -1,6 +1,6 @@
 # Testing
 
-Rstack uses [Rstest](https://rstest.rs/) to run tests.
+Rstack CLI uses [Rstest](https://rstest.rs/) to run tests.
 
 ```bash
 rs test
@@ -44,7 +44,7 @@ define.test({
 });
 ```
 
-When `extends` is omitted, Rstack uses the Rsbuild adapter to extend the test configuration from `define.app()`. If no application configuration is defined, it uses the Rslib adapter with `define.lib()` instead. `define.app()` takes precedence when both are defined.
+When `extends` is omitted, Rstack CLI uses the Rsbuild adapter to extend the test configuration from `define.app()`. If no application configuration is defined, it uses the Rslib adapter with `define.lib()` instead. `define.app()` takes precedence when both are defined.
 
 ## Multiple projects
 
@@ -78,7 +78,7 @@ define.test({
 });
 ```
 
-Rstack applies the corresponding adapter to each inline project that omits `extends`. A function-based `define.app()` or `define.lib()` configuration is resolved once, then shared by those inline projects.
+Rstack CLI applies the corresponding adapter to each inline project that omits `extends`. A function-based `define.app()` or `define.lib()` configuration is resolved once, then shared by those inline projects.
 
 Run one project by name:
 
@@ -100,7 +100,7 @@ define.test({
 });
 ```
 
-Rstack passes string entries to Rstest unchanged. External projects load their own configuration and do not inherit the current `define.app()` or `define.lib()` configuration. Use external projects when each project manages its configuration independently.
+Rstack CLI passes string entries to Rstest unchanged. External projects load their own configuration and do not inherit the current `define.app()` or `define.lib()` configuration. Use external projects when each project manages its configuration independently.
 
 ## Customize inheritance
 

@@ -99,7 +99,7 @@ Files next to `_` are repository hook scripts. The `_` directory contains genera
 
 ## Supported hooks
 
-Rstack supports these client-side Git hooks:
+Rstack CLI supports these client-side Git hooks:
 
 - `pre-commit`
 - `pre-merge-commit`
@@ -120,7 +120,7 @@ Create a file with the matching name next to the `_` directory.
 
 ## Hook runtime
 
-Rstack runs hook scripts with POSIX `sh -e`, forwards Git's arguments and standard input, and returns the hook's exit code. Before running a hook, it changes to the project that installed the hooks and prepends that project's `node_modules/.bin` to `PATH`.
+Rstack CLI runs hook scripts with POSIX `sh -e`, forwards Git's arguments and standard input, and returns the hook's exit code. Before running a hook, it changes to the project that installed the hooks and prepends that project's `node_modules/.bin` to `PATH`.
 
 ### Disable and debug
 
@@ -130,7 +130,7 @@ Set `RSTACK_HOOKS=0` to skip installation or hook execution:
 RSTACK_HOOKS=0 git commit -m "Skip hooks"
 ```
 
-Set `RSTACK_HOOKS=2` to trace Rstack's hook runtime, including how it invokes the hook script and handles its exit code; to trace commands inside the hook script, add `set -x` to the script:
+Set `RSTACK_HOOKS=2` to trace the Rstack CLI hook runtime, including how it invokes the hook script and handles its exit code; to trace commands inside the hook script, add `set -x` to the script:
 
 ```bash
 RSTACK_HOOKS=2 git commit -m "Trace hooks"
@@ -138,7 +138,7 @@ RSTACK_HOOKS=2 git commit -m "Trace hooks"
 
 ### Configure the hook environment
 
-Before running a hook script, Rstack loads this optional POSIX shell file:
+Before running a hook script, Rstack CLI loads this optional POSIX shell file:
 
 ```text
 ${XDG_CONFIG_HOME:-$HOME/.config}/rstack/hooks-init.sh
@@ -148,7 +148,7 @@ Use it to initialize a Node.js version manager, update `PATH`, or set `RSTACK_HO
 
 ## Monorepo
 
-In a monorepo, the project that provides Rstack may be located in a subdirectory such as `frontend/`. Running `rs setup` from that directory still installs hooks at the Git repository root:
+In a monorepo, the project that provides Rstack CLI may be located in a subdirectory such as `frontend/`. Running `rs setup` from that directory still installs hooks at the Git repository root:
 
 ```text
 repo/.rstack/hooks/
@@ -156,7 +156,7 @@ repo/.rstack/hooks/_/
 core.hooksPath=.rstack/hooks/_
 ```
 
-Rstack records `frontend` as the project that owns the hooks. Hook scripts remain at the repository root, but run from `frontend`, so they can use its configuration and dependencies without an explicit `cd`:
+Rstack CLI records `frontend` as the project that owns the hooks. Hook scripts remain at the repository root, but run from `frontend`, so they can use its configuration and dependencies without an explicit `cd`:
 
 ```sh title=".rstack/hooks/pre-commit"
 rs staged
@@ -168,7 +168,7 @@ To change the owner, remove `rs setup` from the previous project's `prepare` scr
 
 ## Remove hooks
 
-To remove Rstack-managed hooks:
+To remove hooks managed by Rstack CLI:
 
 1. Remove `rs setup` from the `prepare` script.
 2. Unset the repository's hooks path:
@@ -188,13 +188,13 @@ To remove Rstack-managed hooks:
 - Rerun `rs setup` to restore generated files and executable permissions.
 - Check that `RSTACK_HOOKS` is not set to `0` in the environment or initialization file.
 - If another hooks setup is reported, migrate or remove the conflicting setup before rerunning the command.
-- If another Rstack owner is reported, follow the ownership transfer steps in [Monorepo](#monorepo).
+- If another project is reported as the hooks owner, follow the ownership transfer steps in [Monorepo](#monorepo).
 
-Hook scripts do not need to be executable because Rstack runs them with `sh`.
+Hook scripts do not need to be executable because Rstack CLI runs them with `sh`.
 
 ### Command not found
 
-For exit code 127, Rstack prints the effective `PATH`. If a GUI Git client cannot find Node.js or the package manager, initialize them in `hooks-init.sh`.
+For exit code 127, Rstack CLI prints the effective `PATH`. If a GUI Git client cannot find Node.js or the package manager, initialize them in `hooks-init.sh`.
 
 ### Windows and Yarn
 

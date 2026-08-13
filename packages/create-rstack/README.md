@@ -53,7 +53,7 @@ npx create-rstack --dir my-project --template app-vanilla-ts --no-git
 
 ## Documentation
 
-See the [Rstack documentation](https://rstack.rs).
+See the [Rstack CLI documentation](https://rstack.rs).
 
 ## License
 

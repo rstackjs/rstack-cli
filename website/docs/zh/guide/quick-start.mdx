@@ -6,11 +6,11 @@ description: '创建 Rstack 项目，或在现有项目中安装 Rstack CLI 并�
 
 import { PackageManagerTabs } from '@rspress/core/theme';
 
-Rstack CLI 通过统一的命令行和配置文件整合 Rstack 工具链。本指南将介绍如何创建新的 Rstack 项目或在现有项目中添加 Rstack，以及可以使用的工作流。
+Rstack CLI 通过统一的命令行和配置文件整合 Rstack 工具链。本指南将介绍如何创建新的 Rstack 项目或在现有项目中添加 Rstack CLI，以及可以使用的工作流。
 
 ## 环境准备 \{#environment-preparation}
 
-Rstack 支持使用 [Node.js](https://nodejs.org/)、[Deno](https://deno.com/) 或 [Bun](https://bun.sh/) 作为 JavaScript 运行时。
+Rstack CLI 支持使用 [Node.js](https://nodejs.org/)、[Deno](https://deno.com/) 或 [Bun](https://bun.sh/) 作为 JavaScript 运行时。
 
 参考以下安装指南，选择一种运行时：
 
@@ -20,7 +20,7 @@ Rstack 支持使用 [Node.js](https://nodejs.org/)、[Deno](https://deno.com/) �
 
 :::tip 版本要求
 
-使用 Node.js 作为运行时时，Rstack 要求 Node.js 版本为 22.12.0 或更高版本。
+使用 Node.js 作为运行时时，Rstack CLI 要求 Node.js 版本为 22.12.0 或更高版本。
 
 :::
 
@@ -104,7 +104,7 @@ Options:
 Available templates: app-vanilla, app-vanilla-ts, app-react, app-react-ts, app-preact, app-preact-ts, app-vue, app-vue-ts, app-lit, app-lit-ts, app-svelte, app-svelte-ts, app-solid, app-solid-ts, lib-node, lib-node-ts, lib-react, lib-react-ts, lib-vue, lib-vue-ts, lib-svelte, lib-svelte-ts, lib-solid, lib-solid-ts, doc, doc-i18n
 ```
 
-## 安装 Rstack \{#install-rstack}
+## 安装 Rstack CLI \{#install-rstack}
 
 在已有 `package.json` 的项目中，将 [`rstack`](https://www.npmjs.com/package/rstack) 安装为开发依赖：
 
@@ -135,9 +135,9 @@ Available templates: app-vanilla, app-vanilla-ts, app-react, app-react-ts, app-p
 }
 ```
 
-package scripts 会使用项目本地安装的 `rs` 命令，因此无需全局安装 Rstack。
+package scripts 会使用项目本地安装的 `rs` 命令，因此无需全局安装 Rstack CLI。
 
-Rstack 提供以下命令：
+Rstack CLI 提供以下命令：
 
 - [`rs dev`](./cli/dev)：启动应用开发服务器。
 - [`rs build`](./cli/build)：构建应用的生产版本。
@@ -151,7 +151,7 @@ Rstack 提供以下命令：
 - [`rs setup`](./cli/setup)：安装仓库级 Git hooks。
 - [`rs staged`](./cli/staged)：使用 lint-staged 对 Git 暂存区中的文件运行任务。
 
-## 配置 Rstack \{#configure-rstack}
+## 配置 Rstack CLI \{#configure-rstack}
 
 在项目根目录创建 `rstack.config.ts`，并注册项目所需的配置。以下是一个包含应用、测试和代码检查的最小示例：
 

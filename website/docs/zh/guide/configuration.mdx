@@ -2,7 +2,7 @@
 
 import { PackageManagerTabs } from '@rspress/core/theme';
 
-Rstack 将项目所用工具的配置集中到一份文件中。通过 `define.*()` API 定义项目实际需要的配置即可。
+Rstack CLI 将项目所用工具的配置集中到一份文件中。通过 `define.*()` API 定义项目实际需要的配置即可。
 
 ## 配置文件 \{#configuration-file}
 
@@ -31,7 +31,7 @@ define.fmt({
 
 配置文件无需默认导出。每个 `define.*()` API 最多调用一次；重复定义同一类型的配置会抛出错误。
 
-Rstack 默认会查找使用以下任一文件名的配置文件：
+Rstack CLI 默认会查找使用以下任一文件名的配置文件：
 
 - `rstack.config.ts`
 - `rstack.config.js`
@@ -46,7 +46,7 @@ rs build --config ./configs/rstack.config.ts
 
 ## 按需加载依赖 \{#loading-dependencies-on-demand}
 
-执行会使用 Rstack 配置的命令时，Rstack 会加载并执行配置文件，然后只解析当前命令需要的配置函数。
+每次执行会使用 Rstack 配置的命令时，Rstack CLI 都会加载并执行配置文件，然后只解析当前命令需要的配置函数。
 
 > [`rs mcp`](./cli/mcp) 提供的查询工具会读取已完成的记录，而不会加载或执行 `rstack.config.*`。显式调用 `lint_snapshot` 和 `test_snapshot` 工具时则会加载所选项目的配置，并运行对应的 lint 或测试生产者。请在 [`rs dev`](./cli/dev)、[`rs build`](./cli/build) 和 [`rs lib`](./cli/lib) 上启用构建上下文捕获。
 
@@ -66,7 +66,7 @@ define.app(async () => {
 
 ## 配置 API \{#configuration-apis}
 
-各 API 沿用底层工具的配置格式。使用 Rstack 已重导出的 API 和辅助函数时，推荐从 `rstack/app`、`rstack/lib`、`rstack/test` 和 `rstack/lint` 入口导入。
+各 API 沿用底层工具的配置格式。使用 Rstack CLI 已重导出的 API 和辅助函数时，推荐从 `rstack/app`、`rstack/lib`、`rstack/test` 和 `rstack/lint` 入口导入。
 
 | API                                   | 底层工具                                                                | 对应命令                                                                        |
 | ------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -146,7 +146,7 @@ define.doc({
 });
 ```
 
-`@rspress/core` 是 Rstack 的可选依赖。每个使用 `rs doc` 命令的项目都需要安装该依赖：
+`@rspress/core` 是 Rstack CLI 的可选依赖。每个使用 `rs doc` 命令的项目都需要安装该依赖：
 
 <PackageManagerTabs command="install -D @rspress/core" />
 
@@ -167,9 +167,9 @@ define.test({
 });
 ```
 
-未设置 `extends` 时，Rstack 会通过 Rsbuild 适配器让测试配置自动继承 `define.app()`；如果未定义应用配置，则通过 Rslib 适配器回退到 `define.lib()`。二者同时存在时，应用配置的优先级更高。显式设置 `extends` 可关闭自动继承。
+未设置 `extends` 时，Rstack CLI 会通过 Rsbuild 适配器让测试配置自动继承 `define.app()`；如果未定义应用配置，则通过 Rslib 适配器回退到 `define.lib()`。二者同时存在时，应用配置的优先级更高。显式设置 `extends` 可关闭自动继承。
 
-如果测试根配置未定义 `extends` 且包含 `projects`，Rstack 会为每个未自行设置 `extends` 的内联项目应用自动继承。函数形式的应用或库配置只会解析一次，并由这些项目共享。字符串形式的项目会原样传给 Rstest；它们会独立加载外部配置，不继承当前应用或库的配置。
+如果测试根配置未定义 `extends` 且包含 `projects`，Rstack CLI 会为每个未自行设置 `extends` 的内联项目应用自动继承。函数形式的应用或库配置只会解析一次，并由这些项目共享。字符串形式的项目会原样传给 Rstest；它们会独立加载外部配置，不继承当前应用或库的配置。
 
 > 如需了解更多测试相关用法，请参阅[测试](./testing)。
 

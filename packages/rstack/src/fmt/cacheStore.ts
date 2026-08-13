@@ -57,7 +57,10 @@ const createEmptyCache = (namespace: string): ParsedFmtCacheFile => ({
   optionsUseCounts: [],
 });
 
-const parseCacheFile = (content: string): ParsedFmtCacheFile | undefined => {
+const parseCacheFile = (
+  content: string,
+  expectedNamespace: string,
+): ParsedFmtCacheFile | undefined => {
   let value: unknown;
   try {
     value = JSON.parse(content);
@@ -73,7 +76,7 @@ const parseCacheFile = (content: string): ParsedFmtCacheFile | undefined => {
   const { version, namespace, options, files } = cache;
   if (
     version !== fmtCacheVersion ||
-    typeof namespace !== 'string' ||
+    namespace !== expectedNamespace ||
     !Array.isArray(options) ||
     !Array.isArray(files) ||
     files.length % fileEntryWidth !== 0
@@ -199,33 +202,34 @@ class FmtCacheStoreImpl implements FmtCacheStore {
     return index;
   }
 
+  /** Removes unreferenced option hashes and remaps file entries to the compacted indexes. */
   #compactUnusedOptions(): void {
     if (!this.#optionsUseCounts.includes(0)) {
       return;
     }
 
     const { files, options } = this.#cache;
-    const nextOptions: string[] = [];
-    const nextUseCounts: number[] = [];
-    const remappedIndexes = new Int32Array(options.length).fill(-1);
-    for (let index = 0; index < options.length; index++) {
-      const useCount = this.#optionsUseCounts[index];
-      if (useCount > 0) {
-        remappedIndexes[index] = nextOptions.length;
-        nextOptions.push(options[index]);
-        nextUseCounts.push(useCount);
-      }
-    }
-    for (let offset = 0; offset < files.length; offset += fileEntryWidth) {
-      const currentIndex = files[offset + optionsIndexOffset] as number;
-      files[offset + optionsIndexOffset] = remappedIndexes[currentIndex];
-    }
-
-    options.splice(0, options.length, ...nextOptions);
-    this.#optionsUseCounts.splice(0, this.#optionsUseCounts.length, ...nextUseCounts);
+    const counts = this.#optionsUseCounts;
+    const remap = new Int32Array(options.length).fill(-1);
+    let nextIndex = 0;
     this.#optionsIndexes.clear();
     for (let index = 0; index < options.length; index++) {
-      this.#optionsIndexes.set(options[index], index);
+      const count = counts[index];
+      if (count > 0) {
+        const option = options[index];
+        remap[index] = nextIndex;
+        options[nextIndex] = option;
+        counts[nextIndex] = count;
+        this.#optionsIndexes.set(option, nextIndex);
+        nextIndex++;
+      }
+    }
+    options.length = nextIndex;
+    counts.length = nextIndex;
+
+    for (let offset = 0; offset < files.length; offset += fileEntryWidth) {
+      const index = files[offset + optionsIndexOffset] as number;
+      files[offset + optionsIndexOffset] = remap[index];
     }
   }
 
@@ -262,14 +266,12 @@ const loadFmtCacheStore = async (filePath: string, namespace: string): Promise<F
 
   try {
     const content = await readFile(filePath, 'utf8');
-    const parsed = parseCacheFile(content);
+    const parsed = parseCacheFile(content, namespace);
     if (!parsed) {
       return new FmtCacheStoreImpl(filePath, emptyCache, undefined, true);
     }
 
-    return parsed.cache.namespace === namespace
-      ? new FmtCacheStoreImpl(filePath, parsed, content, false)
-      : new FmtCacheStoreImpl(filePath, emptyCache, undefined, true);
+    return new FmtCacheStoreImpl(filePath, parsed, content, false);
   } catch (error) {
     const missing = isFileNotFoundError(error);
     return new FmtCacheStoreImpl(filePath, emptyCache, undefined, !missing);
