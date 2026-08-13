@@ -203,6 +203,20 @@ const lintCaptureSelection = (
         filePath: toWorkspacePath(workspaceRoot, path.resolve(packageRoot, request.filePath)),
       };
 
+const lintInputCompleteness = (
+  workspaceRoot: string,
+  packageRoot: string,
+  patterns: string[],
+  files: LintFileRecord[],
+): 'complete' | 'partial' => {
+  const selectedPaths = new Set(
+    patterns.map((pattern) => toWorkspacePath(workspaceRoot, path.resolve(packageRoot, pattern))),
+  );
+  return selectedPaths.size === files.length && files.every((file) => selectedPaths.has(file.path))
+    ? 'complete'
+    : 'partial';
+};
+
 const ensureWritten = (result: Awaited<ReturnType<typeof writeContextSnapshot>>): void => {
   if (!result.written)
     throw new Error('Could not write the context snapshot.', {
@@ -336,7 +350,12 @@ const captureLintSnapshot = async (
             path: filePath,
             digest: fileDigest,
           })),
-          inputCompleteness: 'complete',
+          inputCompleteness: lintInputCompleteness(
+            workspaceRoot,
+            target.packageRoot,
+            request.patterns ?? ['.'],
+            files,
+          ),
           captureSelection,
         };
   const status: ContextRunStatus = totals.errors > 0 ? 'fail' : 'pass';

@@ -112,7 +112,7 @@ await listDiagnostics(${JSON.stringify(workspaceRoot)}).catch(() => undefined);`
   });
 });
 
-test('captures a deterministic file snapshot with complete inputs and fail status', async () => {
+test('captures an open-ended file snapshot with partial inputs and fail status', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     const aPath = path.join(workspaceRoot, 'a.ts');
     const bPath = path.join(workspaceRoot, 'b.ts');
@@ -176,7 +176,7 @@ test('captures a deterministic file snapshot with complete inputs and fail statu
     expect(mocks.closeCalls).toBe(1);
     expect(result).toMatchObject({
       status: 'fail',
-      freshness: { state: 'fresh', changedPaths: [] },
+      freshness: { state: 'partial', changedPaths: [] },
       summary: {
         files: 2,
         errors: 1,
@@ -187,7 +187,7 @@ test('captures a deterministic file snapshot with complete inputs and fail statu
     });
     expect(stored?.snapshot.source).toMatchObject({
       captureSelection: { mode: 'files', patterns: ['.'] },
-      inputCompleteness: 'complete',
+      inputCompleteness: 'partial',
       inputs: [{ path: 'a.ts' }, { path: 'b.ts' }],
     });
     expect(stored?.snapshot.facets.lint).toMatchObject({
@@ -312,7 +312,7 @@ test('paginates and filters diagnostics from one frozen snapshot deterministical
     });
     expect(first).toMatchObject({
       snapshotId: capture.snapshotId,
-      freshness: { state: 'fresh', changedPaths: [] },
+      freshness: { state: 'partial', changedPaths: [] },
       total: 2,
       items: [{ path: 'src/a.ts', ruleId: 'a', severity: 'error', message: 'error' }],
     });
@@ -487,7 +487,11 @@ test('rejects a malformed diagnostics cursor', async () => {
         messages: [],
       },
     ];
-    const capture = await captureLintSnapshot(workspaceRoot, { mode: 'files' }, createRslint);
+    const capture = await captureLintSnapshot(
+      workspaceRoot,
+      { mode: 'files', patterns: ['a.ts'] },
+      createRslint,
+    );
 
     await expect(
       listDiagnostics(workspaceRoot, { snapshotId: capture.snapshotId, cursor: '?' }),
@@ -509,7 +513,11 @@ test('returns snapshot provenance for an empty diagnostics page', async () => {
         messages: [],
       },
     ];
-    const capture = await captureLintSnapshot(workspaceRoot, { mode: 'files' }, createRslint);
+    const capture = await captureLintSnapshot(
+      workspaceRoot,
+      { mode: 'files', patterns: ['a.ts'] },
+      createRslint,
+    );
     const stored = await readContextSnapshotById(workspaceRoot, capture.snapshotId);
 
     await expect(

@@ -87,6 +87,8 @@ Rsbuild 只会为该命令加载已安装的收集器。构建会在检出目录
 
 `lint_snapshot` 是明确执行操作。它会针对文件模式（默认为 `['.']`）或一个给定文本缓冲区运行一次 Rslint，然后记录诊断和可选的修复输出，但不会写入源文件。可选的 `packageRoot` 和 `configPath` 会按上述规则选择 monorepo 包和 Rstack 配置。其标注为 `readOnlyHint: false`、`destructiveHint: false` 和 `openWorldHint: true`，因为它会加载配置并运行 lint。调用前应先询问用户。
 
+只有当每个选定模式都是 Rslint 实际返回的明确文件时，文件模式 lint 的新鲜度才会是 `fresh`。目录、glob、未匹配模式和默认选择会是 `partial`，因为之后新增的匹配文件不在已记录的输入集合中。
+
 `test_snapshot` 也是明确执行操作。它会调用一次已安装的实验性 `runRstest()` API，可按文件或测试名称模式缩小范围，并记录结构化摘要，不启动 watch 模式，也不记录控制台流。它接受相同的可选检出目录相对路径 `packageRoot` 和 `configPath` 选择器。可选的 `execution` 对象会为这一次运行明确启用 Istanbul 聚合覆盖率；其中 `include` 和 `exclude` 数组最多各接受 200 个模式，`allowExternal` 默认为 false。省略 `execution` 时不会启用覆盖率。其标注为 `readOnlyHint: false`、`destructiveHint: true` 和 `openWorldHint: true`，因为它会执行项目配置和测试。调用前应先询问用户。
 
 新鲜度按生产者和快照分别判断：

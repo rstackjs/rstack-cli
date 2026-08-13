@@ -90,6 +90,8 @@ The development tools reuse the same immutable checkout-local store. `snapshot_l
 
 `lint_snapshot` is explicit execution. It runs Rslint once for file patterns (default `['.']`) or one supplied text buffer, then records diagnostics and optional fixed output without writing source files. Its optional `packageRoot` and `configPath` select a monorepo package and Rstack config as described above. It is annotated `readOnlyHint: false`, `destructiveHint: false`, and `openWorldHint: true` because configuration is loaded and lint runs. Ask before calling it.
 
+File-mode lint freshness is `fresh` only when every selected pattern is an explicit file returned by Rslint. Directory, glob, unmatched, and default selections are `partial` because files that match later are not part of the recorded input set.
+
 `test_snapshot` is also explicit execution. It invokes the installed experimental `runRstest()` API once, optionally narrowed by files or a test-name pattern, and records structured summaries without watch mode or console streams. It accepts the same optional checkout-relative `packageRoot` and `configPath` selectors. An optional `execution` object explicitly enables aggregate Istanbul coverage for that one run; its `include` and `exclude` arrays accept at most 200 patterns, and `allowExternal` defaults to false. Coverage is not enabled when `execution` is omitted. The tool is annotated `readOnlyHint: false`, `destructiveHint: true`, and `openWorldHint: true` because project configuration and tests execute. Ask before calling it.
 
 Freshness belongs to each producer and snapshot independently:
