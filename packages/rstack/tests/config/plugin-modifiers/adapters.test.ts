@@ -86,9 +86,10 @@ test('uses app, lib, and doc modifiers when their user configs are absent', asyn
 test('uses plugin-provided app config for automatic Rstest extends and keeps test config native', async () => {
   state.configPath = configPath;
 
-  await expect(loadTestConfig({} as never)).resolves.toMatchObject({
+  const config = (await loadTestConfig({} as never)) as { extends?: unknown };
+  expect(config).toMatchObject({
     name: 'test-1',
     reporters: ['dot'],
-    extends: expect.anything(),
   });
+  expect(config.extends).toBeDefined();
 });

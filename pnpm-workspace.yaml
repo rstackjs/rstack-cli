@@ -12,11 +12,11 @@ catalogMode: prefer
 cleanupUnusedCatalogs: true
 
 catalog:
-  '@napi-rs/cli': '^3.8.3'
-  '@rsbuild/core': '~2.1.10'
+  '@napi-rs/cli': '^3.8.6'
+  '@rsbuild/core': '~2.1.11'
   '@rsbuild/plugin-react': '^2.1.0'
   '@rsbuild/plugin-sass': '^2.0.1'
-  '@rslib/core': '~1.0.0-beta.2'
+  '@rslib/core': '~1.0.0-beta.3'
   '@rslint/core': '~0.8.0'
   '@rspress/core': '^2.0.19'
   '@rspress/plugin-client-redirects': '^2.0.19'
@@ -29,16 +29,16 @@ catalog:
   '@rstest/adapter-rslib': '~0.11.6'
   '@rstest/core': '~0.11.6'
   '@testing-library/dom': '^10.4.1'
-  '@testing-library/jest-dom': '^7.0.0'
+  '@testing-library/jest-dom': '^7.0.1'
   '@testing-library/react': '^16.3.2'
   '@types/micromatch': '^4.0.10'
   '@types/node': '^24.13.3'
   '@types/react': '^19.2.18'
   '@types/react-dom': '^19.2.4'
-  '@shikijs/transformers': '^4.4.2'
+  '@shikijs/transformers': '^4.4.3'
   'cspell-ban-words': '^0.0.4'
   'fast-json-stable-stringify': '2.1.0'
-  globals: '^17.7.0'
+  globals: '^17.10.0'
   'happy-dom': '^20.11.2'
   'heading-case': '^1.1.5'
   'import-meta-resolve': '4.2.0'
@@ -59,7 +59,7 @@ catalog:
   'typescript': '^7.0.2'
   'vscode-languageserver': '10.1.0'
   'vscode-languageserver-textdocument': '1.0.12'
-  yuku-parser: '0.8.4'
+  yuku-parser: '0.8.5'
 
 dedupePeers: true
 

@@ -79,7 +79,7 @@ test('resolves repository context with a single Git process when unchanged', () 
     const starts = readFileSync(tracePath, 'utf8')
       .trim()
       .split('\n')
-      .map((line) => JSON.parse(line))
+      .map((line) => JSON.parse(line) as { argv: string[]; event: string })
       .filter((event) => event.event === 'start');
     expect(starts).toHaveLength(1);
     expect(starts[0].argv).toContain('rev-parse');

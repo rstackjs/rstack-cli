@@ -6,11 +6,11 @@ description: 'Create a Rstack project or add Rstack CLI to an existing project a
 
 import { PackageManagerTabs } from '@rspress/core/theme';
 
-Rstack CLI brings the Rstack toolchain together with one CLI and one configuration file. This guide shows how to create a new Rstack project or add Rstack to an existing project, and introduces the available workflows.
+Rstack CLI brings the Rstack toolchain together with one CLI and one configuration file. This guide shows how to create a new Rstack project or add Rstack CLI to an existing project, and introduces the available workflows.
 
 ## Environment preparation
 
-Rstack supports using [Node.js](https://nodejs.org/), [Deno](https://deno.com/), or [Bun](https://bun.sh/) as the JavaScript runtime.
+Rstack CLI supports using [Node.js](https://nodejs.org/), [Deno](https://deno.com/), or [Bun](https://bun.sh/) as the JavaScript runtime.
 
 Use one of the following installation guides to set up a runtime:
 
@@ -20,7 +20,7 @@ Use one of the following installation guides to set up a runtime:
 
 :::tip Version requirements
 
-Rstack requires Node.js 22.12.0 or higher when using Node.js as the runtime.
+Rstack CLI requires Node.js 22.12.0 or higher when using Node.js as the runtime.
 
 :::
 
@@ -104,7 +104,7 @@ Options:
 Available templates: app-vanilla, app-vanilla-ts, app-react, app-react-ts, app-preact, app-preact-ts, app-vue, app-vue-ts, app-lit, app-lit-ts, app-svelte, app-svelte-ts, app-solid, app-solid-ts, lib-node, lib-node-ts, lib-react, lib-react-ts, lib-vue, lib-vue-ts, lib-svelte, lib-svelte-ts, lib-solid, lib-solid-ts, doc, doc-i18n
 ```
 
-## Install Rstack
+## Install Rstack CLI \{#install-rstack}
 
 Install [`rstack`](https://www.npmjs.com/package/rstack) as a development dependency in a project that has a `package.json`:
 
@@ -135,7 +135,7 @@ Add the commands your project needs to the `scripts` field in `package.json`. Fo
 }
 ```
 
-Package scripts use the project-local `rs` binary, so Rstack does not need to be installed globally.
+Package scripts use the project-local `rs` binary, so Rstack CLI does not need to be installed globally.
 
 The following commands are available:
 
@@ -151,7 +151,7 @@ The following commands are available:
 - [`rs setup`](./cli/setup): Install repository-level Git hooks.
 - [`rs staged`](./cli/staged): Run tasks against files staged in Git with lint-staged.
 
-## Configure Rstack
+## Configure Rstack CLI \{#configure-rstack}
 
 Create `rstack.config.ts` in the project root and register the configurations your project needs. The following is a minimal example for an application with testing and linting:
 

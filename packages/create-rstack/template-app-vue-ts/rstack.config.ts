@@ -16,7 +16,7 @@ define.test({
 define.lint(async () => {
   const { js, ts } = await import('rstack/lint');
 
-  return [js.configs.recommended, ts.configs.recommended];
+  return [js.configs.recommended, ts.configs.recommendedTypeChecked];
 });
 
 define.fmt({

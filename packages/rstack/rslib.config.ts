@@ -54,16 +54,4 @@ export default defineConfig({
       ],
     },
   },
-  tools: {
-    rspack: {
-      module: {
-        parser: {
-          javascript: {
-            // @rstest/adapter-rslib resolves extended tsconfig paths from a runtime base.
-            createRequire: false,
-          },
-        },
-      },
-    },
-  },
 });

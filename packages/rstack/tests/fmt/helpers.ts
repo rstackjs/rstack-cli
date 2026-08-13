@@ -17,7 +17,7 @@ export const createFmtCacheContext = (rootPath: string): FmtCacheContext => ({
 });
 
 export const withTempProject = async (
-  callback: (rootPath: string) => Promise<void>,
+  callback: (rootPath: string) => void | Promise<void>,
 ): Promise<void> => {
   const rootPath = mkdtempSync(path.join(import.meta.dirname, 'test-temp-fmt-'));
   // Prevent repository-level ignore rules from affecting the fixture.

@@ -12,7 +12,8 @@ interface FormatFileTask {
   cache?: FmtFileCache;
 }
 
-const hashContent = (content: string | Uint8Array): string => hash('sha256', content, 'hex');
+const hashContent = (content: string | Uint8Array): string =>
+  hash('sha256', content, 'base64url').slice(0, 16);
 
 /**
  * Use synchronous direct I/O inside the dedicated worker to avoid libuv
@@ -44,7 +45,7 @@ const formatFile = async ({
   if (cache?.entry && cache.entry[1] === cache.optionsHash) {
     const { entry } = cache;
     if (entry[2] === 'unsupported') {
-      if (entry[0] === null) {
+      if (entry[0] === '') {
         if (hasDottedBasename(file.path)) {
           return { status: 'unsupported' };
         }
@@ -72,7 +73,7 @@ const formatFile = async ({
           status: 'unsupported',
           cacheEntry: [
             hasDottedBasename(file.path)
-              ? null
+              ? ''
               : (contentHash ?? hashContent(sourceBuffer ?? readFileSync(file.path))),
             cache.optionsHash,
             'unsupported',

@@ -15,6 +15,10 @@ import type { StagedConfig } from './staged.ts';
 export type RslintConfigDefinition = RslintConfig | (() => Promise<RslintConfig>);
 export type RspressConfigDefinition = UserConfig | UserConfigAsyncFn;
 
+type RslintConfigFactory = (
+  lint: typeof import('@rslint/core'),
+) => RslintConfig | Promise<RslintConfig>;
+
 export type Configs = {
   app?: RsbuildConfigDefinition;
   lib?: RslibConfigDefinition;
@@ -179,10 +183,11 @@ type Define = {
    * Defines the Rslint config for linting.
    *
    * This config is used by the `rs lint` command.
+   * A config factory receives the exports from `rstack/lint`.
    *
    * @see {@link https://rstack.rs/config | Rstack configuration guide}
    */
-  lint: (config: RslintConfig | (() => Promise<RslintConfig>)) => void;
+  lint: (config: RslintConfig | RslintConfigFactory) => void;
   /**
    * Defines the Prettier config for formatting.
    *
@@ -236,7 +241,11 @@ export const define: Define = {
   lib: (config) => setConfig('lib', config),
   doc: (config) => setConfig('doc', config),
   test: (config) => setConfig('test', config),
-  lint: (config) => setConfig('lint', config),
+  lint: (config) =>
+    setConfig(
+      'lint',
+      typeof config === 'function' ? async () => config(await import('@rslint/core')) : config,
+    ),
   fmt: (config) => setConfig('fmt', config),
   staged: (config) => setConfig('staged', config),
 };

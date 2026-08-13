@@ -423,11 +423,7 @@ const indexToPosition = (text: string, index: number): { column: number; line: n
   };
 };
 
-const createParseError = (error: Diagnostic, text: string): Diagnostic | SyntaxError => {
-  if (typeof error?.start !== 'number' || typeof error?.end !== 'number') {
-    return error;
-  }
-
+const createParseError = (error: Diagnostic, text: string): SyntaxError => {
   const start = indexToPosition(text, error.start);
   const end = indexToPosition(text, error.end);
 

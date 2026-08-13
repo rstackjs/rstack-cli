@@ -33,21 +33,21 @@ export interface RstackLogger {
 
 export type RstackCommand = {
   name: string;
-  handler(args: readonly string[]): void | Promise<void>;
+  handler: (args: readonly string[]) => void | Promise<void>;
 };
 
 export type RstackPluginAPI = {
   readonly context: RstackPluginContext;
   readonly logger: RstackLogger;
 
-  addCommand(command: RstackCommand): void;
+  addCommand: (command: RstackCommand) => void;
 
-  modifyConfig<K extends keyof RstackConfigMap>(
+  modifyConfig: <K extends keyof RstackConfigMap>(
     kind: K,
     handler: (
       config: RstackConfigMap[K],
     ) => void | RstackConfigMap[K] | Promise<void | RstackConfigMap[K]>,
-  ): void;
+  ) => void;
 };
 
 export type RstackPlugin = {

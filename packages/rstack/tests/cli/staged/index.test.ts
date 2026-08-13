@@ -19,7 +19,7 @@ const stagedConfig: StagedConfig = {
 
 const noStagedModifiers = {
   hasConfigModifier: () => false,
-  applyConfigModifiers: async (_kind: 'staged', config: StagedConfig) => config,
+  applyConfigModifiers: (_kind: 'staged', config: StagedConfig) => Promise.resolve(config),
 };
 
 beforeEach(() => {
@@ -56,7 +56,7 @@ test('should accept a staged config supplied only by a plugin modifier', async (
   });
   mocks.getRstackPluginRuntime.mockResolvedValue({
     hasConfigModifier: () => true,
-    applyConfigModifiers: async () => modifierConfig,
+    applyConfigModifiers: () => Promise.resolve(modifierConfig),
   } as never);
 
   await runStagedCLI([]);
@@ -97,9 +97,9 @@ test('should pass default options to lint-staged', async ({ expect }) => {
 });
 
 test('should set the staged environment', async ({ expect }) => {
-  mocks.lintStaged.mockImplementation(async () => {
+  mocks.lintStaged.mockImplementation(() => {
     expect(process.env.RSTACK_STAGED).toBe('1');
-    return true;
+    return Promise.resolve(true);
   });
 
   await runStagedCLI([]);

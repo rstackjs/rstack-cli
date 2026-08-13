@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { readFileSync } from 'node:fs';
 import { expect, test } from 'rstack/test';
-import { sha256 } from '../../src/fmt/cacheIdentity.ts';
+import { createCacheHash } from '../../src/fmt/cacheIdentity.ts';
 import { formatFile } from '../../src/fmt/worker.ts';
 import { withTempProject, writeProjectFile } from './helpers.ts';
 
@@ -11,7 +11,7 @@ test('returns cached states before resolving the parser', async () => {
     const filePath = writeProjectFile(rootPath, 'example.ts', source);
     const noExtensionPath = writeProjectFile(rootPath, 'script', source);
     const missingPath = path.join(rootPath, 'missing.unknown');
-    const contentHash = sha256(source);
+    const contentHash = createCacheHash(source);
     const optionsHash = 'options';
 
     for (const [entry, targetPath, shouldWrite, status] of [
@@ -20,8 +20,8 @@ test('returns cached states before resolving the parser', async () => {
       [[contentHash, optionsHash, 'clean'], filePath, true, 'unchanged'],
       [[contentHash, optionsHash, 'unsupported'], noExtensionPath, false, 'unsupported'],
       [[contentHash, optionsHash, 'unsupported'], noExtensionPath, true, 'unsupported'],
-      [[null, optionsHash, 'unsupported'], missingPath, false, 'unsupported'],
-      [[null, optionsHash, 'unsupported'], missingPath, true, 'unsupported'],
+      [['', optionsHash, 'unsupported'], missingPath, false, 'unsupported'],
+      [['', optionsHash, 'unsupported'], missingPath, true, 'unsupported'],
     ] as const) {
       await expect(
         formatFile({
@@ -54,13 +54,13 @@ test('does not trust path-only unsupported entries for files without extensions'
         },
         shouldWrite: false,
         cache: {
-          entry: [null, 'options', 'unsupported'],
+          entry: ['', 'options', 'unsupported'],
           optionsHash: 'options',
         },
       }),
     ).resolves.toEqual({
       status: 'changed',
-      cacheEntry: [sha256(readFileSync(filePath)), 'options', 'dirty'],
+      cacheEntry: [createCacheHash(readFileSync(filePath)), 'options', 'dirty'],
     });
   });
 });
@@ -81,7 +81,7 @@ test('resolves parser support before reading on a cache miss', async () => {
       }),
     ).resolves.toEqual({
       status: 'unsupported',
-      cacheEntry: [null, 'options', 'unsupported'],
+      cacheEntry: ['', 'options', 'unsupported'],
     });
   });
 });

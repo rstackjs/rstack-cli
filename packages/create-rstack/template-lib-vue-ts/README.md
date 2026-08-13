@@ -20,5 +20,5 @@ Install the dependencies:
 
 ## Learn more
 
-- [Rstack documentation](https://rstack.rs)
+- [Rstack CLI documentation](https://rstack.rs)
 - [Rslib documentation](https://rslib.rs)

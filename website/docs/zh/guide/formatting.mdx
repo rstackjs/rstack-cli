@@ -1,3 +1,7 @@
+---
+description: '使用 Rstack CLI 格式化文件，支持与 Prettier 兼容的选项、插件、并行格式化和持久化缓存。'
+---
+
 # 格式化 \{#formatting}
 
 import { PackageManagerTabs } from '@rspress/core/theme';
@@ -39,7 +43,7 @@ define.fmt({
 });
 ```
 
-除了 Prettier 选项和 `overrides`，Rstack 还提供两个选项：
+除了 Prettier 选项和 `overrides`，Rstack CLI 还提供两个选项：
 
 - [`ignorePatterns`](#ignore-files)：使用兼容 Gitignore 的模式排除文件。
 - [`sortPackageJson`](#sort-package-json)：对 `package.json` 中的字段排序，默认值为 `false`。
@@ -163,7 +167,7 @@ define.fmt({
 
 ### 合并顺序 \{#merge-order}
 
-如果同一文件匹配多条 override 规则，Rstack 会按声明顺序合并配置，后面的值优先。下面的 `README.md` 会同时匹配两条规则，因此最终的 `printWidth` 为 `80`：
+如果同一文件匹配多条 override 规则，Rstack CLI 会按声明顺序合并配置，后面的值优先。下面的 `README.md` 会同时匹配两条规则，因此最终的 `printWidth` 为 `80`：
 
 ```ts
 define.fmt({
@@ -192,7 +196,7 @@ rs fmt --no-cache
 
 ## Prettier 插件 \{#prettier-plugins}
 
-如果需要使用 Rstack 未内置的格式化能力，可以安装相应的 [Prettier 插件](https://prettier.io/docs/plugins)，并添加到 `plugins` 中。插件支持通过包名、文件路径或 URL 引用，其中包名和相对路径基于 Rstack 配置文件所在的目录解析。
+如果需要使用 Rstack CLI 未内置的格式化能力，可以安装相应的 [Prettier 插件](https://prettier.io/docs/plugins)，并添加到 `plugins` 中。插件支持通过包名、文件路径或 URL 引用，其中包名和相对路径基于 Rstack 配置文件所在的目录解析。
 
 由于 `rs fmt` 会在 worker 中加载插件，因此不支持直接传入插件对象。请通过包名、路径或 URL 引用插件。例如，安装并启用 [`prettier-plugin-tailwindcss`](https://github.com/tailwindlabs/prettier-plugin-tailwindcss)：
 

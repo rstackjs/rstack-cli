@@ -21,7 +21,7 @@ define.doc(async () => {
   return {
     root: path.join(import.meta.dirname, 'docs'),
     title,
-    icon: 'https://assets.rspack.rs/rspack/favicon-128x128.png',
+    icon: 'https://assets.rspack.rs/rspack/rspack-claw-logo.svg',
     logoText: title,
     description,
     lang: 'en',
@@ -57,6 +57,20 @@ define.doc(async () => {
       pluginFontOpenSans(),
       pluginSitemap({ siteUrl }),
     ],
+    locales: [
+      {
+        lang: 'en',
+        label: 'English',
+        title,
+        description,
+      },
+      {
+        lang: 'zh',
+        label: '简体中文',
+        title,
+        description: descriptionZh,
+      },
+    ],
     themeConfig: {
       llmsUI: {
         injectLlmsHint,
@@ -76,20 +90,6 @@ define.doc(async () => {
       editLink: {
         docRepoBaseUrl: 'https://github.com/rstackjs/rstack-cli/tree/main/website/docs',
       },
-      locales: [
-        {
-          lang: 'en',
-          label: 'English',
-          title,
-          description,
-        },
-        {
-          lang: 'zh',
-          label: '简体中文',
-          title,
-          description: descriptionZh,
-        },
-      ],
     },
     builderConfig: {
       plugins: [

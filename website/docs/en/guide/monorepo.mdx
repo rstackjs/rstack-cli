@@ -1,18 +1,18 @@
 ---
-description: 'Configure shared Rstack checks, formatting, staged tasks, and project workflows in a monorepo.'
+description: 'Use Rstack CLI to configure shared checks, formatting, staged tasks, and project workflows in a monorepo.'
 ---
 
 # Monorepo
 
 This guide explains how to use Rstack CLI in a monorepo, including how it works with task orchestrators such as [Turborepo](https://turborepo.com/docs) and [Nx](https://nx.dev/docs/getting-started/intro).
 
-It covers managing Rstack dependencies, configuring lint, formatting, and staged-file tasks at the root, and defining separate configurations for web applications and libraries.
+It covers managing the Rstack CLI dependency, configuring lint, formatting, and staged-file tasks at the root, and defining separate configurations for web applications and libraries.
 
 ## Project structure
 
 The recommended setup has two levels:
 
-- The root manages the shared Rstack version, lint and formatting rules, and staged-file tasks.
+- The root manages the shared Rstack CLI version, lint and formatting rules, and staged-file tasks.
 - Each application or library has its own [Rstack configuration](./configuration) for build, test, or documentation configuration.
 
 ```text
@@ -29,13 +29,13 @@ The recommended setup has two levels:
         └── rstack.config.ts
 ```
 
-This structure keeps the Rstack version in one place while keeping build and test configuration close to the project that uses it.
+This structure keeps the Rstack CLI version in one place while keeping build and test configuration close to the project that uses it.
 
-## Rstack dependency management
+## Rstack CLI dependency management \{#rstack-dependency-management}
 
-Declare Rstack in the root `package.json` so projects use one version by default. See [Quick start](./quick-start#install-rstack) for installation instructions.
+Declare the `rstack` package in the root `package.json` so projects use one Rstack CLI version by default. See [Quick start](./quick-start#install-rstack) for installation instructions.
 
-If a project needs a different Rstack version from the root, declare that version as a dependency of the project.
+If a project needs a different Rstack CLI version from the root, declare that version as a dependency of the project.
 
 Project-specific dependencies, such as Rsbuild plugins and testing libraries, should be declared in the projects that use them.
 
@@ -104,9 +104,9 @@ define.lint(async () => {
 
 ## Project configuration
 
-For each project that uses [Rstack commands](./quick-start#cli-commands), create a [`rstack.config.ts`](./configuration#configuration-file) and register only the configuration that project needs.
+For each project that uses [Rstack CLI commands](./quick-start#cli-commands), create a [`rstack.config.ts`](./configuration#configuration-file) and register only the configuration that project needs.
 
-Rstack loads the configuration from the current working directory. It does not merge a project's configuration with the root configuration.
+Rstack CLI loads the configuration from the current working directory. It does not merge a project's configuration with the root configuration.
 
 ### Web application
 

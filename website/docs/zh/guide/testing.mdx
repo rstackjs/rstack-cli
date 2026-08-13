@@ -1,6 +1,6 @@
 # 测试 \{#testing}
 
-Rstack 使用 [Rstest](https://rstest.rs/zh/) 运行测试。
+Rstack CLI 使用 [Rstest](https://rstest.rs/zh/) 运行测试。
 
 ```bash
 rs test
@@ -44,7 +44,7 @@ define.test({
 });
 ```
 
-未设置 `extends` 时，Rstack 会通过 Rsbuild 适配器让测试配置继承 `define.app()`。如果没有应用配置，则通过 Rslib 适配器回退到 `define.lib()`。同时定义两者时，`define.app()` 的优先级更高。
+未设置 `extends` 时，Rstack CLI 会通过 Rsbuild 适配器让测试配置继承 `define.app()`。如果没有应用配置，则通过 Rslib 适配器回退到 `define.lib()`。同时定义两者时，`define.app()` 的优先级更高。
 
 ## 多项目 \{#multiple-projects}
 
@@ -78,7 +78,7 @@ define.test({
 });
 ```
 
-Rstack 会将对应的适配器应用到每个未设置 `extends` 的内联项目。函数形式的 `define.app()` 或 `define.lib()` 配置只会解析一次，再由这些内联项目共享。
+Rstack CLI 会将对应的适配器应用到每个未设置 `extends` 的内联项目。函数形式的 `define.app()` 或 `define.lib()` 配置只会解析一次，再由这些内联项目共享。
 
 按项目名称运行单个项目：
 
@@ -100,7 +100,7 @@ define.test({
 });
 ```
 
-Rstack 会将字符串形式的项目原样传给 Rstest。外部项目会加载自己的配置，不会继承当前的 `define.app()` 或 `define.lib()` 配置。每个项目需要独立管理配置时，请使用外部项目。
+Rstack CLI 会将字符串形式的项目原样传给 Rstest。外部项目会加载自己的配置，不会继承当前的 `define.app()` 或 `define.lib()` 配置。每个项目需要独立管理配置时，请使用外部项目。
 
 ## 自定义继承 \{#customize-inheritance}
 

@@ -94,11 +94,12 @@ const createFingerprintResolver = (): FingerprintResolver => {
 /** Creates a project-root resolver for plugins in final per-file options. */
 const createPluginResolver = (rootPath: string): FmtPluginResolver => {
   const parentUrl = pathToFileURL(join(rootPath, 'index.js'));
-  const cache = new Map<string, string>();
+  const pluginCache = new Map<string, string>();
+  const optionsCache = new WeakMap<ResolvedFmtOptions, ResolvedFmtOptions>();
 
   const resolvePlugin = (plugin: FmtPluginSpecifier): string => {
     const specifier = plugin instanceof URL ? plugin.href : plugin;
-    const cached = cache.get(specifier);
+    const cached = pluginCache.get(specifier);
     if (cached !== undefined) {
       return cached;
     }
@@ -119,11 +120,16 @@ const createPluginResolver = (rootPath: string): FmtPluginResolver => {
       }
     }
 
-    cache.set(specifier, resolved);
+    pluginCache.set(specifier, resolved);
     return resolved;
   };
 
   return (options) => {
+    const cached = optionsCache.get(options);
+    if (cached !== undefined) {
+      return cached;
+    }
+
     const { plugins } = options;
     if (!plugins?.length) {
       return options;
@@ -136,10 +142,11 @@ const createPluginResolver = (rootPath: string): FmtPluginResolver => {
     }
 
     const resolvedPlugins = plugins.map(resolvePlugin);
-
-    return resolvedPlugins.every((plugin, index) => plugin === plugins[index])
+    const resolvedOptions = resolvedPlugins.every((plugin, index) => plugin === plugins[index])
       ? options
       : { ...options, plugins: resolvedPlugins };
+    optionsCache.set(options, resolvedOptions);
+    return resolvedOptions;
   };
 };
 

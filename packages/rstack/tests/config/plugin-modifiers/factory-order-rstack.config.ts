@@ -20,7 +20,7 @@ define.plugins([
 
 define.app(createConfig);
 define.lib(createConfig);
-define.doc(async () => createConfig());
+define.doc(() => Promise.resolve(createConfig()));
 define.test(createConfig);
-define.lint(async () => [createConfig()]);
+define.lint(() => [createConfig()]);
 define.fmt(createConfig);

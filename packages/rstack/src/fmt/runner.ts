@@ -116,7 +116,7 @@ const isCachedUnsupported = ({ file, cache }: FmtFileRunTask): boolean => {
     return false;
   }
   return (
-    cache.entry[0] === null &&
+    cache.entry[0] === '' &&
     cache.entry[1] === cache.optionsHash &&
     cache.entry[2] === 'unsupported' &&
     hasDottedBasename(file.path)

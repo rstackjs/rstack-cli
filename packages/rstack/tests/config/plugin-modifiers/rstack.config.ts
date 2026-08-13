@@ -22,10 +22,12 @@ define.plugins([
       modifyConfig('app', (config) => {
         (config as { setup?: number }).setup = setup;
       });
-      modifyConfig('app', async (config) => ({
-        ...config,
-        root: `app-${(config as { setup?: number }).setup}`,
-      }));
+      modifyConfig('app', (config) =>
+        Promise.resolve({
+          ...config,
+          root: `app-${(config as { setup?: number }).setup}`,
+        }),
+      );
       modifyConfig('app', () => {
         if (globalThis.__rstackPluginModifierError) {
           throw new Error('plugin modifier error');
@@ -41,7 +43,7 @@ define.plugins([
       }));
       modifyConfig('lint', () => [{ name: `lint-${setup}` }] as never);
       modifyConfig('fmt', (config) => ({ ...config, singleQuote: true }));
-      modifyConfig('staged', async () => ({ '*.ts': `echo staged-${setup}` }));
+      modifyConfig('staged', () => Promise.resolve({ '*.ts': `echo staged-${setup}` }));
     },
   },
 ]);

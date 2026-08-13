@@ -1,3 +1,7 @@
+---
+description: 'Format files with Rstack CLI using Prettier-compatible options, plugins, parallel formatting, and a persistent cache.'
+---
+
 # Formatting
 
 import { PackageManagerTabs } from '@rspress/core/theme';
@@ -39,7 +43,7 @@ define.fmt({
 });
 ```
 
-In addition to Prettier options and `overrides`, Rstack provides two options:
+In addition to Prettier options and `overrides`, Rstack CLI provides two options:
 
 - [`ignorePatterns`](#ignore-files): exclude files with Gitignore-compatible patterns.
 - [`sortPackageJson`](#sort-package-json): sort fields in `package.json` files. The default value is `false`.
@@ -192,7 +196,7 @@ You can safely delete `.rstack/cache` to clear cached results. Do not treat the 
 
 ## Prettier plugins
 
-To add formatting capabilities that are not built into Rstack, install the corresponding [Prettier plugin](https://prettier.io/docs/plugins) and add it to `plugins`. Plugins can be referenced by package name, file path, or URL. Package names and relative paths are resolved from the directory containing the Rstack configuration file.
+To add formatting capabilities that are not built into Rstack CLI, install the corresponding [Prettier plugin](https://prettier.io/docs/plugins) and add it to `plugins`. Plugins can be referenced by package name, file path, or URL. Package names and relative paths are resolved from the directory containing the Rstack configuration file.
 
 Because `rs fmt` loads plugins in workers, plugin objects cannot be passed directly. Reference each plugin by package name, path, or URL instead. For example, install and enable [`prettier-plugin-tailwindcss`](https://github.com/tailwindlabs/prettier-plugin-tailwindcss):
 

@@ -242,10 +242,12 @@ test('runs config modifiers after setup and keeps each modifier result', async (
             ...config,
             root: `${config.root}/second`,
           }));
-          modifyConfig('app', async (config) => ({
-            ...config,
-            root: `${config.root}/third`,
-          }));
+          modifyConfig('app', (config) =>
+            Promise.resolve({
+              ...config,
+              root: `${config.root}/third`,
+            }),
+          );
         },
       },
     ],

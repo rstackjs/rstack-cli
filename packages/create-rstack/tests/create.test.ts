@@ -205,6 +205,9 @@ test.each(sourceTemplates)(
     if (template.startsWith('app-')) {
       files.push('README.md', '.gitignore');
     }
+    if (template === 'app-vue-ts') {
+      files.push('src/env.d.ts');
+    }
 
     await expectProjectSetup(projectDirectory, template, configExtension, hasTypeScript);
     await expectFiles(projectDirectory, files);
