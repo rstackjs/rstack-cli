@@ -40,7 +40,8 @@ test('resolves plugin specifiers from the config root', async () => {
       ],
     };
 
-    const resolved = createPluginResolver(rootPath)(options);
+    const resolvePlugins = createPluginResolver(rootPath);
+    const resolved = resolvePlugins(options);
 
     expect(resolved.plugins).toEqual([
       pathToFileURL(packageEntry).href,
@@ -50,6 +51,7 @@ test('resolves plugin specifiers from the config root', async () => {
       'data:text/javascript,export default {}',
     ]);
     expect(options.plugins[0]).toBe('prettier-plugin-packagejson');
+    expect(resolvePlugins(options)).toBe(resolved);
   });
 });
 
