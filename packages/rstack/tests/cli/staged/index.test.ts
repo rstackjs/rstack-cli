@@ -58,9 +58,9 @@ test('should pass default options to lint-staged', async ({ expect }) => {
 });
 
 test('should set the staged environment', async ({ expect }) => {
-  mocks.lintStaged.mockImplementation(async () => {
+  mocks.lintStaged.mockImplementation(() => {
     expect(process.env.RSTACK_STAGED).toBe('1');
-    return true;
+    return Promise.resolve(true);
   });
 
   await runStagedCLI([]);

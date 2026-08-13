@@ -4,7 +4,7 @@ import { createDocumentEdits } from '../../../src/fmt/lsp/server.ts';
 test('maps the edit onto the formatted document', async () => {
   const edits = await createDocumentEdits(
     () => 'const a = 1;\nconst b=2;\n',
-    async () => 'const a = 1;\nconst b = 2;\n',
+    () => Promise.resolve('const a = 1;\nconst b = 2;\n'),
   );
 
   expect(edits).toEqual([
@@ -18,15 +18,15 @@ test('maps the edit onto the formatted document', async () => {
 test('returns no edits for an already formatted document', async () => {
   const getText = () => 'const a = 1;\n';
 
-  expect(await createDocumentEdits(getText, async () => 'const a = 1;\n')).toEqual([]);
-  expect(await createDocumentEdits(getText, async () => undefined)).toEqual([]);
+  expect(await createDocumentEdits(getText, () => Promise.resolve('const a = 1;\n'))).toEqual([]);
+  expect(await createDocumentEdits(getText, () => Promise.resolve(undefined))).toEqual([]);
 });
 
 test('returns no edits for a document that is not open', async () => {
   expect(
     await createDocumentEdits(
       () => undefined,
-      async () => '',
+      () => Promise.resolve(''),
     ),
   ).toEqual([]);
 });
@@ -38,10 +38,10 @@ test('returns no edits when the document changes while it is formatted', async (
 
   const edits = await createDocumentEdits(
     () => text,
-    async (source) => {
+    (source) => {
       text = 'const b=2;\n';
 
-      return source.replace('const b=2;', 'const b = 2;');
+      return Promise.resolve(source.replace('const b=2;', 'const b = 2;'));
     },
   );
 

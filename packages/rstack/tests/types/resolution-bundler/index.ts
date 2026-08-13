@@ -23,7 +23,7 @@ const configs: Configs = {};
 void loadedConfig;
 void configs;
 
-createRsbuild({ config: appConfig });
+void createRsbuild({ config: appConfig });
 define.app(appConfig);
 define.lib(libConfig);
 define.doc({});
