@@ -92,7 +92,7 @@ registerHooks({
       process.execPath,
       [
         '--import',
-        hookFile,
+        pathToFileURL(hookFile).href,
         '--input-type=module',
         '--eval',
         `const { listDiagnostics } = await import(${JSON.stringify(moduleUrl)});
@@ -169,7 +169,7 @@ test('captures a deterministic file snapshot with complete inputs and fail statu
       {
         cwd: workspaceRoot,
         fix: false,
-        overrideConfigFile: expect.stringMatching(/\/rslintConfig\.js$/u),
+        overrideConfigFile: expect.stringMatching(/[\\/]rslintConfig\.js$/u),
       },
     ]);
     expect(mocks.lintFilesCalls).toEqual([['.']]);

@@ -607,10 +607,12 @@ test('rejects malformed execution selectors before invoking Rstest', async () =>
 test('truncates aggregate execution files deterministically', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     const coverage: Record<string, unknown> = {};
+    const sourceDirectory = path.join(workspaceRoot, 'src');
+    await mkdir(sourceDirectory, { recursive: true });
+    const writes: Array<Promise<void>> = [];
     for (let index = 1000; index >= 0; index -= 1) {
-      const sourcePath = path.join(workspaceRoot, 'src', `${index.toString().padStart(4, '0')}.ts`);
-      await mkdir(path.dirname(sourcePath), { recursive: true });
-      await writeFile(sourcePath, 'export {};');
+      const sourcePath = path.join(sourceDirectory, `${index.toString().padStart(4, '0')}.ts`);
+      writes.push(writeFile(sourcePath, 'export {};'));
       coverage[sourcePath] = {
         path: sourcePath,
         statementMap: {},
@@ -621,6 +623,7 @@ test('truncates aggregate execution files deterministically', async () => {
         b: {},
       };
     }
+    await Promise.all(writes);
     const calls: unknown[] = [];
     const capture = await captureTestSnapshot(
       workspaceRoot,

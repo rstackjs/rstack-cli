@@ -803,7 +803,7 @@ registerHooks({
       cwd: workspaceRoot,
       env: {
         ...getDefaultEnvironment(),
-        NODE_OPTIONS: `--import=${hookFile}`,
+        NODE_OPTIONS: `--import=${pathToFileURL(hookFile).href}`,
         RSTACK_RSDOCTOR_LOADED_MARKER: markerFile,
       },
       stderr: 'pipe',
@@ -852,7 +852,7 @@ test('returns a contained report resource link only for an existing report', asy
         report: {
           kind: 'html',
           path: 'artifacts/report-rsdoctor.html',
-          uri: `file://${reportPath}`,
+          uri: pathToFileURL(reportPath).toString(),
         },
       });
       expect(result.content).toEqual(
@@ -860,7 +860,7 @@ test('returns a contained report resource link only for an existing report', asy
           expect.objectContaining({
             type: 'resource_link',
             name: 'Rsdoctor HTML report',
-            uri: `file://${reportPath}`,
+            uri: pathToFileURL(reportPath).toString(),
           }),
         ]),
       );

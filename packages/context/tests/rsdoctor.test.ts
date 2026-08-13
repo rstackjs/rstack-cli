@@ -102,7 +102,7 @@ registerHooks({
       process.execPath,
       [
         '--import',
-        hookFile,
+        pathToFileURL(hookFile).href,
         '--input-type=module',
         '--eval',
         `const { listRsdoctorToolNames } = await import(${JSON.stringify(moduleUrl)});

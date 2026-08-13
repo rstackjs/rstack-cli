@@ -1,6 +1,7 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { expect, test } from 'rstack/test';
 import { resolveContextCapture } from '@rstackjs/context';
 import { loadRstackConfig } from '../../src/config.ts';
@@ -30,11 +31,11 @@ test('resolves context capture with explicit opt-out precedence', () => {
 });
 
 test('loads context config separately from app and library configs', async () => {
-  const configModulePath = path.join(import.meta.dirname, '../../src/config.ts');
+  const configModuleUrl = pathToFileURL(path.join(import.meta.dirname, '../../src/config.ts')).href;
 
   await withTempConfig(
     [
-      `import { define } from ${JSON.stringify(configModulePath)};`,
+      `import { define } from ${JSON.stringify(configModuleUrl)};`,
       "define.app({ root: 'app-root' });",
       "define.lib({ lib: ['src/index.ts'] });",
       "define.context({ capture: 'deep', enabled: true, variant: 'firefox_v3' });",
