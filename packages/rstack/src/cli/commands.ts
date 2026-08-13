@@ -1,7 +1,5 @@
 import { join, resolve } from 'node:path';
-import { logger } from 'rslog';
-import { getConfigState, loadRstackConfig } from '../config.ts';
-import { createPluginRuntime } from '../pluginRuntime.ts';
+import { getConfigState, getRstackPluginRuntime, loadRstackConfig } from '../config.ts';
 import { insertConfigArg, parseArgs, parseCliArgs } from './args.ts';
 import { hasHelpFlag, printCommandHelp } from './help.ts';
 
@@ -249,12 +247,8 @@ export async function setupCommands(): Promise<void> {
     return;
   }
 
-  const { plugins } = await loadRstackConfig();
-  const runtime = await createPluginRuntime({
-    plugins,
-    context: state.invocation,
-    logger,
-  });
+  const loaded = await loadRstackConfig();
+  const runtime = await getRstackPluginRuntime(loaded);
 
   if (await runtime.runCommand(command, state.invocation.args)) {
     return;
