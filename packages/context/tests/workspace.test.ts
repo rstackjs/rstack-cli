@@ -1,11 +1,13 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { expect, test } from '@rstest/core';
 import { resolveContextWorkspace } from '../src/workspace.ts';
 
 const withTempDirectory = async (callback: (rootPath: string) => Promise<void>): Promise<void> => {
-  const rootPath = await mkdtemp(path.join(os.tmpdir(), 'rstack-context-workspace-'));
+  const rootPath = await realpath(
+    await mkdtemp(path.join(os.tmpdir(), 'rstack-context-workspace-')),
+  );
 
   try {
     await callback(rootPath);

@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -61,7 +61,9 @@ const withConfig = async (
     workspaceRoot: string;
   }) => Promise<void>,
 ): Promise<void> => {
-  const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), 'rstack-context-injection-'));
+  const fixtureRoot = await realpath(
+    await mkdtemp(path.join(os.tmpdir(), 'rstack-context-injection-')),
+  );
   const workspaceRoot = symlinked ? path.join(fixtureRoot, 'checkout') : fixtureRoot;
   await mkdir(workspaceRoot, { recursive: true });
   const configPath = path.join(workspaceRoot, 'rstack.config.ts');
