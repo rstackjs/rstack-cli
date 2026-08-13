@@ -1,11 +1,27 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { isCacheHash } from './cacheHash.ts';
 
-const fmtCacheFileName = 'v1.json';
-const fmtCacheVersion = 1;
+const fmtCacheFileName = 'v2.json';
+const fmtCacheVersion = 2;
 
-type FmtCacheState = 'clean' | 'dirty' | 'unsupported';
+const fileEntryWidth = 4;
+const contentHashOffset = 1;
+const optionsIndexOffset = 2;
+const stateOffset = 3;
+
+const fmtCacheStates = ['clean', 'dirty', 'unsupported'] as const;
+type FmtCacheState = (typeof fmtCacheStates)[number];
+type FmtCacheStateId = 0 | 1 | 2;
+
+const fmtCacheStateIds = {
+  clean: 0,
+  dirty: 1,
+  unsupported: 2,
+} as const satisfies Record<FmtCacheState, FmtCacheStateId>;
+
+type FmtCacheFileValue = string | number | null;
 type FmtCacheEntry =
   | readonly [contentHash: string, optionsHash: string, state: 'clean' | 'dirty']
   | readonly [contentHash: string | null, optionsHash: string, state: 'unsupported'];
@@ -13,7 +29,16 @@ type FmtCacheEntry =
 interface FmtCacheFile {
   version: typeof fmtCacheVersion;
   namespace: string;
-  files: Record<string, FmtCacheEntry>;
+  options: string[];
+  /** Repeated tuples of file path, content hash, options index, and numeric state. */
+  files: FmtCacheFileValue[];
+}
+
+interface ParsedFmtCacheFile {
+  cache: FmtCacheFile;
+  fileOffsets: Map<string, number>;
+  optionsIndexes: Map<string, number>;
+  optionsUseCounts: number[];
 }
 
 interface FmtCacheStore {
@@ -23,30 +48,27 @@ interface FmtCacheStore {
   save(): Promise<boolean>;
 }
 
-const createEmptyCache = (namespace: string): FmtCacheFile => ({
-  version: fmtCacheVersion,
-  namespace,
-  files: Object.create(null) as Record<string, FmtCacheEntry>,
+const createEmptyCache = (namespace: string): ParsedFmtCacheFile => ({
+  cache: {
+    version: fmtCacheVersion,
+    namespace,
+    options: [],
+    files: [],
+  },
+  fileOffsets: new Map(),
+  optionsIndexes: new Map(),
+  optionsUseCounts: [],
 });
 
-const parseCacheEntry = (value: unknown): FmtCacheEntry | undefined => {
-  if (!Array.isArray(value) || value.length !== 3 || typeof value[1] !== 'string') {
-    return;
-  }
+const isFmtCacheStateId = (value: unknown): value is FmtCacheStateId =>
+  typeof value === 'number' &&
+  Number.isInteger(value) &&
+  value >= 0 &&
+  value < fmtCacheStates.length;
 
-  if (value[2] === 'unsupported') {
-    return value[0] === null || typeof value[0] === 'string'
-      ? [value[0], value[1], value[2]]
-      : undefined;
-  }
-  if (typeof value[0] !== 'string' || (value[2] !== 'clean' && value[2] !== 'dirty')) {
-    return;
-  }
+const isUnknownArray = (value: unknown): value is unknown[] => Array.isArray(value);
 
-  return [value[0], value[1], value[2]];
-};
-
-const parseCacheFile = (content: string): FmtCacheFile | undefined => {
+const parseCacheFile = (content: string): ParsedFmtCacheFile | undefined => {
   let value: unknown;
   try {
     value = JSON.parse(content);
@@ -57,32 +79,60 @@ const parseCacheFile = (content: string): FmtCacheFile | undefined => {
   if (
     typeof value !== 'object' ||
     value === null ||
-    Array.isArray(value) ||
+    isUnknownArray(value) ||
     !('version' in value) ||
     value.version !== fmtCacheVersion ||
     !('namespace' in value) ||
     typeof value.namespace !== 'string' ||
+    !('options' in value) ||
+    !isUnknownArray(value.options) ||
     !('files' in value) ||
-    typeof value.files !== 'object' ||
-    value.files === null ||
-    Array.isArray(value.files)
+    !isUnknownArray(value.files) ||
+    value.files.length % fileEntryWidth !== 0
   ) {
     return;
   }
 
-  const files = Object.create(null) as Record<string, FmtCacheEntry>;
-  for (const [filePath, rawEntry] of Object.entries(value.files)) {
-    const entry = parseCacheEntry(rawEntry);
-    if (!entry) {
+  const optionsIndexes = new Map<string, number>();
+  for (let index = 0; index < value.options.length; index++) {
+    const optionsHash = value.options[index];
+    if (!isCacheHash(optionsHash) || optionsIndexes.has(optionsHash)) {
       return;
     }
-    files[filePath] = entry;
+    optionsIndexes.set(optionsHash, index);
+  }
+
+  const fileOffsets = new Map<string, number>();
+  const optionsUseCounts = new Array<number>(value.options.length).fill(0);
+  for (let offset = 0; offset < value.files.length; offset += fileEntryWidth) {
+    const filePath = value.files[offset];
+    const contentHash = value.files[offset + contentHashOffset];
+    const optionsIndex = value.files[offset + optionsIndexOffset];
+    const state = value.files[offset + stateOffset];
+    if (
+      typeof filePath !== 'string' ||
+      fileOffsets.has(filePath) ||
+      typeof optionsIndex !== 'number' ||
+      !Number.isInteger(optionsIndex) ||
+      optionsIndex < 0 ||
+      optionsIndex >= value.options.length ||
+      !isFmtCacheStateId(state) ||
+      (state === fmtCacheStateIds.unsupported
+        ? contentHash !== null && !isCacheHash(contentHash)
+        : !isCacheHash(contentHash))
+    ) {
+      return;
+    }
+
+    fileOffsets.set(filePath, offset);
+    optionsUseCounts[optionsIndex]++;
   }
 
   return {
-    version: fmtCacheVersion,
-    namespace: value.namespace,
-    files,
+    cache: value as FmtCacheFile,
+    fileOffsets,
+    optionsIndexes,
+    optionsUseCounts,
   };
 };
 
@@ -100,36 +150,118 @@ const getTemporaryPath = (filePath: string): string =>
 class FmtCacheStoreImpl implements FmtCacheStore {
   readonly #filePath: string;
   readonly #cache: FmtCacheFile;
+  readonly #fileOffsets: Map<string, number>;
+  readonly #optionsIndexes: Map<string, number>;
+  readonly #optionsUseCounts: number[];
   #savedContent: string | undefined;
   #changed: boolean;
 
   constructor(
     filePath: string,
-    cache: FmtCacheFile,
+    parsed: ParsedFmtCacheFile,
     savedContent: string | undefined,
     changed: boolean,
   ) {
     this.#filePath = filePath;
-    this.#cache = cache;
+    this.#cache = parsed.cache;
+    this.#fileOffsets = parsed.fileOffsets;
+    this.#optionsIndexes = parsed.optionsIndexes;
+    this.#optionsUseCounts = parsed.optionsUseCounts;
     this.#savedContent = savedContent;
     this.#changed = changed;
   }
 
   get(filePath: string): FmtCacheEntry | undefined {
-    return this.#cache.files[filePath];
-  }
-
-  set(filePath: string, entry: FmtCacheEntry): void {
-    const current = this.#cache.files[filePath];
-    if (current?.[0] === entry[0] && current[1] === entry[1] && current[2] === entry[2]) {
+    const offset = this.#fileOffsets.get(filePath);
+    if (offset === undefined) {
       return;
     }
 
-    this.#cache.files[filePath] =
-      entry[2] === 'unsupported'
-        ? [entry[0], entry[1], 'unsupported']
-        : [entry[0], entry[1], entry[2]];
+    const { files, options } = this.#cache;
+    const contentHash = files[offset + contentHashOffset] as string | null;
+    const optionsHash = options[files[offset + optionsIndexOffset] as number];
+    const state = fmtCacheStates[files[offset + stateOffset] as FmtCacheStateId];
+    return state === 'unsupported'
+      ? [contentHash, optionsHash, state]
+      : [contentHash as string, optionsHash, state];
+  }
+
+  set(filePath: string, entry: FmtCacheEntry): void {
+    const { files, options } = this.#cache;
+    const [contentHash, optionsHash, state] = entry;
+    const stateId = fmtCacheStateIds[state];
+    const offset = this.#fileOffsets.get(filePath);
+
+    if (offset !== undefined) {
+      const currentOptionsIndex = files[offset + optionsIndexOffset] as number;
+      if (
+        files[offset + contentHashOffset] === contentHash &&
+        options[currentOptionsIndex] === optionsHash &&
+        files[offset + stateOffset] === stateId
+      ) {
+        return;
+      }
+
+      const optionsIndex = this.#getOrCreateOptionsIndex(optionsHash);
+      if (currentOptionsIndex !== optionsIndex) {
+        this.#optionsUseCounts[currentOptionsIndex]--;
+        this.#optionsUseCounts[optionsIndex]++;
+        files[offset + optionsIndexOffset] = optionsIndex;
+      }
+      files[offset + contentHashOffset] = contentHash;
+      files[offset + stateOffset] = stateId;
+    } else {
+      const optionsIndex = this.#getOrCreateOptionsIndex(optionsHash);
+      const nextOffset = files.length;
+      files.push(filePath, contentHash, optionsIndex, stateId);
+      this.#fileOffsets.set(filePath, nextOffset);
+      this.#optionsUseCounts[optionsIndex]++;
+    }
+
     this.#changed = true;
+  }
+
+  #getOrCreateOptionsIndex(optionsHash: string): number {
+    const current = this.#optionsIndexes.get(optionsHash);
+    if (current !== undefined) {
+      return current;
+    }
+
+    const index = this.#cache.options.length;
+    this.#cache.options.push(optionsHash);
+    this.#optionsIndexes.set(optionsHash, index);
+    this.#optionsUseCounts.push(0);
+    return index;
+  }
+
+  #compactUnusedOptions(): void {
+    if (!this.#optionsUseCounts.includes(0)) {
+      return;
+    }
+
+    const { files, options } = this.#cache;
+    const nextOptions: string[] = [];
+    const nextUseCounts: number[] = [];
+    const remappedIndexes = new Int32Array(options.length).fill(-1);
+    for (let index = 0; index < options.length; index++) {
+      const useCount = this.#optionsUseCounts[index];
+      if (useCount > 0) {
+        remappedIndexes[index] = nextOptions.length;
+        nextOptions.push(options[index]);
+        nextUseCounts.push(useCount);
+      }
+    }
+    for (let offset = 0; offset < files.length; offset += fileEntryWidth) {
+      const currentIndex = files[offset + optionsIndexOffset] as number;
+      files[offset + optionsIndexOffset] = remappedIndexes[currentIndex];
+    }
+
+    options.splice(0, options.length, ...nextOptions);
+    this.#optionsUseCounts.splice(0, this.#optionsUseCounts.length, ...nextUseCounts);
+    this.#optionsIndexes.clear();
+    for (let index = 0; index < options.length; index++) {
+      this.#optionsIndexes.set(options[index], index);
+    }
   }
 
   async save(): Promise<boolean> {
@@ -137,6 +269,7 @@ class FmtCacheStoreImpl implements FmtCacheStore {
       return false;
     }
 
+    this.#compactUnusedOptions();
     const content = serializeCache(this.#cache);
     if (content === this.#savedContent) {
       this.#changed = false;
@@ -164,13 +297,13 @@ const loadFmtCacheStore = async (filePath: string, namespace: string): Promise<F
 
   try {
     const content = await readFile(filePath, 'utf8');
-    const cache = parseCacheFile(content);
-    if (!cache) {
+    const parsed = parseCacheFile(content);
+    if (!parsed) {
       return new FmtCacheStoreImpl(filePath, emptyCache, undefined, true);
     }
 
-    return cache.namespace === namespace
-      ? new FmtCacheStoreImpl(filePath, cache, content, false)
+    return parsed.cache.namespace === namespace
+      ? new FmtCacheStoreImpl(filePath, parsed, content, false)
       : new FmtCacheStoreImpl(filePath, emptyCache, undefined, true);
   } catch (error) {
     const missing = isFileNotFoundError(error);

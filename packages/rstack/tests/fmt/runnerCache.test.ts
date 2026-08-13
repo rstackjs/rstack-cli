@@ -2,7 +2,8 @@ import { readFileSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { expect, test } from 'rstack/test';
-import { cacheNamespace, createOptionsHasher, sha256 } from '../../src/fmt/cacheIdentity.ts';
+import { cacheHashLength, createCacheHash } from '../../src/fmt/cacheHash.ts';
+import { cacheNamespace, createOptionsHasher } from '../../src/fmt/cacheIdentity.ts';
 import { loadFmtCacheStore } from '../../src/fmt/cacheStore.ts';
 import { runFmtFiles } from '../../src/fmt/runner.ts';
 import type { FmtCacheContext, FmtFileRequest, FmtMode } from '../../src/fmt/types.ts';
@@ -36,12 +37,12 @@ for (const mode of ['check', 'list-different'] as const) {
 
       const store = await loadFmtCacheStore(cache.filePath, cacheNamespace);
       expect(store.get('clean.ts')).toEqual([
-        sha256(readFileSync(cleanPath)),
+        createCacheHash(readFileSync(cleanPath)),
         expect.any(String),
         'clean',
       ]);
       expect(store.get('dirty.ts')).toEqual([
-        sha256(readFileSync(dirtyPath)),
+        createCacheHash(readFileSync(dirtyPath)),
         expect.any(String),
         'dirty',
       ]);
@@ -79,7 +80,11 @@ test('uses content hashes instead of file metadata', async () => {
 
     const secondStore = await loadFmtCacheStore(cache.filePath, cacheNamespace);
     const secondEntry = secondStore.get('index.ts');
-    expect(secondEntry).toEqual([sha256(readFileSync(filePath)), expect.any(String), 'dirty']);
+    expect(secondEntry).toEqual([
+      createCacheHash(readFileSync(filePath)),
+      expect.any(String),
+      'dirty',
+    ]);
     expect(secondEntry?.[0]).not.toBe(firstEntry?.[0]);
   });
 });
@@ -101,7 +106,7 @@ test('invalidates entries when final options change', async () => {
 
     const store = await loadFmtCacheStore(cache.filePath, cacheNamespace);
     expect(store.get('index.ts')).toEqual([
-      sha256(readFileSync(filePath)),
+      createCacheHash(readFileSync(filePath)),
       createOptionsHasher()(changed.options),
       'dirty',
     ]);
@@ -135,7 +140,7 @@ test('caches unsupported parser results until final options change', async () =>
       processedFileCount: 1,
     });
     expect((await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('data.unknown')).toEqual([
-      sha256(readFileSync(filePath)),
+      createCacheHash(readFileSync(filePath)),
       createOptionsHasher()(supported.options),
       'dirty',
     ]);
@@ -155,7 +160,7 @@ test('invalidates cached unsupported parser results when content changes without
       processedFileCount: 0,
     });
     expect((await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('script')).toEqual([
-      sha256(readFileSync(filePath)),
+      createCacheHash(readFileSync(filePath)),
       createOptionsHasher()(file.options),
       'unsupported',
     ]);
@@ -169,7 +174,7 @@ test('invalidates cached unsupported parser results when content changes without
       processedFileCount: 1,
     });
     expect((await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('script')).toEqual([
-      sha256(readFileSync(filePath)),
+      createCacheHash(readFileSync(filePath)),
       createOptionsHasher()(file.options),
       'dirty',
     ]);
@@ -212,14 +217,14 @@ test('caches only plugins with stable fingerprints', async () => {
     const firstHash = (await loadFmtCacheStore(cache.filePath, cacheNamespace)).get(
       'data.fixture',
     )?.[1];
-    expect(firstHash).toHaveLength(64);
+    expect(firstHash).toHaveLength(cacheHashLength);
 
     writePackageJson('2.0.0');
     await run([file], 'check', cache);
     const secondHash = (await loadFmtCacheStore(cache.filePath, cacheNamespace)).get(
       'data.fixture',
     )?.[1];
-    expect(secondHash).toHaveLength(64);
+    expect(secondHash).toHaveLength(cacheHashLength);
     expect(secondHash).not.toBe(firstHash);
   });
 });
@@ -281,12 +286,12 @@ test('write persists clean results for misses and hits', async () => {
 
     const store = await loadFmtCacheStore(cache.filePath, cacheNamespace);
     expect(store.get('clean.ts')).toEqual([
-      sha256(readFileSync(cleanPath)),
+      createCacheHash(readFileSync(cleanPath)),
       expect.any(String),
       'clean',
     ]);
     expect(store.get('dirty.ts')).toEqual([
-      sha256(readFileSync(dirtyPath)),
+      createCacheHash(readFileSync(dirtyPath)),
       expect.any(String),
       'clean',
     ]);
@@ -318,7 +323,7 @@ test('write converts a dirty entry to clean', async () => {
 
     const store = await loadFmtCacheStore(cache.filePath, cacheNamespace);
     expect(store.get('index.ts')).toEqual([
-      sha256(readFileSync(filePath)),
+      createCacheHash(readFileSync(filePath)),
       expect.any(String),
       'clean',
     ]);
