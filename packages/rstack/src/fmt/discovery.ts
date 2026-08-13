@@ -1,37 +1,8 @@
 import path from 'node:path';
-import { createOptionsResolver, type FmtOptionsResolver } from './config.ts';
 import { discoverFmtPaths } from './discoverPaths.ts';
+import { createFmtFileResolver } from './fileResolver.ts';
 import { createIgnoreMatcher } from './ignore.ts';
-import type { FmtPluginResolver } from './plugins.ts';
 import type { DiscoverFmtFilesOptions, FmtFileRequest } from './types.ts';
-
-const createFileRequest = (
-  filePath: string,
-  resolveOptions: FmtOptionsResolver,
-): FmtFileRequest => ({
-  path: filePath,
-  options: resolveOptions(filePath),
-});
-
-/** Imports the plugin chunk on first use and shares the resolver across calls. */
-const createLazyPluginResolver = (rootPath: string): (() => Promise<FmtPluginResolver>) => {
-  let resolver: Promise<FmtPluginResolver> | undefined;
-
-  return () =>
-    (resolver ??= import(
-      /* rspackChunkName: 'fmtPlugins' */
-      './plugins.ts'
-    ).then(({ createPluginResolver }) => createPluginResolver(rootPath)));
-};
-
-/** Resolves the plugin specifiers of a request whose options configure plugins. */
-const resolveFileRequestPlugins = async (
-  file: FmtFileRequest,
-  getPluginResolver: () => Promise<FmtPluginResolver>,
-): Promise<FmtFileRequest> =>
-  file.options.plugins?.length
-    ? { ...file, options: (await getPluginResolver())(file.options) }
-    : file;
 
 const createDirMatcher = (dirPath: string): ((filePath: string) => boolean) => {
   const prefix = dirPath.endsWith(path.sep) ? dirPath : `${dirPath}${path.sep}`;
@@ -63,14 +34,9 @@ const discoverFmtFiles = async ({
     return [];
   }
 
-  const resolveOptions = createOptionsResolver(config);
-  const getPluginResolver = createLazyPluginResolver(config.rootPath);
+  const resolveFile = createFmtFileResolver(config);
 
-  return Promise.all(
-    filePaths.map((filePath) =>
-      resolveFileRequestPlugins(createFileRequest(filePath, resolveOptions), getPluginResolver),
-    ),
-  );
+  return Promise.all(filePaths.map((filePath) => resolveFile(filePath)));
 };
 
-export { createFileRequest, createLazyPluginResolver, discoverFmtFiles, resolveFileRequestPlugins };
+export { discoverFmtFiles };
