@@ -10,9 +10,9 @@ rust-version = "1.88"
 
 [workspace.dependencies]
 ignore = { version = "0.4.33", default-features = false }
-napi = { version = "3.12.0", default-features = false, features = ["napi9"] }
-napi-build = "2.4.0"
-napi-derive = "3.6.2"
+napi = { version = "3.12.1", default-features = false, features = ["napi9"] }
+napi-build = "2.4.1"
+napi-derive = "3.6.3"
 pathdiff = "0.2.3"
 rstack-ignore = { path = "crates/rstack-ignore" }
 
