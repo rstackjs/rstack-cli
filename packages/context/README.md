@@ -1,4 +1,4 @@
-# Rstack Context
+# Rstack context
 
 `@rstackjs/context` is the runtime behind the Rstack project-context MCP. It records and queries
 checkout-local build, lint, test, coverage, and Rsdoctor evidence while keeping freshness,

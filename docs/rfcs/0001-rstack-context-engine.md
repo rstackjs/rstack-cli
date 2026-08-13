@@ -21,8 +21,8 @@ This is deliberately a lean, file-based design:
 - no coordinator daemon, task-runner integration, package-process discovery service, or development
   server route is required;
 - Rslint and Rstest execute only through explicit one-shot MCP tools;
-- Codex and Claude Code bundles register the same `rs mcp` command and provide the same six workflow
-  skills; and
+- the repository-based `rstack` plugin in `rstackjs/agent-skills` registers `rs mcp` for Codex and
+  Claude Code and provides six context workflows; and
 - rich build visualization continues to use an existing Rsdoctor report through `report_link`.
 
 The unused-code feature is intentionally artifact-scoped. It identifies modules that are not
@@ -94,17 +94,20 @@ flowchart LR
   Report["Existing Rsdoctor report"]
   MCP["rs mcp<br/>stdio query server"]
 
+  Plugin["rstackjs/agent-skills<br/>one rstack plugin + six context skills"]
+
   subgraph Hosts["Agent hosts"]
-    Codex["Codex bundle + six skills"]
-    Claude["Claude Code bundle + six skills"]
+    Codex["Codex"]
+    Claude["Claude Code"]
   end
 
   AppObserver -->|publish| Store
   LibObserver -->|publish| Store
   Rslint -->|publish| Store
   Rstest -->|publish| Store
-  Codex -->|stdio| MCP
-  Claude -->|stdio| MCP
+  Codex --> Plugin
+  Claude --> Plugin
+  Plugin -->|stdio| MCP
   MCP -->|read completed records| Store
   MCP -->|read selected file| Artifact
   MCP -->|resolve report_link| Report
@@ -128,6 +131,11 @@ publish their results after the one-shot command completes.
 | Query layer            | Select contexts and snapshots, assess freshness, traverse module graphs, page, and diff results. |
 | MCP server             | Expose the query and explicit-capture tools over stdio.                                          |
 | Plugin skills          | Select the relevant tools and present their evidence boundaries to the model.                    |
+
+The runtime is packaged separately from the CLI facade. `@rstackjs/context` owns the store,
+producer adapters, normalized evidence, queries, and MCP implementation. `rstack` owns command and
+configuration integration, exposes the runtime through `rstack/context`, and supplies the Rstack
+config adapter when `rs mcp` runs explicit lint or test captures.
 
 ### Monorepo process model
 
@@ -381,7 +389,8 @@ flowchart LR
 
 ### Server lifecycle
 
-Both plugin bundles register one local stdio server named `rstack`. Their Node launcher first
+The official `rstack` plugin in `rstackjs/agent-skills` registers one local stdio server named
+`rstack` for both Codex and Claude Code. Its Node launcher first
 resolves the workspace-root local `rstack` package and invokes its `rs` binary directly. When that
 package is unavailable from the workspace root, the launcher falls back to `rs mcp` from the MCP
 host `PATH`, inheriting standard input, output, and error and propagating the delegated process
@@ -438,35 +447,18 @@ The reachability tools use four classifications:
 An `unreachable-module-candidate` is a request for source and runtime verification, not a deletion
 decision. Export-level and local-symbol conclusions remain outside this branch.
 
-## Plugin bundles
+## Agent plugin distribution
 
-### Codex bundle
+The installable host integration lives in
+[`rstackjs/agent-skills`](https://github.com/rstackjs/agent-skills), not in this runtime repository.
+It extends that repository's existing `rstack` plugin rather than creating another plugin or
+marketplace:
 
 ```text
-plugins/rstack-codex/
+agent-skills/
 ├── .codex-plugin/
-│   └── plugin.json
-├── .mcp.json
-└── skills/
-    ├── analyze-build/
-    ├── assess-change-impact/
-    ├── debug-dev-cycle/
-    ├── explain-dead-code/
-    ├── find-unused-code/
-    └── review-context-change/
-```
-
-The Codex manifest describes the plugin, points to the six skills, and references `.mcp.json`. The
-repository marketplace entry points at this local bundle. The bundle uses the workspace-root local
-`rstack` package when available and otherwise expects `rs` on the MCP host `PATH`; it does not carry
-another copy of the context runtime.
-
-### Claude code bundle
-
-```text
-plugins/rstack-claude/
 ├── .claude-plugin/
-│   └── plugin.json
+├── .agents/plugins/marketplace.json
 ├── .mcp.json
 └── skills/
     ├── analyze-build/
@@ -477,8 +469,10 @@ plugins/rstack-claude/
     └── review-context-change/
 ```
 
-The Claude Code bundle uses the same command, schemas, and workflow text. This branch does not add
-Claude-specific hooks, agents, workflows, or a second server implementation.
+The Codex and Claude manifests discover the same root `skills/` directory and `.mcp.json`. The
+launcher uses the workspace-root local `rstack` package when available and otherwise expects `rs`
+on the host `PATH`. The plugin contains no copy of `@rstackjs/context`, compiler graph, store, or MCP
+implementation.
 
 ### Skill catalog
 
@@ -518,7 +512,7 @@ candidates.
 ```mermaid
 flowchart LR
   P01["Phase 0/1<br/>foundation, passive build records,<br/>Rsdoctor analysis, report links<br/>implemented"]
-  P2["Phase 2<br/>module artifact reachability<br/>and plugin bundles<br/>implemented"]
+  P2["Phase 2<br/>module artifact reachability<br/>and official plugin workflows<br/>implemented"]
   P3["Phase 3<br/>explicit one-shot Rslint/Rstest<br/>snapshots and queries<br/>implemented"]
   P4["Phase 4<br/>compatible diffs, exact-path evidence,<br/>and six skills<br/>implemented"]
   P5["Phase 5<br/>no custom GUI or remote transport;<br/>reuse headless MCP + Rsdoctor GUI<br/>resolved"]
@@ -546,7 +540,7 @@ Implemented downstream:
 - application entries, library contract targets, and conservative roots;
 - bounded root reachability, shortest explanations, and impact traversal;
 - the four module-analysis MCP tools; and
-- matching Codex and Claude Code plugin bundles.
+- one shared Codex and Claude Code integration in `rstackjs/agent-skills`.
 
 The implementation reports module candidates only. Export usage and local-symbol dead-code claims
 were not added.
@@ -572,7 +566,7 @@ Implemented downstream:
 - stored lint fixed-output previews without apply;
 - the `code_evidence` exact-path composition query;
 - `debug-dev-cycle` and `review-context-change`; and
-- the complete six-skill set in both plugin bundles.
+- the complete six-skill set in the official `rstack` plugin.
 
 CI artifact exchange, performance budgets, apply tools, automatic verification, and export-level
 diffs remain deferred.

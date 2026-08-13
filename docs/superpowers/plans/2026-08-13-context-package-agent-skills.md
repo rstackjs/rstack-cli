@@ -1,4 +1,6 @@
-# Rstack Context Package And Agent Plugin Implementation Plan
+<!-- cspell:ignore evals dogfood -->
+
+# Rstack context package and agent plugin implementation plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,7 +10,7 @@
 
 **Tech Stack:** TypeScript, Rslib, Rstest, Rslint, MCP SDK, Zod, Codex plugins, Claude Code plugins, Agent Skills.
 
-## Global Constraints
+## Global constraints
 
 - Keep work on `codex/rstack-mcp-observability` in `rstack-cli` and `codex/rstack-context-plugin` in `agent-skills`.
 - Do not create another marketplace or another plugin identity; extend the existing `rstack` plugin.
@@ -20,7 +22,7 @@
 
 ---
 
-### Task 1: Extend the official Rstack plugin
+### Task 1: extend the official Rstack plugin
 
 **Files:**
 
@@ -64,9 +66,9 @@ Run:
 
 ```bash
 node scripts/test-rstack-context-plugin.mjs
-python3 /home/zack/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py .
+python3 ~/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py .
 for skill in skills/analyze-build skills/assess-change-impact skills/debug-dev-cycle skills/explain-dead-code skills/find-unused-code skills/review-context-change; do
-  python3 /home/zack/.codex/skills/.system/skill-creator/scripts/quick_validate.py "$skill"
+  python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py "$skill"
 done
 pnpm lint
 ```
@@ -78,7 +80,7 @@ git add .mcp.json .codex-plugin .claude-plugin skills README.md scripts/test-rst
 git commit -m "feat(plugin): add Rstack Context workflows"
 ```
 
-### Task 2: Create the separated context package
+### Task 2: create the separated context package
 
 **Files:**
 
@@ -140,7 +142,7 @@ git add packages/context packages/rstack pnpm-workspace.yaml pnpm-lock.yaml
 git commit -m "refactor(context): extract context runtime package"
 ```
 
-### Task 3: Remove duplicate plugin distribution from Rstack CLI
+### Task 3: remove duplicate plugin distribution from Rstack CLI
 
 **Files:**
 
@@ -189,7 +191,7 @@ git add -A plugins .agents/plugins packages/rstack/tests/context docs website
 git commit -m "docs(context): use the official Rstack agent plugin"
 ```
 
-### Task 4: Install and dogfood the coordinated result
+### Task 4: install and dogfood the coordinated result
 
 **Files:**
 
