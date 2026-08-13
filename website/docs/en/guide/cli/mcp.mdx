@@ -14,6 +14,8 @@ rs mcp
 
 The server communicates over standard input and output, so stdout is reserved for MCP protocol messages. It resolves the checkout from the command's launch path and exposes fourteen tools: `project_status`, `product_roots`, `unused_candidates`, `dead_code_explain`, `module_impact`, `snapshot_list`, `diagnostics_list`, `test_results`, `snapshot_diff`, `lint_fix_preview`, `lint_snapshot`, `test_snapshot`, `rsdoctor_analyze`, and `report_link`.
 
+Successful tool responses keep `content` compact for conversation. The complete, authoritative result is available in `structuredContent`.
+
 ## Capture build context
 
 Enable metadata capture in `rstack.config.ts`:
@@ -73,10 +75,10 @@ This works for Rslib-only repositories, Rsbuild-only repositories, and repositor
 
 ### Artifact-scoped module analysis
 
-The four module-analysis tools require both a `contextId` from `project_status` and an explicit Rsdoctor `dataFile`. The result provenance uses `artifactBinding: "explicit-unverified"`: the selected build observation is useful context, but Rstack does not claim that the supplied artifact came from that run.
+The four module-analysis tools require both a `contextId` from `project_status` and an explicit Rsdoctor `dataFile`. Valid Rsdoctor v1 metadata can bind the artifact to the selected build observation when their identities match. Legacy artifacts without that metadata remain `artifactBinding: "explicit-unverified"`: the selected build observation is useful context, but Rstack does not claim that the supplied artifact came from that run.
 
 - `product_roots` returns application entry roots, exactly matched library package targets, and conservative optimizer roots, together with graph issues and analysis bounds.
-- `unused_candidates` returns modules with no observed path from the selected roots in that artifact graph. Its optional `limit` is an integer from 1 through 100 and defaults to 50.
+- `unused_candidates` returns modules with no observed path from the selected roots in that artifact graph. Its optional `limit` is an integer from 1 through 100 and defaults to 50. When a page includes `nextCursor`, pass it back with the same `contextId`, `dataFile`, and `limit` to continue the deterministic result order.
 - `dead_code_explain` accepts a non-empty exact module ID, path, name, or unique path suffix. Its optional `maxDepth` is an integer from 1 through 16 and defaults to 8. It reports whether the module is reachable, conservatively preserved, an unreachable module candidate, or unknown because the evidence is incomplete.
 - `module_impact` accepts the same module selector. `direction` is `dependencies` or `dependents` and defaults to `dependents`; `maxDepth` has the same 1-through-16 range and default of 8. It returns the bounded observed modules, reached product roots, affected chunk IDs, and truncation state.
 
@@ -111,7 +113,11 @@ Rslint type-check and timing collection remain explicit CLI workflows such as `r
 
 ### Rsdoctor analysis
 
-`rsdoctor_analyze` accepts an explicit `dataFile`, a `toolName`, and optional tool input. The data file must contain JSON with an object-valued `data` field, and the input must match the selected Rsdoctor tool schema. Rstack returns the Rsdoctor Agent CLI JSON result directly. The supported tool names are:
+`rsdoctor_analyze` accepts an explicit `dataFile`, a `toolName`, and optional tool input. The data file must contain JSON with an object-valued `data` field, and the input must match the selected Rsdoctor tool schema. Its compact text reports the result's data state and any unavailable required sections; the full result is in `structuredContent`.
+
+When valid Rsdoctor v1 metadata is present, `structuredContent.sectionEvidence` reports each section required by the selected tool as `collected` or `omitted`. An omitted entry includes its reason and means that section was unavailable to the analysis, so an empty or zero-shaped result must not be interpreted as a confirmed zero. Legacy artifacts remain accepted but unverified; they return an empty `sectionEvidence` array and provide no section-availability state.
+
+The supported tool names are:
 
 - `build_summary`
 - `bundle_optimize`

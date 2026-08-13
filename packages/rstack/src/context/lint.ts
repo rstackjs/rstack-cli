@@ -90,6 +90,10 @@ type DiagnosticRecord = {
 
 type DiagnosticPage = {
   snapshotId: string;
+  producer: 'rslint' | 'rstest';
+  contextId: string;
+  observedAt: string;
+  completeness: ContextSnapshot['completeness'];
   freshness: ContextFreshness;
   total: number;
   items: DiagnosticRecord[];
@@ -98,6 +102,7 @@ type DiagnosticPage = {
 
 type LintFixPreviewResult =
   | {
+      available: true;
       snapshotId: string;
       path: string;
       beforeDigest: string;
@@ -208,16 +213,69 @@ const captureLintSnapshot = async (
     overrideConfigFile: wrapperConfigPath,
     fix: includeFixPreview,
   } satisfies RslintOptions;
-  const results = await withRstackConfigTarget(target.packageRoot, target.configPath, async () => {
-    const engine = createRslint?.(options) ?? new (await import('@rslint/core')).Rslint(options);
-    try {
-      return request.mode === 'files'
-        ? await engine.lintFiles(request.patterns ?? ['.'])
-        : await engine.lintText(request.code, { filePath: request.filePath });
-    } finally {
-      await engine.close();
-    }
-  });
+  const runWrite = await writeContextRunManifest(workspaceRoot, run);
+  if (!runWrite.written) {
+    throw new Error('Could not write the context run.', {
+      cause: runWrite.error,
+    });
+  }
+  let results: LintResult[];
+  try {
+    results = await withRstackConfigTarget(target.packageRoot, target.configPath, async () => {
+      const engine = createRslint?.(options) ?? new (await import('@rslint/core')).Rslint(options);
+      try {
+        return request.mode === 'files'
+          ? await engine.lintFiles(request.patterns ?? ['.'])
+          : await engine.lintText(request.code, { filePath: request.filePath });
+      } finally {
+        await engine.close();
+      }
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const file: LintFileRecord = {
+      path:
+        request.mode === 'text'
+          ? toWorkspacePath(workspaceRoot, path.resolve(target.packageRoot, request.filePath)) ||
+            context.packageRoot
+          : context.packageRoot,
+      digest: request.mode === 'text' ? digest(request.code) : digest(''),
+      errorCount: 1,
+      warningCount: 0,
+      fixableErrorCount: 0,
+      fixableWarningCount: 0,
+      messages: [
+        {
+          ruleId: null,
+          severity: 2,
+          message,
+          line: 1,
+          column: 1,
+        },
+      ],
+    };
+    const facet: LintFacet = {
+      producer: 'rslint',
+      mode: request.mode,
+      fixPreviewCaptured: false,
+      files: [file],
+      totals: totalsFor([file]),
+    };
+    const snapshot: ContextSnapshot = {
+      schemaVersion: contextStoreSchemaVersion,
+      snapshotId: `snap_${run.runId}_${context.contextId}_0`,
+      runId: run.runId,
+      contextId: context.contextId,
+      sequence: 0,
+      observedAt: new Date().toISOString(),
+      status: 'error',
+      completeness: { lint: 'partial' },
+      facets: { lint: facet },
+      source: { inputs: [], inputCompleteness: 'partial' },
+    };
+    ensureWritten(await writeContextSnapshot(workspaceRoot, snapshot));
+    throw error;
+  }
 
   const files = (
     await Promise.all(
@@ -263,12 +321,6 @@ const captureLintSnapshot = async (
     source,
   };
 
-  const runWrite = await writeContextRunManifest(workspaceRoot, run);
-  if (!runWrite.written) {
-    throw new Error('Could not write the context run.', {
-      cause: runWrite.error,
-    });
-  }
   ensureWritten(await writeContextSnapshot(workspaceRoot, snapshot));
 
   return {
@@ -321,6 +373,12 @@ const testDiagnostic = (
 
 const testDiagnostics = (facet: TestFacet): DiagnosticRecord[] => [
   ...facet.files.flatMap((file) => [
+    ...(file.errors ?? []).map((error) =>
+      testDiagnostic(error, {
+        path: file.path,
+        project: file.project,
+      }),
+    ),
     ...file.tests.flatMap((testCase) =>
       (testCase.errors ?? []).map((error) =>
         testDiagnostic(error, {
@@ -407,6 +465,10 @@ const listDiagnostics = async (
 
   return {
     snapshotId: stored.snapshot.snapshotId,
+    producer: lintFacet === undefined ? 'rstest' : 'rslint',
+    contextId: stored.snapshot.contextId,
+    observedAt: stored.snapshot.observedAt,
+    completeness: stored.snapshot.completeness,
     freshness: await assessSnapshotFreshness(workspaceRoot, stored.snapshot),
     total: items.length,
     items: page,
@@ -444,6 +506,7 @@ const getLintFixPreview = async (
     };
   }
   return {
+    available: true,
     snapshotId,
     path: filePath,
     beforeDigest: file.digest,

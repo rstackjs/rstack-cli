@@ -4,6 +4,7 @@ import {
   type LintFacet,
   type StoredContextSnapshot,
   type TestCaseRecord,
+  type TestErrorRecord,
   type TestFacet,
 } from './model.ts';
 import { validateLintFacet, validateTestFacet } from './records.ts';
@@ -32,7 +33,14 @@ type SnapshotDiagnostic = {
   fixable: boolean;
 };
 
-type SnapshotDiffItem = SnapshotDiagnostic | TestCaseRecord;
+type SnapshotTestFileError = {
+  kind: 'file-error';
+  project: string;
+  path: string;
+  error: TestErrorRecord;
+};
+
+type SnapshotDiffItem = SnapshotDiagnostic | SnapshotTestFileError | TestCaseRecord;
 
 type SnapshotDiffResult =
   | {
@@ -60,8 +68,10 @@ const diagnosticIdentity = (diagnostic: SnapshotDiagnostic): string =>
     diagnostic.column,
   ]);
 
-const testIdentity = (result: TestCaseRecord): string =>
-  JSON.stringify([result.project, result.path, result.parentNames ?? [], result.name]);
+const testIdentity = (result: SnapshotTestFileError | TestCaseRecord): string =>
+  'kind' in result
+    ? JSON.stringify([result.project, result.path, result.kind, result.error.name])
+    : JSON.stringify([result.project, result.path, result.parentNames ?? [], result.name]);
 
 const lintDiagnostics = (facet: LintFacet): SnapshotDiagnostic[] =>
   facet.files.flatMap((file) =>
@@ -78,8 +88,16 @@ const lintDiagnostics = (facet: LintFacet): SnapshotDiagnostic[] =>
     })),
   );
 
-const testResults = (facet: TestFacet): TestCaseRecord[] =>
-  facet.files.flatMap((file) => file.tests);
+const testResults = (facet: TestFacet): Array<SnapshotTestFileError | TestCaseRecord> =>
+  facet.files.flatMap((file) => [
+    ...(file.errors ?? []).map((error) => ({
+      kind: 'file-error' as const,
+      project: file.project,
+      path: file.path,
+      error,
+    })),
+    ...file.tests,
+  ]);
 
 const diffItems = <T extends SnapshotDiffItem>(
   leftItems: T[],

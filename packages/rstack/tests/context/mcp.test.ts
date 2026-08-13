@@ -111,7 +111,7 @@ test('registers the exact ordered fourteen-tool catalog with accurate annotation
         name: 'project_status',
         title: 'Rstack context status',
         description:
-          'Return the current checkout-local Rstack row for each context and its latest completed snapshot.',
+          'List all recorded checkout-local Rstack contexts and the latest completed build, lint, or test snapshot for each context.',
         annotations: {
           readOnlyHint: true,
           destructiveHint: false,
@@ -131,6 +131,9 @@ test('registers the exact ordered fourteen-tool catalog with accurate annotation
             name: 'unused_candidates',
             inputSchema: expect.objectContaining({
               additionalProperties: false,
+              properties: expect.objectContaining({
+                cursor: expect.objectContaining({ type: 'string' }),
+              }),
               required: ['contextId', 'dataFile'],
             }),
           }),
@@ -215,6 +218,114 @@ test('registers the exact ordered fourteen-tool catalog with accurate annotation
   });
 });
 
+test('publishes discoverable descriptions for opaque and conditional tool inputs', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await withMcpClient(workspaceRoot, async (client) => {
+      const { tools } = await client.listTools();
+      const toolByName = new Map(tools.map((tool) => [tool.name, tool]));
+      const contextId = {
+        description: 'Context ID returned by project_status.',
+      };
+      const dataFile = {
+        description: 'Checkout-relative path to an explicit Rsdoctor JSON artifact.',
+      };
+      const module = {
+        description: 'Exact module ID, path, name, or unique path suffix.',
+      };
+      const cursor = {
+        description:
+          'Opaque pagination cursor returned by the previous response. Reuse the same filters when continuing.',
+      };
+
+      for (const toolName of [
+        'product_roots',
+        'unused_candidates',
+        'dead_code_explain',
+        'module_impact',
+      ]) {
+        expect(toolByName.get(toolName)?.inputSchema.properties).toMatchObject({
+          contextId,
+          dataFile,
+        });
+      }
+      for (const toolName of ['rsdoctor_analyze', 'report_link']) {
+        expect(toolByName.get(toolName)?.inputSchema.properties).toMatchObject({ dataFile });
+      }
+      for (const toolName of ['dead_code_explain', 'module_impact']) {
+        expect(toolByName.get(toolName)?.inputSchema.properties).toMatchObject({ module });
+      }
+      for (const toolName of [
+        'unused_candidates',
+        'snapshot_list',
+        'diagnostics_list',
+        'test_results',
+      ]) {
+        expect(toolByName.get(toolName)?.inputSchema.properties).toMatchObject({ cursor });
+      }
+
+      expect(toolByName.get('snapshot_list')).toMatchObject({
+        description:
+          'List completed immutable context snapshots newest-first, optionally filtered by producer or context.',
+      });
+      expect(toolByName.get('diagnostics_list')).toMatchObject({
+        description:
+          'List deterministic Rslint or Rstest diagnostics, optionally filtered by completed snapshot, producer, path prefix, severity, or rule.',
+      });
+      expect(toolByName.get('test_results')).toMatchObject({
+        description:
+          'List deterministic test cases, optionally filtered by completed Rstest snapshot, project, path prefix, or status.',
+      });
+      expect(toolByName.get('lint_snapshot')?.inputSchema.properties).toMatchObject({
+        mode: {
+          description: 'Lint files selected by patterns, or one text buffer supplied in code.',
+        },
+        patterns: {
+          description: 'File patterns used only when mode is files; defaults to ["."].',
+        },
+        code: {
+          description: 'Source text required when mode is text.',
+        },
+        filePath: {
+          description: 'Checkout-relative virtual source path required when mode is text.',
+        },
+        packageRoot: {
+          description: 'Checkout-relative package directory; defaults to the checkout root.',
+        },
+        configPath: {
+          description:
+            'Checkout-relative Rstack config path; defaults to ordinary discovery in packageRoot.',
+        },
+      });
+      expect(toolByName.get('test_snapshot')?.inputSchema.properties).toMatchObject({
+        packageRoot: {
+          description: 'Checkout-relative package directory; defaults to the checkout root.',
+        },
+        configPath: {
+          description:
+            'Checkout-relative Rstack config path; defaults to ordinary discovery in packageRoot.',
+        },
+      });
+      expect(toolByName.get('rsdoctor_analyze')?.inputSchema.properties).toMatchObject({
+        toolName: {
+          description: 'Supported Rsdoctor catalog tool to run.',
+          enum: [
+            'build_summary',
+            'bundle_optimize',
+            'chunks_list',
+            'errors_list',
+            'packages_direct_dependencies',
+            'packages_duplicates',
+            'packages_similar',
+            'tree_shaking_retained_modules',
+            'tree_shaking_side_effects',
+            'tree_shaking_summary',
+          ],
+        },
+      });
+    });
+  });
+});
+
 test('returns structured results for each artifact-scoped module tool', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await cp(reachabilityFixture, workspaceRoot, { recursive: true });
@@ -236,6 +347,12 @@ test('returns structured results for each artifact-scoped module tool', async ()
         },
       });
       expect(productRoots.isError).not.toBe(true);
+      expect(productRoots.content).toEqual([
+        {
+          type: 'text',
+          text: 'Rstack result: moduleCount=8, edgeCount=4. See structuredContent for complete data.',
+        },
+      ]);
       expect(productRoots.structuredContent).toMatchObject({
         provenance: {
           contextId: context.contextId,
@@ -254,6 +371,12 @@ test('returns structured results for each artifact-scoped module tool', async ()
         },
       });
       expect(candidates.isError).not.toBe(true);
+      expect(candidates.content).toEqual([
+        {
+          type: 'text',
+          text: 'Rstack result: total=1, returned=1. See structuredContent for complete data.',
+        },
+      ]);
       expect(candidates.structuredContent).toMatchObject({
         total: 1,
         returned: 1,
@@ -275,6 +398,12 @@ test('returns structured results for each artifact-scoped module tool', async ()
         },
       });
       expect(explanation.isError).not.toBe(true);
+      expect(explanation.content).toEqual([
+        {
+          type: 'text',
+          text: 'Rstack result: classification=unreachable-module-candidate. See structuredContent for complete data.',
+        },
+      ]);
       expect(explanation.structuredContent).toMatchObject({
         classification: 'unreachable-module-candidate',
         subject: { kind: 'module', id: '3', path: 'src/legacy.ts' },
@@ -291,11 +420,97 @@ test('returns structured results for each artifact-scoped module tool', async ()
         },
       });
       expect(impact.isError).not.toBe(true);
+      expect(impact.content).toEqual([
+        {
+          type: 'text',
+          text: 'Rstack result: returned=2, totalVisited=2. See structuredContent for complete data.',
+        },
+      ]);
       expect(impact.structuredContent).toMatchObject({
         direction: 'dependents',
         subject: { kind: 'module', id: '2', path: 'src/live.ts' },
         affectedChunks: ['10', 'shared'],
       });
+    });
+  });
+});
+
+test('continues unused candidates with an opaque cursor', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await cp(reachabilityFixture, workspaceRoot, { recursive: true });
+    const context = {
+      contextId: 'ctx_app',
+      packageRoot: '.',
+      product: 'application',
+    } as const;
+    expect(
+      await writeContextRunManifest(workspaceRoot, createRun('run_app', context)),
+    ).toMatchObject({ written: true });
+    await writeFile(
+      path.join(workspaceRoot, 'rsdoctor-data.json'),
+      JSON.stringify({
+        data: {
+          moduleGraph: {
+            modules: [
+              { id: 1, path: 'src/index.ts', name: 'index', isEntry: true },
+              { id: 2, path: 'src/unused-a.ts', name: 'unused-a' },
+              { id: 3, path: 'src/unused-b.ts', name: 'unused-b' },
+            ],
+            dependencies: [],
+          },
+        },
+      }),
+    );
+
+    await withMcpClient(workspaceRoot, async (client) => {
+      const firstPage = await client.callTool({
+        name: 'unused_candidates',
+        arguments: {
+          contextId: context.contextId,
+          dataFile: 'rsdoctor-data.json',
+          limit: 1,
+        },
+      });
+      expect(firstPage.isError).not.toBe(true);
+      expect(firstPage.structuredContent).toMatchObject({
+        total: 2,
+        returned: 1,
+        resultTruncated: true,
+        candidates: [{ subject: { id: '2' } }],
+        nextCursor: expect.any(String),
+      });
+
+      const nextCursor = (firstPage.structuredContent as { nextCursor: string }).nextCursor;
+      const secondPage = await client.callTool({
+        name: 'unused_candidates',
+        arguments: {
+          contextId: context.contextId,
+          dataFile: 'rsdoctor-data.json',
+          limit: 1,
+          cursor: nextCursor,
+        },
+      });
+      expect(secondPage.isError).not.toBe(true);
+      expect(secondPage.structuredContent).toMatchObject({
+        total: 2,
+        returned: 1,
+        resultTruncated: false,
+        candidates: [{ subject: { id: '3' } }],
+      });
+      expect(secondPage.structuredContent).not.toHaveProperty('nextCursor');
+
+      const invalidCursor = await client.callTool({
+        name: 'unused_candidates',
+        arguments: {
+          contextId: context.contextId,
+          dataFile: 'rsdoctor-data.json',
+          cursor: 'not-a-cursor',
+        },
+      });
+      expect(invalidCursor.isError).toBe(true);
+      expect(invalidCursor.content).toEqual([
+        { type: 'text', text: 'Invalid unused candidates cursor.' },
+      ]);
     });
   });
 });
@@ -320,8 +535,15 @@ test('analyzes an explicit Rsdoctor artifact', async () => {
           description: 'Get build summary with costs (build time analysis).',
           ok: true,
         },
+        sectionEvidence: [],
         toolName: 'build_summary',
       });
+      expect(result.content).toEqual([
+        {
+          type: 'text',
+          text: 'Rsdoctor build_summary analysis returned data present.',
+        },
+      ]);
     });
   });
 });
@@ -348,6 +570,7 @@ test('reports a null Rsdoctor analysis without claiming data is available', asyn
         expect(result.structuredContent).toEqual({
           dataFile: 'artifacts/rsdoctor-data.json',
           result: { data: null, description: 'No build summary.', ok: true },
+          sectionEvidence: [],
           toolName: 'build_summary',
         });
       },
@@ -355,6 +578,88 @@ test('reports a null Rsdoctor analysis without claiming data is available', asyn
         analyzeRsdoctorArtifact: async (_workspaceRoot, request) => ({
           dataFile: request.dataFile,
           result: { data: null, description: 'No build summary.', ok: true },
+          sectionEvidence: [],
+          toolName: request.toolName,
+        }),
+      },
+    );
+  });
+});
+
+test('distinguishes literal and recursively zero-shaped Rsdoctor analysis data', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const cases = [
+      {
+        data: [],
+        expected: 'Rsdoctor build_summary analysis returned literal empty data.',
+      },
+      {
+        data: { costs: [], nested: { cached: null, modules: [] }, totalCost: 0 },
+        expected: 'Rsdoctor build_summary analysis returned recursively zero-shaped data.',
+      },
+    ];
+    for (const { data, expected } of cases) {
+      await withMcpClient(
+        workspaceRoot,
+        async (client) => {
+          const result = await client.callTool({
+            name: 'rsdoctor_analyze',
+            arguments: {
+              dataFile: 'artifacts/rsdoctor-data.json',
+              toolName: 'build_summary',
+            },
+          });
+
+          expect(result.content).toEqual([{ type: 'text', text: expected }]);
+        },
+        {
+          analyzeRsdoctorArtifact: async (_workspaceRoot, request) => ({
+            dataFile: request.dataFile,
+            result: { data, description: 'Build summary.', ok: true },
+            sectionEvidence: [],
+            toolName: request.toolName,
+          }),
+        },
+      );
+    }
+  });
+});
+
+test('reports omitted Rsdoctor section evidence when the analysis provides it', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await withMcpClient(
+      workspaceRoot,
+      async (client) => {
+        const result = await client.callTool({
+          name: 'rsdoctor_analyze',
+          arguments: {
+            dataFile: 'artifacts/rsdoctor-data.json',
+            toolName: 'build_summary',
+          },
+        });
+
+        expect(result.content).toEqual([
+          {
+            type: 'text',
+            text: 'Rsdoctor build_summary analysis returned recursively zero-shaped data. Unavailable sections: moduleGraph (omitted: not-selected).',
+          },
+        ]);
+      },
+      {
+        analyzeRsdoctorArtifact: async (_workspaceRoot, request) => ({
+          dataFile: request.dataFile,
+          result: {
+            data: { costs: [], totalCost: 0 },
+            description: 'Build summary.',
+            ok: true,
+          },
+          sectionEvidence: [
+            {
+              section: 'moduleGraph',
+              status: 'omitted' as const,
+              reason: 'not-selected' as const,
+            },
+          ],
           toolName: request.toolName,
         }),
       },
@@ -488,7 +793,7 @@ test('returns a portable Rsdoctor analysis next action when no GUI report exists
   });
 });
 
-test('returns an MCP error for an invalid Rsdoctor tool name', async () => {
+test('rejects an invalid Rsdoctor tool name at the MCP schema boundary', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await writeRsdoctorArtifact(workspaceRoot);
 
@@ -501,7 +806,12 @@ test('returns an MCP error for an invalid Rsdoctor tool name', async () => {
         },
       });
       expect(unknownTool.isError).toBe(true);
-      expect(unknownTool.content).toEqual([{ type: 'text', text: 'Unknown Rsdoctor tool.' }]);
+      expect(unknownTool.content).toEqual([
+        expect.objectContaining({
+          type: 'text',
+          text: expect.stringContaining('Invalid arguments for tool rsdoctor_analyze'),
+        }),
+      ]);
     });
   });
 });
@@ -842,6 +1152,12 @@ test('queries immutable lint and test snapshots with paging, diffs, and previews
         arguments: { limit: 1 },
       });
       expect(snapshots.isError).not.toBe(true);
+      expect(snapshots.content).toEqual([
+        {
+          type: 'text',
+          text: 'Rstack result: total=2, returned=1. See structuredContent for complete data.',
+        },
+      ]);
       expect(snapshots.structuredContent).toMatchObject({
         total: 2,
         items: [{ snapshotId: 'snap_test', producer: 'rstest' }],
@@ -871,6 +1187,12 @@ test('queries immutable lint and test snapshots with paging, diffs, and previews
         arguments: { snapshotId: lintSnapshot.snapshotId, severity: 'error' },
       });
       expect(diagnostics.isError).not.toBe(true);
+      expect(diagnostics.content).toEqual([
+        {
+          type: 'text',
+          text: 'Rstack result: total=1, returned=1. See structuredContent for complete data.',
+        },
+      ]);
       expect(diagnostics.structuredContent).toMatchObject({
         snapshotId: lintSnapshot.snapshotId,
         total: 1,
@@ -882,6 +1204,12 @@ test('queries immutable lint and test snapshots with paging, diffs, and previews
         arguments: { snapshotId: testSnapshot.snapshotId, status: 'pass' },
       });
       expect(results.isError).not.toBe(true);
+      expect(results.content).toEqual([
+        {
+          type: 'text',
+          text: 'Rstack result: total=1, returned=1. See structuredContent for complete data.',
+        },
+      ]);
       expect(results.structuredContent).toMatchObject({
         snapshotId: testSnapshot.snapshotId,
         total: 1,
@@ -897,6 +1225,12 @@ test('queries immutable lint and test snapshots with paging, diffs, and previews
         },
       });
       expect(incompatible.isError).not.toBe(true);
+      expect(incompatible.content).toEqual([
+        {
+          type: 'text',
+          text: 'Rstack result: compatible=false. See structuredContent for complete data.',
+        },
+      ]);
       expect(incompatible.structuredContent).toEqual({
         compatible: false,
         reasons: ['context', 'facet', 'producer'],
@@ -910,6 +1244,12 @@ test('queries immutable lint and test snapshots with paging, diffs, and previews
         },
       });
       expect(preview.isError).not.toBe(true);
+      expect(preview.content).toEqual([
+        {
+          type: 'text',
+          text: 'Rstack result: available=false. See structuredContent for complete data.',
+        },
+      ]);
       expect(preview.structuredContent).toEqual({
         available: false,
         reason: 'not-captured',
@@ -950,6 +1290,12 @@ test('runs explicit captures through injected producers and returns ordinary MCP
           },
         });
         expect(lint.structuredContent).toEqual(lintResult);
+        expect(lint.content).toEqual([
+          {
+            type: 'text',
+            text: 'Rstack result: status=pass, files=1, errors=0, warnings=0. See structuredContent for complete data.',
+          },
+        ]);
         expect(captureRequests).toEqual([
           {
             mode: 'files',

@@ -30,7 +30,8 @@ type ArtifactQuery = {
   dataFile: string;
 };
 
-type UnusedCandidatesQuery = ArtifactQuery & { limit?: number };
+type UnusedCandidatesQuery = ArtifactQuery & { limit?: number; cursor?: string };
+type PaginatedUnusedCandidatesResult = UnusedCandidatesResult & { nextCursor?: string };
 type ExplanationQuery = ArtifactQuery & { module: string; maxDepth?: number };
 type ImpactQuery = ExplanationQuery & {
   direction?: 'dependencies' | 'dependents';
@@ -151,6 +152,20 @@ const validateLimit = (limit: number | undefined): number => {
     throw new Error('limit must be an integer from 1 to 100.');
   }
   return resolved;
+};
+
+const decodeUnusedCandidatesCursor = (cursor: string | undefined): number => {
+  if (cursor === undefined) return 0;
+  const value = Buffer.from(cursor, 'base64url').toString('utf8');
+  const offset = Number(value);
+  if (
+    !/^(?:0|[1-9]\d*)$/u.test(value) ||
+    Buffer.from(value).toString('base64url') !== cursor ||
+    !Number.isSafeInteger(offset)
+  ) {
+    throw new Error('Invalid unused candidates cursor.');
+  }
+  return offset;
 };
 
 const validateMaxDepth = (maxDepth: number | undefined): number => {
@@ -401,8 +416,9 @@ const readProductRoots = async (
 const findUnusedCandidates = async (
   workspaceRoot: string,
   query: UnusedCandidatesQuery,
-): Promise<UnusedCandidatesResult> => {
+): Promise<PaginatedUnusedCandidatesResult> => {
   const limit = validateLimit(query.limit);
+  const offset = decodeUnusedCandidatesCursor(query.cursor);
   const { provenance, graph, product } = await loadAnalysis(workspaceRoot, query);
   if (!hasAuthoritativeGraph(graph)) {
     return {
@@ -433,7 +449,8 @@ const findUnusedCandidates = async (
       evidence: ['No path from selected roots in this artifact graph.'],
       bounds,
     }));
-  const returnedCandidates = candidates.slice(0, limit);
+  const returnedCandidates = candidates.slice(offset, offset + limit);
+  const nextOffset = offset + returnedCandidates.length;
 
   return {
     provenance,
@@ -448,8 +465,11 @@ const findUnusedCandidates = async (
       traversals.production.truncated ||
       traversals.contract.truncated ||
       traversals.conservative.truncated,
-    resultTruncated: candidates.length > returnedCandidates.length,
+    resultTruncated: nextOffset < candidates.length,
     candidates: returnedCandidates,
+    ...(nextOffset < candidates.length
+      ? { nextCursor: Buffer.from(String(nextOffset)).toString('base64url') }
+      : {}),
     bounds,
   };
 };

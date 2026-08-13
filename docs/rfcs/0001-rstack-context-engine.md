@@ -540,6 +540,43 @@ a human needs the richer visualization. A future presentation layer should be co
 a specific workflow cannot be expressed clearly through the current structured tools and report
 link.
 
+### Future phase: multi-axis usage evidence (deferred)
+
+A later phase may adapt Hawk's central idea: collect static compiler-graph fragments for production
+and non-production targets, then decide reachability only after those fragments are joined. Hawk's
+non-production graph shows what test and development targets import or reach; it is not runtime
+coverage and does not prove that a test or branch executed.
+
+Rstack should preserve the following independent evidence axes:
+
+| Axis                     | Question answered                                                    |
+| ------------------------ | -------------------------------------------------------------------- |
+| Production-reachable     | Can a selected product root reach this module or export?             |
+| Test-related/imported    | Does a selected test target relate to or import it?                  |
+| Executed/covered         | Did runtime coverage observe its statements, functions, or branches? |
+| Shipped/retained         | Did the emitted product contain or conservatively retain it?         |
+| Public-contract-required | Must a selected library or external contract continue to expose it?  |
+
+An absent or unknown result on one axis does not decide another. In particular, `not-covered` must
+never collapse to `dead`. This is an evidence-composition feature, not a security framework or a
+deletion oracle.
+
+Ownership stays upstream where the underlying facts are produced. Rstest owns instrumentation,
+coverage, related-test selection, watch-cycle events, and test-file attribution. Rspack and Rsdoctor
+own production and test module/export graphs plus product roots. Rstack owns immutable snapshots,
+exact identity and freshness joins, and the MCP and skill surfaces that explain the combined
+evidence; it should not duplicate those compiler graphs or test instrumentation.
+
+The lean delivery sequence is:
+
+1. Aggregate existing Istanbul evidence and the existing Rstest related-file CLI output into
+   immutable snapshots.
+2. Consume upstream Rstest test-file attribution and watch-cycle events when they are available.
+3. Join axes only when workspace, package, context, and exact input or graph digests match; otherwise
+   report the evidence separately with its freshness.
+
+This phase remains future work and does not add to or change the current 14-tool MCP contract.
+
 ## Deferred extensions
 
 The following are potential later work, not part of the implemented contract:
@@ -547,7 +584,7 @@ The following are potential later work, not part of the implemented contract:
 - supported Rsdoctor export-usage and local-binding data;
 - direct standalone Rspack instrumentation;
 - passive Rslint/Rstest sessions and watch-cycle control;
-- related-test and coverage evidence;
+- the multi-axis test, coverage, shipment, and contract evidence described above;
 - build, lint, or test subscriptions;
 - CI artifact import/export and performance gates;
 - source mutation and apply/verify flows;

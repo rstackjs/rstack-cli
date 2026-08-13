@@ -259,6 +259,88 @@ test('normalizes failures, retries, skipped and todo cases', async () => {
   });
 });
 
+test('captures file-level failures without inventing test cases', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const testPath = path.join(workspaceRoot, 'tests', 'broken.test.ts');
+    await mkdir(path.dirname(testPath), { recursive: true });
+    await writeFile(testPath, 'invalid');
+    const calls: unknown[] = [];
+    const result = createResult({
+      ok: false,
+      files: [
+        {
+          project: 'node',
+          testPath,
+          name: 'broken.test.ts',
+          status: 'fail',
+          errors: [
+            {
+              name: 'ImportError',
+              message: 'could not import setup module',
+              stack: 'import stack',
+            },
+          ],
+          results: [],
+        },
+      ],
+      stats: {
+        tests: { total: 0, passed: 0, failed: 0, skipped: 0, todo: 0 },
+        files: { total: 1, failed: 1 },
+      },
+    });
+
+    const capture = await captureTestSnapshot(
+      workspaceRoot,
+      {},
+      createDependencies(result, calls, 'file-error'),
+    );
+
+    expect(
+      (await readContextSnapshotById(workspaceRoot, capture.snapshotId))?.snapshot.facets.test,
+    ).toMatchObject({
+      files: [
+        {
+          project: 'node',
+          path: 'tests/broken.test.ts',
+          status: 'fail',
+          errors: [
+            {
+              name: 'ImportError',
+              message: 'could not import setup module',
+              stack: 'import stack',
+            },
+          ],
+          tests: [],
+        },
+      ],
+    });
+    await expect(
+      listDiagnostics(workspaceRoot, { snapshotId: capture.snapshotId }),
+    ).resolves.toMatchObject({
+      total: 1,
+      items: [
+        {
+          producer: 'rstest',
+          project: 'node',
+          path: 'tests/broken.test.ts',
+          severity: 'error',
+          message: 'could not import setup module',
+        },
+      ],
+    });
+    await expect(listTestResults(workspaceRoot, {})).resolves.toEqual({
+      producer: 'rstest',
+      contextId: capture.contextId,
+      snapshotId: capture.snapshotId,
+      observedAt: '2026-08-12T08:00:00.000Z',
+      completeness: { test: 'complete' },
+      freshness: { state: 'partial', changedPaths: [] },
+      total: 0,
+      items: [],
+    });
+  });
+});
+
 test('records unhandled Rstest errors as an error snapshot', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     const calls: unknown[] = [];
@@ -407,7 +489,11 @@ test('pages project-qualified results in deterministic identity order', async ()
       limit: 2,
     });
     expect(first).toEqual({
+      producer: 'rstest',
+      contextId: capture.contextId,
       snapshotId: capture.snapshotId,
+      observedAt: '2026-08-12T08:00:00.000Z',
+      completeness: { test: 'complete' },
       freshness: { state: 'partial', changedPaths: [] },
       total: 3,
       items: [
@@ -434,7 +520,11 @@ test('pages project-qualified results in deterministic identity order', async ()
         cursor: first.nextCursor,
       }),
     ).resolves.toEqual({
+      producer: 'rstest',
+      contextId: capture.contextId,
       snapshotId: capture.snapshotId,
+      observedAt: '2026-08-12T08:00:00.000Z',
+      completeness: { test: 'complete' },
       freshness: { state: 'partial', changedPaths: [] },
       total: 3,
       items: [

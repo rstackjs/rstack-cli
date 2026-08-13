@@ -256,6 +256,31 @@ test('falls back to the PATH rs executable with inherited stdio and exit status'
   }
 });
 
+test('reports how to install rstack when no MCP launcher is available', async () => {
+  const workspace = await mkdtemp(path.join(os.tmpdir(), 'rstack-plugin-missing-launch-'));
+
+  try {
+    for (const [host, configurationPath] of [
+      ['codex', 'plugins/rstack-codex/.mcp.json'],
+      ['claude', 'plugins/rstack-claude/.mcp.json'],
+    ] as const) {
+      const configuration = await readJson<McpConfiguration>(configurationPath);
+
+      await expect(
+        runConfiguredMcpServer(configuration, workspace, path.join(workspace, `${host}.json`)),
+      ).resolves.toEqual({
+        code: 1,
+        signal: null,
+        stdout: '',
+        stderr:
+          'Unable to launch Rstack MCP server: install rstack in this workspace or put rs on PATH.\n',
+      });
+    }
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
 test('registers each bundle in its repository marketplace', async () => {
   const codexMarketplace = await readJson<CodexMarketplace>('.agents/plugins/marketplace.json');
   const claudeMarketplace = await readJson<ClaudeMarketplace>('.claude-plugin/marketplace.json');

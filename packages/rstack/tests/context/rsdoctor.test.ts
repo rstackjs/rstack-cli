@@ -8,6 +8,37 @@ import { analyzeRsdoctorArtifact, listRsdoctorToolNames } from '../../src/contex
 
 const validDataFile = 'artifacts/rsdoctor-data.json';
 
+const artifactSectionNames = [
+  'errors',
+  'configs',
+  'summary',
+  'resolver',
+  'loader',
+  'moduleGraph',
+  'chunkGraph',
+  'moduleCodeMap',
+  'plugin',
+  'packageGraph',
+  'treeShaking',
+  'otherReports',
+] as const;
+
+const createArtifactMetadata = (
+  overrides: Record<string, { status: 'collected' } | { status: 'omitted'; reason: string }> = {},
+) => ({
+  schemaVersion: 1,
+  producer: { name: '@rsdoctor/core', version: '1.2.3' },
+  output: { mode: 'normal' },
+  build: {
+    id: 'test-build',
+    root: '/test/project',
+    compiler: { name: 'rspack' },
+  },
+  sections: Object.fromEntries(
+    artifactSectionNames.map((name) => [name, overrides[name] ?? { status: 'collected' }]),
+  ),
+});
+
 const withTempWorkspace = async (
   callback: (workspaceRoot: string) => Promise<void>,
 ): Promise<void> => {
@@ -188,7 +219,80 @@ test('runs a real Rsdoctor catalog tool against a valid artifact fixture', async
         description: 'Get build summary with costs (build time analysis).',
         ok: true,
       },
+      sectionEvidence: [],
       toolName: 'build_summary',
     });
+  });
+});
+
+test('maps every Rsdoctor catalog tool to its required artifact sections', async () => {
+  const cases = [
+    ['build_summary', ['summary']],
+    ['bundle_optimize', ['chunkGraph', 'errors', 'packageGraph']],
+    ['chunks_list', ['chunkGraph']],
+    ['errors_list', ['errors']],
+    ['packages_direct_dependencies', ['packageGraph']],
+    ['packages_duplicates', ['errors']],
+    ['packages_similar', ['packageGraph']],
+    ['tree_shaking_retained_modules', ['chunkGraph', 'moduleGraph', 'packageGraph']],
+    ['tree_shaking_side_effects', ['moduleGraph']],
+    ['tree_shaking_summary', ['errors']],
+  ] as const;
+
+  await withTempWorkspace(async (workspaceRoot) => {
+    for (const [toolName, sections] of cases) {
+      const dataFile = `artifacts/${toolName}.json`;
+      await writeArtifact(
+        workspaceRoot,
+        dataFile,
+        JSON.stringify({ data: {}, metadata: createArtifactMetadata() }),
+      );
+
+      const analysis = await analyzeRsdoctorArtifact(workspaceRoot, {
+        dataFile,
+        toolName,
+      });
+
+      expect(analysis.sectionEvidence).toEqual(
+        sections.map((section) => ({ section, status: 'collected' })),
+      );
+    }
+  });
+});
+
+test('distinguishes collected empty data from an omitted artifact section', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const collectedDataFile = 'artifacts/collected.json';
+    const omittedDataFile = 'artifacts/omitted.json';
+    await writeArtifact(
+      workspaceRoot,
+      collectedDataFile,
+      JSON.stringify({ data: {}, metadata: createArtifactMetadata() }),
+    );
+    await writeArtifact(
+      workspaceRoot,
+      omittedDataFile,
+      JSON.stringify({
+        data: {},
+        metadata: createArtifactMetadata({
+          summary: { status: 'omitted', reason: 'output-mode' },
+        }),
+      }),
+    );
+
+    const collected = await analyzeRsdoctorArtifact(workspaceRoot, {
+      dataFile: collectedDataFile,
+      toolName: 'build_summary',
+    });
+    const omitted = await analyzeRsdoctorArtifact(workspaceRoot, {
+      dataFile: omittedDataFile,
+      toolName: 'build_summary',
+    });
+
+    expect(collected.result).toEqual(omitted.result);
+    expect(collected.sectionEvidence).toEqual([{ section: 'summary', status: 'collected' }]);
+    expect(omitted.sectionEvidence).toEqual([
+      { reason: 'output-mode', section: 'summary', status: 'omitted' },
+    ]);
   });
 });

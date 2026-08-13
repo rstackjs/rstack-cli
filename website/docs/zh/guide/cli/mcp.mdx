@@ -14,6 +14,8 @@ rs mcp
 
 服务器通过标准输入和输出通信，因此 stdout 仅用于 MCP 协议消息。它会根据命令的启动路径解析检出目录，并公开十四个工具：`project_status`、`product_roots`、`unused_candidates`、`dead_code_explain`、`module_impact`、`snapshot_list`、`diagnostics_list`、`test_results`、`snapshot_diff`、`lint_fix_preview`、`lint_snapshot`、`test_snapshot`、`rsdoctor_analyze` 和 `report_link`。
 
+工具成功响应时，`content` 会保持紧凑以便用于对话。完整且具有权威性的结果位于 `structuredContent` 中。
+
 ## 捕获构建上下文 \{#capture-build-context}
 
 在 `rstack.config.ts` 中启用元数据捕获：
@@ -70,10 +72,10 @@ Rsbuild 只会为该命令加载已安装的收集器。构建会在检出目录
 
 ### 产物范围内的模块分析 \{#artifact-scoped-module-analysis}
 
-四个模块分析工具都需要 `project_status` 返回的 `contextId` 和明确指定的 Rsdoctor `dataFile`。结果来源信息使用 `artifactBinding: "explicit-unverified"`：所选构建观测可以提供有用的上下文，但 Rstack 不会声称指定产物来自该次运行。
+四个模块分析工具都需要 `project_status` 返回的 `contextId` 和明确指定的 Rsdoctor `dataFile`。当产物包含有效的 Rsdoctor v1 元数据且标识匹配时，Rstack 可以将产物与所选构建观测绑定。没有该元数据的旧版产物仍使用 `artifactBinding: "explicit-unverified"`：所选构建观测可以提供有用的上下文，但 Rstack 不会声称指定产物来自该次运行。
 
 - `product_roots` 返回应用入口根、精确匹配的库包目标和保守的优化器根，同时包含图问题和分析边界。
-- `unused_candidates` 返回在该产物图中不存在从所选根出发的已观测路径的模块。可选的 `limit` 必须是 1 到 100 的整数，默认值为 50。
+- `unused_candidates` 返回在该产物图中不存在从所选根出发的已观测路径的模块。可选的 `limit` 必须是 1 到 100 的整数，默认值为 50。当一页包含 `nextCursor` 时，使用相同的 `contextId`、`dataFile` 和 `limit` 将其传回，以按确定性结果顺序继续读取。
 - `dead_code_explain` 接受非空的精确模块 ID、路径、名称或唯一的路径后缀。可选的 `maxDepth` 必须是 1 到 16 的整数，默认值为 8。它会报告模块是可达、被保守保留、不可达模块候选，还是因为证据不完整而处于未知状态。
 - `module_impact` 接受相同的模块选择器。`direction` 可为 `dependencies` 或 `dependents`，默认值为 `dependents`；`maxDepth` 同样是 1 到 16，默认值为 8。它返回有界的已观测模块、到达的产品根、受影响的 chunk ID 和截断状态。
 
@@ -108,7 +110,11 @@ Rslint 类型检查和计时收集仍是明确的 CLI 工作流，例如 `rs lin
 
 ### Rsdoctor 分析 \{#rsdoctor-analysis}
 
-`rsdoctor_analyze` 接受明确的 `dataFile`、`toolName` 和可选的工具输入。数据文件必须包含 JSON，且其中的 `data` 字段必须是对象；输入必须符合所选 Rsdoctor 工具的 schema。Rstack 会直接返回 Rsdoctor Agent CLI 的 JSON 结果。支持的工具名称如下：
+`rsdoctor_analyze` 接受明确的 `dataFile`、`toolName` 和可选的工具输入。数据文件必须包含 JSON，且其中的 `data` 字段必须是对象；输入必须符合所选 Rsdoctor 工具的 schema。紧凑文本会报告结果的数据状态以及任何不可用的必需 section；完整结果位于 `structuredContent` 中。
+
+当存在有效的 Rsdoctor v1 元数据时，`structuredContent.sectionEvidence` 会将所选工具所需的每个 section 报告为 `collected` 或 `omitted`。被省略的条目会包含原因，并表示该 section 对此次分析不可用，因此不能将空结果或零值形态的结果解释为确认的零。旧版产物仍会被接受，但未经验证；它们返回空的 `sectionEvidence` 数组，并且不提供 section 可用性状态。
+
+支持的工具名称如下：
 
 - `build_summary`
 - `bundle_optimize`

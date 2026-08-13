@@ -442,7 +442,7 @@ test('returns only artifact-scoped unreachable module candidates', async () => {
   });
 });
 
-test('applies candidate result limits separately from analysis truncation', async () => {
+test('paginates deterministic candidate results separately from analysis truncation', async () => {
   await withFixtureWorkspace('application', async (workspaceRoot) => {
     const context = {
       contextId: 'ctx_app',
@@ -466,17 +466,40 @@ test('applies candidate result limits separately from analysis truncation', asyn
       }),
     );
 
-    const result = await findUnusedCandidates(workspaceRoot, {
+    const firstPage = await findUnusedCandidates(workspaceRoot, {
       contextId: context.contextId,
       dataFile: 'rsdoctor-data.json',
       limit: 1,
     });
 
-    expect(result.total).toBe(2);
-    expect(result.returned).toBe(1);
-    expect(result.resultTruncated).toBe(true);
-    expect(result.analysisTruncated).toBe(false);
-    expect(result.candidates[0]?.subject.id).toBe('2');
+    expect(firstPage.total).toBe(2);
+    expect(firstPage.returned).toBe(1);
+    expect(firstPage.resultTruncated).toBe(true);
+    expect(firstPage.analysisTruncated).toBe(false);
+    expect(firstPage.candidates[0]?.subject.id).toBe('2');
+    expect(firstPage.nextCursor).toEqual(expect.any(String));
+    expect(firstPage.nextCursor).not.toBe('1');
+
+    const repeatedFirstPage = await findUnusedCandidates(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+      limit: 1,
+    });
+    expect(repeatedFirstPage.nextCursor).toBe(firstPage.nextCursor);
+
+    const secondPage = await findUnusedCandidates(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+      limit: 1,
+      cursor: firstPage.nextCursor,
+    });
+
+    expect(secondPage.total).toBe(2);
+    expect(secondPage.returned).toBe(1);
+    expect(secondPage.resultTruncated).toBe(false);
+    expect(secondPage.analysisTruncated).toBe(false);
+    expect(secondPage.candidates[0]?.subject.id).toBe('3');
+    expect(secondPage).not.toHaveProperty('nextCursor');
   });
 });
 

@@ -153,6 +153,8 @@ const isTestFile = (value: unknown): boolean =>
   isRecordPath(value.path) &&
   testStatuses.has(value.status as string) &&
   (value.durationMs === undefined || isNonNegativeNumber(value.durationMs)) &&
+  (value.errors === undefined ||
+    (Array.isArray(value.errors) && value.errors.every(isTestError))) &&
   Array.isArray(value.tests) &&
   value.tests.every(isTestCase);
 

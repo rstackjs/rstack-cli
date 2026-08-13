@@ -45,7 +45,11 @@ type TestResultsQuery = {
 };
 
 type TestResultPage = {
+  producer: 'rstest';
+  contextId: string;
   snapshotId: string;
+  observedAt: string;
+  completeness: ContextSnapshot['completeness'];
   freshness: ContextFreshness;
   total: number;
   items: TestCaseRecord[];
@@ -120,6 +124,7 @@ const normalizeTestFile = (
   path: toWorkspacePath(workspaceRoot, result.testPath),
   status: result.status,
   ...(result.duration === undefined ? {} : { durationMs: result.duration }),
+  ...(result.errors === undefined ? {} : { errors: result.errors.map(normalizeError) }),
   tests: result.results
     .map((testResult) => normalizeTestCase(workspaceRoot, testResult))
     .sort(compareTestCases),
@@ -297,7 +302,11 @@ const listTestResults = async (
   const pageItems = items.slice(offset, offset + limit);
   const nextOffset = offset + pageItems.length;
   return {
+    producer: 'rstest',
+    contextId: stored.snapshot.contextId,
     snapshotId: stored.snapshot.snapshotId,
+    observedAt: stored.snapshot.observedAt,
+    completeness: stored.snapshot.completeness,
     freshness: await assessSnapshotFreshness(workspaceRoot, stored.snapshot),
     total: items.length,
     items: pageItems,

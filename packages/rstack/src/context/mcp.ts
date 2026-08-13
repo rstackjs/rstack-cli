@@ -11,7 +11,7 @@ import {
   traceModuleImpact,
 } from './queries.ts';
 import { validateLintFacet } from './records.ts';
-import { analyzeRsdoctorArtifact } from './rsdoctor.ts';
+import { analyzeRsdoctorArtifact, listRsdoctorToolNames } from './rsdoctor.ts';
 import { resolveRsdoctorReport } from './report.ts';
 import { assessSnapshotFreshness } from './source.ts';
 import { readProjectStatus } from './status.ts';
@@ -23,49 +23,77 @@ declare const RSTACK_VERSION: string;
 const renderProjectStatus = (status: Awaited<ReturnType<typeof readProjectStatus>>): string =>
   `Rstack project status: ${status.contexts.length} current context${status.contexts.length === 1 ? '' : 's'} (${status.contexts.filter(({ state }) => state === 'ready').length} ready, ${status.contexts.filter(({ state }) => state === 'pending').length} pending); ${status.issues.length} context-store/read issue${status.issues.length === 1 ? '' : 's'}. See structuredContent for details.`;
 
+const contextIdInput = z.string().min(1).describe('Context ID returned by project_status.');
+const rsdoctorDataFileInput = z
+  .string()
+  .min(1)
+  .describe('Checkout-relative path to an explicit Rsdoctor JSON artifact.');
+const moduleSelectorInput = z
+  .string()
+  .min(1)
+  .describe('Exact module ID, path, name, or unique path suffix.');
+const paginationCursorInput = z
+  .string()
+  .min(1)
+  .describe(
+    'Opaque pagination cursor returned by the previous response. Reuse the same filters when continuing.',
+  );
+const packageRootInput = z
+  .string()
+  .min(1)
+  .describe('Checkout-relative package directory; defaults to the checkout root.');
+const configPathInput = z
+  .string()
+  .min(1)
+  .describe('Checkout-relative Rstack config path; defaults to ordinary discovery in packageRoot.');
+const rsdoctorToolNameInput = z
+  .enum(listRsdoctorToolNames())
+  .describe('Supported Rsdoctor catalog tool to run.');
+
 const rsdoctorAnalyzeInput = z
   .object({
-    dataFile: z.string().min(1),
+    dataFile: rsdoctorDataFileInput,
     input: z.record(z.string(), z.unknown()).optional(),
-    toolName: z.string().min(1),
+    toolName: rsdoctorToolNameInput,
   })
   .strict();
 
 const productRootsInput = z
   .object({
-    contextId: z.string().min(1),
-    dataFile: z.string().min(1),
+    contextId: contextIdInput,
+    dataFile: rsdoctorDataFileInput,
   })
   .strict();
 
 const unusedCandidatesInput = z
   .object({
-    contextId: z.string().min(1),
-    dataFile: z.string().min(1),
+    contextId: contextIdInput,
+    dataFile: rsdoctorDataFileInput,
     limit: z.number().int().min(1).max(100).optional(),
+    cursor: paginationCursorInput.optional(),
   })
   .strict();
 
 const deadCodeExplainInput = z
   .object({
-    contextId: z.string().min(1),
-    dataFile: z.string().min(1),
-    module: z.string().min(1),
+    contextId: contextIdInput,
+    dataFile: rsdoctorDataFileInput,
+    module: moduleSelectorInput,
     maxDepth: z.number().int().min(1).max(16).optional(),
   })
   .strict();
 
 const moduleImpactInput = z
   .object({
-    contextId: z.string().min(1),
-    dataFile: z.string().min(1),
-    module: z.string().min(1),
+    contextId: contextIdInput,
+    dataFile: rsdoctorDataFileInput,
+    module: moduleSelectorInput,
     direction: z.enum(['dependencies', 'dependents']).optional(),
     maxDepth: z.number().int().min(1).max(16).optional(),
   })
   .strict();
 
-const reportLinkInput = z.object({ dataFile: z.string().min(1) }).strict();
+const reportLinkInput = z.object({ dataFile: rsdoctorDataFileInput }).strict();
 
 const producer = z.enum(['rsbuild', 'rspack', 'rslib', 'rstest', 'rslint', 'rsdoctor']);
 const pageLimit = z.number().int().min(1).max(200).default(50);
@@ -73,9 +101,9 @@ const pageLimit = z.number().int().min(1).max(200).default(50);
 const snapshotListInput = z
   .object({
     producer: producer.optional(),
-    contextId: z.string().min(1).optional(),
+    contextId: contextIdInput.optional(),
     limit: pageLimit,
-    cursor: z.string().min(1).optional(),
+    cursor: paginationCursorInput.optional(),
   })
   .strict();
 
@@ -87,7 +115,7 @@ const diagnosticsListInput = z
     severity: z.enum(['error', 'warning']).optional(),
     ruleId: z.string().optional(),
     limit: pageLimit,
-    cursor: z.string().min(1).optional(),
+    cursor: paginationCursorInput.optional(),
   })
   .strict();
 
@@ -98,7 +126,7 @@ const testResultsInput = z
     pathPrefix: z.string().optional(),
     status: z.enum(['skip', 'pass', 'fail', 'todo']).optional(),
     limit: pageLimit,
-    cursor: z.string().min(1).optional(),
+    cursor: paginationCursorInput.optional(),
   })
   .strict();
 
@@ -120,8 +148,8 @@ const lintSnapshotRequestInput = z.discriminatedUnion('mode', [
       mode: z.literal('files'),
       patterns: z.array(z.string().min(1)).default(['.']),
       includeFixPreview: z.boolean().default(false),
-      packageRoot: z.string().min(1).optional(),
-      configPath: z.string().min(1).optional(),
+      packageRoot: packageRootInput.optional(),
+      configPath: configPathInput.optional(),
     })
     .strict(),
   z
@@ -130,21 +158,30 @@ const lintSnapshotRequestInput = z.discriminatedUnion('mode', [
       code: z.string(),
       filePath: z.string().min(1),
       includeFixPreview: z.boolean().default(false),
-      packageRoot: z.string().min(1).optional(),
-      configPath: z.string().min(1).optional(),
+      packageRoot: packageRootInput.optional(),
+      configPath: configPathInput.optional(),
     })
     .strict(),
 ]);
 
 const lintSnapshotInput = z
   .object({
-    mode: z.enum(['files', 'text']),
-    patterns: z.array(z.string().min(1)).optional(),
-    code: z.string().optional(),
-    filePath: z.string().min(1).optional(),
+    mode: z
+      .enum(['files', 'text'])
+      .describe('Lint files selected by patterns, or one text buffer supplied in code.'),
+    patterns: z
+      .array(z.string().min(1))
+      .describe('File patterns used only when mode is files; defaults to ["."].')
+      .optional(),
+    code: z.string().describe('Source text required when mode is text.').optional(),
+    filePath: z
+      .string()
+      .min(1)
+      .describe('Checkout-relative virtual source path required when mode is text.')
+      .optional(),
     includeFixPreview: z.boolean().optional(),
-    packageRoot: z.string().min(1).optional(),
-    configPath: z.string().min(1).optional(),
+    packageRoot: packageRootInput.optional(),
+    configPath: configPathInput.optional(),
   })
   .strict();
 
@@ -152,8 +189,8 @@ const testSnapshotInput = z
   .object({
     files: z.array(z.string().min(1)).optional(),
     testNamePattern: z.string().min(1).optional(),
-    packageRoot: z.string().min(1).optional(),
-    configPath: z.string().min(1).optional(),
+    packageRoot: packageRootInput.optional(),
+    configPath: configPathInput.optional(),
   })
   .strict();
 
@@ -166,6 +203,106 @@ const toMcpError = (error: unknown) => ({
   ],
   isError: true,
 });
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const formatStructuredResult = (result: unknown): string => {
+  if (!isRecord(result)) return 'Rstack result is available in structuredContent.';
+
+  const details: string[] = [];
+  const addDetail = (key: string, value: unknown): void => {
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      details.push(`${key}=${String(value)}`);
+    }
+  };
+
+  addDetail('compatible', result.compatible);
+  addDetail('available', result.available);
+  addDetail('status', result.status);
+  addDetail('classification', result.classification);
+  addDetail('total', result.total);
+  addDetail('returned', result.returned);
+  if (result.returned === undefined && Array.isArray(result.items)) {
+    addDetail('returned', result.items.length);
+  }
+  addDetail('totalVisited', result.totalVisited);
+
+  if (isRecord(result.graph)) {
+    addDetail('moduleCount', result.graph.moduleCount);
+    addDetail('edgeCount', result.graph.edgeCount);
+  }
+
+  if (isRecord(result.summary)) {
+    for (const key of [
+      'files',
+      'tests',
+      'passed',
+      'failed',
+      'errors',
+      'warnings',
+      'added',
+      'removed',
+      'changed',
+    ]) {
+      addDetail(key, result.summary[key]);
+    }
+  }
+
+  return details.length === 0
+    ? 'Rstack result is available in structuredContent.'
+    : `Rstack result: ${details.join(', ')}. See structuredContent for complete data.`;
+};
+
+const toStructuredMcpResult = <Result extends object>(result: Result) => ({
+  content: [{ type: 'text' as const, text: formatStructuredResult(result) }],
+  structuredContent: result,
+});
+
+const isLiteralEmpty = (value: unknown): boolean =>
+  value === '' ||
+  (Array.isArray(value) && value.length === 0) ||
+  (isRecord(value) && Object.keys(value).length === 0);
+
+const isRecursivelyZeroShaped = (value: unknown): boolean => {
+  if (value === null || value === '' || value === 0) return true;
+  if (Array.isArray(value)) return value.every(isRecursivelyZeroShaped);
+  return isRecord(value) && Object.values(value).every(isRecursivelyZeroShaped);
+};
+
+const findUnavailableSections = (value: unknown): string[] => {
+  if (!isRecord(value) || !Array.isArray(value.sectionEvidence)) return [];
+  return value.sectionEvidence
+    .flatMap((section) => {
+      if (
+        !isRecord(section) ||
+        typeof section.section !== 'string' ||
+        (section.status !== 'omitted' && section.status !== 'unavailable')
+      ) {
+        return [];
+      }
+      const reason = typeof section.reason === 'string' ? `: ${section.reason}` : '';
+      return [`${section.section} (${section.status}${reason})`];
+    })
+    .sort();
+};
+
+const formatRsdoctorAnalysis = (toolName: string, analysis: unknown, data: unknown): string => {
+  const dataState =
+    data === null
+      ? 'null data'
+      : isLiteralEmpty(data)
+        ? 'literal empty data'
+        : isRecursivelyZeroShaped(data)
+          ? 'recursively zero-shaped data'
+          : 'data present';
+  const unavailableSections = findUnavailableSections(analysis);
+  const sectionEvidence =
+    unavailableSections.length === 0
+      ? ''
+      : ` Unavailable sections: ${unavailableSections.join(', ')}.`;
+  return `Rsdoctor ${toolName} analysis returned ${dataState}.${sectionEvidence}`;
+};
 
 type ContextMcpDependencies = {
   analyzeRsdoctorArtifact?: typeof analyzeRsdoctorArtifact;
@@ -251,7 +388,7 @@ const createContextMcpServer = (
     {
       title: 'Rstack context status',
       description:
-        'Return the current checkout-local Rstack row for each context and its latest completed snapshot.',
+        'List all recorded checkout-local Rstack contexts and the latest completed build, lint, or test snapshot for each context.',
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -285,10 +422,7 @@ const createContextMcpServer = (
           contextId,
           dataFile,
         });
-        return {
-          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
-          structuredContent: result,
-        };
+        return toStructuredMcpResult(result);
       } catch (error) {
         return toMcpError(error);
       }
@@ -308,17 +442,15 @@ const createContextMcpServer = (
         openWorldHint: false,
       },
     },
-    async ({ contextId, dataFile, limit }) => {
+    async ({ contextId, dataFile, limit, cursor }) => {
       try {
         const result = await findUnusedCandidates(workspaceRoot, {
           contextId,
           dataFile,
           limit,
+          cursor,
         });
-        return {
-          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
-          structuredContent: result,
-        };
+        return toStructuredMcpResult(result);
       } catch (error) {
         return toMcpError(error);
       }
@@ -346,10 +478,7 @@ const createContextMcpServer = (
           module,
           maxDepth,
         });
-        return {
-          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
-          structuredContent: result,
-        };
+        return toStructuredMcpResult(result);
       } catch (error) {
         return toMcpError(error);
       }
@@ -378,10 +507,7 @@ const createContextMcpServer = (
           direction,
           maxDepth,
         });
-        return {
-          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
-          structuredContent: result,
-        };
+        return toStructuredMcpResult(result);
       } catch (error) {
         return toMcpError(error);
       }
@@ -392,17 +518,15 @@ const createContextMcpServer = (
     'snapshot_list',
     {
       title: 'List context snapshots',
-      description: 'List completed immutable context snapshots with producer-specific freshness.',
+      description:
+        'List completed immutable context snapshots newest-first, optionally filtered by producer or context.',
       inputSchema: snapshotListInput,
       annotations: readOnlyAnnotations,
     },
     async (input) => {
       try {
         const result = await listSnapshots(workspaceRoot, input);
-        return {
-          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
-          structuredContent: result,
-        };
+        return toStructuredMcpResult(result);
       } catch (error) {
         return toMcpError(error);
       }
@@ -413,17 +537,15 @@ const createContextMcpServer = (
     'diagnostics_list',
     {
       title: 'List snapshot diagnostics',
-      description: 'List deterministic Rslint or Rstest diagnostics from one completed snapshot.',
+      description:
+        'List deterministic Rslint or Rstest diagnostics, optionally filtered by completed snapshot, producer, path prefix, severity, or rule.',
       inputSchema: diagnosticsListInput,
       annotations: readOnlyAnnotations,
     },
     async (input) => {
       try {
         const result = await listDiagnostics(workspaceRoot, input);
-        return {
-          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
-          structuredContent: result,
-        };
+        return toStructuredMcpResult(result);
       } catch (error) {
         return toMcpError(error);
       }
@@ -434,17 +556,15 @@ const createContextMcpServer = (
     'test_results',
     {
       title: 'List snapshot test results',
-      description: 'List deterministic test cases from one completed Rstest snapshot.',
+      description:
+        'List deterministic test cases, optionally filtered by completed Rstest snapshot, project, path prefix, or status.',
       inputSchema: testResultsInput,
       annotations: readOnlyAnnotations,
     },
     async (input) => {
       try {
         const result = await listTestResults(workspaceRoot, input);
-        return {
-          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
-          structuredContent: result,
-        };
+        return toStructuredMcpResult(result);
       } catch (error) {
         return toMcpError(error);
       }
@@ -462,10 +582,7 @@ const createContextMcpServer = (
     async (input) => {
       try {
         const result = await diffContextSnapshots(workspaceRoot, input);
-        return {
-          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
-          structuredContent: result,
-        };
+        return toStructuredMcpResult(result);
       } catch (error) {
         return toMcpError(error);
       }
@@ -483,10 +600,7 @@ const createContextMcpServer = (
     async ({ snapshotId, path: filePath }) => {
       try {
         const result = await getLintFixPreview(workspaceRoot, snapshotId, filePath);
-        return {
-          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
-          structuredContent: result,
-        };
+        return toStructuredMcpResult(result);
       } catch (error) {
         return toMcpError(error);
       }
@@ -512,10 +626,7 @@ const createContextMcpServer = (
           workspaceRoot,
           request,
         );
-        return {
-          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
-          structuredContent: result,
-        };
+        return toStructuredMcpResult(result);
       } catch (error) {
         return toMcpError(error);
       }
@@ -540,10 +651,7 @@ const createContextMcpServer = (
           workspaceRoot,
           input as TestSnapshotRequest,
         );
-        return {
-          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
-          structuredContent: result,
-        };
+        return toStructuredMcpResult(result);
       } catch (error) {
         return toMcpError(error);
       }
@@ -579,21 +687,11 @@ const createContextMcpServer = (
           'data' in analysis.result
             ? analysis.result.data
             : analysis.result;
-        const dataState =
-          analysisData === null
-            ? 'null data'
-            : (Array.isArray(analysisData) && analysisData.length === 0) ||
-                (typeof analysisData === 'object' &&
-                  analysisData !== null &&
-                  Object.keys(analysisData).length === 0) ||
-                analysisData === ''
-              ? 'empty data'
-              : 'data present';
         return {
           content: [
             {
               type: 'text',
-              text: `Rsdoctor ${analysis.toolName} analysis returned ${dataState}.`,
+              text: formatRsdoctorAnalysis(analysis.toolName, analysis, analysisData),
             },
           ],
           structuredContent: analysis,

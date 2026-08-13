@@ -38,6 +38,16 @@ const artifactOmissionReasons = [
 ] as const;
 
 type RsdoctorToolName = (typeof supportedToolNames)[number];
+type RsdoctorArtifactSectionName = (typeof artifactSectionNames)[number];
+type RsdoctorArtifactOmissionReason = (typeof artifactOmissionReasons)[number];
+
+type RsdoctorSectionEvidence =
+  | { section: RsdoctorArtifactSectionName; status: 'collected' }
+  | {
+      section: RsdoctorArtifactSectionName;
+      status: 'omitted';
+      reason: RsdoctorArtifactOmissionReason;
+    };
 
 type RsdoctorToolDescriptor = {
   name: RsdoctorToolName;
@@ -55,6 +65,7 @@ type RsdoctorAnalysisResult = {
   toolName: string;
   dataFile: string;
   result: JsonValue;
+  sectionEvidence: RsdoctorSectionEvidence[];
 };
 
 type RsdoctorArtifactCompilationIdentity = {
@@ -78,7 +89,10 @@ type RsdoctorArtifactMetadata = {
     compiler: { name: string; type?: string; version?: string };
     compilers?: RsdoctorArtifactCompilerIdentity[];
   };
-  sections: Record<string, { status: 'collected' } | { status: 'omitted'; reason: string }>;
+  sections: Record<
+    string,
+    { status: 'collected' } | { status: 'omitted'; reason: RsdoctorArtifactOmissionReason }
+  >;
 };
 
 type RsdoctorArtifact = {
@@ -99,6 +113,22 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
 
 const isSupportedToolName = (name: string): name is RsdoctorToolName =>
   supportedToolNames.some((supportedName) => supportedName === name);
+
+const isArtifactOmissionReason = (reason: unknown): reason is RsdoctorArtifactOmissionReason =>
+  artifactOmissionReasons.some((supportedReason) => supportedReason === reason);
+
+const requiredSectionsByTool = {
+  build_summary: ['summary'],
+  bundle_optimize: ['chunkGraph', 'errors', 'packageGraph'],
+  chunks_list: ['chunkGraph'],
+  errors_list: ['errors'],
+  packages_direct_dependencies: ['packageGraph'],
+  packages_duplicates: ['errors'],
+  packages_similar: ['packageGraph'],
+  tree_shaking_retained_modules: ['chunkGraph', 'moduleGraph', 'packageGraph'],
+  tree_shaking_side_effects: ['moduleGraph'],
+  tree_shaking_summary: ['errors'],
+} as const satisfies Record<RsdoctorToolName, readonly RsdoctorArtifactSectionName[]>;
 
 let adapterPromise: Promise<RsdoctorAdapter> | undefined;
 
@@ -273,11 +303,8 @@ const getArtifactMetadata = (value: unknown): RsdoctorArtifactMetadata | undefin
     if (!isObject(state)) return undefined;
     if (state.status === 'collected') {
       sections[name] = { status: 'collected' };
-    } else if (
-      state.status === 'omitted' &&
-      artifactOmissionReasons.some((reason) => reason === state.reason)
-    ) {
-      sections[name] = { status: 'omitted', reason: String(state.reason) };
+    } else if (state.status === 'omitted' && isArtifactOmissionReason(state.reason)) {
+      sections[name] = { status: 'omitted', reason: state.reason };
     } else {
       return undefined;
     }
@@ -396,9 +423,17 @@ const analyzeRsdoctorArtifact = async (
     throw new Error('Rsdoctor analysis failed.');
   }
 
+  const metadata = artifact.metadata;
   return {
     dataFile: request.dataFile,
     result: result as JsonValue,
+    sectionEvidence:
+      metadata === undefined
+        ? []
+        : requiredSectionsByTool[request.toolName].map((section) => ({
+            section,
+            ...metadata.sections[section],
+          })),
     toolName: request.toolName,
   };
 };
@@ -415,4 +450,7 @@ export type {
   RsdoctorArtifact,
   RsdoctorArtifactCompilationIdentity,
   RsdoctorArtifactMetadata,
+  RsdoctorArtifactOmissionReason,
+  RsdoctorArtifactSectionName,
+  RsdoctorSectionEvidence,
 };

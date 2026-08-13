@@ -200,6 +200,20 @@ test('rejects malformed known facets and unpaired source input metadata', () => 
     }),
   ).toBeUndefined();
   expect(
+    validateTestFacet({
+      ...testFacet,
+      files: [
+        {
+          project: 'unit',
+          path: 'a.test.ts',
+          status: 'fail',
+          errors: [{ name: 'ImportError' }],
+          tests: [],
+        },
+      ],
+    }),
+  ).toBeUndefined();
+  expect(
     validateSnapshot({
       ...snapshot,
       source: { inputs: [{ path: 'src/index.ts', digest: 'not-a-digest' }] },

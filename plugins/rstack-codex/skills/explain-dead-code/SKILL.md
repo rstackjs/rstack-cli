@@ -6,16 +6,22 @@ description: Explain whether one Rstack artifact module is reachable, conservati
 # Explain dead code
 
 1. Call `project_status`. Select the context whose package root, product, environment, and target
-   match the user's build. If none exists, explain that a relevant Rstack build must publish a
-   context and stop; deduplicate repeated runs by `contextId`, and ask the user to choose only if
-   several distinct contexts match.
-2. Obtain the explicit Rsdoctor `dataFile` and module ID, exact path/name, or unique path suffix. If the artifact is missing, explain that the package needs `@rsdoctor/rspack-plugin` and an explicit `RSTACK_CONTEXT=1 RSDOCTOR=true RSDOCTOR_OUTPUT=json rs build` or `rs lib` run, then ask before any install or build.
-3. Call `dead_code_explain` with the selected `contextId`. Set `maxDepth` from 1 to 16 only when the
-   user needs a tighter or wider traversal.
-4. Lead with the returned classification: **reachable**, **preserved by a conservative root**,
+   match the user's build. Deduplicate repeated runs by `contextId`, and ask the user to choose only
+   if several distinct contexts match.
+2. Classify the requested subject. An artifact module selector is a module ID, exact module path or
+   name, or unique path suffix from the Rsdoctor artifact. For a local symbol such as a function,
+   class, or export, route the question to source-level lint, TypeScript, or static analysis.
+3. Obtain the explicit Rsdoctor `dataFile`. When the matching build context or artifact is missing,
+   identify the configured product and give its exact minimal capture command:
+   `RSTACK_CONTEXT=1 RSDOCTOR=true RSDOCTOR_OUTPUT=json rs build` for an application or
+   `RSTACK_CONTEXT=1 RSDOCTOR=true RSDOCTOR_OUTPUT=json rs lib` for a library. Explain that the
+   package needs `@rsdoctor/rspack-plugin`. Ask before running a capture or installation.
+4. Call `dead_code_explain` with the selected `contextId` and artifact module selector. Set
+   `maxDepth` from 1 to 16 only when the user needs a tighter or wider traversal.
+5. Lead with the returned classification: **reachable**, **preserved by a conservative root**,
    **unreachable module candidate**, or **insufficient evidence**.
-5. Show one shortest returned root-to-module path when present, naming its root kind and modules in order.
-6. Report every state axis: production reachability, public contract, shipped, and optimizer retention.
-7. Close with evidence, bounds, and provenance, including `artifactBinding` and build observation when available.
+6. Show one shortest returned root-to-module path when present, naming its root kind and modules in order.
+7. Report every state axis: production reachability, public contract, shipped, and optimizer retention.
+8. Close with evidence, bounds, and provenance, including `artifactBinding` and build observation when available.
 
 Do not infer local-symbol or export usage. Treat partial or truncated traversal as insufficient evidence, and describe all conclusions as limited to the explicit artifact graph.

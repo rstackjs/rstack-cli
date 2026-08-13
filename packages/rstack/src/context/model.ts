@@ -122,6 +122,7 @@ type TestFileRecord = {
   path: string;
   status: 'skip' | 'pass' | 'fail' | 'todo';
   durationMs?: number;
+  errors?: TestErrorRecord[];
   tests: TestCaseRecord[];
 };
 

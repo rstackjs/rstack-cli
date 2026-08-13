@@ -330,8 +330,16 @@ test('preserves duplicate lint diagnostics when only one occurrence is removed',
   ];
 
   const result = compare(
-    storedSnapshot({ snapshotId: 'snap_left', producer: 'rslint', facet: leftFacet }),
-    storedSnapshot({ snapshotId: 'snap_right', producer: 'rslint', facet: rightFacet }),
+    storedSnapshot({
+      snapshotId: 'snap_left',
+      producer: 'rslint',
+      facet: leftFacet,
+    }),
+    storedSnapshot({
+      snapshotId: 'snap_right',
+      producer: 'rslint',
+      facet: rightFacet,
+    }),
     'diagnostics',
   );
 
@@ -491,8 +499,16 @@ test('preserves duplicate test results when only one occurrence is removed', () 
   ];
 
   const result = compare(
-    storedSnapshot({ snapshotId: 'snap_left', producer: 'rstest', facet: leftFacet }),
-    storedSnapshot({ snapshotId: 'snap_right', producer: 'rstest', facet: rightFacet }),
+    storedSnapshot({
+      snapshotId: 'snap_left',
+      producer: 'rstest',
+      facet: leftFacet,
+    }),
+    storedSnapshot({
+      snapshotId: 'snap_right',
+      producer: 'rstest',
+      facet: rightFacet,
+    }),
     'tests',
   );
 
@@ -502,6 +518,66 @@ test('preserves duplicate test results when only one occurrence is removed', () 
     removed: [duplicate],
     changed: [],
     summary: { added: 0, removed: 1, changed: 0 },
+  });
+});
+
+test('diffs file-level test failures without inventing test cases', () => {
+  const leftFacet = emptyTestFacet();
+  leftFacet.files = [
+    {
+      project: 'unit',
+      path: 'broken.test.ts',
+      status: 'fail',
+      errors: [{ name: 'ImportError', message: 'could not import setup-a' }],
+      tests: [],
+    },
+  ];
+  const rightFacet = emptyTestFacet();
+  rightFacet.files = [
+    {
+      project: 'unit',
+      path: 'broken.test.ts',
+      status: 'fail',
+      errors: [{ name: 'ImportError', message: 'could not import setup-b' }],
+      tests: [],
+    },
+  ];
+
+  const result = compare(
+    storedSnapshot({
+      snapshotId: 'snap_left',
+      producer: 'rstest',
+      facet: leftFacet,
+    }),
+    storedSnapshot({
+      snapshotId: 'snap_right',
+      producer: 'rstest',
+      facet: rightFacet,
+    }),
+    'tests',
+  );
+
+  expect(result).toMatchObject({
+    compatible: true,
+    added: [],
+    removed: [],
+    changed: [
+      {
+        before: {
+          kind: 'file-error',
+          project: 'unit',
+          path: 'broken.test.ts',
+          error: { name: 'ImportError', message: 'could not import setup-a' },
+        },
+        after: {
+          kind: 'file-error',
+          project: 'unit',
+          path: 'broken.test.ts',
+          error: { name: 'ImportError', message: 'could not import setup-b' },
+        },
+      },
+    ],
+    summary: { added: 0, removed: 0, changed: 1 },
   });
 });
 
