@@ -50,6 +50,29 @@ test('applies basename and path overrides in declaration order', () => {
   expect(config.baseOptions).toEqual({ singleQuote: false });
 });
 
+test('reuses options for the same override combination', () => {
+  const config = normalizeFmtConfig(
+    {
+      singleQuote: false,
+      overrides: [
+        { files: '*.ts', options: { semi: false } },
+        { files: 'src/**/*.ts', options: { singleQuote: true } },
+      ],
+    },
+    rootPath,
+  );
+  const resolveOptions = createOptionsResolver(config);
+
+  const first = resolveOptions(path.join(rootPath, 'src/first.ts'));
+  const second = resolveOptions(path.join(rootPath, 'src/second.ts'));
+  const outside = resolveOptions(path.join(rootPath, 'outside.ts'));
+
+  expect(first).toBe(second);
+  expect(first).not.toBe(outside);
+  expect(first).toEqual({ semi: false, singleQuote: true });
+  expect(outside).toEqual({ semi: false, singleQuote: false });
+});
+
 test('applies overrides outside the config root', () => {
   const config = normalizeFmtConfig(
     {
