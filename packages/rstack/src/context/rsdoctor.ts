@@ -362,8 +362,12 @@ const readRsdoctorArtifact = async (
   let contents: string;
   try {
     contents = await readFile(artifactPath, 'utf8');
-  } catch {
-    throw new Error('Rsdoctor data file could not be read.');
+  } catch (error) {
+    const cause = error instanceof Error ? ` Cause: ${error.message}` : '';
+    throw new Error(
+      `Rsdoctor data file could not be read at "${artifactPath}". Generate a brief JSON artifact by setting RSDOCTOR_OUTPUT=json for the build.${cause}`,
+      { cause: error },
+    );
   }
 
   let parsed: unknown;

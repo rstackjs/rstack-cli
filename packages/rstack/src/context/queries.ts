@@ -55,6 +55,17 @@ const explanationVisitLimit = 5_000;
 const compareStrings = (left: string, right: string): number =>
   left === right ? 0 : left < right ? -1 : 1;
 
+const isDependencyModulePath = (modulePath: string): boolean => {
+  const normalized = modulePath.split('\\').join('/');
+  const segments = normalized.split('/');
+  const yarnIndex = segments.indexOf('.yarn');
+  return (
+    segments.includes('node_modules') ||
+    (yarnIndex >= 0 &&
+      ['cache', '__virtual__', 'unplugged'].includes(segments[yarnIndex + 1] ?? ''))
+  );
+};
+
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
@@ -168,10 +179,10 @@ const decodeUnusedCandidatesCursor = (cursor: string | undefined): number => {
   return offset;
 };
 
-const validateMaxDepth = (maxDepth: number | undefined): number => {
-  const resolved = maxDepth ?? 8;
-  if (!Number.isInteger(resolved) || resolved < 1 || resolved > 16) {
-    throw new Error('maxDepth must be an integer from 1 to 16.');
+const validateMaxDepth = (maxDepth: number | undefined, maximum = 16, fallback = 8): number => {
+  const resolved = maxDepth ?? fallback;
+  if (!Number.isInteger(resolved) || resolved < 1 || resolved > maximum) {
+    throw new Error(`maxDepth must be an integer from 1 to ${maximum}.`);
   }
   return resolved;
 };
@@ -426,6 +437,7 @@ const findUnusedCandidates = async (
       roots: { production: 0, contract: 0, conservative: 0 },
       total: 0,
       returned: 0,
+      ownership: { project: 0, dependency: 0 },
       analysisTruncated: false,
       resultTruncated: false,
       candidates: [],
@@ -448,7 +460,17 @@ const findUnusedCandidates = async (
       confidence: 'derived',
       evidence: ['No path from selected roots in this artifact graph.'],
       bounds,
-    }));
+    }))
+    .sort(
+      (left, right) =>
+        Number(isDependencyModulePath(left.subject.path)) -
+          Number(isDependencyModulePath(right.subject.path)) ||
+        compareStrings(left.subject.path, right.subject.path) ||
+        compareStrings(left.subject.id, right.subject.id),
+    );
+  const dependencyCandidates = candidates.filter(({ subject }) =>
+    isDependencyModulePath(subject.path),
+  ).length;
   const returnedCandidates = candidates.slice(offset, offset + limit);
   const nextOffset = offset + returnedCandidates.length;
 
@@ -461,6 +483,10 @@ const findUnusedCandidates = async (
     },
     total: candidates.length,
     returned: returnedCandidates.length,
+    ownership: {
+      project: candidates.length - dependencyCandidates,
+      dependency: dependencyCandidates,
+    },
     analysisTruncated:
       traversals.production.truncated ||
       traversals.contract.truncated ||
@@ -478,7 +504,11 @@ const explainDeadCodeCandidate = async (
   workspaceRoot: string,
   query: ExplanationQuery,
 ): Promise<DeadCodeExplanation> => {
-  const maxDepth = validateMaxDepth(query.maxDepth);
+  const maxDepth = validateMaxDepth(
+    query.maxDepth,
+    candidateTraversalOptions.maxDepth,
+    candidateTraversalOptions.maxDepth,
+  );
   const { provenance, graph, product } = await loadAnalysis(workspaceRoot, query);
   if (!hasAuthoritativeGraph(graph)) {
     return {
@@ -497,7 +527,12 @@ const explainDeadCodeCandidate = async (
     };
   }
   const module = resolveModule(graph, query.module);
-  const traversals = traceRootFamilies(graph, product, maxDepth, explanationVisitLimit);
+  const traversals = traceRootFamilies(
+    graph,
+    product,
+    maxDepth,
+    candidateTraversalOptions.maxVisited,
+  );
   const bounds = traversalBounds(product, traversals);
   const productionPath = shortestRootPath(
     graph,

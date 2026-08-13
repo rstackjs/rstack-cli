@@ -14,7 +14,7 @@ rs mcp
 
 服务器通过标准输入和输出通信，因此 stdout 仅用于 MCP 协议消息。它会根据命令的启动路径解析检出目录，并公开十五个工具：`project_status`、`product_roots`、`unused_candidates`、`dead_code_explain`、`module_impact`、`code_evidence`、`snapshot_list`、`diagnostics_list`、`test_results`、`snapshot_diff`、`lint_fix_preview`、`lint_snapshot`、`test_snapshot`、`rsdoctor_analyze` 和 `report_link`。
 
-工具成功响应时，`content` 会保持紧凑以便用于对话。完整且具有权威性的结果位于 `structuredContent` 中。
+工具成功响应时，`content` 会保持紧凑以便用于对话。具有权威性的结果位于 `structuredContent` 中；对于有界集合，其中会明确包含分页或截断元数据。
 
 ## 捕获构建上下文 \{#capture-build-context}
 
@@ -74,10 +74,10 @@ Rsbuild 只会为该命令加载已安装的收集器。构建会在检出目录
 
 四个模块分析工具都需要 `project_status` 返回的 `contextId` 和明确指定的 Rsdoctor `dataFile`。当产物包含有效的 Rsdoctor v1 元数据且标识匹配时，Rstack 可以将产物与所选构建观测绑定。没有该元数据的旧版产物仍使用 `artifactBinding: "explicit-unverified"`：所选构建观测可以提供有用的上下文，但 Rstack 不会声称指定产物来自该次运行。
 
-- `product_roots` 返回应用入口根、精确匹配的库包目标和保守的优化器根，同时包含图问题和分析边界。
-- `unused_candidates` 返回在该产物图中不存在从所选根出发的已观测路径的模块。可选的 `limit` 必须是 1 到 100 的整数，默认值为 50。当一页包含 `nextCursor` 时，使用相同的 `contextId`、`dataFile` 和 `limit` 将其传回，以按确定性结果顺序继续读取。
-- `dead_code_explain` 接受非空的精确模块 ID、路径、名称或唯一的路径后缀。可选的 `maxDepth` 必须是 1 到 16 的整数，默认值为 8。它会报告模块是可达、被保守保留、不可达模块候选，还是因为证据不完整而处于未知状态。
-- `module_impact` 接受相同的模块选择器。`direction` 可为 `dependencies` 或 `dependents`，默认值为 `dependents`；`maxDepth` 同样是 1 到 16，默认值为 8。它返回有界的已观测模块、到达的产品根、受影响的 chunk ID 和截断状态。
+- `product_roots` 返回应用入口根、精确匹配的库包目标和保守的优化器根，同时包含图问题和分析边界。`rootLimit` 必须是 1 到 100 的整数，默认值为 50；`rootSummary` 会报告总数、返回数、截断状态和各类型计数，避免大型保守根集合淹没智能体响应。
+- `unused_candidates` 返回在该产物图中不存在从所选根出发的已观测路径的模块。可选的 `limit` 必须是 1 到 100 的整数，默认值为 50。项目自有模块排在依赖模块之前，`ownership` 会统计完整结果中的两类数量。只有在需要完整清单时才使用相同筛选条件继续传入 `nextCursor`；当 `ownership.project` 为零时，后续页面不会包含项目自有候选项。
+- `dead_code_explain` 接受非空的精确模块 ID、路径、名称或唯一的路径后缀。可选的 `maxDepth` 必须是 1 到 32 的整数，默认值为 32，与 `unused_candidates` 保持一致。它会报告模块是可达、被保守保留、不可达模块候选，还是因为证据不完整而处于未知状态。
+- `module_impact` 接受相同的模块选择器。`direction` 可为 `dependencies` 或 `dependents`，默认值为 `dependents`；它独立限制的 `maxDepth` 仍为 1 到 16，默认值为 8。它返回有界的已观测模块、到达的产品根、受影响的 chunk ID 和截断状态。
 
 这些结果只描述一个指定产物中的模块。不可达结果是需要复核的候选，而不是删除指令；它也不能证明某个局部函数、类、变量或导出未被使用。
 
@@ -102,14 +102,14 @@ Rsbuild 只会为该命令加载已安装的收集器。构建会在检出目录
 
 ### 代码证据 {#code-evidence}
 
-`code_evidence` 是只读的精确路径查询。给定相对于检出目录的源文件 `path` 和可选 `line` 后，它会组合包根目录包含该路径的最新 Rstest 与 Rslint 快照。也可以通过明确的 `testSnapshotId` 和 `lintSnapshotId` 选择某个时间点的证据。它分别报告四个独立表面：
+`code_evidence` 是只读的精确路径查询。给定相对于检出目录的源文件 `path` 和可选 `line` 后，它会组合包根目录包含该路径的最新 Rstest 与 Rslint 快照。也可以通过明确的 `testSnapshotId` 和 `lintSnapshotId` 选择某个时间点的证据。当制品中同一源路径对应多个模块变体时，可选的 `module` 选择器会保留 `unused_candidates` 或 `dead_code_explain` 返回的精确模块 ID 或名称。它分别报告四个独立表面：
 
 - 聚合执行覆盖率：`observed`、`not-observed`、`unknown` 或 `unavailable`；
 - 所选 Rstest facet 中该精确路径的结果：`failed`、`passed`、`not-run` 或 `unknown`；
 - 精确路径的 Rslint 与 Rstest 诊断；以及
 - 同时提供 `contextId` 和 `dataFile` 时的可选制品模块轴。
 
-`observed` 要求已存储的语句、函数或分支臂命中数为正，并且当前文件摘要精确匹配。`not-observed` 还要求已插桩全集完整、未截断，并存在命中数为零的相关位置。摘要过期、路径缺失、全集不完整或 provider 缺失时，结果仍是不确定的。测试结果只描述其自身路径与查询精确匹配的记录；没有精确记录时返回 `unknown` 和原因 `no-exact-test-record`，只有存在匹配的跳过或待办记录时才返回 `not-run`。它不会推断源文件与测试之间的关系。诊断以 `{ total, returned, truncated, items }` 返回，最多包含 200 个条目。可选模块轴会先尝试完整工作区路径，再回退到包相对路径；它分别保留生产可达性、公共契约状态、是否进入产物以及优化器保留状态，并报告制品绑定，而不会组合不匹配的证据。
+`observed` 要求已存储的语句、函数或分支臂命中数为正，并且当前文件摘要精确匹配。`not-observed` 还要求已插桩全集完整、未截断，并存在命中数为零的相关位置。摘要过期、路径缺失、全集不完整或 provider 缺失时，结果仍是不确定的。测试结果只描述其自身路径与查询精确匹配的记录；没有精确记录时返回 `unknown` 和原因 `no-exact-test-record`，只有存在匹配的跳过或待办记录时才返回 `not-run`。它不会推断源文件与测试之间的关系。诊断以 `{ total, returned, truncated, items }` 返回，最多包含 200 个条目。未提供 `module` 时，可选模块轴会先尝试完整工作区路径，再回退到包相对路径；提供 `module` 时，它会解析该精确制品选择器，同时仍使用 `path` 查询运行时、测试和诊断证据。它分别保留生产可达性、公共契约状态、是否进入产物以及优化器保留状态，并报告制品绑定，而不会组合不匹配的证据。
 
 ## 第 4 阶段变更复核 \{#phase-4-change-review}
 

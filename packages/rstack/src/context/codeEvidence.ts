@@ -20,6 +20,7 @@ type CodeEvidenceQuery = {
   line?: number;
   contextId?: string;
   dataFile?: string;
+  module?: string;
   testSnapshotId?: string;
   lintSnapshotId?: string;
   maxDepth?: number;
@@ -249,8 +250,16 @@ const compareDiagnostics = (left: DiagnosticRecord, right: DiagnosticRecord): nu
 const moduleEvidence = async (
   workspaceRoot: string,
   query: Required<Pick<CodeEvidenceQuery, 'contextId' | 'dataFile'>> &
-    Pick<CodeEvidenceQuery, 'maxDepth'> & { path: string },
+    Pick<CodeEvidenceQuery, 'maxDepth' | 'module'> & { path: string },
 ): Promise<DeadCodeExplanation> => {
+  if (query.module !== undefined) {
+    return explainDeadCodeCandidate(workspaceRoot, {
+      contextId: query.contextId,
+      dataFile: query.dataFile,
+      module: query.module,
+      maxDepth: query.maxDepth,
+    });
+  }
   const roots = await readProductRoots(workspaceRoot, query);
   const packageRelativePath =
     roots.product.packageRoot === '.'
@@ -312,6 +321,9 @@ const readCodeEvidence = async (
   if ((query.contextId === undefined) !== (query.dataFile === undefined)) {
     throw new Error('contextId and dataFile must be supplied together.');
   }
+  if (query.module !== undefined && query.contextId === undefined) {
+    throw new Error('module requires contextId and dataFile.');
+  }
   if (query.line !== undefined && (!Number.isInteger(query.line) || query.line < 1)) {
     throw new Error('line must be a positive integer.');
   }
@@ -340,6 +352,7 @@ const readCodeEvidence = async (
           path: sourcePath,
           contextId: query.contextId,
           dataFile: query.dataFile,
+          module: query.module,
           maxDepth: query.maxDepth,
         });
   const provenance = {

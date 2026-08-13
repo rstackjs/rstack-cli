@@ -77,11 +77,15 @@ test('reports debug evidence freshness and completeness as separate axes', async
   expect(repositorySkill).toBe(pluginSkill);
 });
 
-test('continues unused candidates through every returned page', async () => {
+test('uses candidate ownership to avoid unnecessary pagination', async () => {
   const skill = normalized(await readSkill('rstack-codex', 'find-unused-code'));
 
-  expect(skill).toContain('while `nextcursor` is returned');
-  expect(skill).toContain('same `contextid`, `datafile`, and `limit`');
+  expect(skill).toContain('when `ownership.project` is zero, stop without following `nextcursor`');
+  expect(skill).toContain(
+    'follow `nextcursor` only when the user requests an exhaustive inventory',
+  );
+  expect(skill).toContain('prefer its short exact `subject.id`');
+  expect(skill).toContain('same artifact module selector as `module`');
 });
 
 test('routes runtime and diagnostics questions through code evidence without collapsing axes', async () => {

@@ -124,12 +124,15 @@ listRsdoctorToolNames();`,
 
 test('rejects a missing Rsdoctor artifact', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
+    const artifactPath = path.resolve(workspaceRoot, validDataFile);
     await expect(
       analyzeRsdoctorArtifact(workspaceRoot, {
         dataFile: validDataFile,
         toolName: 'build_summary',
       }),
-    ).rejects.toThrow('could not be read');
+    ).rejects.toThrow(
+      `Rsdoctor data file could not be read at "${artifactPath}". Generate a brief JSON artifact by setting RSDOCTOR_OUTPUT=json for the build.`,
+    );
   });
 });
 

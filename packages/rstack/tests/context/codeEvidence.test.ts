@@ -623,5 +623,18 @@ test('preserves execution and diagnostics when the full artifact module path is 
         evidence: ['No unique artifact module matched the exact source path.'],
       },
     });
+
+    await expect(
+      readCodeEvidence(workspaceRoot, {
+        path: 'packages/a/src/shared.ts',
+        contextId: buildContext.contextId,
+        dataFile: 'rsdoctor-data.json',
+        module: 'pkg-a-two',
+      }),
+    ).resolves.toMatchObject({
+      executionCoverage: { state: 'observed' },
+      diagnostics: { total: 1, returned: 1, truncated: false },
+      module: { subject: { id: 'pkg-a-two' } },
+    });
   });
 });

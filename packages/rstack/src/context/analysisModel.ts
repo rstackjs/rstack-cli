@@ -105,6 +105,10 @@ type UnusedCandidatesResult = {
   };
   total: number;
   returned: number;
+  ownership: {
+    project: number;
+    dependency: number;
+  };
   analysisTruncated: boolean;
   resultTruncated: boolean;
   candidates: ModuleCandidate[];

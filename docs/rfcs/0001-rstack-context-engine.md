@@ -322,7 +322,10 @@ Rstest session.
 `code_evidence` composes existing immutable records for one checkout-relative source path. It
 selects the newest Rstest and Rslint snapshots whose package root contains the path unless explicit
 snapshot IDs are supplied. An optional line narrows aggregate coverage locations. Both `contextId`
-and `dataFile` are required to add an artifact module axis; no artifact is guessed.
+and `dataFile` are required to add an artifact module axis; no artifact is guessed. When one source
+path has several artifact module variants, an optional `module` selector preserves the exact module
+ID or name returned by the artifact query while `path` continues to select runtime and diagnostic
+evidence.
 
 ```mermaid
 flowchart LR
@@ -344,7 +347,9 @@ shipment, public contract, and optimizer retention remain separate from runtime 
 No exact test record is unknown rather than not-run; not-run requires matching skipped or todo
 records. Exact-path diagnostics are deterministically bounded to 200 items and report their total
 and truncation. Module selection tries the workspace path before a package-relative fallback so
-identical paths in sibling packages remain distinguishable.
+identical paths in sibling packages remain distinguishable. An explicit `module` selector bypasses
+that path fallback and prevents a hashed or concatenated artifact variant from being silently joined
+to a different module with the same source path.
 
 ### Freshness and compatible diffs
 
@@ -501,6 +506,12 @@ flowchart TD
   Explain --> Bounds["Present paths, state axes, bounds, and provenance"]
   Bounds --> Verify["Recommend source and runtime verification"]
 ```
+
+The MCP view returns a bounded `product_roots` sample plus `rootSummary` counts. Unused candidates
+are ordered with project-owned modules first and include complete-result `ownership` counts, so an
+agent does not page through dependency-only results looking for source that is not present. This
+keeps the first agent turn useful even when a production artifact contains thousands of roots or
+candidates.
 
 ## Delivery status
 

@@ -63,6 +63,13 @@ const productRootsInput = z
   .object({
     contextId: contextIdInput,
     dataFile: rsdoctorDataFileInput,
+    rootLimit: z
+      .number()
+      .int()
+      .min(1)
+      .max(100)
+      .default(50)
+      .describe('Maximum number of representative product roots returned in structuredContent.'),
   })
   .strict();
 
@@ -80,7 +87,7 @@ const deadCodeExplainInput = z
     contextId: contextIdInput,
     dataFile: rsdoctorDataFileInput,
     module: moduleSelectorInput,
-    maxDepth: z.number().int().min(1).max(16).optional(),
+    maxDepth: z.number().int().min(1).max(32).optional(),
   })
   .strict();
 
@@ -100,6 +107,11 @@ const codeEvidenceInput = z
     line: z.number().int().min(1).optional(),
     contextId: contextIdInput.optional(),
     dataFile: rsdoctorDataFileInput.optional(),
+    module: moduleSelectorInput
+      .describe(
+        'Optional exact artifact module ID, path, or name to join with path-based test, coverage, and lint evidence.',
+      )
+      .optional(),
     testSnapshotId: z
       .string()
       .min(1)
@@ -110,7 +122,7 @@ const codeEvidenceInput = z
       .min(1)
       .describe('Explicit completed Rslint snapshot ID; defaults to the newest containing package.')
       .optional(),
-    maxDepth: z.number().int().min(1).max(16).optional(),
+    maxDepth: z.number().int().min(1).max(32).optional(),
   })
   .strict();
 
@@ -258,6 +270,11 @@ const formatStructuredResult = (result: unknown): string => {
   }
   addDetail('totalVisited', result.totalVisited);
 
+  if (isRecord(result.ownership)) {
+    addDetail('project', result.ownership.project);
+    addDetail('dependency', result.ownership.dependency);
+  }
+
   if (isRecord(result.graph)) {
     addDetail('moduleCount', result.graph.moduleCount);
     addDetail('edgeCount', result.graph.edgeCount);
@@ -288,6 +305,36 @@ const toStructuredMcpResult = <Result extends object>(result: Result) => ({
   content: [{ type: 'text' as const, text: formatStructuredResult(result) }],
   structuredContent: result,
 });
+
+const toProductRootsMcpResult = (
+  result: Awaited<ReturnType<typeof readProductRoots>>,
+  rootLimit: number,
+) => {
+  const rootCounts = Object.fromEntries(
+    result.product.roots.map(({ kind }) => kind).map((kind) => [kind, 0]),
+  ) as Record<string, number>;
+  for (const { kind } of result.product.roots) rootCounts[kind] = (rootCounts[kind] ?? 0) + 1;
+  const roots = result.product.roots.slice(0, rootLimit);
+  const rootSummary = {
+    total: result.product.roots.length,
+    returned: roots.length,
+    truncated: roots.length < result.product.roots.length,
+    byKind: rootCounts,
+  };
+  return {
+    content: [
+      {
+        type: 'text' as const,
+        text: `Rstack roots: modules=${result.graph.moduleCount}, edges=${result.graph.edgeCount}, roots=${rootSummary.returned}/${rootSummary.total}. See structuredContent for bounded root details.`,
+      },
+    ],
+    structuredContent: {
+      ...result,
+      product: { ...result.product, roots },
+      rootSummary,
+    },
+  };
+};
 
 const formatCodeEvidence = (result: CodeEvidenceResult): string => {
   const diagnostics = result.diagnostics.truncated
@@ -457,13 +504,13 @@ const createContextMcpServer = (
         openWorldHint: false,
       },
     },
-    async ({ contextId, dataFile }) => {
+    async ({ contextId, dataFile, rootLimit }) => {
       try {
         const result = await readProductRoots(workspaceRoot, {
           contextId,
           dataFile,
         });
-        return toStructuredMcpResult(result);
+        return toProductRootsMcpResult(result, rootLimit);
       } catch (error) {
         return toMcpError(error);
       }
@@ -704,7 +751,7 @@ const createContextMcpServer = (
       inputSchema: testSnapshotInput,
       annotations: {
         readOnlyHint: false,
-        destructiveHint: true,
+        destructiveHint: false,
         openWorldHint: true,
       },
     },

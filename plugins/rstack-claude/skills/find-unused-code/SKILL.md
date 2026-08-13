@@ -18,15 +18,19 @@ description: Find artifact-scoped Rstack modules unreachable from observed produ
    package needs `@rsdoctor/rspack-plugin`. Ask before running a capture or installation.
 4. Call `product_roots` with `contextId` and `dataFile`. Summarize production, published-contract,
    and conservative roots plus graph issues.
-5. Call `unused_candidates` with the same inputs and an optional `limit` from 1 to 100. While
-   `nextCursor` is returned, continue with that cursor and the same `contextId`, `dataFile`, and
-   `limit`.
-6. Choose the strongest returned candidate across all pages from its confidence, state, evidence,
-   and bounds. Call
-   `dead_code_explain` for that module.
+5. Call `unused_candidates` with the same inputs and an optional `limit` from 1 to 100. Prefer a
+   project-owned source module over dependency or generated-loader modules. Project candidates are
+   ordered first and `ownership` counts the complete result set. When `ownership.project` is zero,
+   stop without following `nextCursor` and report that the artifact has no project-owned candidate.
+   Follow `nextCursor` only when the user requests an exhaustive inventory, reusing the same
+   `contextId`, `dataFile`, and `limit`.
+6. Choose the strongest returned candidate from its confidence, state, evidence, and bounds. Prefer
+   its short exact `subject.id` over a long transformed name, then call `dead_code_explain` for that
+   module.
 7. When runtime or test evidence would help prioritize that candidate, call `code_evidence` with
-   its exact checkout-relative path and the same explicit `contextId` and `dataFile`. Keep execution
-   coverage, test outcome, diagnostics, and module state separate; no one axis proves another.
+   its exact checkout-relative path, the same explicit `contextId` and `dataFile`, and the same
+   artifact module selector as `module`. Keep execution coverage, test outcome, diagnostics, and
+   module state separate; no one axis proves another.
    Check `diagnostics.truncated`; when true, report the returned and total counts instead of
    presenting the diagnostic items as exhaustive.
 8. Report why it is a candidate, the exhausted root sets, state axes, analysis/result truncation,

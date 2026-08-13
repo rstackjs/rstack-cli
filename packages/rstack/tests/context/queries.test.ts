@@ -457,7 +457,7 @@ test('paginates deterministic candidate results separately from analysis truncat
           moduleGraph: {
             modules: [
               { id: 1, path: 'src/index.ts', name: 'index', isEntry: true },
-              { id: 2, path: 'src/unused-a.ts', name: 'unused-a' },
+              { id: 2, path: '.yarn/cache/pkg/unused.js', name: 'dependency-unused' },
               { id: 3, path: 'src/unused-b.ts', name: 'unused-b' },
             ],
             dependencies: [],
@@ -476,7 +476,8 @@ test('paginates deterministic candidate results separately from analysis truncat
     expect(firstPage.returned).toBe(1);
     expect(firstPage.resultTruncated).toBe(true);
     expect(firstPage.analysisTruncated).toBe(false);
-    expect(firstPage.candidates[0]?.subject.id).toBe('2');
+    expect(firstPage.ownership).toEqual({ project: 1, dependency: 1 });
+    expect(firstPage.candidates[0]?.subject.id).toBe('3');
     expect(firstPage.nextCursor).toEqual(expect.any(String));
     expect(firstPage.nextCursor).not.toBe('1');
 
@@ -498,7 +499,8 @@ test('paginates deterministic candidate results separately from analysis truncat
     expect(secondPage.returned).toBe(1);
     expect(secondPage.resultTruncated).toBe(false);
     expect(secondPage.analysisTruncated).toBe(false);
-    expect(secondPage.candidates[0]?.subject.id).toBe('3');
+    expect(secondPage.ownership).toEqual({ project: 1, dependency: 1 });
+    expect(secondPage.candidates[0]?.subject.id).toBe('2');
     expect(secondPage).not.toHaveProperty('nextCursor');
   });
 });
@@ -617,6 +619,45 @@ test('returns insufficient evidence rather than unreachable when the requested d
   });
 });
 
+test('uses the same default reachability depth for candidates and explanations', async () => {
+  await withFixtureWorkspace('application', async (workspaceRoot) => {
+    const context = {
+      contextId: 'ctx_app',
+      packageRoot: '.',
+      product: 'application',
+    } as const;
+    await recordBuild(workspaceRoot, context, 'run_app', '2026-08-12T04:00:01.000Z');
+    await writeFile(
+      path.join(workspaceRoot, 'rsdoctor-data.json'),
+      JSON.stringify({
+        data: {
+          moduleGraph: {
+            modules: Array.from({ length: 11 }, (_, index) => ({
+              id: index,
+              path: `src/depth-${index}.ts`,
+              name: `depth-${index}`,
+              ...(index === 0 ? { isEntry: true } : {}),
+            })),
+            dependencies: Array.from({ length: 10 }, (_, index) => ({
+              module: index,
+              dependency: index + 1,
+            })),
+          },
+        },
+      }),
+    );
+
+    const result = await explainDeadCodeCandidate(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+      module: 'src/depth-10.ts',
+    });
+
+    expect(result.classification).toBe('reachable');
+    expect(result.analysisTruncated).toBe(false);
+  });
+});
+
 test('traces artifact-local dependent impact to product roots and emitted chunks', async () => {
   await withFixtureWorkspace('application', async (workspaceRoot) => {
     const context = {
@@ -673,6 +714,14 @@ test('rejects unknown contexts, ambiguous selectors, and invalid query bounds', 
         limit: 0,
       }),
     ).rejects.toThrow('limit must be an integer from 1 to 100.');
+    await expect(
+      explainDeadCodeCandidate(workspaceRoot, {
+        contextId: context.contextId,
+        dataFile: 'rsdoctor-data.json',
+        module: '2',
+        maxDepth: 33,
+      }),
+    ).rejects.toThrow('maxDepth must be an integer from 1 to 32.');
     await expect(
       traceModuleImpact(workspaceRoot, {
         contextId: context.contextId,

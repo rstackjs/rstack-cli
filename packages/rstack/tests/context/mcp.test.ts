@@ -173,7 +173,7 @@ test('registers the exact ordered fifteen-tool catalog with accurate annotations
             dataFile: expect.objectContaining({ type: 'string' }),
             testSnapshotId: expect.objectContaining({ type: 'string' }),
             lintSnapshotId: expect.objectContaining({ type: 'string' }),
-            maxDepth: expect.objectContaining({ type: 'integer', minimum: 1, maximum: 16 }),
+            maxDepth: expect.objectContaining({ type: 'integer', minimum: 1, maximum: 32 }),
           }),
         },
         annotations: {
@@ -209,7 +209,7 @@ test('registers the exact ordered fifteen-tool catalog with accurate annotations
       });
       expect(tools[12]?.annotations).toMatchObject({
         readOnlyHint: false,
-        destructiveHint: true,
+        destructiveHint: false,
         openWorldHint: true,
       });
       expect(tools[13]).toMatchObject({
@@ -296,6 +296,12 @@ test('publishes discoverable descriptions for opaque and conditional tool inputs
       expect(toolByName.get('test_results')).toMatchObject({
         description:
           'List deterministic test cases, optionally filtered by completed Rstest snapshot, project, path prefix, or status.',
+      });
+      expect(toolByName.get('code_evidence')?.inputSchema.properties).toMatchObject({
+        module: {
+          description:
+            'Optional exact artifact module ID, path, or name to join with path-based test, coverage, and lint evidence.',
+        },
       });
       expect(toolByName.get('lint_snapshot')?.inputSchema.properties).toMatchObject({
         mode: {
@@ -439,13 +445,14 @@ test('returns structured results for each artifact-scoped module tool', async ()
         arguments: {
           contextId: context.contextId,
           dataFile: 'rsdoctor-data.json',
+          rootLimit: 1,
         },
       });
       expect(productRoots.isError).not.toBe(true);
       expect(productRoots.content).toEqual([
         {
           type: 'text',
-          text: 'Rstack result: moduleCount=8, edgeCount=4. See structuredContent for complete data.',
+          text: 'Rstack roots: modules=8, edges=4, roots=1/4. See structuredContent for bounded root details.',
         },
       ]);
       expect(productRoots.structuredContent).toMatchObject({
@@ -455,6 +462,8 @@ test('returns structured results for each artifact-scoped module tool', async ()
           artifactBinding: 'explicit-unverified',
         },
         graph: { moduleCount: 8, edgeCount: 4 },
+        rootSummary: { total: 4, returned: 1, truncated: true },
+        product: { roots: [expect.any(Object)] },
       });
 
       const candidates = await client.callTool({
@@ -469,12 +478,13 @@ test('returns structured results for each artifact-scoped module tool', async ()
       expect(candidates.content).toEqual([
         {
           type: 'text',
-          text: 'Rstack result: total=1, returned=1. See structuredContent for complete data.',
+          text: 'Rstack result: total=1, returned=1, project=1, dependency=0. See structuredContent for complete data.',
         },
       ]);
       expect(candidates.structuredContent).toMatchObject({
         total: 1,
         returned: 1,
+        ownership: { project: 1, dependency: 0 },
         candidates: [
           {
             classification: 'unreachable-module-candidate',

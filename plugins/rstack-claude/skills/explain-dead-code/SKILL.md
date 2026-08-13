@@ -17,14 +17,15 @@ description: Explain whether one Rstack artifact module is reachable, conservati
    `RSTACK_CONTEXT=1 RSDOCTOR=true RSDOCTOR_OUTPUT=json rs lib` for a library. Explain that the
    package needs `@rsdoctor/rspack-plugin`. Ask before running a capture or installation.
 4. Call `dead_code_explain` with the selected `contextId` and artifact module selector. Set
-   `maxDepth` from 1 to 16 only when the user needs a tighter or wider traversal.
+   `maxDepth` from 1 to 32 only when the user needs a tighter traversal than the default 32.
 5. Lead with the returned classification: **reachable**, **preserved by a conservative root**,
    **unreachable module candidate**, or **insufficient evidence**.
 6. Show one shortest returned root-to-module path when present, naming its root kind and modules in order.
 7. Report every state axis: production reachability, public contract, shipped, and optimizer retention.
 8. When runtime or test evidence would help, call `code_evidence` with the exact checkout-relative
-   path and the same explicit `contextId` and `dataFile`. Keep execution coverage, test outcome,
-   diagnostics, and module state separate; no one axis proves another.
+   path, the same explicit `contextId` and `dataFile`, and the same artifact module selector as
+   `module`. Keep execution coverage, test outcome, diagnostics, and module state separate; no one
+   axis proves another.
    Check `diagnostics.truncated`; when true, report the returned and total counts instead of
    presenting the diagnostic items as exhaustive.
 9. Close with evidence, bounds, and provenance, including `artifactBinding` and build observation when available.

@@ -14,7 +14,7 @@ rs mcp
 
 The server communicates over standard input and output, so stdout is reserved for MCP protocol messages. It resolves the checkout from the command's launch path and exposes fifteen tools: `project_status`, `product_roots`, `unused_candidates`, `dead_code_explain`, `module_impact`, `code_evidence`, `snapshot_list`, `diagnostics_list`, `test_results`, `snapshot_diff`, `lint_fix_preview`, `lint_snapshot`, `test_snapshot`, `rsdoctor_analyze`, and `report_link`.
 
-Successful tool responses keep `content` compact for conversation. The complete, authoritative result is available in `structuredContent`.
+Successful tool responses keep `content` compact for conversation. The authoritative result, including explicit pagination or truncation metadata for bounded collections, is available in `structuredContent`.
 
 ## Capture build context
 
@@ -77,10 +77,10 @@ This works for Rslib-only repositories, Rsbuild-only repositories, and repositor
 
 The four module-analysis tools require both a `contextId` from `project_status` and an explicit Rsdoctor `dataFile`. Valid Rsdoctor v1 metadata can bind the artifact to the selected build observation when their identities match. Legacy artifacts without that metadata remain `artifactBinding: "explicit-unverified"`: the selected build observation is useful context, but Rstack does not claim that the supplied artifact came from that run.
 
-- `product_roots` returns application entry roots, exactly matched library package targets, and conservative optimizer roots, together with graph issues and analysis bounds.
-- `unused_candidates` returns modules with no observed path from the selected roots in that artifact graph. Its optional `limit` is an integer from 1 through 100 and defaults to 50. When a page includes `nextCursor`, pass it back with the same `contextId`, `dataFile`, and `limit` to continue the deterministic result order.
-- `dead_code_explain` accepts a non-empty exact module ID, path, name, or unique path suffix. Its optional `maxDepth` is an integer from 1 through 16 and defaults to 8. It reports whether the module is reachable, conservatively preserved, an unreachable module candidate, or unknown because the evidence is incomplete.
-- `module_impact` accepts the same module selector. `direction` is `dependencies` or `dependents` and defaults to `dependents`; `maxDepth` has the same 1-through-16 range and default of 8. It returns the bounded observed modules, reached product roots, affected chunk IDs, and truncation state.
+- `product_roots` returns application entry roots, exactly matched library package targets, and conservative optimizer roots, together with graph issues and analysis bounds. Its `rootLimit` is an integer from 1 through 100 and defaults to 50; `rootSummary` reports total, returned, truncated, and per-kind counts so large conservative root sets do not flood an agent response.
+- `unused_candidates` returns modules with no observed path from the selected roots in that artifact graph. Its optional `limit` is an integer from 1 through 100 and defaults to 50. Project-owned modules precede dependency modules, and `ownership` counts both groups across the complete result. Follow `nextCursor` with the same filters only for an exhaustive inventory; when `ownership.project` is zero, later pages cannot contain project-owned candidates.
+- `dead_code_explain` accepts a non-empty exact module ID, path, name, or unique path suffix. Its optional `maxDepth` is an integer from 1 through 32 and defaults to 32, matching `unused_candidates`. It reports whether the module is reachable, conservatively preserved, an unreachable module candidate, or unknown because the evidence is incomplete.
+- `module_impact` accepts the same module selector. `direction` is `dependencies` or `dependents` and defaults to `dependents`; its independently bounded `maxDepth` remains 1 through 16 with a default of 8. It returns the bounded observed modules, reached product roots, affected chunk IDs, and truncation state.
 
 These results describe modules in one supplied artifact. An unreachable result is a review candidate, not a deletion instruction, and does not prove that a local function, class, variable, or export is unused.
 
@@ -105,14 +105,14 @@ A fresh build does not make lint or test evidence fresh. If related-test selecti
 
 ### Code evidence {#code-evidence}
 
-`code_evidence` is a read-only exact-path query. Given a checkout-relative source `path` and optional `line`, it joins the newest Rstest and Rslint snapshots whose package root contains that path. Explicit `testSnapshotId` and `lintSnapshotId` values select point-in-time evidence instead. It reports four independent surfaces:
+`code_evidence` is a read-only exact-path query. Given a checkout-relative source `path` and optional `line`, it joins the newest Rstest and Rslint snapshots whose package root contains that path. Explicit `testSnapshotId` and `lintSnapshotId` values select point-in-time evidence instead. When an artifact contains several module variants for the same source path, an optional `module` selector preserves the exact module ID or name returned by `unused_candidates` or `dead_code_explain`. It reports four independent surfaces:
 
 - aggregate execution coverage as `observed`, `not-observed`, `unknown`, or `unavailable`;
 - the selected Rstest facet's outcome for that exact path as `failed`, `passed`, `not-run`, or `unknown`;
 - exact-path Rslint and Rstest diagnostics; and
 - an optional artifact module axis when both `contextId` and `dataFile` are supplied.
 
-`observed` requires a positive stored statement, function, or branch-arm hit and an exact current file digest. `not-observed` additionally requires a complete, untruncated instrumented universe with relevant zero-hit locations. A stale digest, missing path, partial universe, or missing provider remains inconclusive. Test outcomes describe only records whose own path exactly matches the query; no exact record returns `unknown` with reason `no-exact-test-record`, while `not-run` requires matching skipped or todo records. They do not infer source-to-test relationships. Diagnostics return `{ total, returned, truncated, items }` and at most 200 items. The optional module axis tries the full workspace path before a package-relative fallback, preserves production reachability, public-contract status, shipment, and optimizer retention separately, and reports artifact binding rather than combining mismatched evidence.
+`observed` requires a positive stored statement, function, or branch-arm hit and an exact current file digest. `not-observed` additionally requires a complete, untruncated instrumented universe with relevant zero-hit locations. A stale digest, missing path, partial universe, or missing provider remains inconclusive. Test outcomes describe only records whose own path exactly matches the query; no exact record returns `unknown` with reason `no-exact-test-record`, while `not-run` requires matching skipped or todo records. They do not infer source-to-test relationships. Diagnostics return `{ total, returned, truncated, items }` and at most 200 items. Without `module`, the optional module axis tries the full workspace path before a package-relative fallback. With `module`, it resolves that exact artifact selector while still using `path` for runtime, test, and diagnostic evidence. It preserves production reachability, public-contract status, shipment, and optimizer retention separately, and reports artifact binding rather than combining mismatched evidence.
 
 ## Phase 4 change review {#phase-4-change-review}
 
