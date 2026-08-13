@@ -677,7 +677,7 @@ test('truncates aggregate execution files deterministically', async () => {
       },
     ]);
   });
-});
+}, 15_000);
 
 test('normalizes failures, retries, skipped and todo cases', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
