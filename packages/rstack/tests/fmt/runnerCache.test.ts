@@ -126,7 +126,7 @@ test('caches unsupported parser results until final options change', async () =>
       processedFileCount: 0,
     });
     expect((await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('data.unknown')).toEqual([
-      null,
+      '',
       createOptionsHasher()(unsupported.options),
       'unsupported',
     ]);

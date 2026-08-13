@@ -20,8 +20,8 @@ test('returns cached states before resolving the parser', async () => {
       [[contentHash, optionsHash, 'clean'], filePath, true, 'unchanged'],
       [[contentHash, optionsHash, 'unsupported'], noExtensionPath, false, 'unsupported'],
       [[contentHash, optionsHash, 'unsupported'], noExtensionPath, true, 'unsupported'],
-      [[null, optionsHash, 'unsupported'], missingPath, false, 'unsupported'],
-      [[null, optionsHash, 'unsupported'], missingPath, true, 'unsupported'],
+      [['', optionsHash, 'unsupported'], missingPath, false, 'unsupported'],
+      [['', optionsHash, 'unsupported'], missingPath, true, 'unsupported'],
     ] as const) {
       await expect(
         formatFile({
@@ -54,7 +54,7 @@ test('does not trust path-only unsupported entries for files without extensions'
         },
         shouldWrite: false,
         cache: {
-          entry: [null, 'options', 'unsupported'],
+          entry: ['', 'options', 'unsupported'],
           optionsHash: 'options',
         },
       }),
@@ -81,7 +81,7 @@ test('resolves parser support before reading on a cache miss', async () => {
       }),
     ).resolves.toEqual({
       status: 'unsupported',
-      cacheEntry: [null, 'options', 'unsupported'],
+      cacheEntry: ['', 'options', 'unsupported'],
     });
   });
 });

@@ -20,10 +20,8 @@ const fmtCacheStateIds = {
   unsupported: 2,
 } as const satisfies Record<FmtCacheState, FmtCacheStateId>;
 
-type FmtCacheFileValue = string | number | null;
-type FmtCacheEntry =
-  | readonly [contentHash: string, optionsHash: string, state: 'clean' | 'dirty']
-  | readonly [contentHash: string | null, optionsHash: string, state: 'unsupported'];
+type FmtCacheFileValue = string | number;
+type FmtCacheEntry = readonly [contentHash: string, optionsHash: string, state: FmtCacheState];
 
 interface FmtCacheFile {
   version: typeof fmtCacheVersion;
@@ -147,12 +145,10 @@ class FmtCacheStoreImpl implements FmtCacheStore {
     }
 
     const { files, options } = this.#cache;
-    const contentHash = files[offset + contentHashOffset] as string | null;
+    const contentHash = files[offset + contentHashOffset] as string;
     const optionsHash = options[files[offset + optionsIndexOffset] as number];
     const state = fmtCacheStates[files[offset + stateOffset] as FmtCacheStateId];
-    return state === 'unsupported'
-      ? [contentHash, optionsHash, state]
-      : [contentHash as string, optionsHash, state];
+    return [contentHash, optionsHash, state];
   }
 
   set(filePath: string, entry: FmtCacheEntry): void {

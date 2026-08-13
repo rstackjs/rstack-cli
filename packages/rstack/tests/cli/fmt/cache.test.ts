@@ -8,7 +8,7 @@ interface SerializedFmtCache {
   version: number;
   namespace: string;
   options: string[];
-  files: (string | number | null)[];
+  files: (string | number)[];
 }
 
 const readFmtCache = (filePath: string): SerializedFmtCache =>

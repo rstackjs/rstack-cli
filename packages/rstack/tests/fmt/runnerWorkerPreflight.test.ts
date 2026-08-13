@@ -34,7 +34,7 @@ const createCachedUnsupportedFile = async (rootPath: string, fileName: string) =
   }
 
   const store = await loadFmtCacheStore(cache.filePath, cacheNamespace);
-  store.set(fileName, [null, optionsHash, 'unsupported']);
+  store.set(fileName, ['', optionsHash, 'unsupported']);
   await expect(store.save()).resolves.toBe(true);
 
   return { cache, file };

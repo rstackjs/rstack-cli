@@ -19,7 +19,7 @@ const optionsB = createCacheHash('options-b');
 const optionsC = createCacheHash('options-c');
 const firstEntry = [contentA, optionsA, 'clean'] as const;
 const secondEntry = [contentB, optionsB, 'dirty'] as const;
-const unsupportedEntry = [null, optionsC, 'unsupported'] as const;
+const unsupportedEntry = ['', optionsC, 'unsupported'] as const;
 const hashedUnsupportedEntry = [contentC, optionsC, 'unsupported'] as const;
 
 const readCache = (filePath: string): FmtCacheFile =>
@@ -48,7 +48,7 @@ test('writes flat entries that can be loaded by another store', async () => {
         0,
         0,
         'src/unknown.fixture',
-        null,
+        '',
         1,
         2,
         'script',
