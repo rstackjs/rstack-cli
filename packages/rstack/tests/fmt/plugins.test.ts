@@ -4,7 +4,7 @@ import { createFingerprintResolver, createPluginResolver } from '../../src/fmt/p
 import { withTempProject, writeProjectFile } from './helpers.ts';
 
 test('resolves plugin specifiers from the config root', async () => {
-  await withTempProject(async (rootPath) => {
+  await withTempProject((rootPath) => {
     const packageEntry = writeProjectFile(
       rootPath,
       'node_modules/prettier-plugin-packagejson/import.mjs',

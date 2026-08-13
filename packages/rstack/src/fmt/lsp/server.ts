@@ -87,7 +87,7 @@ const redirectConsoleToConnection = (connection: Connection): void => {
     counters.set(key, count);
     connection.console.log(`${key}: ${count}`);
   };
-  console.countReset = (label?: unknown): void => {
+  console.countReset = (label?: string): void => {
     if (label === undefined) {
       counters.clear();
     } else {

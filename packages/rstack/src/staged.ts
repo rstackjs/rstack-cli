@@ -57,7 +57,10 @@ export async function runStagedCLI(args: string[]): Promise<void> {
 
   const success = await lintStaged({
     allowEmpty: values.allowEmpty,
-    concurrent: values.concurrent === undefined ? undefined : JSON.parse(values.concurrent),
+    concurrent:
+      values.concurrent === undefined
+        ? undefined
+        : (JSON.parse(values.concurrent) as boolean | number),
     config: stagedConfig,
     cwd: values.cwd,
     debug: values.debug,
