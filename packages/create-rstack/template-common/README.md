@@ -21,5 +21,5 @@ Install the dependencies:
 
 ## Learn more
 
-- [Rstack documentation](https://rstack.rs)
-- [Rstack GitHub repository](https://github.com/rstackjs/rstack-cli)
+- [Rstack CLI documentation](https://rstack.rs)
+- [Rstack CLI GitHub repository](https://github.com/rstackjs/rstack-cli)
