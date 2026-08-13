@@ -80,7 +80,7 @@ const writeRsdoctorArtifact = async (workspaceRoot: string): Promise<void> => {
   await writeFile(dataFile, JSON.stringify({ data: { summary: { costs: [{ costs: 12 }] } } }));
 };
 
-test('registers the exact ordered fourteen-tool catalog with accurate annotations', async () => {
+test('registers the exact ordered fifteen-tool catalog with accurate annotations', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await withMcpClient(workspaceRoot, async (client) => {
       const { tools } = await client.listTools();
@@ -96,6 +96,7 @@ test('registers the exact ordered fourteen-tool catalog with accurate annotation
         'unused_candidates',
         'dead_code_explain',
         'module_impact',
+        'code_evidence',
         'snapshot_list',
         'diagnostics_list',
         'test_results',
@@ -160,7 +161,28 @@ test('registers the exact ordered fourteen-tool catalog with accurate annotation
           openWorldHint: false,
         });
       }
-      for (const tool of tools.slice(5, 10)) {
+      expect(tools[5]).toMatchObject({
+        name: 'code_evidence',
+        inputSchema: {
+          additionalProperties: false,
+          required: ['path'],
+          properties: expect.objectContaining({
+            path: expect.objectContaining({ type: 'string' }),
+            line: expect.objectContaining({ type: 'integer', minimum: 1 }),
+            contextId: expect.objectContaining({ type: 'string' }),
+            dataFile: expect.objectContaining({ type: 'string' }),
+            testSnapshotId: expect.objectContaining({ type: 'string' }),
+            lintSnapshotId: expect.objectContaining({ type: 'string' }),
+            maxDepth: expect.objectContaining({ type: 'integer', minimum: 1, maximum: 16 }),
+          }),
+        },
+        annotations: {
+          readOnlyHint: true,
+          destructiveHint: false,
+          openWorldHint: false,
+        },
+      });
+      for (const tool of tools.slice(6, 11)) {
         expect(tool.annotations).toMatchObject({
           readOnlyHint: true,
           destructiveHint: false,
@@ -168,12 +190,12 @@ test('registers the exact ordered fourteen-tool catalog with accurate annotation
         });
         expect(tool.inputSchema).toMatchObject({ additionalProperties: false });
       }
-      expect(tools[10]?.annotations).toMatchObject({
+      expect(tools[11]?.annotations).toMatchObject({
         readOnlyHint: false,
         destructiveHint: false,
         openWorldHint: true,
       });
-      expect(tools[10]?.inputSchema).toMatchObject({
+      expect(tools[11]?.inputSchema).toMatchObject({
         additionalProperties: false,
         required: ['mode'],
         properties: {
@@ -185,12 +207,12 @@ test('registers the exact ordered fourteen-tool catalog with accurate annotation
           filePath: expect.any(Object),
         },
       });
-      expect(tools[11]?.annotations).toMatchObject({
+      expect(tools[12]?.annotations).toMatchObject({
         readOnlyHint: false,
         destructiveHint: true,
         openWorldHint: true,
       });
-      expect(tools[12]).toMatchObject({
+      expect(tools[13]).toMatchObject({
         name: 'rsdoctor_analyze',
         annotations: {
           readOnlyHint: true,
@@ -202,7 +224,7 @@ test('registers the exact ordered fourteen-tool catalog with accurate annotation
           required: ['dataFile', 'toolName'],
         },
       });
-      expect(tools[13]).toMatchObject({
+      expect(tools[14]).toMatchObject({
         name: 'report_link',
         annotations: {
           readOnlyHint: true,
@@ -304,6 +326,17 @@ test('publishes discoverable descriptions for opaque and conditional tool inputs
           description:
             'Checkout-relative Rstack config path; defaults to ordinary discovery in packageRoot.',
         },
+        execution: {
+          description:
+            'Explicitly enable aggregate Istanbul execution coverage for this one test run.',
+          properties: {
+            include: expect.objectContaining({ type: 'array', maxItems: 200 }),
+            exclude: expect.objectContaining({ type: 'array', maxItems: 200 }),
+            allowExternal: expect.objectContaining({ type: 'boolean' }),
+          },
+          additionalProperties: false,
+          type: 'object',
+        },
       });
       expect(toolByName.get('rsdoctor_analyze')?.inputSchema.properties).toMatchObject({
         toolName: {
@@ -322,6 +355,68 @@ test('publishes discoverable descriptions for opaque and conditional tool inputs
           ],
         },
       });
+    });
+  });
+});
+
+test('returns compact code evidence and rejects an unpaired artifact selector', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await withMcpClient(workspaceRoot, async (client) => {
+      const result = await client.callTool({
+        name: 'code_evidence',
+        arguments: { path: './src\\value.ts', line: 2 },
+      });
+      expect(result).toMatchObject({
+        content: [
+          {
+            type: 'text',
+            text: 'Code evidence for src/value.ts: coverage=unavailable, test=unknown, diagnostics=0, module=not-requested. See structuredContent for complete data.',
+          },
+        ],
+        structuredContent: {
+          path: 'src/value.ts',
+          line: 2,
+          executionCoverage: { state: 'unavailable', reason: 'no-test-snapshot' },
+          testOutcome: { state: 'unknown' },
+          diagnostics: { total: 0, returned: 0, truncated: false, items: [] },
+        },
+      });
+
+      const invalid = await client.callTool({
+        name: 'code_evidence',
+        arguments: { path: 'src/value.ts', dataFile: 'rsdoctor-data.json' },
+      });
+      expect(invalid).toMatchObject({
+        isError: true,
+        content: [{ type: 'text', text: 'contextId and dataFile must be supplied together.' }],
+      });
+    });
+  });
+});
+
+test('includes artifact binding in compact code evidence module text', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await cp(reachabilityFixture, workspaceRoot, { recursive: true });
+    const context = { contextId: 'ctx_app', packageRoot: '.', product: 'application' } as const;
+    expect(
+      await writeContextRunManifest(workspaceRoot, createRun('run_app', context)),
+    ).toMatchObject({ written: true });
+
+    await withMcpClient(workspaceRoot, async (client) => {
+      const result = await client.callTool({
+        name: 'code_evidence',
+        arguments: {
+          path: 'src/live.ts',
+          contextId: context.contextId,
+          dataFile: 'rsdoctor-data.json',
+        },
+      });
+      expect(result.content).toEqual([
+        {
+          type: 'text',
+          text: 'Code evidence for src/live.ts: coverage=unavailable, test=unknown, diagnostics=0, module=reachable(binding=explicit-unverified). See structuredContent for complete data.',
+        },
+      ]);
     });
   });
 });

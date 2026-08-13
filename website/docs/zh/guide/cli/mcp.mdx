@@ -12,7 +12,7 @@ import { PackageManagerTabs } from '@rspress/core/theme';
 rs mcp
 ```
 
-服务器通过标准输入和输出通信，因此 stdout 仅用于 MCP 协议消息。它会根据命令的启动路径解析检出目录，并公开十四个工具：`project_status`、`product_roots`、`unused_candidates`、`dead_code_explain`、`module_impact`、`snapshot_list`、`diagnostics_list`、`test_results`、`snapshot_diff`、`lint_fix_preview`、`lint_snapshot`、`test_snapshot`、`rsdoctor_analyze` 和 `report_link`。
+服务器通过标准输入和输出通信，因此 stdout 仅用于 MCP 协议消息。它会根据命令的启动路径解析检出目录，并公开十五个工具：`project_status`、`product_roots`、`unused_candidates`、`dead_code_explain`、`module_impact`、`code_evidence`、`snapshot_list`、`diagnostics_list`、`test_results`、`snapshot_diff`、`lint_fix_preview`、`lint_snapshot`、`test_snapshot`、`rsdoctor_analyze` 和 `report_link`。
 
 工具成功响应时，`content` 会保持紧凑以便用于对话。完整且具有权威性的结果位于 `structuredContent` 中。
 
@@ -87,7 +87,7 @@ Rsbuild 只会为该命令加载已安装的收集器。构建会在检出目录
 
 `lint_snapshot` 是明确执行操作。它会针对文件模式（默认为 `['.']`）或一个给定文本缓冲区运行一次 Rslint，然后记录诊断和可选的修复输出，但不会写入源文件。可选的 `packageRoot` 和 `configPath` 会按上述规则选择 monorepo 包和 Rstack 配置。其标注为 `readOnlyHint: false`、`destructiveHint: false` 和 `openWorldHint: true`，因为它会加载配置并运行 lint。调用前应先询问用户。
 
-`test_snapshot` 也是明确执行操作。它会调用一次已安装的实验性 `runRstest()` API，可按文件或测试名称模式缩小范围，并记录结构化摘要，不启动 watch 模式，也不记录控制台流或覆盖率大对象。它接受相同的可选检出目录相对路径 `packageRoot` 和 `configPath` 选择器。其标注为 `readOnlyHint: false`、`destructiveHint: true` 和 `openWorldHint: true`，因为它会执行项目配置和测试。调用前应先询问用户。
+`test_snapshot` 也是明确执行操作。它会调用一次已安装的实验性 `runRstest()` API，可按文件或测试名称模式缩小范围，并记录结构化摘要，不启动 watch 模式，也不记录控制台流。它接受相同的可选检出目录相对路径 `packageRoot` 和 `configPath` 选择器。可选的 `execution` 对象会为这一次运行明确启用 Istanbul 聚合覆盖率；其中 `include` 和 `exclude` 数组最多各接受 200 个模式，`allowExternal` 默认为 false。省略 `execution` 时不会启用覆盖率。其标注为 `readOnlyHint: false`、`destructiveHint: true` 和 `openWorldHint: true`，因为它会执行项目配置和测试。调用前应先询问用户。
 
 新鲜度按生产者和快照分别判断：
 
@@ -99,6 +99,17 @@ Rsbuild 只会为该命令加载已安装的收集器。构建会在检出目录
 构建观测只会为已加载的 Rstack 配置文件及其已加载的配置依赖生成指纹。因此，当这些输入仍然匹配时，构建观测最多为 `partial`；任何已记录的配置输入发生变化或缺失时则变为 `stale`。它们不会声称覆盖应用依赖图。
 
 新鲜的构建结果并不会让 lint 或测试证据自动变得新鲜。如需选择相关测试，请明确运行 `rs test list --related <files> --json`；它不是 MCP 工具。
+
+### 代码证据 {#code-evidence}
+
+`code_evidence` 是只读的精确路径查询。给定相对于检出目录的源文件 `path` 和可选 `line` 后，它会组合包根目录包含该路径的最新 Rstest 与 Rslint 快照。也可以通过明确的 `testSnapshotId` 和 `lintSnapshotId` 选择某个时间点的证据。它分别报告四个独立表面：
+
+- 聚合执行覆盖率：`observed`、`not-observed`、`unknown` 或 `unavailable`；
+- 所选 Rstest facet 中该精确路径的结果：`failed`、`passed`、`not-run` 或 `unknown`；
+- 精确路径的 Rslint 与 Rstest 诊断；以及
+- 同时提供 `contextId` 和 `dataFile` 时的可选制品模块轴。
+
+`observed` 要求已存储的语句、函数或分支臂命中数为正，并且当前文件摘要精确匹配。`not-observed` 还要求已插桩全集完整、未截断，并存在命中数为零的相关位置。摘要过期、路径缺失、全集不完整或 provider 缺失时，结果仍是不确定的。测试结果只描述其自身路径与查询精确匹配的记录；没有精确记录时返回 `unknown` 和原因 `no-exact-test-record`，只有存在匹配的跳过或待办记录时才返回 `not-run`。它不会推断源文件与测试之间的关系。诊断以 `{ total, returned, truncated, items }` 返回，最多包含 200 个条目。可选模块轴会先尝试完整工作区路径，再回退到包相对路径；它分别保留生产可达性、公共契约状态、是否进入产物以及优化器保留状态，并报告制品绑定，而不会组合不匹配的证据。
 
 ## 第 4 阶段变更复核 \{#phase-4-change-review}
 

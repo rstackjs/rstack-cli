@@ -225,7 +225,7 @@ sequenceDiagram
 | Rslib/Rspack   | `context.enabled: true` on Rstack lib | The same metadata per generated library environment                     |
 | Rsdoctor       | Explicit `dataFile` in an MCP query   | Agent CLI results and normalized artifact module graph                  |
 | Rslint         | Explicit `lint_snapshot`              | File diagnostics, totals, input digests, optional fixed-output preview  |
-| Rstest         | Explicit one-shot `test_snapshot`     | File, case, error, status, totals, and partial input provenance         |
+| Rstest         | Explicit one-shot `test_snapshot`     | File, case, error, status, totals, and optional aggregate execution     |
 
 Standalone Rspack processes are not automatically observed. In this implementation, Rspack metadata
 arrives through the Rsbuild-compatible observer used by Rstack's app and library commands.
@@ -309,11 +309,42 @@ When `includeFixPreview` is true, the snapshot may contain whole-file fixed outp
 
 `test_snapshot` runs Rstest once through its programmatic API. The request can limit files and a test
 name pattern. The resulting snapshot records normalized test files, cases, errors, totals, and the
-run status. The source-input set is marked partial because the current adapter records observed test
-files rather than a complete dependency graph.
+run status. An explicit `execution` request also enables Istanbul for that one run and stores bounded
+aggregate statement, function, and branch-arm locations with exact source digests. It does not
+attribute coverage to individual tests. The source-input set remains partial because the adapter
+does not record a complete dependency graph.
 
 The branch does not attach to an existing watch process, control watch cycles, or keep a resident
 Rstest session.
+
+### Exact-path code evidence
+
+`code_evidence` composes existing immutable records for one checkout-relative source path. It
+selects the newest Rstest and Rslint snapshots whose package root contains the path unless explicit
+snapshot IDs are supplied. An optional line narrows aggregate coverage locations. Both `contextId`
+and `dataFile` are required to add an artifact module axis; no artifact is guessed.
+
+```mermaid
+flowchart LR
+  Path["Exact source path<br/>and optional line"] --> Join["code_evidence"]
+  Test["Selected Rstest snapshot"] --> Join
+  Lint["Selected Rslint snapshot"] --> Join
+  Artifact["Optional exact-bound<br/>Rsdoctor artifact"] --> Join
+  Join --> Coverage["Aggregate execution<br/>observed / not-observed / unknown"]
+  Join --> Outcome["Exact-path test outcome"]
+  Join --> Diagnostics["Exact-path diagnostics"]
+  Join --> Module["Independent module state axes"]
+```
+
+Positive execution requires a positive stored hit and an exact current source digest. A zero-hit
+result becomes `not-observed` only when the instrumented universe is complete and untruncated and
+relevant locations exist. Missing, stale, partial, or truncated evidence stays unknown or
+unavailable. Test outcomes do not imply a source-to-test relation, and module reachability,
+shipment, public contract, and optimizer retention remain separate from runtime evidence.
+No exact test record is unknown rather than not-run; not-run requires matching skipped or todo
+records. Exact-path diagnostics are deterministically bounded to 200 items and report their total
+and truncation. Module selection tries the workspace path before a package-relative fallback so
+identical paths in sibling packages remain distinguishable.
 
 ### Freshness and compatible diffs
 
@@ -363,7 +394,7 @@ subscriptions, or a separate Rsdoctor MCP server.
 
 ### Tool catalog
 
-The implemented server exposes these 14 tools:
+The implemented server exposes these 15 tools:
 
 | Tool                | Kind               | Purpose                                                               |
 | ------------------- | ------------------ | --------------------------------------------------------------------- |
@@ -372,6 +403,7 @@ The implemented server exposes these 14 tools:
 | `unused_candidates` | Query              | List artifact-scoped unreachable module candidates.                   |
 | `dead_code_explain` | Query              | Explain one module's reachability, conservative retention, or bounds. |
 | `module_impact`     | Query              | Traverse dependencies or dependents in one explicit artifact graph.   |
+| `code_evidence`     | Query              | Join bounded exact-path evidence without collapsing independent axes. |
 | `snapshot_list`     | Query              | Page immutable snapshots by producer or context.                      |
 | `diagnostics_list`  | Query              | Page normalized Rslint or Rstest diagnostics.                         |
 | `test_results`      | Query              | Page normalized test cases from a completed Rstest snapshot.          |
@@ -477,7 +509,7 @@ flowchart LR
   P01["Phase 0/1<br/>foundation, passive build records,<br/>Rsdoctor analysis, report links<br/>implemented"]
   P2["Phase 2<br/>module artifact reachability<br/>and plugin bundles<br/>implemented"]
   P3["Phase 3<br/>explicit one-shot Rslint/Rstest<br/>snapshots and queries<br/>implemented"]
-  P4["Phase 4<br/>compatible diffs, lint preview,<br/>and six skills<br/>implemented"]
+  P4["Phase 4<br/>compatible diffs, exact-path evidence,<br/>and six skills<br/>implemented"]
   P5["Phase 5<br/>no custom GUI or remote transport;<br/>reuse headless MCP + Rsdoctor GUI<br/>resolved"]
 
   P01 --> P2 --> P3 --> P4 --> P5
@@ -514,11 +546,12 @@ Implemented downstream:
 
 - one-shot Rslint snapshots with normalized diagnostics;
 - one-shot Rstest snapshots with normalized file and case results;
+- optional bounded aggregate Istanbul execution evidence;
 - producer-specific freshness; and
 - paginated snapshot, diagnostic, and test-result queries.
 
-Passive lint/test attachment, watch control, resident workers, type-check/timing capture, coverage,
-and related-test graph APIs remain deferred.
+Passive lint/test attachment, watch control, resident workers, type-check/timing capture,
+per-test coverage attribution, and related-test graph APIs remain deferred.
 
 ### Phase 4: review workflows
 
@@ -526,6 +559,7 @@ Implemented downstream:
 
 - compatibility-checked diagnostic and test diffs;
 - stored lint fixed-output previews without apply;
+- the `code_evidence` exact-path composition query;
 - `debug-dev-cycle` and `review-context-change`; and
 - the complete six-skill set in both plugin bundles.
 
@@ -540,9 +574,9 @@ a human needs the richer visualization. A future presentation layer should be co
 a specific workflow cannot be expressed clearly through the current structured tools and report
 link.
 
-### Future phase: multi-axis usage evidence (deferred)
+### Multi-axis usage evidence
 
-A later phase may adapt Hawk's central idea: collect static compiler-graph fragments for production
+This branch begins adapting Hawk's central idea: collect independent evidence for production
 and non-production targets, then decide reachability only after those fragments are joined. Hawk's
 non-production graph shows what test and development targets import or reach; it is not runtime
 coverage and does not prove that a test or branch executed.
@@ -569,13 +603,17 @@ evidence; it should not duplicate those compiler graphs or test instrumentation.
 
 The lean delivery sequence is:
 
-1. Aggregate existing Istanbul evidence and the existing Rstest related-file CLI output into
-   immutable snapshots.
-2. Consume upstream Rstest test-file attribution and watch-cycle events when they are available.
-3. Join axes only when workspace, package, context, and exact input or graph digests match; otherwise
+1. Aggregate existing Istanbul evidence into immutable snapshots and expose it through bounded
+   exact-path composition. This branch implements this step.
+2. Add the existing Rstest related-file CLI output as a distinct static relation when a stable
+   structured seam is available.
+3. Consume upstream Rstest test-file attribution and watch-cycle events when they are available.
+4. Join axes only when workspace, package, context, and exact input or graph digests match; otherwise
    report the evidence separately with its freshness.
 
-This phase remains future work and does not add to or change the current 14-tool MCP contract.
+The implemented `code_evidence` query covers only aggregate execution, exact-path outcomes and
+diagnostics, and an optional explicit artifact module. It does not claim per-test attribution or a
+source-to-test relationship.
 
 ## Deferred extensions
 
@@ -584,7 +622,7 @@ The following are potential later work, not part of the implemented contract:
 - supported Rsdoctor export-usage and local-binding data;
 - direct standalone Rspack instrumentation;
 - passive Rslint/Rstest sessions and watch-cycle control;
-- the multi-axis test, coverage, shipment, and contract evidence described above;
+- static related-test evidence, per-test coverage attribution, and watch-cycle evidence;
 - build, lint, or test subscriptions;
 - CI artifact import/export and performance gates;
 - source mutation and apply/verify flows;
@@ -607,8 +645,9 @@ The downstream implementation includes focused coverage for:
 - application and library root resolution;
 - reachability, explanations, and impact traversal;
 - Rslint and Rstest snapshot normalization and freshness;
+- aggregate execution normalization and exact-path code evidence;
 - paging, compatible diffs, and lint previews;
-- the full MCP tool catalog and stdio behavior; and
+- the 15-tool MCP catalog and stdio behavior; and
 - both plugin manifests, MCP registration, and six-skill layouts.
 
 The branch's repository verification matrix is `pnpm check`, `pnpm check:spell`, `pnpm build`,

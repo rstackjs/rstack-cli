@@ -2,6 +2,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ContentBlock } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
+import { readCodeEvidence, type CodeEvidenceResult } from './codeEvidence.ts';
 import { diffContextSnapshots } from './diff.ts';
 import { captureLintSnapshot, getLintFixPreview, listDiagnostics } from './lint.ts';
 import {
@@ -89,6 +90,26 @@ const moduleImpactInput = z
     dataFile: rsdoctorDataFileInput,
     module: moduleSelectorInput,
     direction: z.enum(['dependencies', 'dependents']).optional(),
+    maxDepth: z.number().int().min(1).max(16).optional(),
+  })
+  .strict();
+
+const codeEvidenceInput = z
+  .object({
+    path: z.string().min(1).describe('Checkout-relative source path to inspect.'),
+    line: z.number().int().min(1).optional(),
+    contextId: contextIdInput.optional(),
+    dataFile: rsdoctorDataFileInput.optional(),
+    testSnapshotId: z
+      .string()
+      .min(1)
+      .describe('Explicit completed Rstest snapshot ID; defaults to the newest containing package.')
+      .optional(),
+    lintSnapshotId: z
+      .string()
+      .min(1)
+      .describe('Explicit completed Rslint snapshot ID; defaults to the newest containing package.')
+      .optional(),
     maxDepth: z.number().int().min(1).max(16).optional(),
   })
   .strict();
@@ -191,6 +212,15 @@ const testSnapshotInput = z
     testNamePattern: z.string().min(1).optional(),
     packageRoot: packageRootInput.optional(),
     configPath: configPathInput.optional(),
+    execution: z
+      .object({
+        include: z.array(z.string()).max(200).optional(),
+        exclude: z.array(z.string()).max(200).optional(),
+        allowExternal: z.boolean().optional(),
+      })
+      .strict()
+      .describe('Explicitly enable aggregate Istanbul execution coverage for this one test run.')
+      .optional(),
   })
   .strict();
 
@@ -258,6 +288,17 @@ const toStructuredMcpResult = <Result extends object>(result: Result) => ({
   content: [{ type: 'text' as const, text: formatStructuredResult(result) }],
   structuredContent: result,
 });
+
+const formatCodeEvidence = (result: CodeEvidenceResult): string => {
+  const diagnostics = result.diagnostics.truncated
+    ? `${result.diagnostics.returned}/${result.diagnostics.total}(truncated)`
+    : String(result.diagnostics.returned);
+  const module =
+    result.module === undefined
+      ? 'not-requested'
+      : `${result.module.classification}(binding=${result.module.provenance.artifactBinding})`;
+  return `Code evidence for ${result.path}: coverage=${result.executionCoverage.state}, test=${result.testOutcome.state}, diagnostics=${diagnostics}, module=${module}. See structuredContent for complete data.`;
+};
 
 const isLiteralEmpty = (value: unknown): boolean =>
   value === '' ||
@@ -508,6 +549,28 @@ const createContextMcpServer = (
           maxDepth,
         });
         return toStructuredMcpResult(result);
+      } catch (error) {
+        return toMcpError(error);
+      }
+    },
+  );
+
+  server.registerTool(
+    'code_evidence',
+    {
+      title: 'Inspect code evidence',
+      description:
+        'Join exact-path aggregate execution, test outcome, diagnostics, and optional explicit artifact module evidence without collapsing their bounds.',
+      inputSchema: codeEvidenceInput,
+      annotations: readOnlyAnnotations,
+    },
+    async (input) => {
+      try {
+        const result = await readCodeEvidence(workspaceRoot, input);
+        return {
+          content: [{ type: 'text', text: formatCodeEvidence(result) }],
+          structuredContent: result,
+        };
       } catch (error) {
         return toMcpError(error);
       }

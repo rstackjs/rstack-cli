@@ -24,7 +24,16 @@ description: Find artifact-scoped Rstack modules unreachable from observed produ
 6. Choose the strongest returned candidate across all pages from its confidence, state, evidence,
    and bounds. Call
    `dead_code_explain` for that module.
-7. Report why it is a candidate, the exhausted root sets, state axes, analysis/result truncation,
+7. When runtime or test evidence would help prioritize that candidate, call `code_evidence` with
+   its exact checkout-relative path and the same explicit `contextId` and `dataFile`. Keep execution
+   coverage, test outcome, diagnostics, and module state separate; no one axis proves another.
+   Check `diagnostics.truncated`; when true, report the returned and total counts instead of
+   presenting the diagnostic items as exhaustive.
+8. Report why it is a candidate, the exhausted root sets, state axes, analysis/result truncation,
    bounds, and provenance.
 
-Call every result an **artifact-scoped unreachable module candidate**. State that completely unimported files never entered the artifact graph and are outside this analysis. Recommend source and runtime verification before editing. Never equate a candidate with an unused local symbol or recommend deletion from this evidence alone.
+Call every result an **artifact-scoped unreachable module candidate**. State that completely
+unimported files never entered the artifact graph and are outside this analysis. Recommend source
+and runtime verification before editing. Never equate a candidate with an unused local symbol or
+recommend deletion from this evidence alone. Observed or unobserved aggregate execution does not
+prove code is dead.

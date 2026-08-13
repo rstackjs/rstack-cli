@@ -84,6 +84,28 @@ test('continues unused candidates through every returned page', async () => {
   expect(skill).toContain('same `contextid`, `datafile`, and `limit`');
 });
 
+test('routes runtime and diagnostics questions through code evidence without collapsing axes', async () => {
+  for (const skillName of [
+    'find-unused-code',
+    'explain-dead-code',
+    'debug-dev-cycle',
+    'review-context-change',
+  ] as const) {
+    const skill = normalized(await readSkill('rstack-codex', skillName));
+
+    expect(skill).toContain('`code_evidence`');
+    expect(skill).toContain('exact checkout-relative path');
+    expect(skill).toContain('diagnostics.truncated');
+  }
+  for (const skillName of ['find-unused-code', 'explain-dead-code'] as const) {
+    const skill = normalized(await readSkill('rstack-codex', skillName));
+    expect(skill).toContain(
+      'keep execution coverage, test outcome, diagnostics, and module state separate',
+    );
+    expect(skill).toContain('does not prove code is dead');
+  }
+});
+
 test('recovers a context review through compatible completed snapshots', async () => {
   const pluginSkill = await readSkill('rstack-codex', 'review-context-change');
   const normalizedPluginSkill = normalized(pluginSkill);

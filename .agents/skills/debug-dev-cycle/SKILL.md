@@ -23,7 +23,12 @@ description: Diagnose current Rstack lint or test failures from stored evidence,
    ordinary `rstack.config.ts|js|mts|mjs` in the selected package. Never start watch mode.
 6. Surface the first actionable failure with its project, path, test name or rule, and recorded
    message. Then summarize remaining failures briefly.
-7. When the user asks to select related tests, recommend
+7. When aggregate execution or cross-producer diagnostics would help explain one file, call
+   `code_evidence` with its exact checkout-relative path and the selected `testSnapshotId` or
+   `lintSnapshotId`. Treat each returned axis and its freshness or completeness independently.
+   Check `diagnostics.truncated`; when true, report the returned and total counts before the first
+   actionable items.
+8. When the user asks to select related tests, recommend
    `rs test list --related <files> --json`; related selection is not an MCP tool.
 
 Use `lint_fix_preview` only when the lint snapshot recorded a preview. Do not apply it. Recommend

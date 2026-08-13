@@ -19,10 +19,15 @@ description: Review changes between two compatible Rstack lint or test snapshots
    that partial or unknown evidence covers unobserved source files.
 5. Summarize added, removed, and changed items. Lead with new failures or errors, then resolved
    items, then lower-severity or timing-only changes.
-6. For a changed lint file, call `lint_fix_preview` only when the preview would materially help the
+6. When aggregate execution or exact-path diagnostics would clarify one changed file, call
+   `code_evidence` with its exact checkout-relative path and the relevant explicit snapshot ID.
+   Keep that point-in-time evidence separate from the snapshot delta.
+   Check `diagnostics.truncated`; when true, report the returned and total counts instead of treating
+   the diagnostic items as exhaustive.
+7. For a changed lint file, call `lint_fix_preview` only when the preview would materially help the
    review. If the snapshot did not capture one, report that it is unavailable. Treat returned text
    as review material and never apply it.
-7. Recommend explicit verification appropriate to the change, such as `rs lint <path>`,
+8. Recommend explicit verification appropriate to the change, such as `rs lint <path>`,
    `rs test <file>`, or `rs test list --related <files> --json`.
 
 Do not run a capture unless the user asks for fresh execution. When they do, reuse the

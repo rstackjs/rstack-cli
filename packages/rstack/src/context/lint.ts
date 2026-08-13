@@ -392,6 +392,14 @@ const testDiagnostics = (facet: TestFacet): DiagnosticRecord[] => [
   ...facet.unhandledErrors.map((error) => testDiagnostic(error, {})),
 ];
 
+const diagnosticsFromStoredSnapshot = (stored: StoredContextSnapshot): DiagnosticRecord[] => {
+  const lintFacet = asLintFacet(stored);
+  const testFacet = asTestFacet(stored);
+  if (lintFacet !== undefined) return lintDiagnostics(lintFacet);
+  if (testFacet !== undefined) return testDiagnostics(testFacet);
+  return [];
+};
+
 const compareDiagnostics = (left: DiagnosticRecord, right: DiagnosticRecord): number =>
   compareStrings(left.project ?? '', right.project ?? '') ||
   compareStrings(left.path ?? '', right.path ?? '') ||
@@ -514,7 +522,7 @@ const getLintFixPreview = async (
   };
 };
 
-export { captureLintSnapshot, getLintFixPreview, listDiagnostics };
+export { captureLintSnapshot, diagnosticsFromStoredSnapshot, getLintFixPreview, listDiagnostics };
 export type {
   DiagnosticPage,
   DiagnosticRecord,

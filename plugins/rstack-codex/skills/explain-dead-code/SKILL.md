@@ -22,6 +22,13 @@ description: Explain whether one Rstack artifact module is reachable, conservati
    **unreachable module candidate**, or **insufficient evidence**.
 6. Show one shortest returned root-to-module path when present, naming its root kind and modules in order.
 7. Report every state axis: production reachability, public contract, shipped, and optimizer retention.
-8. Close with evidence, bounds, and provenance, including `artifactBinding` and build observation when available.
+8. When runtime or test evidence would help, call `code_evidence` with the exact checkout-relative
+   path and the same explicit `contextId` and `dataFile`. Keep execution coverage, test outcome,
+   diagnostics, and module state separate; no one axis proves another.
+   Check `diagnostics.truncated`; when true, report the returned and total counts instead of
+   presenting the diagnostic items as exhaustive.
+9. Close with evidence, bounds, and provenance, including `artifactBinding` and build observation when available.
 
-Do not infer local-symbol or export usage. Treat partial or truncated traversal as insufficient evidence, and describe all conclusions as limited to the explicit artifact graph.
+Do not infer local-symbol or export usage. Treat partial or truncated traversal as insufficient
+evidence, and describe all conclusions as limited to the explicit artifact graph. Observed or
+unobserved aggregate execution does not prove code is dead.
