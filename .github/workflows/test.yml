@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -26,28 +27,47 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        id: changes
+        with:
+          predicate-quantifier: 'every'
+          filters: |
+            changed:
+              - "!**/*.md"
+              - "!**/*.mdx"
+              - "!**/_meta.json"
+              - "!**/_nav.json"
+              - "!**/dictionary.txt"
+
       - name: Setup Node.js
+        if: steps.changes.outputs.changed == 'true'
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24.18.1
           package-manager-cache: false
 
       - name: Install Pnpm
+        if: steps.changes.outputs.changed == 'true'
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
         with:
           run_install: true
 
       - name: Build Packages
+        if: steps.changes.outputs.changed == 'true'
         run: node --run build
 
       - name: Run Rust Tests
+        if: steps.changes.outputs.changed == 'true'
         run: cargo test --profile ci --workspace --locked
 
       - name: Build Native Binding
+        if: steps.changes.outputs.changed == 'true'
         run: pnpm --filter rstack build:native:ci
 
       - name: Check Generated Native Files
+        if: steps.changes.outputs.changed == 'true'
         run: git diff --exit-code -- packages/rstack/binding.cjs packages/rstack/binding.d.cts
 
       - name: Run Test
+        if: steps.changes.outputs.changed == 'true'
         run: node --run test
