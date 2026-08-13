@@ -66,7 +66,7 @@ Rsbuild 只会为该命令加载已安装的收集器。构建会在检出目录
 
 ### 构建上下文 \{#build-context}
 
-`project_status` 返回检出目录本地存储中所有已记录的 Rstack 上下文，包括每个上下文最新可用的已完成构建、lint 或测试快照。
+`project_status` 会为每个已记录的 Rstack `contextId` 返回一个当前条目，并从最新运行中确定性地选择该条目。只有当选中的运行具有已完成快照时，条目才为 `ready`；更早的已完成运行不会使较新的待处理运行变为 `ready`。
 
 ### 产物范围内的模块分析 \{#artifact-scoped-module-analysis}
 
@@ -81,7 +81,7 @@ Rsbuild 只会为该命令加载已安装的收集器。构建会在检出目录
 
 ## 第 3 阶段开发智能 \{#phase-3-development-intelligence}
 
-开发工具复用同一个不可变的检出目录本地存储。`snapshot_list`、`diagnostics_list` 和 `test_results` 均为只读、非破坏性且封闭世界的工具。它们会在每次请求时读取存储，绝不会启动生产者。可选的 `limit` 默认为 50，取值范围为 1 到 200；返回的 `nextCursor` 会按相同的确定性顺序继续读取。
+开发工具复用同一个不可变的检出目录本地存储。`snapshot_list`、`diagnostics_list` 和 `test_results` 均为只读、非破坏性且封闭世界的工具。它们会在每次请求时读取存储，绝不会启动生产者。`snapshot_list` 返回的 lint 条目包含 `metadata.lint.fixPreviewCaptured`，因此客户端无需加载完整 lint facet 即可判断 `lint_fix_preview` 是否可用。可选的 `limit` 默认为 50，取值范围为 1 到 200；返回的 `nextCursor` 会按相同的确定性顺序继续读取。
 
 `lint_snapshot` 是明确执行操作。它会针对文件模式（默认为 `['.']`）或一个给定文本缓冲区运行一次 Rslint，然后记录诊断和可选的修复输出，但不会写入源文件。可选的 `packageRoot` 和 `configPath` 会按上述规则选择 monorepo 包和 Rstack 配置。其标注为 `readOnlyHint: false`、`destructiveHint: false` 和 `openWorldHint: true`，因为它会加载配置并运行 lint。调用前应先询问用户。
 

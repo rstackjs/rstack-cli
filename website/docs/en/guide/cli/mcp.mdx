@@ -69,7 +69,7 @@ This works for Rslib-only repositories, Rsbuild-only repositories, and repositor
 
 ### Build context
 
-`project_status` returns all recorded Rstack contexts from the checkout-local store, including the latest completed build, lint, or test snapshot available for each context.
+`project_status` returns one current row for each recorded Rstack `contextId`, selected deterministically from the latest run. The row is `ready` only when that selected run has a completed snapshot; an older completed run does not make a newer pending run ready.
 
 ### Artifact-scoped module analysis
 
@@ -84,7 +84,7 @@ These results describe modules in one supplied artifact. An unreachable result i
 
 ## Phase 3 development intelligence {#phase-3-development-intelligence}
 
-The development tools reuse the same immutable checkout-local store. `snapshot_list`, `diagnostics_list`, and `test_results` are read-only, non-destructive, and closed-world. They read the store for each request and never start a producer. Their optional `limit` defaults to 50 and accepts 1 through 200; a returned `nextCursor` continues the same deterministic ordering.
+The development tools reuse the same immutable checkout-local store. `snapshot_list`, `diagnostics_list`, and `test_results` are read-only, non-destructive, and closed-world. They read the store for each request and never start a producer. Lint entries from `snapshot_list` include `metadata.lint.fixPreviewCaptured`, so clients can determine whether `lint_fix_preview` is available without loading the full lint facet. Their optional `limit` defaults to 50 and accepts 1 through 200; a returned `nextCursor` continues the same deterministic ordering.
 
 `lint_snapshot` is explicit execution. It runs Rslint once for file patterns (default `['.']`) or one supplied text buffer, then records diagnostics and optional fixed output without writing source files. Its optional `packageRoot` and `configPath` select a monorepo package and Rstack config as described above. It is annotated `readOnlyHint: false`, `destructiveHint: false`, and `openWorldHint: true` because configuration is loaded and lint runs. Ask before calling it.
 

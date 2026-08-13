@@ -52,7 +52,7 @@ test('returns a stable anonymous status for an empty standalone store', async ()
   });
 });
 
-test('projects every monorepo run context in deterministic order without workspace paths', async () => {
+test('projects only the latest run for each context in deterministic order', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await mkdir(path.join(workspaceRoot, 'packages', 'app'), {
       recursive: true,
@@ -73,7 +73,8 @@ test('projects every monorepo run context in deterministic order without workspa
       product: 'library',
       environment: 'esm',
     } as const;
-    const appRun = createRun('run_app', 'rsbuild', '2026-08-12T04:00:00.000Z', appContext);
+    const firstAppRun = createRun('run_app_a', 'rsbuild', '2026-08-12T04:00:00.000Z', appContext);
+    const secondAppRun = createRun('run_app_b', 'rsbuild', '2026-08-12T06:00:00.000Z', appContext);
     const firstLibraryRun = createRun(
       'run_library_a',
       'rslib',
@@ -86,7 +87,18 @@ test('projects every monorepo run context in deterministic order without workspa
       '2026-08-12T05:00:00.000Z',
       libraryContext,
     );
-    const snapshot = {
+    const appSnapshot = {
+      schemaVersion: contextStoreSchemaVersion,
+      snapshotId: 'snap_app_a',
+      runId: firstAppRun.runId,
+      contextId: appContext.contextId,
+      sequence: 1,
+      observedAt: '2026-08-12T04:00:01.000Z',
+      status: 'pass',
+      completeness: { build: 'complete' },
+      facets: { summary: { errors: 0 } },
+    } satisfies ContextSnapshot;
+    const librarySnapshot = {
       schemaVersion: contextStoreSchemaVersion,
       snapshotId: 'snap_library_b',
       runId: secondLibraryRun.runId,
@@ -98,16 +110,22 @@ test('projects every monorepo run context in deterministic order without workspa
       facets: { summary: { errors: 0 } },
     } satisfies ContextSnapshot;
 
-    expect(await writeContextRunManifest(workspaceRoot, secondLibraryRun)).toMatchObject({
+    expect(await writeContextRunManifest(workspaceRoot, firstAppRun)).toMatchObject({
       written: true,
     });
     expect(await writeContextRunManifest(workspaceRoot, firstLibraryRun)).toMatchObject({
       written: true,
     });
-    expect(await writeContextRunManifest(workspaceRoot, appRun)).toMatchObject({
+    expect(await writeContextRunManifest(workspaceRoot, secondLibraryRun)).toMatchObject({
       written: true,
     });
-    expect(await writeContextSnapshot(workspaceRoot, snapshot)).toMatchObject({
+    expect(await writeContextRunManifest(workspaceRoot, secondAppRun)).toMatchObject({
+      written: true,
+    });
+    expect(await writeContextSnapshot(workspaceRoot, appSnapshot)).toMatchObject({
+      written: true,
+    });
+    expect(await writeContextSnapshot(workspaceRoot, librarySnapshot)).toMatchObject({
       written: true,
     });
 
@@ -115,15 +133,9 @@ test('projects every monorepo run context in deterministic order without workspa
 
     expect(status.contexts).toEqual([
       {
-        runId: appRun.runId,
-        producer: appRun.producer,
+        runId: secondAppRun.runId,
+        producer: secondAppRun.producer,
         context: appContext,
-        state: 'pending',
-      },
-      {
-        runId: firstLibraryRun.runId,
-        producer: firstLibraryRun.producer,
-        context: libraryContext,
         state: 'pending',
       },
       {
@@ -131,7 +143,7 @@ test('projects every monorepo run context in deterministic order without workspa
         producer: secondLibraryRun.producer,
         context: libraryContext,
         state: 'ready',
-        latestSnapshot: snapshot,
+        latestSnapshot: librarySnapshot,
         freshness: { state: 'unknown', changedPaths: [] },
       },
     ]);

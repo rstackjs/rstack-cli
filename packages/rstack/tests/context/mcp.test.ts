@@ -10,6 +10,7 @@ import {
   StdioClientTransport,
 } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { expect, test } from 'rstack/test';
+import pkgJson from '../../package.json' with { type: 'json' };
 import {
   captureLintSnapshot,
   captureTestSnapshot,
@@ -47,7 +48,10 @@ const withMcpClient = async (
   callback: (client: Client) => Promise<void>,
   dependencies?: Parameters<typeof createContextMcpServer>[1],
 ): Promise<void> => {
-  const server = createContextMcpServer(workspaceRoot, dependencies);
+  const server = createContextMcpServer(workspaceRoot, {
+    serverVersion: pkgJson.version,
+    ...dependencies,
+  });
   const client = new Client({ name: 'rstack-test-client', version: '1.0.0' });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
 
@@ -81,6 +85,11 @@ test('registers the exact ordered fourteen-tool catalog with accurate annotation
     await withMcpClient(workspaceRoot, async (client) => {
       const { tools } = await client.listTools();
 
+      expect(client.getServerVersion()).toEqual({
+        name: 'rstack-context',
+        version: pkgJson.version,
+      });
+
       expect(tools.map((tool) => tool.name)).toEqual([
         'project_status',
         'product_roots',
@@ -102,7 +111,7 @@ test('registers the exact ordered fourteen-tool catalog with accurate annotation
         name: 'project_status',
         title: 'Rstack context status',
         description:
-          'Return all recorded checkout-local Rstack contexts and their latest completed snapshots.',
+          'Return the current checkout-local Rstack row for each context and its latest completed snapshot.',
         annotations: {
           readOnlyHint: true,
           destructiveHint: false,
@@ -314,6 +323,42 @@ test('analyzes an explicit Rsdoctor artifact', async () => {
         toolName: 'build_summary',
       });
     });
+  });
+});
+
+test('reports a null Rsdoctor analysis without claiming data is available', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    await withMcpClient(
+      workspaceRoot,
+      async (client) => {
+        const result = await client.callTool({
+          name: 'rsdoctor_analyze',
+          arguments: {
+            dataFile: 'artifacts/rsdoctor-data.json',
+            toolName: 'build_summary',
+          },
+        });
+
+        expect(result.content).toEqual([
+          {
+            type: 'text',
+            text: 'Rsdoctor build_summary analysis returned null data.',
+          },
+        ]);
+        expect(result.structuredContent).toEqual({
+          dataFile: 'artifacts/rsdoctor-data.json',
+          result: { data: null, description: 'No build summary.', ok: true },
+          toolName: 'build_summary',
+        });
+      },
+      {
+        analyzeRsdoctorArtifact: async (_workspaceRoot, request) => ({
+          dataFile: request.dataFile,
+          result: { data: null, description: 'No build summary.', ok: true },
+          toolName: request.toolName,
+        }),
+      },
+    );
   });
 });
 
@@ -600,7 +645,7 @@ test('reads the current store for every project status call without workspace pa
         arguments: {},
       });
 
-      expect(firstResult.structuredContent).toMatchObject({
+      expect(firstResult.structuredContent).toEqual({
         schemaVersion: contextStoreSchemaVersion,
         workspaceId: expect.stringMatching(/^ws_[0-9a-f]{24}$/u),
         contexts: [
@@ -613,6 +658,12 @@ test('reads the current store for every project status call without workspace pa
         ],
         issues: [],
       });
+      expect(firstResult.content).toEqual([
+        {
+          type: 'text',
+          text: 'Rstack project status: 1 current context (0 ready, 1 pending); 0 context-store/read issues. See structuredContent for details.',
+        },
+      ]);
 
       expect(await writeContextSnapshot(workspaceRoot, snapshot)).toMatchObject({ written: true });
 
@@ -621,16 +672,27 @@ test('reads the current store for every project status call without workspace pa
         arguments: {},
       });
 
-      expect(secondResult.structuredContent).toMatchObject({
+      expect(secondResult.structuredContent).toEqual({
+        schemaVersion: contextStoreSchemaVersion,
+        workspaceId: expect.stringMatching(/^ws_[0-9a-f]{24}$/u),
         contexts: [
           {
             runId: run.runId,
+            producer: run.producer,
+            context,
             state: 'ready',
             latestSnapshot: snapshot,
+            freshness: { state: 'unknown', changedPaths: [] },
           },
         ],
+        issues: [],
       });
-      expect(JSON.stringify(secondResult.content)).not.toContain(workspaceRoot);
+      expect(secondResult.content).toEqual([
+        {
+          type: 'text',
+          text: 'Rstack project status: 1 current context (1 ready, 0 pending); 0 context-store/read issues. See structuredContent for details.',
+        },
+      ]);
     });
   });
 });
@@ -649,7 +711,12 @@ test('returns a valid empty project status', async () => {
         contexts: [],
         issues: [],
       });
-      expect(JSON.stringify(result.content)).not.toContain(workspaceRoot);
+      expect(result.content).toEqual([
+        {
+          type: 'text',
+          text: 'Rstack project status: 0 current contexts (0 ready, 0 pending); 0 context-store/read issues. See structuredContent for details.',
+        },
+      ]);
     });
   });
 });
@@ -789,7 +856,13 @@ test('queries immutable lint and test snapshots with paging, diffs, and previews
       });
       expect(nextSnapshots.structuredContent).toMatchObject({
         total: 2,
-        items: [{ snapshotId: 'snap_lint', producer: 'rslint' }],
+        items: [
+          {
+            snapshotId: 'snap_lint',
+            producer: 'rslint',
+            metadata: { lint: { fixPreviewCaptured: false } },
+          },
+        ],
       });
       expect(nextSnapshots.structuredContent).not.toHaveProperty('nextCursor');
 
@@ -1146,7 +1219,10 @@ test('loads distinct package lint and test configs through the built root MCP', 
       await mkdir(path.join(packageRoot, 'src'), { recursive: true });
       await writeFile(
         path.join(packageRoot, 'package.json'),
-        JSON.stringify({ name: `@repo/${path.basename(packageRoot)}`, type: 'module' }),
+        JSON.stringify({
+          name: `@repo/${path.basename(packageRoot)}`,
+          type: 'module',
+        }),
       );
       await writeFile(path.join(packageRoot, 'src/index.ts'), 'debugger;\n');
       await writeFile(
@@ -1165,10 +1241,17 @@ define.test({ include: ['./tests/*.never.ts'], passWithNoTests: ${fixture.testSt
       env: getDefaultEnvironment(),
       stderr: 'pipe',
     });
-    const client = new Client({ name: 'rstack-package-config-test', version: '1.0.0' });
+    const client = new Client({
+      name: 'rstack-package-config-test',
+      version: '1.0.0',
+    });
 
     try {
       await client.connect(transport);
+      expect(client.getServerVersion()).toEqual({
+        name: 'rstack-context',
+        version: pkgJson.version,
+      });
       const lintResults = await Promise.all(
         packages.map((fixture) =>
           client.callTool({

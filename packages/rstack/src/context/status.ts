@@ -30,23 +30,45 @@ const readProjectStatus = async (workspaceRoot: string): Promise<ProjectStatus> 
   const workspace = await readContextWorkspaceStatus(workspaceRoot);
   const workspacePath = await realpath(workspaceRoot);
   const workspaceId = `ws_${createHash('sha256').update(workspacePath).digest('hex').slice(0, 24)}`;
+  const currentByContextId = new Map<
+    string,
+    (typeof workspace.runs)[number]['contexts'][number] & {
+      run: (typeof workspace.runs)[number]['run'];
+    }
+  >();
+
+  for (const { run, contexts } of workspace.runs) {
+    for (const contextStatus of contexts) {
+      const current = currentByContextId.get(contextStatus.context.contextId);
+      if (
+        current === undefined ||
+        compareStrings(current.run.startedAt, run.startedAt) < 0 ||
+        (current.run.startedAt === run.startedAt &&
+          compareStrings(current.run.runId, run.runId) < 0)
+      ) {
+        currentByContextId.set(contextStatus.context.contextId, {
+          ...contextStatus,
+          run,
+        });
+      }
+    }
+  }
+
   const contexts = (
     await Promise.all(
-      workspace.runs.flatMap(({ run, contexts: runContexts }) =>
-        runContexts.map(async ({ context, latestSnapshot }) => ({
-          runId: run.runId,
-          producer: run.producer,
-          context,
-          state: latestSnapshot === undefined ? ('pending' as const) : ('ready' as const),
-          ...(latestSnapshot === undefined
-            ? {}
-            : {
-                latestSnapshot,
-                freshness: await assessSnapshotFreshness(workspaceRoot, latestSnapshot),
-              }),
-          startedAt: run.startedAt,
-        })),
-      ),
+      [...currentByContextId.values()].map(async ({ run, context, latestSnapshot }) => ({
+        runId: run.runId,
+        producer: run.producer,
+        context,
+        state: latestSnapshot === undefined ? ('pending' as const) : ('ready' as const),
+        ...(latestSnapshot === undefined
+          ? {}
+          : {
+              latestSnapshot,
+              freshness: await assessSnapshotFreshness(workspaceRoot, latestSnapshot),
+            }),
+        startedAt: run.startedAt,
+      })),
     )
   )
     .sort(compareProjectContexts)

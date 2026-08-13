@@ -10,6 +10,7 @@ import {
   readProductRoots,
   traceModuleImpact,
 } from './queries.ts';
+import { validateLintFacet } from './records.ts';
 import { analyzeRsdoctorArtifact } from './rsdoctor.ts';
 import { resolveRsdoctorReport } from './report.ts';
 import { assessSnapshotFreshness } from './source.ts';
@@ -17,8 +18,10 @@ import { readProjectStatus } from './status.ts';
 import { readContextSnapshots } from './store.ts';
 import { captureTestSnapshot, listTestResults, type TestSnapshotRequest } from './testRun.ts';
 
+declare const RSTACK_VERSION: string;
+
 const renderProjectStatus = (status: Awaited<ReturnType<typeof readProjectStatus>>): string =>
-  JSON.stringify(status, null, 2);
+  `Rstack project status: ${status.contexts.length} current context${status.contexts.length === 1 ? '' : 's'} (${status.contexts.filter(({ state }) => state === 'ready').length} ready, ${status.contexts.filter(({ state }) => state === 'pending').length} pending); ${status.issues.length} context-store/read issue${status.issues.length === 1 ? '' : 's'}. See structuredContent for details.`;
 
 const rsdoctorAnalyzeInput = z
   .object({
@@ -165,8 +168,10 @@ const toMcpError = (error: unknown) => ({
 });
 
 type ContextMcpDependencies = {
+  analyzeRsdoctorArtifact?: typeof analyzeRsdoctorArtifact;
   captureLintSnapshot?: typeof captureLintSnapshot;
   captureTestSnapshot?: typeof captureTestSnapshot;
+  serverVersion?: string;
 };
 
 const readOnlyAnnotations = {
@@ -192,17 +197,29 @@ const listSnapshots = async (workspaceRoot: string, input: z.infer<typeof snapsh
   const offset = decodeSnapshotCursor(input.cursor);
   const selected = snapshots.slice(offset, offset + input.limit);
   const items = await Promise.all(
-    selected.map(async ({ run, context, snapshot }) => ({
-      snapshotId: snapshot.snapshotId,
-      runId: run.runId,
-      producer: run.producer,
-      context,
-      sequence: snapshot.sequence,
-      observedAt: snapshot.observedAt,
-      status: snapshot.status,
-      completeness: snapshot.completeness,
-      freshness: await assessSnapshotFreshness(workspaceRoot, snapshot),
-    })),
+    selected.map(async ({ run, context, snapshot }) => {
+      const lintFacet = validateLintFacet(snapshot.facets.lint);
+      return {
+        snapshotId: snapshot.snapshotId,
+        runId: run.runId,
+        producer: run.producer,
+        context,
+        sequence: snapshot.sequence,
+        observedAt: snapshot.observedAt,
+        status: snapshot.status,
+        completeness: snapshot.completeness,
+        ...(lintFacet === undefined
+          ? {}
+          : {
+              metadata: {
+                lint: {
+                  fixPreviewCaptured: lintFacet.fixPreviewCaptured,
+                },
+              },
+            }),
+        freshness: await assessSnapshotFreshness(workspaceRoot, snapshot),
+      };
+    }),
   );
   const nextOffset = offset + items.length;
   return {
@@ -221,7 +238,7 @@ const createContextMcpServer = (
   const server = new McpServer(
     {
       name: 'rstack-context',
-      version: '1.0.0',
+      version: dependencies.serverVersion ?? RSTACK_VERSION,
     },
     {
       instructions:
@@ -234,7 +251,7 @@ const createContextMcpServer = (
     {
       title: 'Rstack context status',
       description:
-        'Return all recorded checkout-local Rstack contexts and their latest completed snapshots.',
+        'Return the current checkout-local Rstack row for each context and its latest completed snapshot.',
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -547,16 +564,36 @@ const createContextMcpServer = (
     },
     async ({ dataFile, input, toolName }) => {
       try {
-        const analysis = await analyzeRsdoctorArtifact(workspaceRoot, {
-          dataFile,
-          input,
-          toolName,
-        });
+        const analysis = await (dependencies.analyzeRsdoctorArtifact ?? analyzeRsdoctorArtifact)(
+          workspaceRoot,
+          {
+            dataFile,
+            input,
+            toolName,
+          },
+        );
+        const analysisData =
+          typeof analysis.result === 'object' &&
+          analysis.result !== null &&
+          !Array.isArray(analysis.result) &&
+          'data' in analysis.result
+            ? analysis.result.data
+            : analysis.result;
+        const dataState =
+          analysisData === null
+            ? 'null data'
+            : (Array.isArray(analysisData) && analysisData.length === 0) ||
+                (typeof analysisData === 'object' &&
+                  analysisData !== null &&
+                  Object.keys(analysisData).length === 0) ||
+                analysisData === ''
+              ? 'empty data'
+              : 'data present';
         return {
           content: [
             {
               type: 'text',
-              text: `Rsdoctor ${analysis.toolName} analysis is available.`,
+              text: `Rsdoctor ${analysis.toolName} analysis returned ${dataState}.`,
             },
           ],
           structuredContent: analysis,
