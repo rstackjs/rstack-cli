@@ -25,7 +25,7 @@
     "@testing-library/jest-dom": "^7.0.0",
     "@vue/test-utils": "^2.4.11",
     "happy-dom": "^20.11.2",
-    "rstack": "^0.5.2",
+    "rstack": "^0.6.0",
     "vue": "^3.5.41"
   },
   "peerDependencies": {
