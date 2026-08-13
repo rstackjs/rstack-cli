@@ -69,5 +69,10 @@ jobs:
         run: git diff --exit-code -- packages/rstack/binding.cjs packages/rstack/binding.d.cts
 
       - name: Run Test
-        if: steps.changes.outputs.changed == 'true'
+        if: steps.changes.outputs.changed == 'true' && runner.os != 'Windows'
         run: node --run test
+
+      # Run package tests serially on Windows to avoid resource contention between nested test workers.
+      - name: Run Test (Windows)
+        if: steps.changes.outputs.changed == 'true' && runner.os == 'Windows'
+        run: pnpm --workspace-concurrency=1 --filter "./packages/**" test
