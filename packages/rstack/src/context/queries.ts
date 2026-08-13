@@ -14,10 +14,15 @@ import type {
   ProductRootsResult,
   UnusedCandidatesResult,
 } from './analysisModel.ts';
-import type { ContextDescriptor } from './model.ts';
+import type { ContextDescriptor, ContextSnapshot } from './model.ts';
 import { resolveProductRoots } from './products.ts';
 import { traceModuleGraph, type TraversalResult } from './reachability.ts';
-import { readRsdoctorModuleGraph } from './rsdoctorGraph.ts';
+import {
+  readRsdoctorArtifact,
+  type RsdoctorArtifactCompilationIdentity,
+  type RsdoctorArtifactMetadata,
+} from './rsdoctor.ts';
+import { normalizeRsdoctorModuleGraph } from './rsdoctorGraph.ts';
 import { readProjectStatus } from './status.ts';
 
 type ArtifactQuery = {
@@ -48,6 +53,83 @@ const explanationVisitLimit = 5_000;
 
 const compareStrings = (left: string, right: string): number =>
   left === right ? 0 : left < right ? -1 : 1;
+
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const getString = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.length > 0 ? value : undefined;
+
+const getTargets = (value: unknown): string[] =>
+  (Array.isArray(value) ? value : [value])
+    .filter((entry): entry is string => typeof entry === 'string' && entry.length > 0)
+    .sort(compareStrings);
+
+const targetsMatch = (left: unknown, right: unknown): boolean => {
+  const leftTargets = getTargets(left);
+  const rightTargets = getTargets(right);
+  return (
+    leftTargets.length === rightTargets.length &&
+    leftTargets.every((target, index) => target === rightTargets[index])
+  );
+};
+
+const bindArtifactToSnapshot = (
+  context: ContextDescriptor,
+  snapshot: ContextSnapshot | undefined,
+  metadata: RsdoctorArtifactMetadata | undefined,
+): AnalysisProvenance['artifactBinding'] => {
+  if (snapshot === undefined || metadata === undefined) return 'explicit-unverified';
+  const build = snapshot.facets.build;
+  if (!isObject(build)) return 'explicit-unverified';
+
+  const snapshotHash = getString(build.hash);
+  const snapshotEnvironment = getString(build.environment) ?? context.environment;
+  if (snapshotHash === undefined || snapshotEnvironment === undefined) {
+    return 'explicit-unverified';
+  }
+  if (context.environment !== undefined && context.environment !== snapshotEnvironment) {
+    return 'mismatch';
+  }
+
+  let identity: RsdoctorArtifactCompilationIdentity;
+  let artifactEnvironment: string | undefined;
+  if (metadata.build.compilers !== undefined) {
+    const matchingCompilers = metadata.build.compilers.filter(
+      (compiler) =>
+        compiler.environment === snapshotEnvironment || compiler.name === snapshotEnvironment,
+    );
+    if (matchingCompilers.length !== 1) return 'mismatch';
+    identity = matchingCompilers[0]!;
+    artifactEnvironment = identity.environment ?? matchingCompilers[0]!.name;
+  } else {
+    identity = metadata.build;
+    artifactEnvironment =
+      identity.environment ??
+      (metadata.build.compiler.name === snapshotEnvironment
+        ? metadata.build.compiler.name
+        : undefined);
+  }
+
+  if (identity.compilationHash !== undefined && identity.compilationHash !== snapshotHash) {
+    return 'mismatch';
+  }
+  if (identity.environment !== undefined && identity.environment !== snapshotEnvironment) {
+    return 'mismatch';
+  }
+  const snapshotTarget = getTargets(build.target).length > 0 ? build.target : context.target;
+  if (
+    identity.target !== undefined &&
+    getTargets(snapshotTarget).length > 0 &&
+    !targetsMatch(identity.target, snapshotTarget)
+  ) {
+    return 'mismatch';
+  }
+  if (identity.compilationHash === undefined || artifactEnvironment === undefined) {
+    return 'explicit-unverified';
+  }
+  return artifactEnvironment === snapshotEnvironment ? 'exact' : 'mismatch';
+};
 
 const toModuleRef = ({
   isEntry: _,
@@ -83,7 +165,11 @@ const validateMaxDepth = (maxDepth: number | undefined): number => {
 const selectContext = async (
   workspaceRoot: string,
   query: ArtifactQuery,
-): Promise<{ context: ContextDescriptor; provenance: AnalysisProvenance }> => {
+): Promise<{
+  context: ContextDescriptor;
+  snapshot: ContextSnapshot | undefined;
+  provenance: AnalysisProvenance;
+}> => {
   const status = await readProjectStatus(workspaceRoot);
   const matches = status.contexts.filter(({ context }) => context.contextId === query.contextId);
   if (matches.length === 0) throw new Error(`Unknown context: ${query.contextId}`);
@@ -102,6 +188,7 @@ const selectContext = async (
 
   return {
     context: selected.context,
+    snapshot,
     provenance: {
       contextId: query.contextId,
       dataFile: query.dataFile,
@@ -125,11 +212,39 @@ const loadAnalysis = async (
   workspaceRoot: string,
   query: ArtifactQuery,
 ): Promise<LoadedAnalysis> => {
-  const { context, provenance } = await selectContext(workspaceRoot, query);
-  const graph = await readRsdoctorModuleGraph(workspaceRoot, query.dataFile);
-  const product = await resolveProductRoots(workspaceRoot, context, graph);
-  return { provenance, graph, product };
+  const { context, snapshot, provenance } = await selectContext(workspaceRoot, query);
+  const artifact = await readRsdoctorArtifact(workspaceRoot, query.dataFile);
+  const artifactBinding = bindArtifactToSnapshot(context, snapshot, artifact.metadata);
+  const observedGraph = normalizeRsdoctorModuleGraph(artifact);
+  const graph =
+    artifactBinding === 'mismatch'
+      ? {
+          ...observedGraph,
+          issues: [...new Set([...observedGraph.issues, 'artifact-build-mismatch' as const])],
+        }
+      : observedGraph;
+  const graphForProducts =
+    artifactBinding === 'mismatch'
+      ? {
+          modules: [],
+          edges: [],
+          exportRowsPresent: false,
+          issues: graph.issues,
+        }
+      : graph;
+  const product = await resolveProductRoots(workspaceRoot, context, graphForProducts);
+  return { provenance: { ...provenance, artifactBinding }, graph, product };
 };
+
+const hasAuthoritativeGraph = (graph: ObservedModuleGraph): boolean =>
+  !graph.issues.some((issue) =>
+    ['artifact-build-mismatch', 'module-graph-missing', 'module-graph-omitted'].includes(issue),
+  );
+
+const unavailableGraphEvidence = (graph: ObservedModuleGraph): string =>
+  graph.issues.includes('artifact-build-mismatch')
+    ? 'The artifact graph does not match the selected build snapshot.'
+    : 'The artifact does not contain an available module graph.';
 
 const rootsOfKind = (
   product: ProductRootSet,
@@ -290,6 +405,18 @@ const findUnusedCandidates = async (
 ): Promise<UnusedCandidatesResult> => {
   const limit = validateLimit(query.limit);
   const { provenance, graph, product } = await loadAnalysis(workspaceRoot, query);
+  if (!hasAuthoritativeGraph(graph)) {
+    return {
+      provenance,
+      roots: { production: 0, contract: 0, conservative: 0 },
+      total: 0,
+      returned: 0,
+      analysisTruncated: false,
+      resultTruncated: false,
+      candidates: [],
+      bounds: product.bounds,
+    };
+  }
   const traversals = traceRootFamilies(
     graph,
     product,
@@ -334,6 +461,22 @@ const explainDeadCodeCandidate = async (
 ): Promise<DeadCodeExplanation> => {
   const maxDepth = validateMaxDepth(query.maxDepth);
   const { provenance, graph, product } = await loadAnalysis(workspaceRoot, query);
+  if (!hasAuthoritativeGraph(graph)) {
+    return {
+      provenance,
+      classification: 'insufficient-evidence',
+      state: {
+        productionReachability: 'unknown',
+        publicContract: 'unknown',
+        shipped: 'unknown',
+        optimizerRetention: 'unknown',
+      },
+      paths: [],
+      evidence: [unavailableGraphEvidence(graph)],
+      analysisTruncated: false,
+      bounds: product.bounds,
+    };
+  }
   const module = resolveModule(graph, query.module);
   const traversals = traceRootFamilies(graph, product, maxDepth, explanationVisitLimit);
   const bounds = traversalBounds(product, traversals);
@@ -408,6 +551,19 @@ const traceModuleImpact = async (
   const maxDepth = validateMaxDepth(query.maxDepth);
   const direction = query.direction ?? 'dependents';
   const { provenance, graph, product } = await loadAnalysis(workspaceRoot, query);
+  if (!hasAuthoritativeGraph(graph)) {
+    return {
+      provenance,
+      direction,
+      modules: [],
+      reachedRoots: [],
+      affectedChunks: [],
+      totalVisited: 0,
+      returned: 0,
+      truncated: false,
+      bounds: product.bounds,
+    };
+  }
   const module = resolveModule(graph, query.module);
   const traversal = traceModuleGraph(graph, [module.id], direction, {
     maxDepth,

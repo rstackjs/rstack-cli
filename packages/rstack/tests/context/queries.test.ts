@@ -1,4 +1,4 @@
-import { cp, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
@@ -38,6 +38,7 @@ const recordBuild = async (
   context: ContextDescriptor,
   runId: string,
   observedAt?: string,
+  buildIdentity?: { hash: string; environment: string; target?: string[] },
 ): Promise<void> => {
   const run = {
     schemaVersion: contextStoreSchemaVersion,
@@ -61,14 +62,65 @@ const recordBuild = async (
     observedAt,
     status: 'pass',
     completeness: { build: 'complete' },
-    facets: {},
+    facets:
+      buildIdentity === undefined
+        ? {}
+        : {
+            build: {
+              producer: context.product === 'library' ? 'rslib' : 'rsbuild',
+              command: 'build',
+              environment: buildIdentity.environment,
+              target: buildIdentity.target ?? [],
+              isWatch: false,
+              isFirstCompile: true,
+              durationMs: 100,
+              hash: buildIdentity.hash,
+              hasErrors: false,
+              hasWarnings: false,
+              assets: [],
+              chunks: [],
+              truncated: { assets: 0, chunks: 0 },
+            },
+          },
   } satisfies ContextSnapshot;
   expect(await writeContextSnapshot(workspaceRoot, snapshot)).toMatchObject({
     written: true,
   });
 };
 
-test('reads product roots with explicit artifact provenance from the newest ready run', async () => {
+const addArtifactMetadata = async (
+  workspaceRoot: string,
+  build: Record<string, unknown>,
+  moduleGraph: { status: 'collected' } | { status: 'omitted'; reason: 'not-selected' } = {
+    status: 'collected',
+  },
+): Promise<void> => {
+  const dataFile = path.join(workspaceRoot, 'rsdoctor-data.json');
+  const artifact = JSON.parse(await readFile(dataFile, 'utf8')) as Record<string, unknown>;
+  artifact.metadata = {
+    schemaVersion: 1,
+    producer: { name: '@rsdoctor/core', version: '1.6.0' },
+    output: { mode: 'normal' },
+    build,
+    sections: {
+      errors: { status: 'collected' },
+      configs: { status: 'collected' },
+      summary: { status: 'collected' },
+      resolver: { status: 'collected' },
+      loader: { status: 'collected' },
+      moduleGraph,
+      chunkGraph: { status: 'collected' },
+      moduleCodeMap: { status: 'collected' },
+      plugin: { status: 'collected' },
+      packageGraph: { status: 'collected' },
+      treeShaking: { status: 'collected' },
+      otherReports: { status: 'collected' },
+    },
+  };
+  await writeFile(dataFile, JSON.stringify(artifact));
+};
+
+test('accepts a legacy artifact with explicit-unverified build provenance', async () => {
   await withFixtureWorkspace('application', async (workspaceRoot) => {
     const context = {
       contextId: 'ctx_app',
@@ -76,9 +128,6 @@ test('reads product roots with explicit artifact provenance from the newest read
       product: 'application',
     } as const;
     await recordBuild(workspaceRoot, context, 'run_a', '2026-08-12T04:00:01.000Z');
-    await recordBuild(workspaceRoot, context, 'run_b', '2026-08-12T04:00:02.000Z');
-    await recordBuild(workspaceRoot, context, 'run_c', '2026-08-12T04:00:02.000Z');
-    await recordBuild(workspaceRoot, context, 'run_pending');
 
     const result = await readProductRoots(workspaceRoot, {
       contextId: context.contextId,
@@ -90,9 +139,9 @@ test('reads product roots with explicit artifact provenance from the newest read
       dataFile: 'rsdoctor-data.json',
       artifactBinding: 'explicit-unverified',
       buildObservation: {
-        runId: 'run_c',
-        snapshotId: 'snap_run_c',
-        observedAt: '2026-08-12T04:00:02.000Z',
+        runId: 'run_a',
+        snapshotId: 'snap_run_a',
+        observedAt: '2026-08-12T04:00:01.000Z',
         status: 'pass',
         buildCompleteness: 'complete',
       },
@@ -108,6 +157,240 @@ test('reads product roots with explicit artifact provenance from the newest read
       ['conservative-runtime', '8'],
       ['conservative-runtime', '5'],
     ]);
+  });
+});
+
+test('binds v1 artifact metadata to the selected build snapshot on an exact identity match', async () => {
+  await withFixtureWorkspace('application', async (workspaceRoot) => {
+    const context = {
+      contextId: 'ctx_app_web',
+      packageRoot: '.',
+      product: 'application',
+      environment: 'web',
+      target: 'web',
+    } as const;
+    await recordBuild(workspaceRoot, context, 'run_web', '2026-08-12T04:00:01.000Z', {
+      hash: 'compilation-web',
+      environment: 'web',
+      target: ['web'],
+    });
+    await addArtifactMetadata(workspaceRoot, {
+      id: 'rsdoctor-build',
+      root: workspaceRoot,
+      compiler: { name: 'web', type: 'rspack', version: '1.7.0' },
+      compilationHash: 'compilation-web',
+      environment: 'web',
+      target: 'web',
+    });
+
+    const roots = await readProductRoots(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+    });
+    const candidates = await findUnusedCandidates(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+    });
+
+    expect(roots.provenance.artifactBinding).toBe('exact');
+    expect(candidates.total).toBe(1);
+  });
+});
+
+test('does not claim an exact binding for incomplete v1 metadata', async () => {
+  await withFixtureWorkspace('application', async (workspaceRoot) => {
+    const context = {
+      contextId: 'ctx_app_web',
+      packageRoot: '.',
+      product: 'application',
+      environment: 'web',
+      target: 'web',
+    } as const;
+    await recordBuild(workspaceRoot, context, 'run_web', '2026-08-12T04:00:01.000Z', {
+      hash: 'compilation-web',
+      environment: 'web',
+      target: ['web'],
+    });
+    const dataFile = path.join(workspaceRoot, 'rsdoctor-data.json');
+    const artifact = JSON.parse(await readFile(dataFile, 'utf8')) as Record<string, unknown>;
+    artifact.metadata = {
+      schemaVersion: 1,
+      producer: { name: '@rsdoctor/core', version: '1.6.0' },
+      output: { mode: 'normal' },
+      build: {
+        id: 'rsdoctor-build',
+        root: workspaceRoot,
+        compiler: { name: 'web', type: 'rspack' },
+        compilationHash: 'compilation-web',
+        environment: 'web',
+      },
+      sections: { moduleGraph: { status: 'collected' } },
+    };
+    await writeFile(dataFile, JSON.stringify(artifact));
+
+    const roots = await readProductRoots(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+    });
+
+    expect(roots.provenance.artifactBinding).toBe('explicit-unverified');
+  });
+});
+
+test('does not derive graph conclusions from artifact metadata that mismatches the snapshot', async () => {
+  await withFixtureWorkspace('application', async (workspaceRoot) => {
+    const context = {
+      contextId: 'ctx_app_web',
+      packageRoot: '.',
+      product: 'application',
+      environment: 'web',
+      target: 'web',
+    } as const;
+    await recordBuild(workspaceRoot, context, 'run_web', '2026-08-12T04:00:01.000Z', {
+      hash: 'compilation-current',
+      environment: 'web',
+      target: ['web'],
+    });
+    await addArtifactMetadata(workspaceRoot, {
+      id: 'rsdoctor-build',
+      root: workspaceRoot,
+      compiler: { name: 'web', type: 'rspack' },
+      compilationHash: 'compilation-stale',
+      environment: 'web',
+      target: 'web',
+    });
+
+    const roots = await readProductRoots(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+    });
+    const candidates = await findUnusedCandidates(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+    });
+    const explanation = await explainDeadCodeCandidate(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+      module: '3',
+    });
+
+    expect(roots.provenance.artifactBinding).toBe('mismatch');
+    expect(roots.graph.issues).toContain('artifact-build-mismatch');
+    expect(roots.product.roots).toEqual([]);
+    expect(candidates.total).toBe(0);
+    expect(candidates.bounds).toContain('artifact-build-mismatch');
+    expect(explanation.classification).toBe('insufficient-evidence');
+    expect(explanation.state.productionReachability).toBe('unknown');
+
+    const impact = await traceModuleImpact(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+      module: '3',
+    });
+    expect(impact.modules).toEqual([]);
+    expect(impact.reachedRoots).toEqual([]);
+    expect(impact.bounds).toContain('artifact-build-mismatch');
+  });
+});
+
+test('does not use a module graph that v1 metadata marks as omitted', async () => {
+  await withFixtureWorkspace('application', async (workspaceRoot) => {
+    const context = {
+      contextId: 'ctx_app_web',
+      packageRoot: '.',
+      product: 'application',
+      environment: 'web',
+      target: 'web',
+    } as const;
+    await recordBuild(workspaceRoot, context, 'run_web', '2026-08-12T04:00:01.000Z', {
+      hash: 'compilation-web',
+      environment: 'web',
+      target: ['web'],
+    });
+    await addArtifactMetadata(
+      workspaceRoot,
+      {
+        id: 'rsdoctor-build',
+        root: workspaceRoot,
+        compiler: { name: 'web', type: 'rspack' },
+        compilationHash: 'compilation-web',
+        environment: 'web',
+        target: 'web',
+      },
+      { status: 'omitted', reason: 'not-selected' },
+    );
+
+    const roots = await readProductRoots(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+    });
+    const candidates = await findUnusedCandidates(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+    });
+    const explanation = await explainDeadCodeCandidate(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+      module: 'src/legacy.ts',
+    });
+    const impact = await traceModuleImpact(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+      module: 'src/legacy.ts',
+    });
+
+    expect(roots.provenance.artifactBinding).toBe('exact');
+    expect(roots.graph).toEqual({
+      moduleCount: 0,
+      edgeCount: 0,
+      issues: ['module-graph-omitted'],
+    });
+    expect(roots.product.roots).toEqual([]);
+    expect(candidates.total).toBe(0);
+    expect(candidates.bounds).toContain('module-graph-omitted');
+    expect(explanation.classification).toBe('insufficient-evidence');
+    expect(explanation.bounds).toContain('module-graph-omitted');
+    expect(impact.modules).toEqual([]);
+    expect(impact.bounds).toContain('module-graph-omitted');
+  });
+});
+
+test('selects the matching multi-compiler child by environment name', async () => {
+  await withFixtureWorkspace('application', async (workspaceRoot) => {
+    const context = {
+      contextId: 'ctx_app_web',
+      packageRoot: '.',
+      product: 'application',
+      environment: 'web',
+      target: 'web',
+    } as const;
+    await recordBuild(workspaceRoot, context, 'run_web', '2026-08-12T04:00:01.000Z', {
+      hash: 'compilation-web',
+      environment: 'web',
+      target: ['web'],
+    });
+    await addArtifactMetadata(workspaceRoot, {
+      id: 'rsdoctor-build',
+      root: workspaceRoot,
+      compiler: { name: 'multi-compiler', type: 'rspack' },
+      compilers: [
+        {
+          name: 'server',
+          environment: 'server',
+          compilationHash: 'compilation-server',
+          target: 'node',
+        },
+        { name: 'web', compilationHash: 'compilation-web', target: ['web'] },
+      ],
+    });
+
+    const candidates = await findUnusedCandidates(workspaceRoot, {
+      contextId: context.contextId,
+      dataFile: 'rsdoctor-data.json',
+    });
+
+    expect(candidates.provenance.artifactBinding).toBe('exact');
+    expect(candidates.total).toBe(1);
   });
 });
 

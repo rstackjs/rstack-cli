@@ -238,9 +238,18 @@ test('falls back to the PATH rs executable with inherited stdio and exit status'
       });
       await expect(
         readFile(recordPath, 'utf8').then(
-          (contents) => JSON.parse(contents) as { args: string[]; cwd: string; stdin: string },
+          (contents) =>
+            JSON.parse(contents) as {
+              args: string[];
+              cwd: string;
+              stdin: string;
+            },
         ),
-      ).resolves.toEqual({ args: ['mcp'], cwd: workspace, stdin: 'fallback stdin' });
+      ).resolves.toEqual({
+        args: ['mcp'],
+        cwd: workspace,
+        stdin: 'fallback stdin',
+      });
     }
   } finally {
     await rm(workspace, { recursive: true, force: true });
@@ -287,6 +296,18 @@ test('ships the same six concise skills for Codex and Claude', async () => {
     expect(claudeSkill).toBe(codexSkill);
     expect(codexSkill.trimEnd().split('\n').length).toBeLessThan(120);
   }
+});
+
+test('routes build health questions beyond the timing summary', async () => {
+  const skill = await readFile(
+    path.join(repositoryRoot, 'plugins/rstack-codex/skills/analyze-build/SKILL.md'),
+    'utf8',
+  );
+
+  expect(skill).toContain('`build_summary` is a timing summary');
+  expect(skill).toContain('warnings or build health');
+  expect(skill).toContain('query `errors_list`');
+  expect(skill).toContain('query `bundle_optimize`');
 });
 
 test('does not bundle unsupported host components or a second runtime', async () => {

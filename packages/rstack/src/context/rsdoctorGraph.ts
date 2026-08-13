@@ -1,6 +1,6 @@
 import path from 'node:path';
 import type { ObservedModule, ObservedModuleGraph, OptimizerBound } from './analysisModel.ts';
-import { readRsdoctorArtifact } from './rsdoctor.ts';
+import { readRsdoctorArtifact, type RsdoctorArtifact } from './rsdoctor.ts';
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -101,8 +101,17 @@ const compareModules = (left: ObservedModule, right: ObservedModule): number =>
   compareStrings(left.name, right.name) ||
   compareStrings(left.id, right.id);
 
-const normalizeGraph = (data: Record<string, unknown>): ObservedModuleGraph => {
-  const moduleGraph = data.moduleGraph;
+const normalizeRsdoctorModuleGraph = (artifact: RsdoctorArtifact): ObservedModuleGraph => {
+  if (artifact.metadata?.sections.moduleGraph?.status === 'omitted') {
+    return {
+      modules: [],
+      edges: [],
+      exportRowsPresent: false,
+      issues: ['module-graph-omitted'],
+    };
+  }
+
+  const moduleGraph = artifact.data.moduleGraph;
   if (!isObject(moduleGraph)) {
     return {
       modules: [],
@@ -172,7 +181,7 @@ const readRsdoctorModuleGraph = async (
   dataFile: string,
 ): Promise<ObservedModuleGraph> => {
   const artifact = await readRsdoctorArtifact(workspaceRoot, dataFile);
-  return normalizeGraph(artifact.data);
+  return normalizeRsdoctorModuleGraph(artifact);
 };
 
-export { readRsdoctorModuleGraph };
+export { normalizeRsdoctorModuleGraph, readRsdoctorModuleGraph };

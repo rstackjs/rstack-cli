@@ -22,7 +22,13 @@ type ObservedModuleGraph = {
   modules: ObservedModule[];
   edges: ModuleEdge[];
   exportRowsPresent: boolean;
-  issues: Array<'module-graph-missing' | 'duplicate-module-id' | 'dangling-edge'>;
+  issues: Array<
+    | 'module-graph-missing'
+    | 'module-graph-omitted'
+    | 'artifact-build-mismatch'
+    | 'duplicate-module-id'
+    | 'dangling-edge'
+  >;
 };
 
 type ProductRootKind =
@@ -54,7 +60,7 @@ type ProductRootSet = {
 type AnalysisProvenance = {
   contextId: string;
   dataFile: string;
-  artifactBinding: 'explicit-unverified';
+  artifactBinding: 'exact' | 'mismatch' | 'explicit-unverified';
   buildObservation?: {
     runId: string;
     snapshotId: string;
@@ -112,7 +118,7 @@ type ModulePath = {
 
 type DeadCodeExplanation = {
   provenance: AnalysisProvenance;
-  subject: ModuleRef & { kind: 'module' };
+  subject?: ModuleRef & { kind: 'module' };
   classification:
     | 'reachable'
     | 'unreachable-module-candidate'
@@ -127,7 +133,7 @@ type DeadCodeExplanation = {
 
 type ModuleImpactResult = {
   provenance: AnalysisProvenance;
-  subject: ModuleRef & { kind: 'module' };
+  subject?: ModuleRef & { kind: 'module' };
   direction: 'dependencies' | 'dependents';
   modules: ModuleRef[];
   reachedRoots: ProductRoot[];
