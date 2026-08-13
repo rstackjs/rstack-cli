@@ -8,8 +8,9 @@ description: Review changes between two compatible Rstack lint or test snapshots
 1. Call `project_status` first. Match the requested package to `project_status.context.packageRoot`,
    deduplicating repeated runs by `contextId` and asking the user to choose only when multiple distinct contexts match. Use
    `snapshot_list` with that `contextId` and require two compatible completed snapshots for the same
-   producer, context, package root, and selected Rstack config. The list is newest-first: pass the
-   older snapshot as `leftSnapshotId` and the newer snapshot as `rightSnapshotId`.
+   producer, context, package root, selected Rstack config, and capture selection. The list is
+   newest-first: pass the older snapshot as `leftSnapshotId` and the newer snapshot as
+   `rightSnapshotId`.
 2. When no compatible pair exists, state which explicit capture supplies each missing snapshot:
    `lint_snapshot` for an Rslint comparison or `test_snapshot` for an Rstest comparison. Include the
    checkout-relative `packageRoot` and any nonstandard `configPath`. Ask before running each capture.

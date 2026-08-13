@@ -137,6 +137,10 @@ test('captures one passing run with partial source freshness', async () => {
       status: 'pass',
       completeness: { test: 'complete' },
       source: {
+        captureSelection: {
+          files: ['src/math.test.ts'],
+          testNamePattern: 'adds',
+        },
         inputCompleteness: 'partial',
         inputs: [
           {
@@ -520,6 +524,7 @@ test('persists partial execution evidence when a covered source path is unreadab
 
     expect(stored?.snapshot.completeness).toEqual({ test: 'complete', execution: 'partial' });
     expect(stored?.snapshot.source).toEqual({
+      captureSelection: {},
       inputCompleteness: 'partial',
       inputs: [
         {

@@ -186,6 +186,7 @@ test('captures a deterministic file snapshot with complete inputs and fail statu
       },
     });
     expect(stored?.snapshot.source).toMatchObject({
+      captureSelection: { mode: 'files', patterns: ['.'] },
       inputCompleteness: 'complete',
       inputs: [{ path: 'a.ts' }, { path: 'b.ts' }],
     });
@@ -250,6 +251,7 @@ test('captures text without persisting the input and exposes only stored fix out
     expect(result.status).toBe('pass');
     expect(result.freshness).toEqual({ state: 'unknown', changedPaths: [] });
     expect(stored?.snapshot.source).toEqual({
+      captureSelection: { mode: 'text', filePath: 'src/buffer.ts' },
       virtualInputDigest: 'cb9ebc2725b5316484859fdf300212c224086174b0e6e64e16cd2a7f65c90829',
     });
     expect(JSON.stringify(stored)).not.toContain(code);

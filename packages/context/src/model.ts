@@ -20,6 +20,7 @@ type ContextSnapshotSource = {
   inputs?: ContextInputFile[];
   inputCompleteness?: ContextInputCompleteness;
   virtualInputDigest?: string;
+  captureSelection?: JsonValue;
 };
 
 type ContextDescriptor = {

@@ -188,6 +188,21 @@ const totalsFor = (files: LintFileRecord[]): LintFacet['totals'] => ({
   fixableWarnings: files.reduce((total, file) => total + file.fixableWarningCount, 0),
 });
 
+const lintCaptureSelection = (
+  workspaceRoot: string,
+  packageRoot: string,
+  request: LintSnapshotRequest,
+): NonNullable<ContextSnapshot['source']>['captureSelection'] =>
+  request.mode === 'files'
+    ? {
+        mode: 'files',
+        patterns: [...new Set(request.patterns ?? ['.'])].sort(compareStrings),
+      }
+    : {
+        mode: 'text',
+        filePath: toWorkspacePath(workspaceRoot, path.resolve(packageRoot, request.filePath)),
+      };
+
 const ensureWritten = (result: Awaited<ReturnType<typeof writeContextSnapshot>>): void => {
   if (!result.written)
     throw new Error('Could not write the context snapshot.', {
@@ -210,6 +225,7 @@ const captureLintSnapshot = async (
     workspaceRoot,
     ...target,
   });
+  const captureSelection = lintCaptureSelection(workspaceRoot, target.packageRoot, request);
   const run = createExplicitRun({
     producer: 'rslint',
     context,
@@ -286,7 +302,7 @@ const captureLintSnapshot = async (
       status: 'error',
       completeness: { lint: 'partial' },
       facets: { lint: facet },
-      source: { inputs: [], inputCompleteness: 'partial' },
+      source: { inputs: [], inputCompleteness: 'partial', captureSelection },
     };
     ensureWritten(await writeContextSnapshot(workspaceRoot, snapshot));
     throw error;
@@ -314,13 +330,14 @@ const captureLintSnapshot = async (
   };
   const source: ContextSnapshot['source'] =
     request.mode === 'text'
-      ? { virtualInputDigest: digest(request.code) }
+      ? { virtualInputDigest: digest(request.code), captureSelection }
       : {
           inputs: files.map(({ path: filePath, digest: fileDigest }) => ({
             path: filePath,
             digest: fileDigest,
           })),
           inputCompleteness: 'complete',
+          captureSelection,
         };
   const status: ContextRunStatus = totals.errors > 0 ? 'fail' : 'pass';
   const snapshot: ContextSnapshot = {

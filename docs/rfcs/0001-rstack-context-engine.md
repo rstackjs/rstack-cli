@@ -370,10 +370,12 @@ Build, lint, and test freshness remain independent.
 - the schema version must match;
 - the producer must match;
 - the context ID must match; and
+- the capture selection must match; and
 - both snapshots must contain the requested lint-diagnostic or test-result facet.
 
 A compatible result contains added, removed, and changed items plus the independent freshness of
-both sides. An incompatible result returns ordinary reasons and no inferred comparison.
+both sides. Test diffs include file errors, test cases, and unhandled run errors. An incompatible
+result returns ordinary reasons and no inferred comparison.
 
 ```mermaid
 flowchart LR

@@ -19,7 +19,8 @@ type SnapshotDiffRequest = {
   kind?: SnapshotDiffKind;
 };
 
-type SnapshotDiffIncompatibilityReason = 'schema-version' | 'producer' | 'context' | 'facet';
+type SnapshotDiffIncompatibilityReason =
+  'schema-version' | 'producer' | 'context' | 'facet' | 'selection';
 
 type SnapshotDiagnostic = {
   path: string;
@@ -40,7 +41,13 @@ type SnapshotTestFileError = {
   error: TestErrorRecord;
 };
 
-type SnapshotDiffItem = SnapshotDiagnostic | SnapshotTestFileError | TestCaseRecord;
+type SnapshotTestUnhandledError = {
+  kind: 'unhandled-error';
+  error: TestErrorRecord;
+};
+
+type SnapshotDiffItem =
+  SnapshotDiagnostic | SnapshotTestFileError | SnapshotTestUnhandledError | TestCaseRecord;
 
 type SnapshotDiffResult =
   | {
@@ -68,9 +75,13 @@ const diagnosticIdentity = (diagnostic: SnapshotDiagnostic): string =>
     diagnostic.column,
   ]);
 
-const testIdentity = (result: SnapshotTestFileError | TestCaseRecord): string =>
+const testIdentity = (
+  result: SnapshotTestFileError | SnapshotTestUnhandledError | TestCaseRecord,
+): string =>
   'kind' in result
-    ? JSON.stringify([result.project, result.path, result.kind, result.error.name])
+    ? result.kind === 'file-error'
+      ? JSON.stringify([result.project, result.path, result.kind, result.error.name])
+      : JSON.stringify([result.kind, result.error.name])
     : JSON.stringify([result.project, result.path, result.parentNames ?? [], result.name]);
 
 const lintDiagnostics = (facet: LintFacet): SnapshotDiagnostic[] =>
@@ -88,8 +99,10 @@ const lintDiagnostics = (facet: LintFacet): SnapshotDiagnostic[] =>
     })),
   );
 
-const testResults = (facet: TestFacet): Array<SnapshotTestFileError | TestCaseRecord> =>
-  facet.files.flatMap((file) => [
+const testResults = (
+  facet: TestFacet,
+): Array<SnapshotTestFileError | SnapshotTestUnhandledError | TestCaseRecord> => [
+  ...facet.files.flatMap((file) => [
     ...(file.errors ?? []).map((error) => ({
       kind: 'file-error' as const,
       project: file.project,
@@ -97,7 +110,9 @@ const testResults = (facet: TestFacet): Array<SnapshotTestFileError | TestCaseRe
       error,
     })),
     ...file.tests,
-  ]);
+  ]),
+  ...facet.unhandledErrors.map((error) => ({ kind: 'unhandled-error' as const, error })),
+];
 
 const diffItems = <T extends SnapshotDiffItem>(
   leftItems: T[],
@@ -156,6 +171,14 @@ const diffStoredContextSnapshots = (
   if (left.snapshot.schemaVersion !== right.snapshot.schemaVersion) reasons.push('schema-version');
   if (left.run.producer !== right.run.producer) reasons.push('producer');
   if (left.snapshot.contextId !== right.snapshot.contextId) reasons.push('context');
+  if (
+    !isDeepStrictEqual(
+      left.snapshot.source?.captureSelection,
+      right.snapshot.source?.captureSelection,
+    )
+  ) {
+    reasons.push('selection');
+  }
 
   const expectedProducer = kind === 'diagnostics' ? 'rslint' : 'rstest';
   const leftFacet = requestedFacet(left, kind);

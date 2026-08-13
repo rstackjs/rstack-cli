@@ -15,6 +15,7 @@ import {
   type ContextProducer,
   type ContextRunManifest,
   type ContextSnapshot,
+  type JsonValue,
   type LintFacet,
   type StoredContextSnapshot,
   type TestFacet,
@@ -56,12 +57,14 @@ const storedSnapshot = ({
   producer,
   contextId = 'ctx_app',
   facet,
+  captureSelection,
   schemaVersion = contextStoreSchemaVersion,
 }: {
   snapshotId: string;
   producer: ContextProducer;
   contextId?: string;
   facet?: LintFacet | TestFacet;
+  captureSelection?: JsonValue;
   schemaVersion?: number;
 }): StoredContextSnapshot => {
   const context: ContextDescriptor = {
@@ -92,6 +95,7 @@ const storedSnapshot = ({
         : facet?.producer === 'rstest'
           ? { test: facet }
           : {},
+    ...(captureSelection === undefined ? {} : { source: { captureSelection } }),
   } as ContextSnapshot;
   return { run, context, snapshot };
 };
@@ -148,6 +152,26 @@ test('identifies the missing side when a requested snapshot does not exist', asy
   } finally {
     await rm(workspaceRoot, { force: true, recursive: true });
   }
+});
+
+test('rejects snapshots captured with different selections', () => {
+  const left = storedSnapshot({
+    snapshotId: 'snap_left',
+    producer: 'rslint',
+    facet: emptyLintFacet(),
+    captureSelection: { mode: 'files', patterns: ['.'] },
+  });
+  const right = storedSnapshot({
+    snapshotId: 'snap_right',
+    producer: 'rslint',
+    facet: emptyLintFacet(),
+    captureSelection: { mode: 'files', patterns: ['src'] },
+  });
+
+  expect(compare(left, right, 'diagnostics')).toEqual({
+    compatible: false,
+    reasons: ['selection'],
+  });
 });
 
 test('diffs lint diagnostics by location and reports all observable changes', () => {
@@ -468,6 +492,41 @@ test('diffs project-qualified test results and reports execution changes', () =>
       },
     ],
     summary: { added: 1, removed: 1, changed: 1 },
+  });
+});
+
+test('includes unhandled Rstest errors in snapshot diffs', () => {
+  const leftFacet = emptyTestFacet();
+  const rightFacet = emptyTestFacet();
+  rightFacet.unhandledErrors = [
+    {
+      name: 'GlobalSetupError',
+      message: 'could not initialize the test environment',
+      stack: 'setup stack',
+    },
+  ];
+
+  const result = compare(
+    storedSnapshot({ snapshotId: 'snap_left', producer: 'rstest', facet: leftFacet }),
+    storedSnapshot({ snapshotId: 'snap_right', producer: 'rstest', facet: rightFacet }),
+    'tests',
+  );
+
+  expect(result).toMatchObject({
+    compatible: true,
+    added: [
+      {
+        kind: 'unhandled-error',
+        error: {
+          name: 'GlobalSetupError',
+          message: 'could not initialize the test environment',
+          stack: 'setup stack',
+        },
+      },
+    ],
+    removed: [],
+    changed: [],
+    summary: { added: 1, removed: 0, changed: 0 },
   });
 });
 

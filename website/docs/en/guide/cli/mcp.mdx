@@ -116,7 +116,7 @@ A fresh build does not make lint or test evidence fresh. If related-test selecti
 
 ## Phase 4 change review {#phase-4-change-review}
 
-`snapshot_diff` is read-only, non-destructive, and closed-world. It compares normalized diagnostics or tests only when both snapshots have the same schema version, producer, context, and requested facet. An incompatible comparison returns reasons instead of inferring a delta. Compatible results include the independent freshness of both sides and deterministic added, removed, and changed items.
+`snapshot_diff` is read-only, non-destructive, and closed-world. It compares normalized diagnostics or tests only when both snapshots have the same schema version, producer, context, capture selection, and requested facet. Test diffs include file, case, and unhandled run errors. An incompatible comparison returns reasons instead of inferring a delta. Compatible results include the independent freshness of both sides and deterministic added, removed, and changed items.
 
 `lint_fix_preview` has the same read-only annotations. It returns fixed text already stored by `lint_snapshot` when `includeFixPreview` was enabled. It does not reread or write the source file, and there is no apply tool; use an explicit `rs lint --fix <path>` only when you choose to apply fixes.
 

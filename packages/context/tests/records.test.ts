@@ -400,6 +400,12 @@ test('rejects malformed known facets and unpaired source input metadata', () => 
   expect(
     validateSnapshot({
       ...snapshot,
+      source: { captureSelection: { patterns: [Symbol('not-json')] } },
+    }),
+  ).toBeUndefined();
+  expect(
+    validateSnapshot({
+      ...snapshot,
       facets: { lint: { ...lint, mode: 'watch' } },
     }),
   ).toBeUndefined();

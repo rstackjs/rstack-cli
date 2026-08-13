@@ -217,7 +217,8 @@ const isSnapshotSource = (value: unknown): boolean => {
         (value.inputCompleteness === 'complete' || value.inputCompleteness === 'partial'))) &&
     (value.virtualInputDigest === undefined ||
       (typeof value.virtualInputDigest === 'string' &&
-        sha256Pattern.test(value.virtualInputDigest)))
+        sha256Pattern.test(value.virtualInputDigest))) &&
+    (value.captureSelection === undefined || isJsonValue(value.captureSelection))
   );
 };
 

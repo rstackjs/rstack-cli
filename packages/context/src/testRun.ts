@@ -155,6 +155,13 @@ const normalizeTestFacet = (workspaceRoot: string, result: TestRunResult): TestF
   unhandledErrors: result.unhandledErrors.map(normalizeError),
 });
 
+const testCaptureSelection = (request: TestSnapshotRequest): JsonValue => ({
+  ...(request.files === undefined
+    ? {}
+    : { files: [...new Set(request.files)].sort((left, right) => left.localeCompare(right)) }),
+  ...(request.testNamePattern === undefined ? {} : { testNamePattern: request.testNamePattern }),
+});
+
 const getRunStatus = (result: TestRunResult): ContextRunStatus => {
   if (result.unhandledErrors.length > 0) return 'error';
   return result.ok ? 'pass' : 'fail';
@@ -181,6 +188,7 @@ const captureTestSnapshot = async (
     workspaceRoot,
     ...target,
   });
+  const captureSelection = testCaptureSelection(request);
   const now = dependencies.now ?? (() => new Date());
   const run = createExplicitRun({
     producer: 'rstest',
@@ -269,7 +277,7 @@ const captureTestSnapshot = async (
           ? {}
           : { execution: executionFacet as unknown as JsonValue }),
       },
-      source: { inputs: [], inputCompleteness: 'partial' },
+      source: { inputs: [], inputCompleteness: 'partial', captureSelection },
     };
 
     ensureWritten(await writeContextSnapshot(workspaceRoot, snapshot));
@@ -321,7 +329,7 @@ const captureTestSnapshot = async (
         ? {}
         : { execution: executionFacet as unknown as JsonValue }),
     },
-    source: { inputs, inputCompleteness: 'partial' },
+    source: { inputs, inputCompleteness: 'partial', captureSelection },
   };
 
   ensureWritten(await writeContextSnapshot(workspaceRoot, snapshot));
