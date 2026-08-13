@@ -53,6 +53,26 @@ const recordBuild = async (
   });
 
   if (observedAt === undefined) return;
+  const facets: ContextSnapshot['facets'] =
+    buildIdentity === undefined
+      ? {}
+      : {
+          build: {
+            producer: context.product === 'library' ? 'rslib' : 'rsbuild',
+            command: 'build',
+            environment: buildIdentity.environment,
+            target: buildIdentity.target ?? [],
+            isWatch: false,
+            isFirstCompile: true,
+            durationMs: 100,
+            hash: buildIdentity.hash,
+            hasErrors: false,
+            hasWarnings: false,
+            assets: [],
+            chunks: [],
+            truncated: { assets: 0, chunks: 0 },
+          },
+        };
   const snapshot = {
     schemaVersion: contextStoreSchemaVersion,
     snapshotId: `snap_${runId}`,
@@ -62,26 +82,7 @@ const recordBuild = async (
     observedAt,
     status: 'pass',
     completeness: { build: 'complete' },
-    facets:
-      buildIdentity === undefined
-        ? {}
-        : {
-            build: {
-              producer: context.product === 'library' ? 'rslib' : 'rsbuild',
-              command: 'build',
-              environment: buildIdentity.environment,
-              target: buildIdentity.target ?? [],
-              isWatch: false,
-              isFirstCompile: true,
-              durationMs: 100,
-              hash: buildIdentity.hash,
-              hasErrors: false,
-              hasWarnings: false,
-              assets: [],
-              chunks: [],
-              truncated: { assets: 0, chunks: 0 },
-            },
-          },
+    facets,
   } satisfies ContextSnapshot;
   expect(await writeContextSnapshot(workspaceRoot, snapshot)).toMatchObject({
     written: true,
