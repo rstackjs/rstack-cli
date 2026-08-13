@@ -1,12 +1,12 @@
 # API 参考 \{#api-reference}
 
-Rstack 提供统一的配置 API，并通过专用子路径重导出 Rsbuild、Rslib、Rstest 和 Rslint 的公开 API。建议优先从这些子路径导入，以统一依赖入口，并确保 API 与 Rstack 集成的工具版本保持一致。
+Rstack CLI 提供统一的配置 API，并通过专用子路径重导出 Rsbuild、Rslib、Rstest 和 Rslint 的公开 API。建议优先从这些子路径导入，而不是直接从各工具的 core 包导入，以统一依赖入口，并确保 API 与 Rstack CLI 集成的工具版本匹配。
 
 ## 导入路径 \{#import-paths}
 
 | 导入路径                 | 内容                                      | 使用场景                 |
 | ------------------------ | ----------------------------------------- | ------------------------ |
-| `rstack`                 | Rstack 配置 API                           | 注册各项工具配置         |
+| `rstack`                 | Rstack CLI 配置 API                       | 注册各项工具配置         |
 | `rstack/app`             | `@rsbuild/core` 的公开 API                | 构建应用及扩展 Rsbuild   |
 | `rstack/lib`             | `@rslib/core` 的公开 API                  | 构建库及扩展 Rslib       |
 | `rstack/test`            | `@rstest/core` 的公开 API                 | 编写测试及配置测试项目   |
@@ -23,7 +23,7 @@ Rstack 提供统一的配置 API，并通过专用子路径重导出 Rsbuild、R
 
 ## 重导出 \{#re-exports}
 
-以下工具子路径均会重导出对应 core 包的公开 API。通过这些 Rstack 入口导入，可以让依赖入口和工具版本与 Rstack 集成的工具链保持一致。
+以下工具子路径均会重导出对应 core 包的公开 API。通过这些入口导入，可以统一依赖入口，并确保 API 与 Rstack CLI 集成的工具版本匹配。
 
 ### `rstack/app`
 

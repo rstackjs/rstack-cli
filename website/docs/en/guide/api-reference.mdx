@@ -1,12 +1,12 @@
 # API reference
 
-Rstack provides a unified configuration API and re-exports the public APIs of Rsbuild, Rslib, Rstest, and Rslint through dedicated subpaths. Prefer these subpaths to direct imports from each tool's core package so that dependency entry points and tool versions remain aligned with Rstack.
+Rstack CLI provides a unified configuration API and re-exports the public APIs of Rsbuild, Rslib, Rstest, and Rslint through dedicated subpaths. Prefer these subpaths to direct imports from each tool's core package so that dependency entry points stay unified and APIs match the tool versions integrated by Rstack CLI.
 
 ## Import paths
 
 | Import path              | Contents                                          | Use case                                |
 | ------------------------ | ------------------------------------------------- | --------------------------------------- |
-| `rstack`                 | Rstack configuration API                          | Register tool configurations            |
+| `rstack`                 | Rstack CLI configuration API                      | Register tool configurations            |
 | `rstack/app`             | Public APIs from `@rsbuild/core`                  | Build applications and extend Rsbuild   |
 | `rstack/lib`             | Public APIs from `@rslib/core`                    | Build libraries and extend Rslib        |
 | `rstack/test`            | Public APIs from `@rstest/core`                   | Write tests and configure test projects |
@@ -23,7 +23,7 @@ Import `define` from `rstack` to register tool configurations in `rstack.config.
 
 ## Re-exports
 
-The tool-specific subpaths below re-export the public APIs from their corresponding core packages. Using these Rstack entry points keeps dependency entry points and tool versions aligned with the toolchain integrated by Rstack.
+The tool-specific subpaths below re-export the public APIs from their corresponding core packages. Using these entry points keeps imports unified and APIs aligned with the tool versions integrated by Rstack CLI.
 
 ### `rstack/app`
 

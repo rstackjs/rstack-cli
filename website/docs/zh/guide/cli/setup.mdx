@@ -99,7 +99,7 @@ rs setup --help
 
 ## 支持的 hooks \{#supported-hooks}
 
-Rstack 支持以下客户端 Git hooks：
+Rstack CLI 支持以下客户端 Git hooks：
 
 - `pre-commit`
 - `pre-merge-commit`
@@ -120,7 +120,7 @@ Rstack 支持以下客户端 Git hooks：
 
 ## Hook 运行时 \{#hook-runtime}
 
-Rstack 使用 POSIX `sh -e` 运行 hook 脚本，并转发 Git 提供的参数和标准输入，同时返回 hook 的退出码。运行 hook 前，Rstack 会切换到安装 hooks 的项目，并将该项目的 `node_modules/.bin` 添加到 `PATH` 开头。
+Rstack CLI 使用 POSIX `sh -e` 运行 hook 脚本，并转发 Git 提供的参数和标准输入，同时返回 hook 的退出码。运行 hook 前，Rstack CLI 会切换到安装 hooks 的项目，并将该项目的 `node_modules/.bin` 添加到 `PATH` 开头。
 
 ### 禁用与调试 \{#disable-and-debug}
 
@@ -130,7 +130,7 @@ Rstack 使用 POSIX `sh -e` 运行 hook 脚本，并转发 Git 提供的参数�
 RSTACK_HOOKS=0 git commit -m "Skip hooks"
 ```
 
-将 `RSTACK_HOOKS` 设为 `2`，可以跟踪 Rstack hook 运行时，包括调用 hook 脚本和处理退出码等步骤；如需跟踪 hook 脚本内部的命令，请在脚本中添加 `set -x`：
+将 `RSTACK_HOOKS` 设为 `2`，可以跟踪 Rstack CLI 的 hook 运行时，包括调用 hook 脚本和处理退出码等步骤；如需跟踪 hook 脚本内部的命令，请在脚本中添加 `set -x`：
 
 ```bash
 RSTACK_HOOKS=2 git commit -m "Trace hooks"
@@ -138,7 +138,7 @@ RSTACK_HOOKS=2 git commit -m "Trace hooks"
 
 ### 配置 hook 运行环境 \{#configure-the-hook-environment}
 
-运行 hook 脚本前，Rstack 会加载以下可选的 POSIX shell 文件：
+运行 hook 脚本前，Rstack CLI 会加载以下可选的 POSIX shell 文件：
 
 ```text
 ${XDG_CONFIG_HOME:-$HOME/.config}/rstack/hooks-init.sh
@@ -148,7 +148,7 @@ ${XDG_CONFIG_HOME:-$HOME/.config}/rstack/hooks-init.sh
 
 ## Monorepo \{#monorepo}
 
-在 monorepo 中，提供 Rstack 的项目可能位于 `frontend/` 等子目录。从该目录运行 `rs setup` 时，hooks 仍会安装到 Git 仓库根目录：
+在 monorepo 中，提供 Rstack CLI 的项目可能位于 `frontend/` 等子目录。从该目录运行 `rs setup` 时，hooks 仍会安装到 Git 仓库根目录：
 
 ```text
 repo/.rstack/hooks/
@@ -156,7 +156,7 @@ repo/.rstack/hooks/_/
 core.hooksPath=.rstack/hooks/_
 ```
 
-Rstack 会将 `frontend` 记录为负责管理 hooks 的项目。hook 脚本仍位于仓库根目录，但会从 `frontend` 目录运行，因此可以直接使用其中的配置和依赖，无需显式执行 `cd`：
+Rstack CLI 会将 `frontend` 记录为负责管理 hooks 的项目。hook 脚本仍位于仓库根目录，但会从 `frontend` 目录运行，因此可以直接使用其中的配置和依赖，无需显式执行 `cd`：
 
 ```sh title=".rstack/hooks/pre-commit"
 rs staged
@@ -168,7 +168,7 @@ rs staged
 
 ## 移除 hooks \{#remove-hooks}
 
-如需移除由 Rstack 管理的 hooks：
+如需移除由 Rstack CLI 管理的 hooks：
 
 1. 从 `prepare` 脚本中移除 `rs setup`。
 2. 删除仓库的 hooks 路径配置：
@@ -188,13 +188,13 @@ rs staged
 - 重新运行 `rs setup`，恢复生成文件及其可执行权限。
 - 检查环境变量或初始化文件中是否设置了 `RSTACK_HOOKS=0`。
 - 如果命令提示存在其他 hooks 配置，请先迁移或移除冲突配置，再重新运行该命令。
-- 如果命令提示存在其他 Rstack owner，请按照 [Monorepo](#monorepo) 中的步骤转移 owner。
+- 如果命令提示其他项目是 hooks owner，请按照 [Monorepo](#monorepo) 中的步骤转移 owner。
 
-hook 脚本不需要可执行权限，因为 Rstack 会使用 `sh` 运行它。
+hook 脚本不需要可执行权限，因为 Rstack CLI 会使用 `sh` 运行它。
 
 ### 找不到命令 \{#command-not-found}
 
-退出码为 127 时，Rstack 会打印实际生效的 `PATH`。如果 GUI Git 客户端找不到 Node.js 或包管理器，请在 `hooks-init.sh` 中初始化相关环境。
+退出码为 127 时，Rstack CLI 会打印实际生效的 `PATH`。如果 GUI Git 客户端找不到 Node.js 或包管理器，请在 `hooks-init.sh` 中初始化相关环境。
 
 ### Windows 与 Yarn \{#windows-and-yarn}
 
