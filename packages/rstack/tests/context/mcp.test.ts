@@ -210,7 +210,7 @@ test('registers the exact ordered fifteen-tool catalog with accurate annotations
       });
       expect(tools[12]?.annotations).toMatchObject({
         readOnlyHint: false,
-        destructiveHint: false,
+        destructiveHint: true,
         openWorldHint: true,
       });
       expect(tools[13]).toMatchObject({
@@ -812,6 +812,7 @@ registerHooks({
       name: 'rstack-built-process-test',
       version: '1.0.0',
     });
+    transport.stderr?.on('data', () => undefined);
 
     try {
       await client.connect(transport);
@@ -1691,6 +1692,7 @@ test('loads distinct package lint and test configs through the built root MCP', 
       await writeFile(
         path.join(workspaceRoot, fixture.configPath),
         `import { define } from ${JSON.stringify(rstackEntry)};
+console.log('loaded ${fixture.root} config');
 define.lint([{ files: ['src/**/*.ts'], rules: { 'no-debugger': '${fixture.lintRule}' } }]);
 define.test({ include: ['./tests/*.never.ts'], passWithNoTests: ${fixture.testStatus === 'pass'} });
 `,
@@ -1708,6 +1710,14 @@ define.test({ include: ['./tests/*.never.ts'], passWithNoTests: ${fixture.testSt
       name: 'rstack-package-config-test',
       version: '1.0.0',
     });
+    let serverStderr = '';
+    transport.stderr?.on('data', (chunk: Buffer) => {
+      serverStderr += String(chunk);
+    });
+    const transportErrors: Error[] = [];
+    transport.onerror = (error) => {
+      transportErrors.push(error);
+    };
 
     try {
       await client.connect(transport);
@@ -1743,6 +1753,9 @@ define.test({ include: ['./tests/*.never.ts'], passWithNoTests: ${fixture.testSt
       for (const result of [...lintResults, ...testResults]) {
         expect(result.isError).not.toBe(true);
       }
+      expect(transportErrors).toEqual([]);
+      expect(serverStderr).toContain('loaded packages/app config');
+      expect(serverStderr).toContain('loaded packages/library config');
 
       expect(lintResults.map((result) => result.structuredContent)).toEqual([
         expect.objectContaining({
