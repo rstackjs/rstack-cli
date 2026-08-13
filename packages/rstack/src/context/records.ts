@@ -9,6 +9,7 @@ import {
   type LintFacet,
   type TestFacet,
 } from './model.ts';
+import { validateExecutionFacet } from './execution.ts';
 
 const producers = new Set<ContextProducer>([
   'rsbuild',
@@ -223,6 +224,9 @@ const isSnapshotSource = (value: unknown): boolean => {
 const areFacetsValid = (value: Record<string, unknown>): boolean =>
   Object.entries(value).every(([name, facet]) => {
     const producer = isRecordObject(facet) ? facet.producer : undefined;
+    if (name === 'execution') {
+      return validateExecutionFacet(facet) !== undefined;
+    }
     if (name === 'lint' || name === 'rslint' || producer === 'rslint') {
       return validateLintFacet(facet) !== undefined;
     }
@@ -346,6 +350,7 @@ export {
   isRecordObject,
   validateRunManifest,
   validateSnapshot,
+  validateExecutionFacet,
   validateLintFacet,
   validateTestFacet,
 };

@@ -143,6 +143,74 @@ type TestFacet = {
   unhandledErrors: TestErrorRecord[];
 };
 
+type TestExecutionPosition = { line: number; column: number };
+
+type TestExecutionLocation = {
+  start: TestExecutionPosition;
+  end: TestExecutionPosition;
+};
+
+type TestExecutionStatement = {
+  id: string;
+  location: TestExecutionLocation;
+  hits: number;
+};
+
+type TestExecutionFunction = {
+  id: string;
+  name: string;
+  declaration: TestExecutionLocation;
+  location: TestExecutionLocation;
+  hits: number;
+};
+
+type TestExecutionBranch = {
+  id: string;
+  type: string;
+  location: TestExecutionLocation;
+  arms: Array<{ location: TestExecutionLocation; hits: number }>;
+};
+
+type TestExecutionFile = {
+  path: string;
+  digest?: string;
+  statements: TestExecutionStatement[];
+  functions: TestExecutionFunction[];
+  branches: TestExecutionBranch[];
+};
+
+type TestExecutionRequestedSelection = {
+  include?: string[];
+  exclude?: string[];
+  allowExternal: boolean;
+};
+
+type TestExecutionFacet = {
+  producer: 'rstest';
+  provider: 'istanbul';
+  availability: 'available' | 'unavailable';
+  requestedSelection: TestExecutionRequestedSelection;
+  digest: string;
+  universe: {
+    reportedFiles: number;
+    storedFiles: number;
+    droppedFiles: number;
+    reportedLocations: number;
+    storedLocations: number;
+    droppedLocations: number;
+    completeness: 'complete' | 'partial' | 'unknown';
+  };
+  truncated: { files: number; locations: number };
+  bounds: {
+    attribution: 'aggregate-run-only';
+    testAttribution: false;
+    maxFiles: 1000;
+    maxLocationsPerFile: 20_000;
+    maxLocationsTotal: 100_000;
+  };
+  files: TestExecutionFile[];
+};
+
 type ContextRunManifest = {
   schemaVersion: typeof contextStoreSchemaVersion;
   runId: string;
@@ -238,6 +306,14 @@ export type {
   StoredContextSnapshot,
   TestCaseRecord,
   TestErrorRecord,
+  TestExecutionBranch,
+  TestExecutionFacet,
+  TestExecutionFile,
+  TestExecutionFunction,
+  TestExecutionLocation,
+  TestExecutionPosition,
+  TestExecutionRequestedSelection,
+  TestExecutionStatement,
   TestFacet,
   TestFileRecord,
 };

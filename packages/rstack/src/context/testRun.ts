@@ -14,6 +14,12 @@ import {
   type TestFileRecord,
 } from './model.ts';
 import {
+  normalizeExecutionFacet,
+  unavailableExecutionFacet,
+  validateExecutionRequest,
+  type TestExecutionRequest,
+} from './execution.ts';
+import {
   assessSnapshotFreshness,
   createExplicitContextDescriptor,
   createExplicitRun,
@@ -33,6 +39,7 @@ type TestSnapshotRequest = {
   testNamePattern?: string;
   packageRoot?: string;
   configPath?: string;
+  execution?: TestExecutionRequest;
 };
 
 type TestResultsQuery = {
@@ -162,6 +169,7 @@ const captureTestSnapshot = async (
   request: TestSnapshotRequest,
   dependencies: TestCaptureDependencies = {},
 ): Promise<TestCaptureResult> => {
+  validateExecutionRequest(request.execution);
   const target = await resolveExplicitCaptureTarget(workspaceRoot, request);
   const wrapperConfigPath = resolveInternalConfigPath(import.meta.dirname, 'rstestConfig.js');
   const context = createExplicitContextDescriptor({
@@ -185,6 +193,25 @@ const captureTestSnapshot = async (
       runRstest({
         cwd: target.packageRoot,
         config: wrapperConfigPath,
+        ...(request.execution === undefined
+          ? {}
+          : {
+              inlineConfig: {
+                coverage: {
+                  enabled: true,
+                  provider: 'istanbul' as const,
+                  reporters: [],
+                  reportOnFailure: true,
+                  ...(request.execution.include === undefined
+                    ? {}
+                    : { include: request.execution.include }),
+                  ...(request.execution.exclude === undefined
+                    ? {}
+                    : { exclude: request.execution.exclude }),
+                  allowExternal: request.execution.allowExternal ?? false,
+                },
+              },
+            }),
         ...(request.files === undefined ? {} : { files: request.files }),
         ...(request.testNamePattern === undefined
           ? {}
@@ -210,6 +237,8 @@ const captureTestSnapshot = async (
       durationMs: 0,
       unhandledErrors: [capturedError],
     };
+    const executionFacet =
+      request.execution === undefined ? undefined : unavailableExecutionFacet(request.execution);
     const snapshot: ContextSnapshot = {
       schemaVersion: contextStoreSchemaVersion,
       snapshotId: dependencies.createSnapshotId?.() ?? `snap_${Date.now()}_${randomUUID()}`,
@@ -218,8 +247,16 @@ const captureTestSnapshot = async (
       sequence: 0,
       observedAt: now().toISOString(),
       status: 'error',
-      completeness: { test: 'partial' },
-      facets: { test: facet as unknown as JsonValue },
+      completeness: {
+        test: 'partial',
+        ...(executionFacet === undefined ? {} : { execution: 'partial' }),
+      },
+      facets: {
+        test: facet as unknown as JsonValue,
+        ...(executionFacet === undefined
+          ? {}
+          : { execution: executionFacet as unknown as JsonValue }),
+      },
       source: { inputs: [], inputCompleteness: 'partial' },
     };
 
@@ -227,9 +264,25 @@ const captureTestSnapshot = async (
     throw error;
   }
   const facet = normalizeTestFacet(workspaceRoot, result);
-  const inputs = await recordContextInputFiles(workspaceRoot, [
+  const executionFacet =
+    request.execution === undefined
+      ? undefined
+      : await normalizeExecutionFacet(
+          workspaceRoot,
+          target.packageRoot,
+          request.execution,
+          result.coverage,
+        );
+  const testInputs = await recordContextInputFiles(workspaceRoot, [
     ...new Set(facet.files.map((file) => file.path)),
   ]);
+  const executionInputs =
+    executionFacet?.files.flatMap((file) =>
+      file.digest === undefined ? [] : [{ path: file.path, digest: file.digest }],
+    ) ?? [];
+  const inputs = [
+    ...new Map([...testInputs, ...executionInputs].map((input) => [input.path, input])).values(),
+  ].sort((left, right) => left.path.localeCompare(right.path));
   const snapshot: ContextSnapshot = {
     schemaVersion: contextStoreSchemaVersion,
     snapshotId: dependencies.createSnapshotId?.() ?? `snap_${Date.now()}_${randomUUID()}`,
@@ -238,8 +291,24 @@ const captureTestSnapshot = async (
     sequence: 0,
     observedAt: now().toISOString(),
     status: getRunStatus(result),
-    completeness: { test: 'complete' },
-    facets: { test: facet as unknown as JsonValue },
+    completeness: {
+      test: 'complete',
+      ...(executionFacet === undefined
+        ? {}
+        : {
+            execution:
+              executionFacet.availability === 'available' &&
+              executionFacet.universe.completeness === 'complete'
+                ? 'complete'
+                : 'partial',
+          }),
+    },
+    facets: {
+      test: facet as unknown as JsonValue,
+      ...(executionFacet === undefined
+        ? {}
+        : { execution: executionFacet as unknown as JsonValue }),
+    },
     source: { inputs, inputCompleteness: 'partial' },
   };
 

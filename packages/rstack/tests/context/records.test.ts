@@ -3,6 +3,7 @@ import { contextStoreSchemaVersion } from '../../src/context/model.ts';
 import {
   getContextSnapshotGenerationFileName,
   isContextSnapshotGenerationFileName,
+  validateExecutionFacet,
   validateLintFacet,
   validateRunManifest,
   validateSnapshot,
@@ -163,6 +164,177 @@ test('validates lint and test facets with captured source inputs', () => {
   expect(validateLintFacet(lint)).toEqual(lint);
   expect(validateTestFacet(testFacet)).toEqual(testFacet);
   expect(validateSnapshot(captured)).toEqual(captured);
+});
+
+test('validates aggregate Rstest execution facets before generic producer routing', () => {
+  const execution = {
+    producer: 'rstest',
+    provider: 'istanbul',
+    availability: 'available',
+    requestedSelection: { include: ['src/**/*.ts'], allowExternal: false },
+    digest: 'c'.repeat(64),
+    universe: {
+      reportedFiles: 1,
+      storedFiles: 1,
+      droppedFiles: 0,
+      reportedLocations: 6,
+      storedLocations: 6,
+      droppedLocations: 0,
+      completeness: 'complete',
+    },
+    truncated: { files: 0, locations: 0 },
+    bounds: {
+      attribution: 'aggregate-run-only',
+      testAttribution: false,
+      maxFiles: 1000,
+      maxLocationsPerFile: 20_000,
+      maxLocationsTotal: 100_000,
+    },
+    files: [
+      {
+        path: 'src/index.ts',
+        digest: 'd'.repeat(64),
+        statements: [
+          {
+            id: '0',
+            location: {
+              start: { line: 1, column: 0 },
+              end: { line: 1, column: 10 },
+            },
+            hits: 1,
+          },
+        ],
+        functions: [
+          {
+            id: '0',
+            name: 'main',
+            declaration: {
+              start: { line: 1, column: 0 },
+              end: { line: 1, column: 4 },
+            },
+            location: {
+              start: { line: 1, column: 7 },
+              end: { line: 1, column: 10 },
+            },
+            hits: 1,
+          },
+        ],
+        branches: [
+          {
+            id: '0',
+            type: 'if',
+            location: {
+              start: { line: 2, column: 0 },
+              end: { line: 2, column: 10 },
+            },
+            arms: [
+              {
+                location: {
+                  start: { line: 2, column: 4 },
+                  end: { line: 2, column: 7 },
+                },
+                hits: 0,
+              },
+              {
+                location: {
+                  start: { line: 2, column: 8 },
+                  end: { line: 2, column: 10 },
+                },
+                hits: 1,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  } as const;
+
+  expect(validateExecutionFacet(execution)).toEqual(execution);
+  expect(validateSnapshot({ ...snapshot, facets: { execution } })).toEqual({
+    ...snapshot,
+    facets: { execution },
+  });
+  expect(validateExecutionFacet({ ...execution, digest: 'not-a-digest' })).toBeUndefined();
+  expect(
+    validateExecutionFacet({
+      ...execution,
+      bounds: { ...execution.bounds, testAttribution: true },
+    }),
+  ).toBeUndefined();
+  expect(
+    validateSnapshot({
+      ...snapshot,
+      facets: { execution: { ...execution, files: [{ testId: 'owned' }] } },
+    }),
+  ).toBeUndefined();
+  expect(
+    validateExecutionFacet({
+      ...execution,
+      files: Array.from({ length: 1001 }, (_, index) => ({
+        path: `src/${index}.ts`,
+        statements: [],
+        functions: [],
+        branches: [],
+      })),
+      universe: {
+        ...execution.universe,
+        reportedFiles: 1001,
+        storedFiles: 1001,
+        reportedLocations: 0,
+        storedLocations: 0,
+      },
+    }),
+  ).toBeUndefined();
+  expect(
+    validateExecutionFacet({
+      ...execution,
+      files: [
+        {
+          path: 'src/index.ts',
+          statements: Array.from({ length: 20_001 }, (_, index) => ({
+            id: String(index),
+            location: {
+              start: { line: 1, column: 0 },
+              end: { line: 1, column: 1 },
+            },
+            hits: 0,
+          })),
+          functions: [],
+          branches: [],
+        },
+      ],
+      universe: {
+        ...execution.universe,
+        reportedLocations: 20_001,
+        storedLocations: 20_001,
+      },
+    }),
+  ).toBeUndefined();
+  expect(
+    validateExecutionFacet({
+      ...execution,
+      files: Array.from({ length: 6 }, (_, fileIndex) => ({
+        path: `src/${fileIndex}.ts`,
+        statements: Array.from({ length: 20_000 }, (_, index) => ({
+          id: String(index),
+          location: {
+            start: { line: 1, column: 0 },
+            end: { line: 1, column: 1 },
+          },
+          hits: 0,
+        })),
+        functions: [],
+        branches: [],
+      })),
+      universe: {
+        ...execution.universe,
+        reportedFiles: 6,
+        storedFiles: 6,
+        reportedLocations: 120_000,
+        storedLocations: 120_000,
+      },
+    }),
+  ).toBeUndefined();
 });
 
 test('rejects malformed known facets and unpaired source input metadata', () => {
