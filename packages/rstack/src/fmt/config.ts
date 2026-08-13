@@ -17,6 +17,20 @@ type ResolveFmtConfigOptions = {
 type PathMatcher = (filePath: string) => boolean;
 type FmtOptionsResolver = (filePath: string) => ResolvedFmtOptions;
 
+/**
+ * Each path from the root represents an ordered sequence of matching overrides.
+ * A node stores the options merged along that path.
+ */
+type OptionsCacheNode = {
+  children: WeakMap<ResolvedFmtOptions, OptionsCacheNode>;
+  options: ResolvedFmtOptions;
+};
+
+const createOptionsCacheNode = (options: ResolvedFmtOptions): OptionsCacheNode => ({
+  children: new WeakMap(),
+  options,
+});
+
 const neverMatches: PathMatcher = () => false;
 
 const compileMatchers = (
@@ -90,28 +104,33 @@ const normalizeFmtConfig = (config: FmtConfig | undefined, rootPath: string): Re
 };
 
 /** Creates a reusable resolver for applying per-file formatter overrides. */
-const createFmtOptionsResolver = (config: ResolvedFmtConfig): FmtOptionsResolver => {
+const createOptionsResolver = (config: ResolvedFmtConfig): FmtOptionsResolver => {
   if (config.overrides.length === 0) {
     return () => config.baseOptions;
   }
 
   const resolveRelativePath = createRelativePathResolver(config.rootPath);
+  const rootCacheNode = createOptionsCacheNode(config.baseOptions);
 
   return (filePath) => {
-    let options = config.baseOptions;
+    let cacheNode = rootCacheNode;
     const relativeFilePath = resolveRelativePath(filePath);
 
     for (const override of config.overrides) {
       if (!override.options || !override.matches(relativeFilePath)) {
         continue;
       }
-      if (options === config.baseOptions) {
-        options = { ...options };
+
+      // Reuse the merged result for this override after the current matched sequence.
+      let nextCacheNode = cacheNode.children.get(override.options);
+      if (!nextCacheNode) {
+        nextCacheNode = createOptionsCacheNode({ ...cacheNode.options, ...override.options });
+        cacheNode.children.set(override.options, nextCacheNode);
       }
-      Object.assign(options, override.options);
+      cacheNode = nextCacheNode;
     }
 
-    return options;
+    return cacheNode.options;
   };
 };
 
@@ -127,5 +146,5 @@ const resolveFmtConfig = async ({
   return normalizeFmtConfig(config, rootPath);
 };
 
-export { createFmtOptionsResolver, normalizeFmtConfig, resolveFmtConfig };
+export { createOptionsResolver, normalizeFmtConfig, resolveFmtConfig };
 export type { FmtOptionsResolver };

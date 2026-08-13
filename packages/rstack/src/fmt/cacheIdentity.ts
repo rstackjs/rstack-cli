@@ -1,4 +1,4 @@
-import { hash } from 'node:crypto';
+import { hash as createDigest } from 'node:crypto';
 import { isAbsolute } from 'node:path';
 import stableStringify from 'fast-json-stable-stringify';
 import { fmtCacheVersion } from './cacheStore.ts';
@@ -12,7 +12,9 @@ type CacheKeyResolver = (filePath: string) => string | undefined;
 type OptionsHasher = (options: ResolvedFmtOptions) => string | undefined;
 type PluginFingerprints = ReadonlyMap<string, string>;
 
-const sha256 = (content: string | Uint8Array): string => hash('sha256', content, 'hex');
+const cacheHashLength = 16;
+const createCacheHash = (content: string | Uint8Array): string =>
+  createDigest('sha256', content, 'base64url').slice(0, cacheHashLength);
 
 /** Identifies formatter behavior shared by all cache entries in this process. */
 const cacheNamespace: string = JSON.stringify([fmtCacheVersion, RSTACK_VERSION, PRETTIER_VERSION]);
@@ -55,7 +57,7 @@ const createOptionsHasher = (pluginFingerprints?: PluginFingerprints): OptionsHa
         }
         value = { ...options, plugins: fingerprints };
       }
-      hash = sha256(stableStringify(value));
+      hash = createCacheHash(stableStringify(value));
     } catch {
       // Circular or unreadable options cannot be cached.
     }
@@ -65,4 +67,10 @@ const createOptionsHasher = (pluginFingerprints?: PluginFingerprints): OptionsHa
   };
 };
 
-export { cacheNamespace, createCacheKeyResolver, createOptionsHasher, sha256 };
+export {
+  cacheHashLength,
+  cacheNamespace,
+  createCacheHash,
+  createCacheKeyResolver,
+  createOptionsHasher,
+};

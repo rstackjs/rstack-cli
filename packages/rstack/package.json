@@ -1,6 +1,6 @@
 {
   "name": "rstack",
-  "version": "0.5.0-alpha.1",
+  "version": "0.6.0",
   "description": "One CLI for JavaScript development, powered by Rstack.",
   "homepage": "https://rstack.rs",
   "bugs": {
@@ -102,10 +102,14 @@
     "is-binary-path": "catalog:",
     "lint-staged": "catalog:",
     "micromatch": "catalog:",
+    "prettier-plugin-svelte": "catalog:",
     "rslog": "catalog:",
     "sort-package-json": "catalog:",
+    "svelte": "catalog:",
     "tiny-readdir": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vscode-languageserver": "catalog:",
+    "vscode-languageserver-textdocument": "catalog:"
   },
   "peerDependencies": {
     "@rspress/core": "^2.0.17",

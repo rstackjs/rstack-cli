@@ -165,7 +165,7 @@ const normalizeExecutionFile = (
       isRecordObject(rawBranch) && Array.isArray(rawBranch.locations) ? rawBranch.locations : [];
     const locations = 1 + rawArms.length;
     reportedLocations += locations;
-    const rawHits = data.b[id];
+    const rawHits: unknown = data.b[id];
     if (
       !isRecordObject(rawBranch) ||
       typeof rawBranch.type !== 'string' ||
@@ -180,7 +180,7 @@ const normalizeExecutionFile = (
     const location = normalizeLocation(rawBranch.loc);
     const arms = rawBranch.locations.map((rawLocation, index) => {
       const armLocation = normalizeLocation(rawLocation);
-      const hits = rawHits[index];
+      const hits: unknown = rawHits[index];
       return armLocation === undefined || !isNonNegativeInteger(hits)
         ? undefined
         : { location: armLocation, hits };
@@ -402,7 +402,7 @@ const isExecutionBranch = (value: unknown): boolean =>
       isNonNegativeInteger(arm.hits),
   );
 
-const isExecutionFile = (value: unknown): boolean =>
+const isExecutionFile = (value: unknown): value is TestExecutionFile =>
   isRecordObject(value) &&
   hasOnlyKeys(value, ['path', 'digest', 'statements', 'functions', 'branches']) &&
   isIdentifier(value.path) &&
@@ -415,10 +415,8 @@ const isExecutionFile = (value: unknown): boolean =>
   Array.isArray(value.branches) &&
   value.branches.every(isExecutionBranch);
 
-const countExecutionLocations = (file: Record<string, unknown>): number => {
-  const statements = file.statements as unknown[];
-  const functions = file.functions as unknown[];
-  const branches = file.branches as Array<{ arms: unknown[] }>;
+const countExecutionLocations = (file: TestExecutionFile): number => {
+  const { statements, functions, branches } = file;
   return (
     statements.length +
     functions.length * 2 +
@@ -476,16 +474,15 @@ const validateExecutionFacet = (value: unknown): TestExecutionFacet | undefined 
     !isNonNegativeInteger(value.universe.storedLocations) ||
     !isNonNegativeInteger(value.universe.droppedLocations) ||
     !['complete', 'partial', 'unknown'].includes(value.universe.completeness as string) ||
-    value.universe.reportedFiles !==
-      (value.universe.storedFiles as number) + (value.universe.droppedFiles as number) ||
+    value.universe.reportedFiles !== value.universe.storedFiles + value.universe.droppedFiles ||
     value.universe.reportedLocations !==
-      (value.universe.storedLocations as number) + (value.universe.droppedLocations as number) ||
+      value.universe.storedLocations + value.universe.droppedLocations ||
     !isRecordObject(value.truncated) ||
     !hasOnlyKeys(value.truncated, ['files', 'locations']) ||
     !isNonNegativeInteger(value.truncated.files) ||
     !isNonNegativeInteger(value.truncated.locations) ||
-    value.truncated.files > (value.universe.droppedFiles as number) ||
-    value.truncated.locations > (value.universe.droppedLocations as number) ||
+    value.truncated.files > value.universe.droppedFiles ||
+    value.truncated.locations > value.universe.droppedLocations ||
     !isRecordObject(value.bounds) ||
     !hasOnlyKeys(value.bounds, [
       'attribution',
@@ -503,16 +500,17 @@ const validateExecutionFacet = (value: unknown): TestExecutionFacet | undefined 
     !value.files.every(isExecutionFile) ||
     value.files.length > executionBounds.maxFiles ||
     value.files.length !== value.universe.storedFiles ||
-    new Set(value.files.map((file) => (file as { path: string }).path)).size !==
-      value.files.length ||
+    new Set(value.files.map((file: unknown) => (isExecutionFile(file) ? file.path : undefined)))
+      .size !== value.files.length ||
     value.files.some(
-      (file) =>
-        countExecutionLocations(file as Record<string, unknown>) >
-        executionBounds.maxLocationsPerFile,
+      (file: unknown) =>
+        isExecutionFile(file) &&
+        countExecutionLocations(file) > executionBounds.maxLocationsPerFile,
     ) ||
     value.universe.storedLocations > executionBounds.maxLocationsTotal ||
     value.files.reduce(
-      (total, file) => total + countExecutionLocations(file as Record<string, unknown>),
+      (total: number, file: unknown) =>
+        total + (isExecutionFile(file) ? countExecutionLocations(file) : 0),
       0,
     ) !== value.universe.storedLocations
   ) {

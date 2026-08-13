@@ -1,3 +1,4 @@
+/* rslint-disable @typescript-eslint/no-unsafe-assignment -- MCP JSON schemas and Rstest asymmetric matchers are intentionally untyped. */
 import { access, cp, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -680,12 +681,13 @@ test('reports a null Rsdoctor analysis without claiming data is available', asyn
         });
       },
       {
-        analyzeRsdoctorArtifact: async (_workspaceRoot, request) => ({
-          dataFile: request.dataFile,
-          result: { data: null, description: 'No build summary.', ok: true },
-          sectionEvidence: [],
-          toolName: request.toolName,
-        }),
+        analyzeRsdoctorArtifact: (_workspaceRoot, request) =>
+          Promise.resolve({
+            dataFile: request.dataFile,
+            result: { data: null, description: 'No build summary.', ok: true },
+            sectionEvidence: [],
+            toolName: request.toolName,
+          }),
       },
     );
   });
@@ -718,12 +720,13 @@ test('distinguishes literal and recursively zero-shaped Rsdoctor analysis data',
           expect(result.content).toEqual([{ type: 'text', text: expected }]);
         },
         {
-          analyzeRsdoctorArtifact: async (_workspaceRoot, request) => ({
-            dataFile: request.dataFile,
-            result: { data, description: 'Build summary.', ok: true },
-            sectionEvidence: [],
-            toolName: request.toolName,
-          }),
+          analyzeRsdoctorArtifact: (_workspaceRoot, request) =>
+            Promise.resolve({
+              dataFile: request.dataFile,
+              result: { data, description: 'Build summary.', ok: true },
+              sectionEvidence: [],
+              toolName: request.toolName,
+            }),
         },
       );
     }
@@ -751,22 +754,23 @@ test('reports omitted Rsdoctor section evidence when the analysis provides it', 
         ]);
       },
       {
-        analyzeRsdoctorArtifact: async (_workspaceRoot, request) => ({
-          dataFile: request.dataFile,
-          result: {
-            data: { costs: [], totalCost: 0 },
-            description: 'Build summary.',
-            ok: true,
-          },
-          sectionEvidence: [
-            {
-              section: 'moduleGraph',
-              status: 'omitted' as const,
-              reason: 'not-selected' as const,
+        analyzeRsdoctorArtifact: (_workspaceRoot, request) =>
+          Promise.resolve({
+            dataFile: request.dataFile,
+            result: {
+              data: { costs: [], totalCost: 0 },
+              description: 'Build summary.',
+              ok: true,
             },
-          ],
-          toolName: request.toolName,
-        }),
+            sectionEvidence: [
+              {
+                section: 'moduleGraph',
+                status: 'omitted' as const,
+                reason: 'not-selected' as const,
+              },
+            ],
+            toolName: request.toolName,
+          }),
       },
     );
   });
@@ -1444,13 +1448,11 @@ test('runs explicit captures through injected producers and returns ordinary MCP
         expect(testResult.content).toEqual([{ type: 'text', text: 'Test capture failed.' }]);
       },
       {
-        captureLintSnapshot: async (_root, request) => {
+        captureLintSnapshot: (_root, request) => {
           captureRequests.push(request);
-          return lintResult;
+          return Promise.resolve(lintResult);
         },
-        captureTestSnapshot: async () => {
-          throw new Error('Test capture failed.');
-        },
+        captureTestSnapshot: () => Promise.reject(new Error('Test capture failed.')),
       },
     );
   });
@@ -1582,8 +1584,8 @@ test('captures independent monorepo package contexts through one root MCP', asyn
                     },
                   ];
                 },
-                lintText: async () => [],
-                close: async () => {},
+                lintText: () => Promise.resolve([]),
+                close: () => Promise.resolve(),
               }),
               {
                 wrapperConfigPath: path.join(import.meta.dirname, '../../dist/rslintConfig.js'),

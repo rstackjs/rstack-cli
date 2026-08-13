@@ -129,7 +129,7 @@ const diffItems = <T extends SnapshotDiffItem>(
     });
     const changedCount = Math.min(before.length, after.length);
     for (let index = 0; index < changedCount; index += 1) {
-      changed.push({ before: before[index]!, after: after[index]! });
+      changed.push({ before: before[index], after: after[index] });
     }
     removed.push(...before.slice(changedCount));
     added.push(...after.slice(changedCount));

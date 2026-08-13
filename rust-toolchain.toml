@@ -1,5 +1,5 @@
 [toolchain]
 # Required by the release-only -Zlocation-detail=none flag.
-channel = "nightly-2026-04-16"
+channel = "nightly-2026-08-12"
 components = ["clippy", "rustfmt"]
 profile = "minimal"

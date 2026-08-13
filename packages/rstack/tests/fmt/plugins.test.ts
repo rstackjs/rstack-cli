@@ -1,10 +1,10 @@
 import { pathToFileURL } from 'node:url';
 import { expect, test } from 'rstack/test';
-import { createFingerprintResolver, createFmtPluginResolver } from '../../src/fmt/plugins.ts';
+import { createFingerprintResolver, createPluginResolver } from '../../src/fmt/plugins.ts';
 import { withTempProject, writeProjectFile } from './helpers.ts';
 
 test('resolves plugin specifiers from the config root', async () => {
-  await withTempProject(async (rootPath) => {
+  await withTempProject((rootPath) => {
     const packageEntry = writeProjectFile(
       rootPath,
       'node_modules/prettier-plugin-packagejson/import.mjs',
@@ -40,7 +40,8 @@ test('resolves plugin specifiers from the config root', async () => {
       ],
     };
 
-    const resolved = createFmtPluginResolver(rootPath)(options);
+    const resolvePlugins = createPluginResolver(rootPath);
+    const resolved = resolvePlugins(options);
 
     expect(resolved.plugins).toEqual([
       pathToFileURL(packageEntry).href,
@@ -50,13 +51,14 @@ test('resolves plugin specifiers from the config root', async () => {
       'data:text/javascript,export default {}',
     ]);
     expect(options.plugins[0]).toBe('prettier-plugin-packagejson');
+    expect(resolvePlugins(options)).toBe(resolved);
   });
 });
 
 test('rejects imported plugin objects', () => {
   const options = { plugins: [{ languages: [] }] };
 
-  expect(() => createFmtPluginResolver(import.meta.dirname)(options)).toThrow(
+  expect(() => createPluginResolver(import.meta.dirname)(options)).toThrow(
     'Prettier plugin objects are not supported. Use a package name, path, or URL instead.',
   );
 });

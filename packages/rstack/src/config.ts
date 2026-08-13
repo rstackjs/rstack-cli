@@ -32,10 +32,16 @@ export type LoadedRstackConfig = {
 export type LoadRstackConfigOptions = {
   /**
    * The path to the Rstack config file, can be a relative or absolute path.
+   * A relative path is resolved from `cwd`.
    * If `configFilePath` is not provided, the config path set by the CLI is used.
-   * If neither path is provided, the function will search for the config file in the current working directory.
+   * If neither path is provided, the function will search for the config file in `cwd`.
    */
   configFilePath?: string;
+  /**
+   * The directory the config file is searched in and relative config paths are resolved from.
+   * Defaults to the current working directory.
+   */
+  cwd?: string;
 };
 
 type ConfigSession = {
@@ -44,6 +50,11 @@ type ConfigSession = {
 };
 
 type ConfigState = {
+  /**
+   * Config file path from the global `--config` flag. Always absolute: the CLI
+   * resolves it at parse time so it stays independent of later cwd choices
+   * (`loadRstackConfig` may be called with an LSP workspace root as `cwd`).
+   */
   configPath?: string;
   configRoot?: string;
 };
@@ -195,6 +206,7 @@ export const define: Define = {
 
 export const loadRstackConfig = async ({
   configFilePath,
+  cwd,
 }: LoadRstackConfigOptions = {}): Promise<LoadedRstackConfig> => {
   const state = getConfigState();
   const configPath = configFilePath ?? state.configPath;
@@ -210,7 +222,7 @@ export const loadRstackConfig = async ({
         loader: 'native',
         exportName: false,
         fresh: true,
-        ...(configRoot === undefined ? {} : { cwd: configRoot }),
+        cwd: configRoot ?? cwd,
         ...(configPath !== undefined
           ? { path: configPath }
           : {

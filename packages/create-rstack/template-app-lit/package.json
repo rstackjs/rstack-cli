@@ -18,6 +18,6 @@
   },
   "devDependencies": {
     "happy-dom": "^20.11.2",
-    "rstack": "^0.4.0"
+    "rstack": "^0.6.0"
   }
 }

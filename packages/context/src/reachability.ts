@@ -62,7 +62,7 @@ const traceModuleGraph = (
   }
 
   for (let index = 0; index < visited.length; index += 1) {
-    const moduleId = visited[index]!;
+    const moduleId = visited[index];
     const moduleDepth = depth.get(moduleId)!;
     for (const neighbor of orderedNeighbors.get(moduleId) ?? []) {
       if (predecessor.has(neighbor)) continue;

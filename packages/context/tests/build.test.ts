@@ -1,3 +1,4 @@
+/* rslint-disable @typescript-eslint/no-unsafe-assignment -- Rstest asymmetric matchers are intentionally untyped. */
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -55,7 +56,7 @@ const getObserverHarness = (
   const hooks: ObserverHooks = {};
   const warnings: string[] = [];
 
-  plugin.setup?.({
+  void plugin.setup?.({
     logger: {
       warn: (message: string) => {
         warnings.push(message);
@@ -164,7 +165,7 @@ const collectContextId = async ({
   const status = await readContextWorkspaceStatus(workspaceRoot);
   const run = status.runs.find((entry) => entry.run.runId === runId)?.run;
   expect(run).toBeDefined();
-  return run!.contexts[0]!.contextId;
+  return run!.contexts[0].contextId;
 };
 
 test('appends one observer without mutating user config or nested Rslib entries', () => {
@@ -250,7 +251,7 @@ test('publishes an aggregate manifest once and advances sequences per environmen
 
     const status = await readContextWorkspaceStatus(workspaceRoot);
     expect(status.runs).toHaveLength(1);
-    expect(status.runs[0]!.run).toMatchObject({
+    expect(status.runs[0].run).toMatchObject({
       command: 'build',
       contexts: [
         { environment: 'cjs', product: 'library', target: 'node' },
@@ -261,7 +262,7 @@ test('publishes an aggregate manifest once and advances sequences per environmen
     });
 
     const snapshots = new Map(
-      status.runs[0]!.contexts.map(({ context, latestSnapshot }) => [
+      status.runs[0].contexts.map(({ context, latestSnapshot }) => [
         context.environment,
         latestSnapshot,
       ]),
@@ -354,7 +355,7 @@ test('bounds metadata rows and distinguishes disabled deep capture from partial 
       time: 20,
     });
 
-    const cappedSnapshot = (await readContextWorkspaceStatus(workspaceRoot)).runs[0]!.contexts[0]!
+    const cappedSnapshot = (await readContextWorkspaceStatus(workspaceRoot)).runs[0].contexts[0]
       .latestSnapshot!;
     const build = cappedSnapshot.facets.build as {
       assets: Array<{ name: string; size: number }>;
@@ -364,9 +365,9 @@ test('bounds metadata rows and distinguishes disabled deep capture from partial 
     expect(build.assets).toHaveLength(100);
     expect(build.assets[0]).toEqual({ name: 'dist/asset-0.js', size: 0 });
     expect(build.chunks).toHaveLength(100);
-    expect(build.chunks[0]!.files).toHaveLength(21);
-    expect(build.chunks[0]!.files[0]).toBe('dist/chunk-0-0.js');
-    expect(build.chunks[0]!.files[20]).toBe('dist/chunk-0-20.js');
+    expect(build.chunks[0].files).toHaveLength(21);
+    expect(build.chunks[0].files[0]).toBe('dist/chunk-0-0.js');
+    expect(build.chunks[0].files[20]).toBe('dist/chunk-0-20.js');
     expect(build.truncated).toEqual({ assets: 1, chunks: 1 });
     expect(JSON.stringify(cappedSnapshot)).not.toContain(workspaceRoot);
 
@@ -377,7 +378,7 @@ test('bounds metadata rows and distinguishes disabled deep capture from partial 
       time: 21,
     });
 
-    const snapshot = (await readContextWorkspaceStatus(workspaceRoot)).runs[0]!.contexts[0]!
+    const snapshot = (await readContextWorkspaceStatus(workspaceRoot)).runs[0].contexts[0]
       .latestSnapshot!;
     expect(snapshot).toMatchObject({
       sequence: 2,
@@ -429,7 +430,7 @@ test('retains bounded valid metadata rows and counts only dropped valid rows', a
       time: 1,
     });
 
-    const build = (await readContextWorkspaceStatus(workspaceRoot)).runs[0]!.contexts[0]!
+    const build = (await readContextWorkspaceStatus(workspaceRoot)).runs[0].contexts[0]
       .latestSnapshot!.facets.build as BuildMetadataFacet;
     expect(build.assets).toEqual(
       Array.from({ length: 100 }, (_, index) => ({
@@ -578,7 +579,7 @@ test('normalizes metadata paths', async () => {
       time: 1,
     });
 
-    const build = (await readContextWorkspaceStatus(workspaceRoot)).runs[0]!.contexts[0]!
+    const build = (await readContextWorkspaceStatus(workspaceRoot)).runs[0].contexts[0]
       .latestSnapshot!.facets.build as {
       assets: Array<{ name: string; size: number }>;
       chunks: Array<{ files: string[] }>;
@@ -695,11 +696,11 @@ test('records explicit build variants, normalized output paths, and partial conf
     });
 
     const status = await readContextWorkspaceStatus(workspaceRoot);
-    expect(status.runs[0]!.run.contexts[0]).toMatchObject({
+    expect(status.runs[0].run.contexts[0]).toMatchObject({
       variant: 'firefox_v3',
       distPath: 'dist/firefox',
     });
-    expect(status.runs[0]!.contexts[0]!.latestSnapshot!.source).toMatchObject({
+    expect(status.runs[0].contexts[0].latestSnapshot!.source).toMatchObject({
       inputCompleteness: 'partial',
       inputs: [
         {

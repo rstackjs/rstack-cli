@@ -511,7 +511,7 @@ const getLintFixPreview = async (
   if (facet === undefined) throw new Error('The selected snapshot has no lint facet.');
   const matches = facet.files.filter(({ path: candidate }) => candidate === filePath);
   if (matches.length !== 1) throw new Error('The lint snapshot does not contain that exact path.');
-  const file = matches[0]!;
+  const file = matches[0];
   if (!facet.fixPreviewCaptured) {
     return {
       available: false,

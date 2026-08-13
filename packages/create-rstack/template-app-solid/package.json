@@ -20,8 +20,8 @@
     "@rsbuild/plugin-babel": "^2.0.1",
     "@rsbuild/plugin-solid": "^1.2.2",
     "@solidjs/testing-library": "^0.8.10",
-    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/jest-dom": "^7.0.1",
     "happy-dom": "^20.11.2",
-    "rstack": "^0.4.0"
+    "rstack": "^0.6.0"
   }
 }

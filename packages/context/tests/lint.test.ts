@@ -1,3 +1,4 @@
+/* rslint-disable @typescript-eslint/no-unsafe-assignment -- Rstest asymmetric matchers are intentionally untyped. */
 import { spawnSync } from 'node:child_process';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
@@ -27,20 +28,23 @@ const mocks = {
 const createRslint = (options: RslintOptions) => {
   mocks.options.push(options);
   return {
-    async lintFiles(patterns: string | string[]): Promise<LintResult[]> {
+    lintFiles(patterns: string | string[]): Promise<LintResult[]> {
       mocks.lintFilesCalls.push(patterns);
-      if (mocks.lintError !== undefined) throw mocks.lintError;
-      return mocks.results;
+      return mocks.lintError === undefined
+        ? Promise.resolve(mocks.results)
+        : Promise.reject(mocks.lintError);
     },
 
-    async lintText(code: string, options?: { filePath?: string }): Promise<LintResult[]> {
+    lintText(code: string, options?: { filePath?: string }): Promise<LintResult[]> {
       mocks.lintTextCalls.push([code, options]);
-      if (mocks.lintError !== undefined) throw mocks.lintError;
-      return mocks.results;
+      return mocks.lintError === undefined
+        ? Promise.resolve(mocks.results)
+        : Promise.reject(mocks.lintError);
     },
 
-    async close(): Promise<void> {
+    close(): Promise<void> {
       mocks.closeCalls += 1;
+      return Promise.resolve();
     },
   };
 };

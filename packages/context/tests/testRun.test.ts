@@ -1,3 +1,4 @@
+/* rslint-disable @typescript-eslint/no-unsafe-assignment -- Rstest asymmetric matchers are intentionally untyped. */
 import { mkdir, mkdtemp, readFile, rm, unlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -42,9 +43,9 @@ const createDependencies = (
   calls: unknown[],
   suffix: string,
 ): TestCaptureDependencies => ({
-  runRstest: async (options) => {
+  runRstest: (options) => {
     calls.push(options);
-    return result;
+    return Promise.resolve(result);
   },
   createRunId: () => `run_${suffix}`,
   createSnapshotId: () => `snap_${suffix}`,
@@ -547,9 +548,9 @@ test('bounds requested execution selectors before invoking Rstest', async () => 
   await withTempWorkspace(async (workspaceRoot) => {
     let called = false;
     const dependencies: TestCaptureDependencies = {
-      runRstest: async () => {
+      runRstest: () => {
         called = true;
-        return createResult();
+        return Promise.resolve(createResult());
       },
     };
 
@@ -572,9 +573,9 @@ test('rejects malformed execution selectors before invoking Rstest', async () =>
   await withTempWorkspace(async (workspaceRoot) => {
     let called = false;
     const dependencies: TestCaptureDependencies = {
-      runRstest: async () => {
+      runRstest: () => {
         called = true;
-        return createResult();
+        return Promise.resolve(createResult());
       },
     };
 

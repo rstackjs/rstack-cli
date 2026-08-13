@@ -1,6 +1,6 @@
 {
   "name": "@rstackjs/context",
-  "version": "0.5.0-alpha.1",
+  "version": "0.6.0",
   "description": "Rstack project context, evidence storage, and MCP runtime.",
   "homepage": "https://rstack.rs",
   "bugs": {

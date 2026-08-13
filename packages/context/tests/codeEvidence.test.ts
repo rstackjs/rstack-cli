@@ -377,14 +377,14 @@ test('distinguishes absent exact test records from matching skipped or todo reco
 test('bounds exact-path diagnostics to two hundred records', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     const facet = lintFacet('src/noisy.ts');
-    facet.files[0]!.messages = Array.from({ length: 205 }, (_, index) => ({
+    facet.files[0].messages = Array.from({ length: 205 }, (_, index) => ({
       ruleId: 'no-noise',
       severity: 1 as const,
       message: `diagnostic ${String(index).padStart(3, '0')}`,
       line: index + 1,
       column: 1,
     }));
-    facet.files[0]!.warningCount = 205;
+    facet.files[0].warningCount = 205;
     facet.totals.warnings = 205;
     await writeSnapshot(workspaceRoot, {
       producer: 'rslint',

@@ -7,10 +7,13 @@ import {
   type Diagnostic,
   type ParseOptions,
   type ParseResult,
+  type SourceLang,
   type SourceType,
 } from 'yuku-parser';
 
 const AST_FORMAT = 'estree-yuku';
+const JS_TS_FILE_REGEXP = /\.(?:js|mjs|cjs|jsx|ts|mts|cts|tsx)$/i;
+const JSX_REGEXP = /^[^"'`]*<\/|^[^/]{2}.*\/>/m;
 const SOURCE_TYPE_COMBINATIONS: SourceType[] = ['module', 'commonjs'];
 
 type Range = [start: number, end: number];
@@ -420,11 +423,7 @@ const indexToPosition = (text: string, index: number): { column: number; line: n
   };
 };
 
-const createParseError = (error: Diagnostic, text: string): Diagnostic | SyntaxError => {
-  if (typeof error?.start !== 'number' || typeof error?.end !== 'number') {
-    return error;
-  }
-
+const createParseError = (error: Diagnostic, text: string): SyntaxError => {
   const start = indexToPosition(text, error.start);
   const end = indexToPosition(text, error.end);
 
@@ -461,6 +460,17 @@ const getSourceType = (filepath: string): SourceType | undefined => {
   return undefined;
 };
 
+const getLanguageCombinations = (text: string, filepath: string): SourceLang[] => {
+  const normalizedPath = filepath.toLowerCase();
+
+  if (JS_TS_FILE_REGEXP.test(normalizedPath)) {
+    return [langFromPath(normalizedPath)];
+  }
+
+  // Embedded code from Vue or Svelte keeps the host file path, so detect JSX from its content.
+  return JSX_REGEXP.test(text) ? ['tsx', 'ts', 'dts'] : ['ts', 'tsx', 'dts'];
+};
+
 const tryCombinations = (combinations: (() => ParseResult)[]): ParseResult => {
   let firstError: unknown;
   let hasError = false;
@@ -495,9 +505,9 @@ const parseJavaScript = (text: string, options: ParserOptions<AstNode>): AstNode
 
 const parseTypeScript = (text: string, options: ParserOptions<AstNode>): AstNode => {
   const sourceType = getSourceType(options.filepath);
-  const lang = langFromPath(options.filepath.toLowerCase());
-  const combinations = (sourceType ? [sourceType] : SOURCE_TYPE_COMBINATIONS).map(
-    (candidate) => () => parseWithOptions(text, { sourceType: candidate, lang }),
+  const languages = getLanguageCombinations(text, options.filepath);
+  const combinations = (sourceType ? [sourceType] : SOURCE_TYPE_COMBINATIONS).flatMap((candidate) =>
+    languages.map((lang) => () => parseWithOptions(text, { sourceType: candidate, lang })),
   );
   const { program, comments } = tryCombinations(combinations);
 

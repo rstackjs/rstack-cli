@@ -77,7 +77,7 @@ generated/**
 
 Here, `config/format.ignore` is located relative to the project root. The `generated/**` rule is relative to `config/`. It therefore ignores `config/generated/**` instead of `generated/**` in the project root.
 
-Loaded rules apply to scanned paths, explicitly passed files, and `--stdin-filepath`.
+Loaded rules apply to scanned paths, explicitly passed files, `--stdin-filepath`, and documents formatted through `--lsp`.
 
 To load multiple ignore files, repeat the option:
 
@@ -120,6 +120,22 @@ rs fmt -l
 ```
 
 The option uses the same exit codes as `--check` and cannot be combined with `--write` or `--check`.
+
+### `--lsp`
+
+Run a language server that formats editor buffers over the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) on stdio:
+
+```bash
+rs fmt --lsp
+```
+
+The server only advertises document formatting and formats the buffer held by the editor, not the file on disk. Formatting options sent by the editor, such as tab size, are ignored: the Rstack config is the single source of truth. Ignored, unsupported, and unparsable documents produce no edits rather than an error.
+
+The server loads a single config for the workspace root reported by the editor and does not discover nested configs per file; launch one server per config root when a project contains several. The config is loaded on the first formatting request and reused for the lifetime of the server; restart the server after changing it. Besides the global [`--config`](../configuration#configuration-file) option, only [`--ignore-path`](#--ignore-path-path) affects the server. Relative values for both are resolved from the directory the server was launched in.
+
+Register `rs fmt --lsp` as a custom language server in any editor with LSP support to format on demand or on save.
+
+> `--lsp` cannot be combined with file arguments or with `--write`, `--check`, `--list-different`, or `--stdin-filepath`.
 
 ### `--no-cache`
 

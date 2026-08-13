@@ -1,21 +1,32 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
-import { fmtCacheVersion, loadFmtCacheStore, type FmtCacheFile } from '../../src/fmt/cacheStore.ts';
+import {
+  fmtCacheFileName,
+  fmtCacheVersion,
+  loadFmtCacheStore,
+  type FmtCacheFile,
+} from '../../src/fmt/cacheStore.ts';
 import { withTempProject } from './helpers.ts';
 
 const namespace = 'test-namespace';
-const firstEntry = ['content-a', 'options-a', 'clean'] as const;
-const secondEntry = ['content-b', 'options-b', 'dirty'] as const;
-const unsupportedEntry = [null, 'options-c', 'unsupported'] as const;
-const hashedUnsupportedEntry = ['content-c', 'options-c', 'unsupported'] as const;
+const contentA = 'content-a';
+const contentB = 'content-b';
+const contentC = 'content-c';
+const optionsA = 'options-a';
+const optionsB = 'options-b';
+const optionsC = 'options-c';
+const firstEntry = [contentA, optionsA, 'clean'] as const;
+const secondEntry = [contentB, optionsB, 'dirty'] as const;
+const unsupportedEntry = ['', optionsC, 'unsupported'] as const;
+const hashedUnsupportedEntry = [contentC, optionsC, 'unsupported'] as const;
 
 const readCache = (filePath: string): FmtCacheFile =>
   JSON.parse(readFileSync(filePath, 'utf8')) as FmtCacheFile;
 
-test('writes entries that can be loaded by another store', async () => {
+test('writes flat entries that can be loaded by another store', async () => {
   await withTempProject(async (rootPath) => {
-    const cachePath = path.join(rootPath, 'cache', 'fmt-v1.json');
+    const cachePath = path.join(rootPath, 'cache', fmtCacheFileName);
     const store = await loadFmtCacheStore(cachePath, namespace);
 
     expect(await store.save()).toBe(false);
@@ -26,6 +37,25 @@ test('writes entries that can be loaded by another store', async () => {
     store.set('script', hashedUnsupportedEntry);
     expect(await store.save()).toBe(true);
     expect(await store.save()).toBe(false);
+    expect(readCache(cachePath)).toEqual({
+      version: fmtCacheVersion,
+      namespace,
+      options: [optionsA, optionsC],
+      files: [
+        'src/a.ts',
+        contentA,
+        0,
+        0,
+        'src/unknown.fixture',
+        '',
+        1,
+        2,
+        'script',
+        contentC,
+        1,
+        2,
+      ],
+    });
 
     const loaded = await loadFmtCacheStore(cachePath, namespace);
     expect(loaded.get('src/a.ts')).toEqual(firstEntry);
@@ -36,16 +66,14 @@ test('writes entries that can be loaded by another store', async () => {
 
 test('preserves unvisited entries and skips unchanged updates', async () => {
   await withTempProject(async (rootPath) => {
-    const cachePath = path.join(rootPath, 'fmt-v1.json');
+    const cachePath = path.join(rootPath, fmtCacheFileName);
     writeFileSync(
       cachePath,
       `${JSON.stringify({
         version: fmtCacheVersion,
         namespace,
-        files: {
-          'src/a.ts': firstEntry,
-          'src/b.ts': secondEntry,
-        },
+        options: [optionsA, optionsB],
+        files: ['src/a.ts', contentA, 0, 0, 'src/b.ts', contentB, 1, 1],
       })}\n`,
     );
 
@@ -56,34 +84,30 @@ test('preserves unvisited entries and skips unchanged updates', async () => {
 
     store.set('src/a.ts', secondEntry);
     expect(await store.save()).toBe(true);
-    expect(readCache(cachePath).files).toEqual({
-      'src/a.ts': secondEntry,
-      'src/b.ts': secondEntry,
+    expect(readCache(cachePath)).toEqual({
+      version: fmtCacheVersion,
+      namespace,
+      options: [optionsB],
+      files: ['src/a.ts', contentB, 0, 1, 'src/b.ts', contentB, 0, 1],
     });
   });
 });
 
-test('discards invalid data and entries from another namespace', async () => {
+test('discards invalid schemas and other namespaces', async () => {
   await withTempProject(async (rootPath) => {
-    const cachePath = path.join(rootPath, 'fmt-v1.json');
+    const cachePath = path.join(rootPath, fmtCacheFileName);
+    const validCache = {
+      version: fmtCacheVersion,
+      namespace,
+      options: [optionsA],
+      files: ['src/a.ts', contentA, 0, 0],
+    };
     const invalidContents = [
       '{invalid',
-      JSON.stringify({ version: 2, namespace, files: {} }),
-      JSON.stringify({
-        version: fmtCacheVersion,
-        namespace,
-        files: { 'src/a.ts': ['content', 'options', 'unknown'] },
-      }),
-      JSON.stringify({
-        version: fmtCacheVersion,
-        namespace,
-        files: { 'src/a.ts': [42, 'options', 'unsupported'] },
-      }),
-      JSON.stringify({
-        version: fmtCacheVersion,
-        namespace,
-        files: { 'src/a.ts': [null, 'options', 'clean'] },
-      }),
+      JSON.stringify({ ...validCache, version: fmtCacheVersion - 1 }),
+      JSON.stringify({ version: fmtCacheVersion, namespace, files: [] }),
+      JSON.stringify({ ...validCache, files: { 'src/a.ts': firstEntry } }),
+      JSON.stringify({ ...validCache, files: ['src/a.ts', contentA, 0] }),
     ];
 
     for (const content of invalidContents) {
@@ -95,9 +119,8 @@ test('discards invalid data and entries from another namespace', async () => {
     writeFileSync(
       cachePath,
       JSON.stringify({
-        version: fmtCacheVersion,
+        ...validCache,
         namespace: 'old-namespace',
-        files: { 'src/a.ts': firstEntry },
       }),
     );
     const store = await loadFmtCacheStore(cachePath, namespace);
@@ -106,14 +129,15 @@ test('discards invalid data and entries from another namespace', async () => {
     expect(readCache(cachePath)).toEqual({
       version: fmtCacheVersion,
       namespace,
-      files: {},
+      options: [],
+      files: [],
     });
   });
 });
 
 test('does not throw or leave temporary files when persistence fails', async () => {
   await withTempProject(async (rootPath) => {
-    const cachePath = path.join(rootPath, 'fmt-v1.json');
+    const cachePath = path.join(rootPath, fmtCacheFileName);
     mkdirSync(cachePath);
 
     const store = await loadFmtCacheStore(cachePath, namespace);

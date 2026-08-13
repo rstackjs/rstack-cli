@@ -18,7 +18,7 @@ define.lint(async () => {
 
   return [
     js.configs.recommended,
-    ts.configs.recommended,
+    ts.configs.recommendedTypeChecked,
     reactPlugin.configs.recommended,
     reactHooksPlugin.configs.recommended,
   ];

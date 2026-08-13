@@ -4,10 +4,11 @@ import prettierPkgJson from 'prettier/package.json' with { type: 'json' };
 import { expect, test } from 'rstack/test';
 import pkgJson from '../../package.json' with { type: 'json' };
 import {
+  cacheHashLength,
   cacheNamespace,
+  createCacheHash,
   createCacheKeyResolver,
   createOptionsHasher,
-  sha256,
 } from '../../src/fmt/cacheIdentity.ts';
 import { fmtCacheVersion } from '../../src/fmt/cacheStore.ts';
 import type { ResolvedFmtOptions } from '../../src/fmt/types.ts';
@@ -17,7 +18,7 @@ const rootPath = path.join(import.meta.dirname, 'project');
 const asOptions = (value: Record<string, unknown>): ResolvedFmtOptions =>
   value as ResolvedFmtOptions;
 
-test('creates stable SHA-256 option hashes', () => {
+test('creates stable SHA-256-derived option hashes', () => {
   const hashOptions = createOptionsHasher();
   const left: ResolvedFmtOptions = {
     singleQuote: true,
@@ -29,8 +30,8 @@ test('creates stable SHA-256 option hashes', () => {
   };
 
   expect(hashOptions(left)).toBe(hashOptions(right));
-  expect(hashOptions(left)).toHaveLength(64);
-  expect(sha256('abc')).toBe('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
+  expect(hashOptions(left)).toHaveLength(cacheHashLength);
+  expect(createCacheHash('abc')).toBe('ungWv48Bz-pBQUDe');
 });
 
 test('invalidates hashes when final formatter options change', () => {
@@ -52,7 +53,7 @@ test('includes plugin fingerprints in option hashes', () => {
   const first = createOptionsHasher(new Map([[plugin, 'plugin@1']]));
   const second = createOptionsHasher(new Map([[plugin, 'plugin@2']]));
 
-  expect(first({ plugins: [plugin] })).toHaveLength(64);
+  expect(first({ plugins: [plugin] })).toHaveLength(cacheHashLength);
   expect(first({ plugins: [new URL(plugin)] })).toBe(first({ plugins: [plugin] }));
   expect(first({ plugins: [plugin] })).not.toBe(second({ plugins: [plugin] }));
 });

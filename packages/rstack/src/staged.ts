@@ -1,6 +1,6 @@
 import lintStaged from 'lint-staged';
 import { parseArgs } from './cli/args.ts';
-import { renderHelp } from './cli/help.ts';
+import { printCommandHelp } from './cli/help.ts';
 import { loadRstackConfig } from './config.ts';
 
 export type StagedSyncTaskGenerator = (stagedFileNames: readonly string[]) => string | string[];
@@ -21,35 +21,6 @@ export type StagedTask =
 
 export type StagedConfig = Record<string, StagedTask> | StagedTaskGenerator;
 
-const renderStagedHelp = (): string =>
-  renderHelp({
-    usage: 'rs staged [options]',
-    description: 'Run tasks on staged Git files',
-    sections: [
-      {
-        title: 'Options',
-        items: [
-          ['--allow-empty', 'Allow empty commits when tasks revert all staged changes'],
-          [
-            '-p, --concurrent <number|boolean>',
-            'The number of tasks to run concurrently, or false for serial',
-          ],
-          ['--cwd <path>', 'Working directory to run all tasks in'],
-          ['-d, --debug', 'Print additional debug information'],
-          ['--no-stash', 'Disable backup stash and automatic revert'],
-          ['-q, --quiet', "Disable lint-staged's own console output"],
-          ['-r, --relative', 'Pass relative filepaths to tasks'],
-          [
-            '-v, --verbose',
-            'Show task output even when tasks succeed; by default only failed output is shown',
-          ],
-          ['-c, --config <path>', 'Specify Rstack config file path'],
-          ['-h, --help', 'Display this help message'],
-        ],
-      },
-    ],
-  });
-
 export async function runStagedCLI(args: string[]): Promise<void> {
   const { values } = parseArgs({
     args,
@@ -69,7 +40,7 @@ export async function runStagedCLI(args: string[]): Promise<void> {
   });
 
   if (values.help) {
-    console.log(renderStagedHelp());
+    await printCommandHelp('staged');
     return;
   }
 
@@ -86,7 +57,10 @@ export async function runStagedCLI(args: string[]): Promise<void> {
 
   const success = await lintStaged({
     allowEmpty: values.allowEmpty,
-    concurrent: values.concurrent === undefined ? undefined : JSON.parse(values.concurrent),
+    concurrent:
+      values.concurrent === undefined
+        ? undefined
+        : (JSON.parse(values.concurrent) as boolean | number),
     config: stagedConfig,
     cwd: values.cwd,
     debug: values.debug,

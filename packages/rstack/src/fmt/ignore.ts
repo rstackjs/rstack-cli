@@ -21,13 +21,13 @@ interface CreateIgnoreMatcherOptions {
   ignorePaths?: string[];
 }
 
-const createDefaultIgnoreMatcher = (): IgnorePredicate => {
+const createDefaultMatcher = (): IgnorePredicate => {
   const suffixes = defaultIgnoreNames.map((name) => `${path.sep}${name}`);
 
   return (filePath) => suffixes.some((suffix) => filePath.endsWith(suffix));
 };
 
-const createPatternMatcherSet = (sources: IgnoreSource[]): IgnorePredicate => {
+const createSourceMatcher = (sources: IgnoreSource[]): IgnorePredicate => {
   const matcher = new (loadNativeBinding().IgnoreMatcher)(sources);
   return (filePath, isDirectory = false) => matcher.isIgnored(filePath, isDirectory);
 };
@@ -60,7 +60,7 @@ const createIgnoreMatcher = async ({
     ignorePaths.map((ignorePath) => loadIgnoreSource(cwd, ignorePath)),
   );
   if (config.ignorePatterns.length) {
-    return createPatternMatcherSet([
+    return createSourceMatcher([
       {
         rootPath: config.rootPath,
         patterns: [...defaultIgnoreNames, ...config.ignorePatterns].join('\n'),
@@ -69,14 +69,15 @@ const createIgnoreMatcher = async ({
     ]);
   }
 
-  const defaultMatcher = createDefaultIgnoreMatcher();
+  const defaultMatcher = createDefaultMatcher();
   if (ignoreFileSources.length === 0) {
     return defaultMatcher;
   }
 
-  const cliMatcher = createPatternMatcherSet(ignoreFileSources);
+  const cliMatcher = createSourceMatcher(ignoreFileSources);
   return (filePath, isDirectory = false) =>
     defaultMatcher(filePath, isDirectory) || cliMatcher(filePath, isDirectory);
 };
 
 export { createIgnoreMatcher };
+export type { IgnorePredicate };

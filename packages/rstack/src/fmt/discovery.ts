@@ -1,16 +1,8 @@
 import path from 'node:path';
-import { createFmtOptionsResolver, type FmtOptionsResolver } from './config.ts';
 import { discoverFmtPaths } from './discoverPaths.ts';
+import { createFmtFileResolver } from './fileResolver.ts';
 import { createIgnoreMatcher } from './ignore.ts';
 import type { DiscoverFmtFilesOptions, FmtFileRequest } from './types.ts';
-
-const createFileRequest = (
-  filePath: string,
-  resolveOptions: FmtOptionsResolver,
-): FmtFileRequest => ({
-  path: filePath,
-  options: resolveOptions(filePath),
-});
 
 const createDirMatcher = (dirPath: string): ((filePath: string) => boolean) => {
   const prefix = dirPath.endsWith(path.sep) ? dirPath : `${dirPath}${path.sep}`;
@@ -42,22 +34,9 @@ const discoverFmtFiles = async ({
     return [];
   }
 
-  const resolveOptions = createFmtOptionsResolver(config);
-  const files = filePaths.map((filePath) => createFileRequest(filePath, resolveOptions));
-  if (!files.some((file) => file.options.plugins?.length)) {
-    return files;
-  }
+  const resolveFile = createFmtFileResolver(config);
 
-  const { createFmtPluginResolver } = await import(
-    /* rspackChunkName: 'fmtPlugins' */
-    './plugins.ts'
-  );
-  const resolvePlugins = createFmtPluginResolver(config.rootPath);
-
-  return files.map((file) => ({
-    ...file,
-    options: resolvePlugins(file.options),
-  }));
+  return Promise.all(filePaths.map((filePath) => resolveFile(filePath)));
 };
 
-export { createFileRequest, discoverFmtFiles };
+export { discoverFmtFiles };

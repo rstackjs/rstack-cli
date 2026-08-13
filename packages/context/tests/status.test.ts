@@ -1,3 +1,4 @@
+/* rslint-disable @typescript-eslint/no-unsafe-assignment -- Rstest asymmetric matchers are intentionally untyped. */
 import { mkdir, mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';

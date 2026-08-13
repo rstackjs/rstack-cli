@@ -2,7 +2,7 @@ import path from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { color, logger } from 'rslog';
 import { parseArgs } from '../cli/args.ts';
-import { renderHelp } from '../cli/help.ts';
+import { printCommandHelp } from '../cli/help.ts';
 import { loadRstackConfig } from '../config.ts';
 import { ensureProjectCacheDir } from '../projectCache.ts';
 import { fmtCacheFileName } from './cacheStore.ts';
@@ -25,33 +25,9 @@ interface ParsedFmtCLIArgs {
   help: boolean;
   /** Path the stdin content is formatted as; it need not exist on disk. */
   stdinFilepath?: string;
+  /** Serve formatting over the Language Server Protocol instead of exiting. */
+  lsp: boolean;
 }
-
-const renderFmtHelp = (): string =>
-  renderHelp({
-    usage: 'rs fmt [options] [files/globs...]',
-    description: 'Format code',
-    sections: [
-      {
-        title: 'Options',
-        items: [
-          ['-w, --write', 'Write formatted files in place (default)'],
-          ['--check', 'Check whether files are formatted'],
-          ['-l, --list-different', 'Print paths of unformatted files'],
-          ['--ignore-path <path>', 'Path to an additional ignore file (repeatable)'],
-          ['-u, --ignore-unknown', 'Ignore unknown files'],
-          ['--no-cache', 'Disable the formatting cache'],
-          ['--cache-location <path>', 'Path to the formatting cache directory'],
-          ['--no-error-on-unmatched-pattern', 'Do not error when no files match'],
-          ['--with-node-modules', 'Process files inside node_modules'],
-          ['--parallel-workers <count>', 'Number of parallel workers'],
-          ['--stdin-filepath <path>', 'Format stdin as if it were saved at <path>'],
-          ['-c, --config <path>', 'Specify Rstack config file path'],
-          ['-h, --help', 'Display this help message'],
-        ],
-      },
-    ],
-  });
 
 const parseMaxWorkers = (value: string | undefined): number | undefined => {
   if (value === undefined) {
@@ -66,7 +42,20 @@ const parseMaxWorkers = (value: string | undefined): number | undefined => {
   return maxWorkers;
 };
 
-const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
+/** Rejects the mode flags and file arguments that a server-like option replaces. */
+const assertExclusiveMode = (option: string, hasMode: boolean, positionals: string[]): void => {
+  if (hasMode) {
+    throw new Error(
+      `The ${option} option cannot be used with --write, --check, or --list-different.`,
+    );
+  }
+
+  if (positionals.length > 0) {
+    throw new Error(`The ${option} option cannot be used with file arguments.`);
+  }
+};
+
+const parseFmtArgs = (args: string[]): ParsedFmtCLIArgs => {
   const { values, positionals } = parseArgs({
     args,
     options: {
@@ -81,6 +70,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
       'with-node-modules': { type: 'boolean' },
       'parallel-workers': { type: 'string' },
       'stdin-filepath': { type: 'string' },
+      lsp: { type: 'boolean' },
       help: { type: 'boolean', short: 'h' },
     },
     allowPositionals: true,
@@ -110,17 +100,18 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
   const maxWorkers = parseMaxWorkers(parallelWorkers);
   const help = values.help ?? false;
   const stdinFilepath = values.stdinFilepath;
+  const lsp = values.lsp ?? false;
+
+  if (lsp) {
+    assertExclusiveMode('--lsp', modes.length > 0, positionals);
+
+    if (stdinFilepath !== undefined) {
+      throw new Error('The --lsp option cannot be used with --stdin-filepath.');
+    }
+  }
 
   if (stdinFilepath !== undefined) {
-    if (modes.length > 0) {
-      throw new Error(
-        'The --stdin-filepath option cannot be used with --write, --check, or --list-different.',
-      );
-    }
-
-    if (positionals.length > 0) {
-      throw new Error('The --stdin-filepath option cannot be used with file arguments.');
-    }
+    assertExclusiveMode('--stdin-filepath', modes.length > 0, positionals);
   }
 
   return {
@@ -135,6 +126,7 @@ const parseFmtCLIArgs = (args: string[]): ParsedFmtCLIArgs => {
     maxWorkers,
     help,
     stdinFilepath,
+    lsp,
   };
 };
 
@@ -244,7 +236,7 @@ const logFmtResult = (
 };
 
 const loadFmtConfig = async (cwd: string): Promise<ResolvedFmtConfig> => {
-  const { configs, filePath } = await loadRstackConfig();
+  const { configs, filePath } = await loadRstackConfig({ cwd });
 
   return resolveFmtConfig({
     definition: configs.fmt,
@@ -266,15 +258,33 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       help,
       ignorePaths,
       ignoreUnknown,
+      lsp,
       maxWorkers,
       mode,
       noErrorOnUnmatchedPattern,
       patterns,
       stdinFilepath,
       withNodeModules,
-    } = parseFmtCLIArgs(args);
+    } = parseFmtArgs(args);
     if (help) {
-      logger.log(renderFmtHelp());
+      await printCommandHelp('fmt');
+      return;
+    }
+
+    if (lsp) {
+      const { runFmtLsp } = await import(
+        /* rspackChunkName: 'fmtLsp' */
+        './lsp/server.ts'
+      );
+      await runFmtLsp({
+        // The client's workspace root is not necessarily the directory the
+        // editor spawned the server in; the server resolves relative
+        // `--ignore-path` values from this cwd so they stay based on the same
+        // directory as a relative `--config`.
+        cwd,
+        ignorePaths,
+        loadConfig: loadFmtConfig,
+      });
       return;
     }
 

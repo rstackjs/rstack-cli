@@ -266,7 +266,7 @@ for (const { kind, definition, producer, product } of [
 
       const status = await observeBuild(result, fixture.workspaceRoot);
       expect(status.runs).toHaveLength(1);
-      expect(status.runs[0]!.run).toMatchObject({
+      expect(status.runs[0].run).toMatchObject({
         command: 'build',
         producer,
         contexts: [
@@ -281,7 +281,7 @@ for (const { kind, definition, producer, product } of [
         ],
       });
       const snapshotStatus = await observeCompletedBuild(result, fixture.workspaceRoot);
-      expect(snapshotStatus.contexts[0]!.freshness).toEqual({
+      expect(snapshotStatus.contexts[0].freshness).toEqual({
         state: 'partial',
         changedPaths: [],
       });
@@ -289,7 +289,7 @@ for (const { kind, definition, producer, product } of [
         path.join(fixture.workspaceRoot, 'context-label.ts'),
         `${await readFile(path.join(fixture.workspaceRoot, 'context-label.ts'), 'utf8')}\n`,
       );
-      expect((await readProjectStatus(fixture.workspaceRoot)).contexts[0]!.freshness).toEqual({
+      expect((await readProjectStatus(fixture.workspaceRoot)).contexts[0].freshness).toEqual({
         state: 'stale',
         changedPaths: ['context-label.ts'],
       });
@@ -310,7 +310,7 @@ for (const { kind, producer, product } of [
 
         const status = await observeBuild(config, fixture.workspaceRoot);
         expect(status.runs).toHaveLength(1);
-        expect(status.runs[0]!.run).toMatchObject({
+        expect(status.runs[0].run).toMatchObject({
           producer,
           contexts: [
             {

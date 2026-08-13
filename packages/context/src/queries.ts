@@ -112,7 +112,7 @@ const bindArtifactToSnapshot = (
     );
     if (matchingCompilers.length !== 1) return 'mismatch';
     identity = matchingCompilers[0]!;
-    artifactEnvironment = identity.environment ?? matchingCompilers[0]!.name;
+    artifactEnvironment = identity.environment ?? matchingCompilers[0].name;
   } else {
     identity = metadata.build;
     artifactEnvironment =
@@ -369,14 +369,14 @@ const resolveModule = (graph: ObservedModuleGraph, selector: string): ObservedMo
       normalizeSelector(module.path) === normalized ||
       normalizeSelector(module.name) === normalized,
   );
-  if (exact.length === 1) return exact[0]!;
+  if (exact.length === 1) return exact[0];
   if (exact.length > 1) throw new Error(`Ambiguous module selector: ${selector}`);
 
   const suffix = graph.modules.filter(({ path: modulePath }) => {
     const normalizedPath = normalizeSelector(modulePath);
     return normalizedPath === normalized || normalizedPath.endsWith(`/${normalized}`);
   });
-  if (suffix.length === 1) return suffix[0]!;
+  if (suffix.length === 1) return suffix[0];
   if (suffix.length > 1) throw new Error(`Ambiguous module selector: ${selector}`);
   throw new Error(`Unknown module selector: ${selector}`);
 };
@@ -404,7 +404,7 @@ const shortestRootPath = (
 ): ModulePath | undefined => {
   if (!traversal.predecessor.has(moduleId)) return undefined;
   const modules = reconstructPath(graph, traversal, moduleId);
-  const root = roots.find(({ module }) => module.id === modules[0]!.id);
+  const root = roots.find(({ module }) => module.id === modules[0].id);
   return root === undefined ? undefined : { rootKind: root.kind, modules };
 };
 

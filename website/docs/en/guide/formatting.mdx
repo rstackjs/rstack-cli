@@ -1,3 +1,7 @@
+---
+description: 'Format files with Rstack CLI using Prettier-compatible options, plugins, parallel formatting, and a persistent cache.'
+---
+
 # Formatting
 
 import { PackageManagerTabs } from '@rspress/core/theme';
@@ -108,7 +112,7 @@ define.fmt({
 2. **Apply default ignore rules and `ignorePatterns`**: By default, the command ignores [lock files](#lock-files), then applies `ignorePatterns`. These rules are evaluated in order, with later rules taking precedence. For example, `!pnpm-lock.yaml` re-includes the otherwise ignored file.
 3. **Apply files specified with [`--ignore-path`](./cli/fmt#--ignore-path-path)**: Each ignore file is evaluated separately, and later rules take precedence within that file. Exclusions from different files and `ignorePatterns` are combined: if any source ignores a path, that path remains excluded, even if another source re-includes it.
 
-> Even when a file is passed directly on the command line, the default ignore rules, `ignorePatterns`, and rules from `--ignore-path` still apply. The same is true for paths specified with [`--stdin-filepath`](./cli/fmt#--stdin-filepath-path).
+> Even when a file is passed directly on the command line, the default ignore rules, `ignorePatterns`, and rules from `--ignore-path` still apply. The same is true for paths specified with [`--stdin-filepath`](./cli/fmt#--stdin-filepath-path) and for documents formatted through [`--lsp`](./cli/fmt#--lsp).
 
 ## Sort package.json fields \{#sort-package-json}
 
