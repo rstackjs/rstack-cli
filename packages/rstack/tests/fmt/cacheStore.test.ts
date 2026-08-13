@@ -94,7 +94,7 @@ test('preserves unvisited entries and skips unchanged updates', async () => {
   });
 });
 
-test('discards invalid data and entries from another namespace', async () => {
+test('discards invalid schemas and other namespaces', async () => {
   await withTempProject(async (rootPath) => {
     const cachePath = path.join(rootPath, fmtCacheFileName);
     const validCache = {
@@ -107,20 +107,8 @@ test('discards invalid data and entries from another namespace', async () => {
       '{invalid',
       JSON.stringify({ ...validCache, version: fmtCacheVersion - 1 }),
       JSON.stringify({ version: fmtCacheVersion, namespace, files: [] }),
-      JSON.stringify({ ...validCache, options: ['too-short'] }),
-      JSON.stringify({ ...validCache, options: [optionsA, optionsA] }),
       JSON.stringify({ ...validCache, files: { 'src/a.ts': firstEntry } }),
       JSON.stringify({ ...validCache, files: ['src/a.ts', contentA, 0] }),
-      JSON.stringify({ ...validCache, files: [42, contentA, 0, 0] }),
-      JSON.stringify({ ...validCache, files: ['src/a.ts', 42, 0, 2] }),
-      JSON.stringify({ ...validCache, files: ['src/a.ts', null, 0, 0] }),
-      JSON.stringify({ ...validCache, files: ['src/a.ts', contentA, 1, 0] }),
-      JSON.stringify({ ...validCache, files: ['src/a.ts', contentA, 0.5, 0] }),
-      JSON.stringify({ ...validCache, files: ['src/a.ts', contentA, 0, 3] }),
-      JSON.stringify({
-        ...validCache,
-        files: ['src/a.ts', contentA, 0, 0, 'src/a.ts', contentB, 0, 1],
-      }),
     ];
 
     for (const content of invalidContents) {

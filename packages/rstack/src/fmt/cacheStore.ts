@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { isCacheHash } from './cacheHash.ts';
 
 const fmtCacheFileName = 'v2.json';
 const fmtCacheVersion = 2;
@@ -60,14 +59,6 @@ const createEmptyCache = (namespace: string): ParsedFmtCacheFile => ({
   optionsUseCounts: [],
 });
 
-const isFmtCacheStateId = (value: unknown): value is FmtCacheStateId =>
-  typeof value === 'number' &&
-  Number.isInteger(value) &&
-  value >= 0 &&
-  value < fmtCacheStates.length;
-
-const isUnknownArray = (value: unknown): value is unknown[] => Array.isArray(value);
-
 const parseCacheFile = (content: string): ParsedFmtCacheFile | undefined => {
   let value: unknown;
   try {
@@ -76,60 +67,38 @@ const parseCacheFile = (content: string): ParsedFmtCacheFile | undefined => {
     return;
   }
 
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return;
+  }
+
+  const cache = value as FmtCacheFile;
+  const { version, namespace, options, files } = cache;
   if (
-    typeof value !== 'object' ||
-    value === null ||
-    isUnknownArray(value) ||
-    !('version' in value) ||
-    value.version !== fmtCacheVersion ||
-    !('namespace' in value) ||
-    typeof value.namespace !== 'string' ||
-    !('options' in value) ||
-    !isUnknownArray(value.options) ||
-    !('files' in value) ||
-    !isUnknownArray(value.files) ||
-    value.files.length % fileEntryWidth !== 0
+    version !== fmtCacheVersion ||
+    typeof namespace !== 'string' ||
+    !Array.isArray(options) ||
+    !Array.isArray(files) ||
+    files.length % fileEntryWidth !== 0
   ) {
     return;
   }
 
   const optionsIndexes = new Map<string, number>();
-  for (let index = 0; index < value.options.length; index++) {
-    const optionsHash = value.options[index];
-    if (!isCacheHash(optionsHash) || optionsIndexes.has(optionsHash)) {
-      return;
-    }
-    optionsIndexes.set(optionsHash, index);
+  for (let index = 0; index < options.length; index++) {
+    optionsIndexes.set(options[index], index);
   }
 
   const fileOffsets = new Map<string, number>();
-  const optionsUseCounts = new Array<number>(value.options.length).fill(0);
-  for (let offset = 0; offset < value.files.length; offset += fileEntryWidth) {
-    const filePath = value.files[offset];
-    const contentHash = value.files[offset + contentHashOffset];
-    const optionsIndex = value.files[offset + optionsIndexOffset];
-    const state = value.files[offset + stateOffset];
-    if (
-      typeof filePath !== 'string' ||
-      fileOffsets.has(filePath) ||
-      typeof optionsIndex !== 'number' ||
-      !Number.isInteger(optionsIndex) ||
-      optionsIndex < 0 ||
-      optionsIndex >= value.options.length ||
-      !isFmtCacheStateId(state) ||
-      (state === fmtCacheStateIds.unsupported
-        ? contentHash !== null && !isCacheHash(contentHash)
-        : !isCacheHash(contentHash))
-    ) {
-      return;
-    }
-
+  const optionsUseCounts = new Array<number>(options.length).fill(0);
+  for (let offset = 0; offset < files.length; offset += fileEntryWidth) {
+    const filePath = files[offset] as string;
+    const optionsIndex = files[offset + optionsIndexOffset] as number;
     fileOffsets.set(filePath, offset);
     optionsUseCounts[optionsIndex]++;
   }
 
   return {
-    cache: value as FmtCacheFile,
+    cache,
     fileOffsets,
     optionsIndexes,
     optionsUseCounts,
