@@ -57,7 +57,10 @@ const createEmptyCache = (namespace: string): ParsedFmtCacheFile => ({
   optionsUseCounts: [],
 });
 
-const parseCacheFile = (content: string): ParsedFmtCacheFile | undefined => {
+const parseCacheFile = (
+  content: string,
+  expectedNamespace: string,
+): ParsedFmtCacheFile | undefined => {
   let value: unknown;
   try {
     value = JSON.parse(content);
@@ -73,7 +76,7 @@ const parseCacheFile = (content: string): ParsedFmtCacheFile | undefined => {
   const { version, namespace, options, files } = cache;
   if (
     version !== fmtCacheVersion ||
-    typeof namespace !== 'string' ||
+    namespace !== expectedNamespace ||
     !Array.isArray(options) ||
     !Array.isArray(files) ||
     files.length % fileEntryWidth !== 0
@@ -262,14 +265,12 @@ const loadFmtCacheStore = async (filePath: string, namespace: string): Promise<F
 
   try {
     const content = await readFile(filePath, 'utf8');
-    const parsed = parseCacheFile(content);
+    const parsed = parseCacheFile(content, namespace);
     if (!parsed) {
       return new FmtCacheStoreImpl(filePath, emptyCache, undefined, true);
     }
 
-    return parsed.cache.namespace === namespace
-      ? new FmtCacheStoreImpl(filePath, parsed, content, false)
-      : new FmtCacheStoreImpl(filePath, emptyCache, undefined, true);
+    return new FmtCacheStoreImpl(filePath, parsed, content, false);
   } catch (error) {
     const missing = isFileNotFoundError(error);
     return new FmtCacheStoreImpl(filePath, emptyCache, undefined, !missing);
