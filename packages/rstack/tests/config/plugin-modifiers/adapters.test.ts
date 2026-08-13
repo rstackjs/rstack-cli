@@ -16,6 +16,7 @@ const loadAppConfig = loadRsbuildConfig as (params: never) => Promise<unknown>;
 const loadLibConfig = loadRslibConfig as (params: never) => Promise<unknown>;
 const loadTestConfig = loadRstestConfig as (params: never) => Promise<unknown>;
 const configPath = path.join(import.meta.dirname, 'rstack.config.ts');
+const factoryOrderConfigPath = path.join(import.meta.dirname, 'factory-order-rstack.config.ts');
 const explicitConfigPath = path.join(import.meta.dirname, 'explicit-rstack.config.ts');
 const projectsExplicitConfigPath = path.join(
   import.meta.dirname,
@@ -41,6 +42,17 @@ test('constructs automatic Rstest extends before applying test modifiers', async
     extends: { root: 'test-modifier' },
   });
   expect(globalThis.__rstackTestModifierExtendsAppCalls).toBe(1);
+});
+
+test.each([
+  ['app', () => loadAppConfig({} as never)],
+  ['lib', () => loadLibConfig({} as never)],
+  ['doc', () => loadRspressConfig()],
+  ['test', () => loadTestConfig({} as never)],
+])('initializes plugins before resolving the %s config factory', async (_kind, loadConfig) => {
+  state.configPath = factoryOrderConfigPath;
+
+  await expect(loadConfig()).resolves.toBeDefined();
 });
 
 test('does not apply app modifiers when all Rstest projects explicitly extend configs', async () => {

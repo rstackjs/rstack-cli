@@ -12,12 +12,18 @@ define.plugins([
   {
     name: 'fmt-modifier',
     setup({ modifyConfig }) {
+      globalThis.__fmtPluginSetupComplete = true;
       modifyConfig('fmt', async (config) => ({ ...config, singleQuote: true }));
     },
   },
 ]);
 
-define.fmt(() => ({}));
+define.fmt(() => {
+  if (!globalThis.__fmtPluginSetupComplete) {
+    throw new Error('plugin setup must run before config factories');
+  }
+  return {};
+});
 `,
   );
   writeProjectFile('index.ts', 'const message="hello"');
