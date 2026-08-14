@@ -1834,7 +1834,7 @@ define.app({});
       expect(result.content).toEqual([
         {
           type: 'text',
-          text: 'Rstest is not configured for package root ".".',
+          text: 'Rstest is not configured for package root ".". packageRoot is checkout-relative; call project_status and use context.packageRoot.',
         },
       ]);
       expect((await readProjectStatus(workspaceRoot)).contexts).toEqual([]);
