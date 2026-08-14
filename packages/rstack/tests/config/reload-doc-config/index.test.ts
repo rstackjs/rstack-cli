@@ -47,7 +47,7 @@ define.doc({
 
   await logHelper.expectLog('restarting server as test-temp-user-watch.txt changed');
   await logHelper.expectBuildEnd();
-}, 30_000);
+});
 
 test('should restart doc dev server when an imported config file changes', async ({
   execCliAsync,
@@ -77,4 +77,4 @@ define.doc({
 
   await logHelper.expectLog('restarting server as test-temp-imported.ts changed');
   await logHelper.expectBuildEnd();
-}, 30_000);
+});
