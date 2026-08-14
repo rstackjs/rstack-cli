@@ -322,11 +322,12 @@ test('publishes discoverable descriptions for opaque and conditional tool inputs
           description: 'Checkout-relative virtual source path required when mode is text.',
         },
         packageRoot: {
-          description: 'Checkout-relative package directory; defaults to the checkout root.',
+          description:
+            'Checkout-relative package directory that must stay inside the checkout; defaults to the checkout root.',
         },
         configPath: {
           description:
-            'Checkout-relative Rstack config path; defaults to ordinary discovery in packageRoot.',
+            'Checkout-relative Rstack config path that must stay inside the checkout; defaults to ordinary discovery in packageRoot.',
         },
       });
       expect(toolByName.get('test_snapshot')?.inputSchema.properties).toMatchObject({
@@ -337,11 +338,12 @@ test('publishes discoverable descriptions for opaque and conditional tool inputs
           maxItems: 200,
         },
         packageRoot: {
-          description: 'Checkout-relative package directory; defaults to the checkout root.',
+          description:
+            'Checkout-relative package directory that must stay inside the checkout; defaults to the checkout root.',
         },
         configPath: {
           description:
-            'Checkout-relative Rstack config path; defaults to ordinary discovery in packageRoot.',
+            'Checkout-relative Rstack config path that must stay inside the checkout; defaults to ordinary discovery in packageRoot.',
         },
         execution: {
           description:

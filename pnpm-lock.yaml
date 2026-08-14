@@ -389,8 +389,8 @@ importers:
         specifier: 'catalog:'
         version: 0.8.0
       '@rstackjs/context':
-        specifier: https://pkg.pr.new/rstackjs/context/@rstackjs/context@2f30659
-        version: https://pkg.pr.new/rstackjs/context/@rstackjs/context@2f30659(@rstest/coverage-istanbul@0.11.6)(happy-dom@20.11.2)(supports-color@8.1.1)
+        specifier: https://pkg.pr.new/rstackjs/context/@rstackjs/context@e921c34
+        version: https://pkg.pr.new/rstackjs/context/@rstackjs/context@e921c34(@rsbuild/core@2.1.13)(happy-dom@20.11.2)(supports-color@8.1.1)
       '@rstest/core':
         specifier: 'catalog:'
         version: 0.11.6(happy-dom@20.11.2)
@@ -1321,16 +1321,6 @@ packages:
       core-js:
         optional: true
 
-  '@rsbuild/core@2.1.11':
-    resolution: {integrity: sha512-jA/QwZu8wIljp70TjERVoX+vk2cWU+viHpV9EAdKpA6ifu/pFnThEhbV3RFxBvF/9mB3h7ZRUfdDIyknT+9MWA==}
-    engines: {node: ^20.19.0 || >=22.12.0}
-    hasBin: true
-    peerDependencies:
-      core-js: '>= 3.0.0'
-    peerDependenciesMeta:
-      core-js:
-        optional: true
-
   '@rsbuild/core@2.1.13':
     resolution: {integrity: sha512-Z+6MzmjOio4+bFZQ24k+7ge/oNCOdXIunAssrswTNE8AIf6mcyXpJZevRXRiOEMZasRPA8VNyh+9JngQLg729Q==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -1655,14 +1645,14 @@ packages:
       '@rspress/core':
         optional: true
 
-  '@rstackjs/context@https://pkg.pr.new/rstackjs/context/@rstackjs/context@2f30659':
-    resolution: {integrity: sha512-uj5PU7aGn8eutJikbnx/zZAJ07hAKFmrPTvJGQ19O3aJ6WSmLzMFa5kceM/0SIwHbEU3UrOBErjkJGFXm6kXJw==, tarball: https://pkg.pr.new/rstackjs/context/@rstackjs/context@2f30659}
-    version: 0.0.0-preview-2f30659
+  '@rstackjs/context@https://pkg.pr.new/rstackjs/context/@rstackjs/context@e921c34':
+    resolution: {integrity: sha512-LvmT7LrtlyLeUNhfvVcM618/zy5PoSqwxFTEdjIaWQ/u70QHMSCSeWCvLF9hklwlh4TtIYLj6tV6wXQE3WzMZg==, tarball: https://pkg.pr.new/rstackjs/context/@rstackjs/context@e921c34}
+    version: 0.0.0-preview-e921c34
     engines: {node: '>=22.12.0', pnpm: '>=11.0.0'}
     peerDependencies:
-      '@rstest/coverage-istanbul': 0.11.6
+      '@rsbuild/core': ^2.0.0
     peerDependenciesMeta:
-      '@rstest/coverage-istanbul':
+      '@rsbuild/core':
         optional: true
 
   '@rstackjs/create-toolkit@2.2.3':
@@ -4541,13 +4531,6 @@ snapshots:
     transitivePeerDependencies:
       - '@module-federation/runtime-tools'
 
-  '@rsbuild/core@2.1.11':
-    dependencies:
-      '@rspack/core': 2.1.10(@swc/helpers@0.5.23)
-      '@swc/helpers': 0.5.23
-    transitivePeerDependencies:
-      - '@module-federation/runtime-tools'
-
   '@rsbuild/core@2.1.13':
     dependencies:
       '@rspack/core': 2.1.10(@swc/helpers@0.5.23)
@@ -4951,16 +4934,15 @@ snapshots:
     optionalDependencies:
       '@rspress/core': 2.0.19(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
 
-  '@rstackjs/context@https://pkg.pr.new/rstackjs/context/@rstackjs/context@2f30659(@rstest/coverage-istanbul@0.11.6)(happy-dom@20.11.2)(supports-color@8.1.1)':
+  '@rstackjs/context@https://pkg.pr.new/rstackjs/context/@rstackjs/context@e921c34(@rsbuild/core@2.1.13)(happy-dom@20.11.2)(supports-color@8.1.1)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.29.0(supports-color@8.1.1)
-      '@rsbuild/core': 2.1.11
       '@rsdoctor/agent-cli': 0.1.1
       '@rslint/core': 0.8.0
       '@rstest/core': 0.11.6(happy-dom@20.11.2)
       zod: 4.4.3
     optionalDependencies:
-      '@rstest/coverage-istanbul': 0.11.6(@rstest/core@0.11.6)(supports-color@8.1.1)
+      '@rsbuild/core': 2.1.13
     transitivePeerDependencies:
       - '@cfworker/json-schema'
       - '@module-federation/runtime-tools'
