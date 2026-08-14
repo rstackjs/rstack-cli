@@ -79,6 +79,8 @@ For a command that loads project configuration, Rstack performs these steps in o
 
 A modifier may mutate its input, return a replacement, or return a promise. When it returns `undefined`, Rstack keeps the current configuration. Errors from setup, command handlers, and modifiers stop the invocation.
 
+Rstack registers its built-in Context plugin after user plugins. Its `app` and `lib` modifiers therefore observe the final user-composed native configuration before the tool starts.
+
 Root help and version output do not load project configuration. Other commands initialize plugins only when they load a configuration.
 
 ## Registering commands \{#registering-commands}
@@ -116,6 +118,8 @@ The read-only `context` exposes:
 ## Modifying tool configurations \{#modifying-tool-configurations}
 
 Use `modifyConfig()` to contribute directly to a tool's native configuration. The `kind` selects the configuration type and keeps the handler typed.
+
+The second handler argument carries native invocation data when the underlying tool provides it. `app`, `lib`, and `test` modifiers receive `{ params }` with that invocation's Rsbuild or Rslib configuration parameters.
 
 ### Configuration kinds \{#configuration-kinds}
 
@@ -168,6 +172,12 @@ Configuration modifiers do not replace native extension APIs. They contribute na
 - Add Prettier plugins through `fmt` and lint-staged tasks through `staged`.
 
 Build hooks, test results, lint results, and documentation lifecycle events remain owned by the underlying tools. Rstack does not normalize those results into a cross-tool lifecycle.
+
+## Built-in Context plugin {#built-in-context-plugin}
+
+Rstack uses `@rstackjs/context/rstack` as an internal plugin. Users enable or tune it with [`define.context()`](./configuration#define-context); it does not need to be repeated in `define.plugins()`. The plugin contributes the passive Rsbuild and Rslib observer used by `rs dev`, `rs build`, and `rs lib`. The `rs mcp` command remains a built-in host command so it can reserve stdout for the MCP protocol and start without loading project configuration.
+
+Standalone integrations can import the focused `@rstackjs/context/rsbuild`, `@rstackjs/context/rslib`, `@rstackjs/context/rslint`, `@rstackjs/context/rstest`, `@rstackjs/context/rsdoctor`, and `@rstackjs/context/mcp` entry points. Context consumes explicit Rsdoctor artifacts through `@rsdoctor/agent-cli`; Rsdoctor does not load a Context plugin or depend on `@rstackjs/context`.
 
 ## Configuration loading and reloads \{#configuration-loading-and-reloads}
 

@@ -1,4 +1,4 @@
-# Context Plugin Boundary Design
+# Context plugin boundary design
 
 <!-- cspell:ignore Kiali Midscene -->
 
@@ -236,13 +236,13 @@ This requires fewer immediate changes but leaves Context behavior spread across 
 and config modules. It duplicates the composition mechanism added by PR #336 and makes future
 producer entry points harder to add consistently.
 
-### Make Context depend on `rstack`
+### Make context depend on `rstack`
 
 Context could import `RstackPlugin` directly and declare a peer dependency. This creates a reverse
 package edge and prevents Context from being a genuinely standalone producer/MCP runtime. Structural
 compatibility at the CLI boundary provides the same type check without the cycle.
 
-### Run Context only through subprocess commands
+### Run context only through subprocess commands
 
 This minimizes in-process imports but loses native configuration parameters and build lifecycle
 hooks, weakens monorepo selection, and adds transport/process complexity. The plugin SPI plus native

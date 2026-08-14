@@ -32,6 +32,8 @@ define.context({
 
 `define.context()` 是 Rstack 自有配置，不会转发给 Rsbuild 或 Rslib。`RSTACK_CONTEXT=1` 会启用捕获，而 `RSTACK_CONTEXT=0` 始终会禁用捕获。`capture: 'off'` 也会禁用捕获。
 
+Rstack 通过内置的 `@rstackjs/context/rstack` 插件实现该捕获，并在用户插件之后注册它。不要再将它添加到 `define.plugins()`。`rs mcp` 是独立的内置宿主命令，而不是插件命令，因此它可以为协议保留 stdout，并且无需加载项目配置即可启动。
+
 可选的 `variant` 可以让 `firefox_v3` 和 `chrome_v3` 等构建拥有不同的上下文标识，无需猜测任意环境变量。Rstack 还会记录相对于检出目录的 Rsbuild/Rslib 输出目录，并将其纳入上下文标识。
 
 生产者会在执行 `rs dev`、`rs build` 和 `rs lib` 时，将已完成的观测结果写入检出目录本地存储。它们不会连接到 MCP 进程；MCP 服务器会在调用 `project_status` 时读取存储。
@@ -55,6 +57,8 @@ RSTACK_CONTEXT=1 RSDOCTOR=true RSDOCTOR_OUTPUT=json rs lib
 ```
 
 Rsbuild 只会为该命令加载已安装的收集器。构建会在检出目录本地存储中记录 Rstack 上下文，并通常写入 `dist/rsdoctor-data.json`。将这个明确的 JSON 路径传给产物分析工具。安装收集器不会让普通构建收集 Rsdoctor 数据；只有设置 `RSDOCTOR=true` 时才会收集。
+
+Context 通过 `@rsdoctor/agent-cli` 读取生成的产物。这是单向消费关系：Rsdoctor 不会安装或加载 `@rstackjs/context` 插件。
 
 ## Monorepo \{#monorepos}
 

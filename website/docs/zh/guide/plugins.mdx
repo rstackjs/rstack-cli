@@ -79,6 +79,8 @@ export const pluginAcme = (): RstackPlugin => ({
 
 修改器可以修改输入对象、返回替换值，也可以返回 Promise。返回 `undefined` 时，Rstack 会保留当前配置。setup、命令处理器或修改器抛出的错误都会终止本次调用。
 
+Rstack 会在用户插件之后注册内置 Context 插件。因此，它的 `app` 和 `lib` 修改器会在工具启动前观测经过用户组合的最终原生配置。
+
 根帮助和版本输出不会加载项目配置。其他命令仅在加载配置时初始化插件。
 
 ## 注册命令 \{#registering-commands}
@@ -116,6 +118,8 @@ export const pluginInspect = (): RstackPlugin => ({
 ## 修改工具配置 \{#modifying-tool-configurations}
 
 使用 `modifyConfig()` 直接贡献底层工具的原生配置。`kind` 用于选择配置类型，并为处理器保留对应的类型信息。
+
+当底层工具提供原生调用数据时，处理器的第二个参数会携带这些数据。`app`、`lib` 和 `test` 修改器会收到 `{ params }`，其中包含本次调用的 Rsbuild 或 Rslib 配置参数。
 
 ### 配置类型 \{#configuration-kinds}
 
@@ -168,6 +172,12 @@ setup({ modifyConfig }) {
 - 通过 `fmt` 添加 Prettier 插件，通过 `staged` 添加 lint-staged 任务。
 
 构建 hook、测试结果、代码检查结果和文档生命周期事件仍由底层工具负责。Rstack 不会将这些结果规范化为跨工具生命周期。
+
+## 内置 Context 插件 {#built-in-context-plugin}
+
+Rstack 将 `@rstackjs/context/rstack` 用作内置插件。用户通过 [`define.context()`](./configuration#define-context) 启用或调整它，无需在 `define.plugins()` 中重复注册。该插件为 `rs dev`、`rs build` 和 `rs lib` 提供被动的 Rsbuild 与 Rslib 观测器。`rs mcp` 仍是内置宿主命令，因此它可以为 MCP 协议保留 stdout，并且无需加载项目配置即可启动。
+
+独立集成可以从 `@rstackjs/context/rsbuild`、`@rstackjs/context/rslib`、`@rstackjs/context/rslint`、`@rstackjs/context/rstest`、`@rstackjs/context/rsdoctor` 和 `@rstackjs/context/mcp` 等聚焦入口导入。Context 通过 `@rsdoctor/agent-cli` 消费明确指定的 Rsdoctor 产物；Rsdoctor 不会加载 Context 插件，也不依赖 `@rstackjs/context`。
 
 ## 配置加载与重载 \{#configuration-loading-and-reloads}
 

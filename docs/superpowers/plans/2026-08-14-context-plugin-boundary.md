@@ -1,4 +1,4 @@
-# Context Plugin Boundary Implementation Plan
+# Context plugin boundary implementation plan
 
 <!-- cspell:ignore Kiali kiali Midscene midscene dogfood mktemp subdependency subpaths -->
 
@@ -10,7 +10,7 @@
 
 **Tech Stack:** TypeScript, pnpm 11, Rslib, Rsbuild, Rstest, Rslint, MCP SDK, pkg.pr.new, GitHub CLI.
 
-## Global Constraints
+## Global constraints
 
 - `@rstackjs/context` must not import or declare a dependency on `rstack`.
 - Rsdoctor produces artifacts; Context consumes them through `@rsdoctor/agent-cli`. There is no Context plugin for Rsdoctor.
@@ -24,7 +24,7 @@
 
 ---
 
-## File Structure
+## File structure
 
 ### Context repository
 
@@ -70,7 +70,7 @@
 
 ---
 
-### Task 1: Publish-safe Context dependency and focused entry points
+### Task 1: Publish-safe context dependency and focused entry points
 
 **Files:**
 
@@ -287,7 +287,7 @@ git add src/rstack.ts src/index.ts rslib.config.ts package.json tests/rstack.tes
 git commit -m "feat: add structural Rstack context plugin"
 ```
 
-### Task 3: Publish and validate the Context preview
+### Task 3: publish and validate the context preview
 
 **Files:**
 
@@ -339,7 +339,7 @@ node -e "Promise.all(['rsbuild','rslib','rstest','rslint','rsdoctor','mcp','rsta
 
 Expected: install and every import succeed without an exotic-subdependency error.
 
-### Task 4: Stack Rstack Context on the plugin SPI
+### Task 4: stack Rstack context on the plugin SPI
 
 **Files:**
 
@@ -393,7 +393,7 @@ pnpm --filter rstack test
 
 Expected: the stacked baseline compiles and existing tests pass before SPI extension work begins.
 
-### Task 5: Pass native invocation context through the plugin SPI
+### Task 5: pass native invocation context through the plugin SPI
 
 **Files:**
 
@@ -479,7 +479,7 @@ git add packages/rstack/src/plugin.ts packages/rstack/src/pluginRuntime.ts packa
 git commit -m "feat(rstack): pass tool context to plugin modifiers"
 ```
 
-### Task 6: Consume the Context plugin and remove scattered build coupling
+### Task 6: consume the context plugin and remove scattered build coupling
 
 **Files:**
 
@@ -581,7 +581,7 @@ git add packages/rstack/src packages/rstack/tests
 git commit -m "refactor(rstack): integrate context through plugin SPI"
 ```
 
-### Task 7: Align Rstack documentation and publish the stacked preview
+### Task 7: align Rstack documentation and publish the stacked preview
 
 **Files:**
 
@@ -634,7 +634,7 @@ gh pr checks 344 --repo rstackjs/rstack-cli --watch --interval 10
 
 Expected: all checks pass and PR #344 remains draft. Read the Continuous Releases output or PR comment to obtain the exact Rstack preview URL.
 
-### Task 8: Validate the Agent Skills bundle against previews
+### Task 8: validate the Agent Skills bundle against previews
 
 **Files:**
 

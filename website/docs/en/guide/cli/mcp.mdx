@@ -32,6 +32,8 @@ define.context({
 
 `define.context()` is Rstack-owned configuration. It is not forwarded to Rsbuild or Rslib. `RSTACK_CONTEXT=1` enables capture, while `RSTACK_CONTEXT=0` always disables it. `capture: 'off'` also disables capture.
 
+Rstack implements this capture through its built-in `@rstackjs/context/rstack` plugin, registered after user plugins. Do not add it to `define.plugins()`. `rs mcp` is a separate built-in host command rather than a plugin command, so it can reserve stdout for the protocol and start without loading project configuration.
+
 The optional `variant` gives builds such as `firefox_v3` and `chrome_v3` distinct context identities without guessing arbitrary environment variables. Rstack also records the checkout-relative Rsbuild/Rslib output directory and includes it in context identity.
 
 Producers write completed observations to the checkout-local store during `rs dev`, `rs build`, and `rs lib`. They do not connect to the MCP process; the MCP server reads the store when `project_status` is called.
@@ -58,6 +60,8 @@ Rsbuild loads the installed collector only for that command. The build records i
 in the checkout-local store and normally writes `dist/rsdoctor-data.json`. Pass that explicit JSON
 path to the artifact-analysis tools. Installing the collector does not make normal builds collect
 Rsdoctor data unless `RSDOCTOR=true` is set.
+
+Context reads the resulting artifact through `@rsdoctor/agent-cli`. This is one-way consumption: Rsdoctor does not install or load an `@rstackjs/context` plugin.
 
 ## Monorepos
 
