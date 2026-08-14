@@ -4,7 +4,6 @@ import { svelteDtsPlugin } from './scripts/rslib-plugin-svelte-dts.ts';
 
 define.lib(async () => {
   const { pluginSvelte } = await import('@rsbuild/plugin-svelte');
-
   return {
     bundle: false,
     source: {

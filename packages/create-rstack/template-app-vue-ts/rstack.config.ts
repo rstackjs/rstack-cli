@@ -3,7 +3,6 @@ import { define } from 'rstack';
 
 define.app(async () => {
   const { pluginVue } = await import('@rsbuild/plugin-vue');
-
   return {
     plugins: [pluginVue()],
   };

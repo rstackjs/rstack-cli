@@ -4,7 +4,6 @@ import { define } from 'rstack';
 define.lib(async () => {
   const { pluginBabel } = await import('@rsbuild/plugin-babel');
   const { pluginSolid } = await import('@rsbuild/plugin-solid');
-
   return {
     lib: [
       {
@@ -63,7 +62,6 @@ define.lib(async () => {
 define.test(async () => {
   const { pluginBabel } = await import('@rsbuild/plugin-babel');
   const { pluginSolid } = await import('@rsbuild/plugin-solid');
-
   return {
     setupFiles: ['./tests/rstest.setup.ts'],
     plugins: [

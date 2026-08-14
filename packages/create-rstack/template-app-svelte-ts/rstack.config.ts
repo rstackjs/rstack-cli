@@ -3,7 +3,6 @@ import { define } from 'rstack';
 
 define.app(async () => {
   const { pluginSvelte } = await import('@rsbuild/plugin-svelte');
-
   return {
     plugins: [pluginSvelte()],
   };

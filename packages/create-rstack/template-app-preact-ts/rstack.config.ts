@@ -3,7 +3,6 @@ import { define } from 'rstack';
 
 define.app(async () => {
   const { pluginPreact } = await import('@rsbuild/plugin-preact');
-
   return {
     plugins: [pluginPreact()],
   };
