@@ -102,7 +102,6 @@ expect(Object.keys(packageJson.exports).sort()).toEqual([
   './rsdoctor',
   './rslib',
   './rslint',
-  './rstack',
   './rstest',
 ]);
 expect(packageJson.dependencies['@rsdoctor/agent-cli']).toBe('0.1.1');
@@ -111,7 +110,7 @@ for (const section of ['dependencies', 'devDependencies', 'peerDependencies']) {
 }
 ```
 
-Add dynamic import assertions for each focused entry point after a build.
+Add dynamic import assertions for each focused entry point created by this task after a build.
 
 - [ ] **Step 2: Run the focused test and confirm RED**
 
@@ -265,6 +264,8 @@ Resolve workspace and input metadata lazily once per plugin instance. Register n
 - [ ] **Step 4: Export and build the `./rstack` entry point**
 
 Add `rstack: './src/rstack.ts'` to Rslib entries and map `./rstack` to `dist/rstack.{js,d.ts}` in `package.json`. Re-export the factory and its option/structural types from the compatibility barrel.
+
+Extend `tests/packageExports.test.ts` so the expected export list and independent-import assertion now include `./rstack`.
 
 - [ ] **Step 5: Verify behavior and no reverse dependency**
 
