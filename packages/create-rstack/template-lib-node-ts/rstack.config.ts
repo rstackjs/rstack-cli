@@ -10,11 +10,10 @@ define.test({
   // Configure Rstest
 });
 
-define.lint(async () => {
-  const { js, ts } = await import('rstack/lint');
-
-  return [js.configs.recommended, ts.configs.recommendedTypeChecked];
-});
+define.lint(({ js, ts }) => [
+  js.configs.recommended,
+  ts.configs.recommendedTypeChecked,
+]);
 
 define.fmt({
   singleQuote: true,
