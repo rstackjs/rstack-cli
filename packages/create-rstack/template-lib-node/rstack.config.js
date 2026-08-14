@@ -6,10 +6,6 @@ define.lib({
   syntax: ['node 22'],
 });
 
-define.test({
-  // Configure Rstest
-});
-
 define.lint(({ js }) => [js.configs.recommended]);
 
 define.fmt({

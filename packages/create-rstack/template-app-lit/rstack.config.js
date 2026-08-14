@@ -13,10 +13,6 @@ define.app({
   },
 });
 
-define.test({
-  testEnvironment: 'happy-dom',
-});
-
 define.lint(({ js }) => [js.configs.recommended]);
 
 define.fmt({
