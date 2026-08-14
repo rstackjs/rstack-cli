@@ -194,6 +194,50 @@ test('inherits chunk membership from a concatenated module container', async () 
   }
 });
 
+test('connects module importers and concatenated children for reachability', async () => {
+  const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'rstack-rsdoctor-graph-'));
+  try {
+    await writeFile(
+      path.join(workspaceRoot, 'rsdoctor-data.json'),
+      JSON.stringify({
+        data: {
+          moduleGraph: {
+            modules: [
+              {
+                id: 1,
+                path: '/workspace/src/index.ts',
+                isEntry: true,
+                imported: [],
+                modules: [2],
+              },
+              {
+                id: 2,
+                path: '/workspace/src/feature.ts',
+                imported: [3],
+              },
+              {
+                id: 3,
+                path: '/workspace/src/consumer.ts',
+                imported: [],
+              },
+            ],
+            dependencies: [],
+          },
+        },
+      }),
+    );
+
+    const graph = await readRsdoctorModuleGraph(workspaceRoot, 'rsdoctor-data.json');
+
+    expect(graph.edges).toEqual([
+      { from: '1', to: '2' },
+      { from: '3', to: '2' },
+    ]);
+  } finally {
+    await rm(workspaceRoot, { force: true, recursive: true });
+  }
+});
+
 test('reports a missing module graph as insufficient ordinary artifact data', async () => {
   const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'rstack-rsdoctor-graph-'));
   try {

@@ -150,20 +150,35 @@ const normalizeRsdoctorModuleGraph = (artifact: RsdoctorArtifact): ObservedModul
 
   const edgeKeys = new Set<string>();
   const edges: ObservedModuleGraph['edges'] = [];
+  const addEdge = (from: string | undefined, to: string | undefined): void => {
+    if (from === undefined || to === undefined) return;
+    if (!modulesById.has(from) || !modulesById.has(to)) {
+      if (!issues.includes('dangling-edge')) issues.push('dangling-edge');
+      return;
+    }
+    const key = `${from}\u0000${to}`;
+    if (edgeKeys.has(key)) return;
+    edgeKeys.add(key);
+    edges.push({ from, to });
+  };
   for (const row of Array.isArray(moduleGraph.dependencies) ? moduleGraph.dependencies : []) {
     if (!isObject(row)) continue;
     const usesDependencyShape = Object.hasOwn(row, 'dependency');
-    const from = getId(usesDependencyShape ? row.module : row.issuer);
-    const to = getId(usesDependencyShape ? row.dependency : row.module);
-    if (from === undefined || to === undefined) continue;
-    if (!modulesById.has(from) || !modulesById.has(to)) {
-      if (!issues.includes('dangling-edge')) issues.push('dangling-edge');
-      continue;
+    addEdge(
+      getId(usesDependencyShape ? row.module : row.issuer),
+      getId(usesDependencyShape ? row.dependency : row.module),
+    );
+  }
+
+  for (const row of Array.isArray(moduleGraph.modules) ? moduleGraph.modules : []) {
+    if (!isObject(row)) continue;
+    const moduleId = getId(row.id);
+    for (const importerId of Array.isArray(row.imported) ? row.imported.map(getId) : []) {
+      addEdge(importerId, moduleId);
     }
-    const key = `${from}\u0000${to}`;
-    if (edgeKeys.has(key)) continue;
-    edgeKeys.add(key);
-    edges.push({ from, to });
+    for (const childId of Array.isArray(row.modules) ? row.modules.map(getId) : []) {
+      addEdge(moduleId, childId);
+    }
   }
 
   return {
