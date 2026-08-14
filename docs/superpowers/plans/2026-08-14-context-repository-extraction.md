@@ -14,7 +14,7 @@ workflows, and evaluations.
 
 ---
 
-## Task 1: Create the repository and preserve history
+## Task 1: create the repository and preserve history
 
 1. Create public `rstackjs/context` with a minimal default branch and clone it to
    `/fast/projects/context`.
@@ -24,7 +24,7 @@ workflows, and evaluations.
 4. Merge the filtered history into the extraction branch with unrelated histories allowed.
 5. Verify the resulting graph retains focused package commits without unrelated CLI paths.
 
-## Task 2: Add standalone Rstack tooling and package metadata
+## Task 2: add standalone Rstack tooling and package metadata
 
 1. Add the pnpm workspace catalog, TypeScript configuration, Rslint configuration, formatting
    configuration, Git ignore rules, license, and repository guidance.
@@ -35,7 +35,7 @@ workflows, and evaluations.
 4. Add CI and one pkg.pr.new workflow invocation using the repository's locked dependency.
 5. Add package packing and clean-consumer smoke coverage.
 
-## Task 3: Relocate engine-owned tests and documentation
+## Task 3: relocate engine-owned tests and documentation
 
 1. Move generic MCP/config tests still located under `packages/rstack/tests/context` into the
    standalone package where their behavior is runtime-owned.
@@ -44,7 +44,7 @@ workflows, and evaluations.
    command/config integration and link to the new repository for runtime architecture.
 4. Preserve existing API and MCP schemas during the move.
 
-## Task 4: Validate and publish a preview
+## Task 4: validate and publish a preview
 
 1. Install with the declared pnpm version.
 2. Run formatting, Rslint/type checks, Rslib build, Rstest, and package-consumer smoke tests.
@@ -53,7 +53,7 @@ workflows, and evaluations.
 5. Wait for pkg.pr.new, install the produced preview in a clean consumer, and record the exact
    preview reference for Rstack CLI.
 
-## Task 5: Convert Rstack CLI to an external context dependency
+## Task 5: convert Rstack CLI to an external context dependency
 
 1. Remove `packages/context` from the Rstack CLI worktree after the standalone branch is pushed.
 2. Replace `workspace:*` with the exact pkg.pr.new preview dependency and update the lockfile.
@@ -63,7 +63,7 @@ workflows, and evaluations.
 5. Run `pnpm check`, package builds, native build prerequisite, and the required test suites.
 6. Commit and push the existing `codex/rstack-mcp-observability` draft branch.
 
-## Task 6: Align Agent Skills and evaluate the installation
+## Task 6: align Agent Skills and evaluate the installation
 
 1. Update runtime repository references in `/fast/projects/agent-skills` without moving engine code
    into the plugin.
@@ -74,7 +74,7 @@ workflows, and evaluations.
    that missing producers degrade to unavailable evidence rather than errors.
 6. Commit and push the existing Agent Skills draft branch if it changed.
 
-## Task 7: Final coordinated review
+## Task 7: final coordinated review
 
 1. Review all changed repositories for accidental scope expansion and compatibility regressions.
 2. Verify the new context PR, Rstack CLI PR, Agent Skills PR, and Rsdoctor PR remain drafts where

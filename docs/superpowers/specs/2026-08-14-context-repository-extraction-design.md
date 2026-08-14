@@ -1,4 +1,4 @@
-# Rstack Context repository extraction design
+# Rstack context repository extraction design
 
 ## Status
 
