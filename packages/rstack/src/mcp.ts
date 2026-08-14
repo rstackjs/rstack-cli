@@ -4,8 +4,6 @@ import { Writable } from 'node:stream';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { resolveContextWorkspace } from '@rstackjs/context';
 import { createContextMcpServer } from '@rstackjs/context/mcp';
-import { captureLintSnapshot } from '@rstackjs/context/rslint';
-import { captureTestSnapshot } from '@rstackjs/context/rstest';
 import { loadRstackConfig, withRstackConfigTarget } from './config.ts';
 import { resolveRelatedTests } from './relatedTests.ts';
 
@@ -34,23 +32,20 @@ const runContextMcpServer = async (startPath: string): Promise<void> => {
   const { workspaceRoot } = await resolveContextWorkspace(startPath);
   const server = createContextMcpServer(workspaceRoot, {
     serverVersion: RSTACK_VERSION,
-    captureLintSnapshot: (root, request, createRslint) =>
-      captureLintSnapshot(root, request, createRslint, {
-        wrapperConfigPath: path.join(import.meta.dirname, 'rslintConfig.js'),
-        withConfigTarget: withRstackConfigTarget,
-      }),
-    captureTestSnapshot: (root, request, dependencies = {}) =>
-      captureTestSnapshot(root, request, {
-        ...dependencies,
-        wrapperConfigPath: path.join(import.meta.dirname, 'rstestConfig.js'),
-        withConfigTarget: withRstackConfigTarget,
-        resolveRelatedTests,
-        isTestConfigured: ({ packageRoot, configPath }) =>
-          withRstackConfigTarget(packageRoot, configPath, async () => {
-            const { configs } = await loadRstackConfig();
-            return configs.test !== undefined;
-          }),
-      }),
+    lintCaptureAdapter: {
+      wrapperConfigPath: path.join(import.meta.dirname, 'rslintConfig.js'),
+      withConfigTarget: withRstackConfigTarget,
+    },
+    testCaptureDependencies: {
+      wrapperConfigPath: path.join(import.meta.dirname, 'rstestConfig.js'),
+      withConfigTarget: withRstackConfigTarget,
+      resolveRelatedTests,
+      isTestConfigured: ({ packageRoot, configPath }) =>
+        withRstackConfigTarget(packageRoot, configPath, async () => {
+          const { configs } = await loadRstackConfig();
+          return configs.test !== undefined;
+        }),
+    },
   });
 
   await server.connect(new StdioServerTransport(process.stdin, reserveStandardOutputForProtocol()));
