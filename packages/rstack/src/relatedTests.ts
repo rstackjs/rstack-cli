@@ -1,4 +1,6 @@
 import { execFile } from 'node:child_process';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import type { RelatedTestRequest } from '@rstackjs/context';
 
@@ -36,24 +38,34 @@ const resolveRelatedTests = async (
   request: RelatedTestRequest,
   dependencies: RelatedTestResolverDependencies = {},
 ): Promise<string[]> => {
-  const args = [
-    path.join(import.meta.dirname, '..', 'bin', 'rs.js'),
-    'test',
-    'list',
-    '--related',
-    ...request.sources,
-    '--filesOnly',
-    '--json',
-    ...(request.configPath === undefined ? [] : ['--config', request.configPath]),
-  ];
-  const { stdout, stderr } = await (dependencies.runCli ?? runCli)({
-    cwd: request.packageRoot,
-    args,
-  });
+  const outputDirectory = await mkdtemp(path.join(os.tmpdir(), 'rstack-related-tests-'));
+  const outputFile = path.join(outputDirectory, 'tests.json');
+  let source: string;
+  let stderr: string;
+  try {
+    const args = [
+      path.join(import.meta.dirname, '..', 'bin', 'rs.js'),
+      'test',
+      'list',
+      '--related',
+      ...request.sources,
+      '--filesOnly',
+      '--json',
+      outputFile,
+      ...(request.configPath === undefined ? [] : ['--config', request.configPath]),
+    ];
+    ({ stderr } = await (dependencies.runCli ?? runCli)({
+      cwd: request.packageRoot,
+      args,
+    }));
+    source = await readFile(outputFile, 'utf8');
+  } finally {
+    await rm(outputDirectory, { force: true, recursive: true });
+  }
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(stdout);
+    parsed = JSON.parse(source);
   } catch {
     throw new Error(
       `Rstest related-test listing returned invalid JSON${stderr.length === 0 ? '.' : `: ${stderr.trim()}`}`,

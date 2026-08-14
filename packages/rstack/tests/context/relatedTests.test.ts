@@ -1,6 +1,13 @@
+import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { expect, test } from '@rstest/core';
 import { resolveRelatedTests } from '../../src/relatedTests.ts';
+
+const getOutputFile = (args: string[]): string => {
+  const outputFile = args[args.indexOf('--json') + 1];
+  if (outputFile === undefined) throw new Error('Missing related-test output file.');
+  return outputFile;
+};
 
 test('lists related tests through the current Rstack CLI and normalizes its JSON result', async () => {
   const calls: unknown[] = [];
@@ -16,13 +23,14 @@ test('lists related tests through the current Rstack CLI and normalizes its JSON
     {
       runCli: (request) => {
         calls.push(request);
-        return Promise.resolve({
-          stdout: JSON.stringify([
+        const outputFile = getOutputFile(request.args);
+        return writeFile(
+          outputFile,
+          JSON.stringify([
             { file: 'tests/index.test.ts', type: 'file' },
             { file: path.join(packageRoot, 'tests/index.test.ts'), type: 'file' },
           ]),
-          stderr: '',
-        });
+        ).then(() => ({ stdout: 'config log that is not JSON', stderr: '' }));
       },
     },
   );
@@ -38,6 +46,7 @@ test('lists related tests through the current Rstack CLI and normalizes its JSON
         path.join(packageRoot, 'src/index.ts'),
         '--filesOnly',
         '--json',
+        expect.stringMatching(/rstack-related-tests-/u),
         '--config',
         configPath,
       ],
@@ -50,7 +59,13 @@ test('reports invalid related-test JSON as an Rstest list failure', async () => 
   await expect(
     resolveRelatedTests(
       { packageRoot: '/workspace', sources: ['/workspace/src/index.ts'] },
-      { runCli: () => Promise.resolve({ stdout: 'not json', stderr: 'list failed' }) },
+      {
+        runCli: (request) =>
+          writeFile(getOutputFile(request.args), 'not json').then(() => ({
+            stdout: '',
+            stderr: 'list failed',
+          })),
+      },
     ),
   ).rejects.toThrow('Rstest related-test listing returned invalid JSON');
 });
