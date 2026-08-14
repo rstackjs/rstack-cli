@@ -1,5 +1,6 @@
 import type {
   RstackCommand,
+  RstackConfigModifierContextMap,
   RstackConfigMap,
   RstackLogger,
   RstackPlugin,
@@ -9,6 +10,7 @@ import type {
 
 export type RstackConfigModifier<K extends keyof RstackConfigMap> = (
   config: RstackConfigMap[K],
+  context: RstackConfigModifierContextMap[K],
 ) => void | RstackConfigMap[K] | Promise<void | RstackConfigMap[K]>;
 
 type RstackConfigModifierRegistry = {
@@ -22,6 +24,7 @@ export type RstackPluginRuntime = {
   applyConfigModifiers<K extends keyof RstackConfigMap>(
     kind: K,
     config: RstackConfigMap[K],
+    context: RstackConfigModifierContextMap[K],
   ): Promise<RstackConfigMap[K]>;
 };
 
@@ -159,10 +162,10 @@ export const createPluginRuntime = async ({
       await handler(args);
       return true;
     },
-    async applyConfigModifiers(kind, config) {
+    async applyConfigModifiers(kind, config, modifierContext) {
       let current = config;
       for (const modifier of configModifiers[kind] as RstackConfigModifier<typeof kind>[]) {
-        const result = await modifier(current);
+        const result = await modifier(current, modifierContext);
         if (result !== undefined) {
           current = result;
         }

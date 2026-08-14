@@ -33,6 +33,9 @@ afterEach(() => {
   delete globalThis.__rstackExplicitAppModifierCalls;
   delete globalThis.__rstackAllProjectsExplicitAppModifierCalls;
   delete globalThis.__rstackTestModifierExtendsAppCalls;
+  delete globalThis.__rstackAppModifierParams;
+  delete globalThis.__rstackLibModifierParams;
+  delete globalThis.__rstackTestModifierParams;
 });
 
 test('constructs automatic Rstest extends before applying test modifiers', async () => {
@@ -92,4 +95,21 @@ test('uses plugin-provided app config for automatic Rstest extends and keeps tes
     reporters: ['dot'],
   });
   expect(config.extends).toBeDefined();
+});
+
+test('forwards native params to app, lib, test, and automatic Rstest extends modifiers', async () => {
+  state.configPath = configPath;
+  const appParams = { command: 'build', env: 'app', envMode: 'production' };
+  const libParams = { command: 'build', env: 'lib', envMode: 'production' };
+  const testParams = { command: 'test', env: 'test', envMode: 'test' };
+
+  await loadAppConfig(appParams as never);
+  expect(globalThis.__rstackAppModifierParams).toBe(appParams);
+
+  await loadLibConfig(libParams as never);
+  expect(globalThis.__rstackLibModifierParams).toBe(libParams);
+
+  await loadTestConfig(testParams as never);
+  expect(globalThis.__rstackAppModifierParams).toBe(testParams);
+  expect(globalThis.__rstackTestModifierParams).toBe(testParams);
 });

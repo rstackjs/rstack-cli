@@ -262,7 +262,40 @@ test('runs config modifiers after setup and keeps each modifier result', async (
 
   expect(runtime.hasConfigModifier('app')).toBe(true);
   expect(runtime.hasConfigModifier('lib')).toBe(false);
-  await expect(runtime.applyConfigModifiers('app', {})).resolves.toMatchObject({
+  await expect(
+    runtime.applyConfigModifiers('app', {}, { params: {} as never }),
+  ).resolves.toMatchObject({
     root: '/first/second/third',
   });
+});
+
+test('passes native invocation context to config modifiers', async () => {
+  const params = {
+    command: 'build',
+    env: 'production',
+    envMode: 'production',
+  } as const;
+  let observed: unknown;
+  const runtime = await createPluginRuntime({
+    plugins: [
+      {
+        name: 'context-observer',
+        setup({ modifyConfig }) {
+          modifyConfig('app', (_config, context) => {
+            observed = context.params;
+          });
+        },
+      },
+    ],
+    context: {
+      cwd: '/project',
+      command: 'build',
+      args: [],
+      configFilePath: null,
+    },
+    logger,
+  });
+
+  await runtime.applyConfigModifiers('app', {}, { params });
+  expect(observed).toBe(params);
 });

@@ -241,6 +241,7 @@ const loadFmtConfig = async (cwd: string): Promise<ResolvedFmtConfig> => {
     loaded,
     'fmt',
     await resolveFmtConfigDefinition(loaded.configs.fmt),
+    {},
   );
 
   return resolveFmtConfig({

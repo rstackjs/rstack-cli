@@ -18,6 +18,7 @@ const modifiedLintConfig: RslintConfig = await applyRstackConfigModifiers(
   loaded,
   'lint',
   lintConfig,
+  {},
 );
 
 export default modifiedLintConfig;

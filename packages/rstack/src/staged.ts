@@ -51,7 +51,11 @@ export async function runStagedCLI(args: string[]): Promise<void> {
       'No define.staged config found. Add define.staged({ "*": "your-command" }) to rstack config file',
     );
   }
-  const stagedConfig = await runtime.applyConfigModifiers('staged', loaded.configs.staged ?? {});
+  const stagedConfig = await runtime.applyConfigModifiers(
+    'staged',
+    loaded.configs.staged ?? {},
+    {},
+  );
 
   // Let child commands detect that they are running through `rs staged`.
   process.env.RSTACK_STAGED = '1';

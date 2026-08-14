@@ -14,5 +14,5 @@ const resolveRspressConfig = async (configs: Configs): Promise<UserConfig> => {
 
 export default async (): Promise<UserConfig> => {
   const loaded = await loadRstackConfig();
-  return applyRstackConfigModifiers(loaded, 'doc', await resolveRspressConfig(loaded.configs));
+  return applyRstackConfigModifiers(loaded, 'doc', await resolveRspressConfig(loaded.configs), {});
 };

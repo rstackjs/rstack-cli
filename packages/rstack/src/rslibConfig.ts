@@ -1,5 +1,5 @@
 import { realpath } from 'node:fs/promises';
-import type { ConfigParams, RslibConfig, RslibConfigDefinition } from '@rslib/core';
+import type { ConfigParams, RslibConfig } from '@rslib/core';
 import {
   appendBuildContextPlugin,
   createBuildContextPlugin,
@@ -23,13 +23,14 @@ export const resolveRslibConfig = async (
   return libConfig;
 };
 
-export const loadRslibConfig = (async (params: ConfigParams) => {
+export const loadRslibConfig = async (params: ConfigParams): Promise<RslibConfig> => {
   const loaded = await loadRstackConfig();
   const configPath = loaded.filePath === null ? undefined : await realpath(loaded.filePath);
   const config = await applyRstackConfigModifiers(
     loaded,
     'lib',
     await resolveRslibConfig(loaded.configs, params),
+    { params },
   );
   const capture = resolveContextCapture(loaded.configs.context);
   if (capture === 'off') {
@@ -55,6 +56,6 @@ export const loadRslibConfig = (async (params: ConfigParams) => {
       inputs,
     }),
   );
-}) as RslibConfigDefinition;
+};
 
 export default loadRslibConfig;

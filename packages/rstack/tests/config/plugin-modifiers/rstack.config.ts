@@ -9,6 +9,12 @@ declare global {
     | undefined;
   // rslint-disable-next-line no-var
   var __rstackPluginModifierError: boolean | undefined;
+  // rslint-disable-next-line no-var
+  var __rstackAppModifierParams: unknown;
+  // rslint-disable-next-line no-var
+  var __rstackLibModifierParams: unknown;
+  // rslint-disable-next-line no-var
+  var __rstackTestModifierParams: unknown;
 }
 
 define.plugins([
@@ -19,7 +25,8 @@ define.plugins([
       globalThis.__rstackPluginModifierContext = context;
       const setup = globalThis.__rstackPluginModifierSetups;
 
-      modifyConfig('app', (config) => {
+      modifyConfig('app', (config, context) => {
+        globalThis.__rstackAppModifierParams = context.params;
         (config as { setup?: number }).setup = setup;
       });
       modifyConfig('app', (config) =>
@@ -34,13 +41,19 @@ define.plugins([
         }
       });
 
-      modifyConfig('lib', (config) => ({ ...config, root: `lib-${setup}` }));
+      modifyConfig('lib', (config, context) => {
+        globalThis.__rstackLibModifierParams = context.params;
+        return { ...config, root: `lib-${setup}` };
+      });
       modifyConfig('doc', (config) => ({ ...config, root: `doc-${setup}` }));
-      modifyConfig('test', (config) => ({
-        ...config,
-        name: `test-${setup}`,
-        reporters: ['dot'],
-      }));
+      modifyConfig('test', (config, context) => {
+        globalThis.__rstackTestModifierParams = context.params;
+        return {
+          ...config,
+          name: `test-${setup}`,
+          reporters: ['dot'],
+        };
+      });
       modifyConfig('lint', () => [{ name: `lint-${setup}` }] as never);
       modifyConfig('fmt', (config) => ({ ...config, singleQuote: true }));
       modifyConfig('staged', () => Promise.resolve({ '*.ts': `echo staged-${setup}` }));

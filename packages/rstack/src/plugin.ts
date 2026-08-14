@@ -1,5 +1,5 @@
-import type { RsbuildConfig } from '@rsbuild/core';
-import type { RslibConfig } from '@rslib/core';
+import type { ConfigParams as RsbuildConfigParams, RsbuildConfig } from '@rsbuild/core';
+import type { ConfigParams as RslibConfigParams, RslibConfig } from '@rslib/core';
 import type { RslintConfig } from '@rslint/core';
 import type { UserConfig as RspressConfig } from '@rspress/core';
 import type { RstestConfig } from '@rstest/core';
@@ -14,6 +14,16 @@ export type RstackConfigMap = {
   lint: RslintConfig;
   fmt: FmtConfig;
   staged: StagedConfig;
+};
+
+export type RstackConfigModifierContextMap = {
+  app: Readonly<{ params: RsbuildConfigParams }>;
+  lib: Readonly<{ params: RslibConfigParams }>;
+  doc: Readonly<Record<string, never>>;
+  test: Readonly<{ params: RsbuildConfigParams }>;
+  lint: Readonly<Record<string, never>>;
+  fmt: Readonly<Record<string, never>>;
+  staged: Readonly<Record<string, never>>;
 };
 
 export type RstackPluginContext = Readonly<{
@@ -46,6 +56,7 @@ export type RstackPluginAPI = {
     kind: K,
     handler: (
       config: RstackConfigMap[K],
+      context: RstackConfigModifierContextMap[K],
     ) => void | RstackConfigMap[K] | Promise<void | RstackConfigMap[K]>,
   ) => void;
 };

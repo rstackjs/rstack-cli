@@ -9,7 +9,7 @@ import type { UserConfig, UserConfigAsyncFn } from '@rspress/core';
 import type { RstestConfigExport } from '@rstest/core';
 import type { ContextConfig } from '@rstackjs/context';
 import type { FmtConfigDefinition } from './fmt/types.ts';
-import type { RstackConfigMap, RstackPlugins } from './plugin.ts';
+import type { RstackConfigMap, RstackConfigModifierContextMap, RstackPlugins } from './plugin.ts';
 import { createPluginRuntime, type RstackPluginRuntime } from './pluginRuntime.ts';
 import type { StagedConfig } from './staged.ts';
 
@@ -164,8 +164,9 @@ export const applyRstackConfigModifiers = async <K extends keyof RstackConfigMap
   loaded: LoadedRstackConfig,
   kind: K,
   config: RstackConfigMap[K],
+  context: RstackConfigModifierContextMap[K],
 ): Promise<RstackConfigMap[K]> =>
-  (await getRstackPluginRuntime(loaded)).applyConfigModifiers(kind, config);
+  (await getRstackPluginRuntime(loaded)).applyConfigModifiers(kind, config, context);
 type Define = {
   /**
    * Registers plugins that extend the Rstack CLI.

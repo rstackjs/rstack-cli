@@ -26,6 +26,7 @@ const resolveAutomaticExtends = async (
       loaded,
       'app',
       resolvedConfig === undefined ? {} : resolvedConfig,
+      { params },
     );
 
     return withRsbuildConfig({
@@ -44,6 +45,7 @@ const resolveAutomaticExtends = async (
       loaded,
       'lib',
       resolvedConfig === undefined ? {} : resolvedConfig,
+      { params },
     );
 
     return withRslibConfig({
@@ -117,7 +119,7 @@ const loadRstestConfig = (async (params: ConfigParams) => {
     await resolveRstestConfig(loaded.configs),
     params,
   );
-  return applyRstackConfigModifiers(loaded, 'test', configWithAutomaticExtends);
+  return applyRstackConfigModifiers(loaded, 'test', configWithAutomaticExtends, { params });
 }) as RstestConfigExport;
 
 export default loadRstestConfig;
