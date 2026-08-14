@@ -1822,7 +1822,7 @@ define.app({});
       stderr: 'pipe',
     });
     const client = new Client({
-      name: 'rstack-unconfigured-test-capture',
+      name: 'rstack-missing-test-config-capture',
       version: '1.0.0',
     });
 
