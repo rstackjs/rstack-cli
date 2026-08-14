@@ -4,7 +4,6 @@ import { define } from 'rstack';
 
 define.lib(async () => {
   const { pluginReact } = await import('@rsbuild/plugin-react');
-
   return {
     bundle: false,
     source: {

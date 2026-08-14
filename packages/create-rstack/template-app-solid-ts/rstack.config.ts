@@ -4,7 +4,6 @@ import { define } from 'rstack';
 define.app(async () => {
   const { pluginBabel } = await import('@rsbuild/plugin-babel');
   const { pluginSolid } = await import('@rsbuild/plugin-solid');
-
   return {
     plugins: [
       pluginBabel({

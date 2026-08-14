@@ -4,7 +4,6 @@ import { define } from 'rstack';
 
 define.lib(async () => {
   const { pluginSvelte } = await import('@rsbuild/plugin-svelte');
-
   return {
     bundle: false,
     source: {
