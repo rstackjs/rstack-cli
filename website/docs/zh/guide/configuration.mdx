@@ -29,7 +29,7 @@ define.fmt({
 });
 ```
 
-配置文件无需默认导出。每个 `define.*()` API 最多调用一次；重复定义同一类型的配置会抛出错误。
+配置文件无需默认导出。每个 `define.*()` API 最多调用一次；重复定义同一类型的配置会抛出错误。当外部包需要扩展 Rstack 本身或同时贡献多项工具配置时，请使用 [`define.plugins()`](./plugins#registering-plugins)。
 
 Rstack CLI 默认会查找使用以下任一文件名的配置文件：
 
@@ -78,6 +78,11 @@ define.app(async () => {
 | [`define.lint()`](#define-lint)       | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
 | [`define.fmt()`](#define-fmt)         | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
 | [`define.staged()`](#define-staged)   | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
+| [`define.plugins()`](#define-plugins) | Rstack CLI                                                              | 插件命令及已配置的工具命令                                                      |
+
+### `define.plugins()` \{#define-plugins}
+
+显式注册 Rstack CLI 插件。插件可以添加顶层命令，也可以转换下方列出的原生工具配置。API、生命周期和示例请参阅[插件](./plugins)指南。
 
 ### `define.app()` \{#define-app}
 

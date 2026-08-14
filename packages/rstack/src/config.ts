@@ -1,5 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { resolve } from 'node:path';
 import { loadConfig } from '@rstackjs/load-config';
+import { logger } from 'rslog';
 import type { RsbuildConfigDefinition } from '@rsbuild/core';
 import type { RslibConfigDefinition } from '@rslib/core';
 import type { RslintConfig } from '@rslint/core';
@@ -7,6 +9,8 @@ import type { UserConfig, UserConfigAsyncFn } from '@rspress/core';
 import type { RstestConfigExport } from '@rstest/core';
 import type { ContextConfig } from '@rstackjs/context';
 import type { FmtConfigDefinition } from './fmt/types.ts';
+import type { RstackConfigMap, RstackPlugins } from './plugin.ts';
+import { createPluginRuntime, type RstackPluginRuntime } from './pluginRuntime.ts';
 import type { StagedConfig } from './staged.ts';
 
 export type RslintConfigDefinition = RslintConfig | (() => Promise<RslintConfig>);
@@ -29,9 +33,13 @@ export type Configs = {
 
 export type LoadedRstackConfig = {
   configs: Configs;
+  plugins: RstackPlugins;
   filePath: string | null;
   dependencies: string[];
 };
+
+const loadedPluginRuntimes = new WeakMap<LoadedRstackConfig, Promise<RstackPluginRuntime>>();
+const loadedConfigDirectories = new WeakMap<LoadedRstackConfig, string>();
 
 export type LoadRstackConfigOptions = {
   /**
@@ -50,7 +58,16 @@ export type LoadRstackConfigOptions = {
 
 type ConfigSession = {
   configs: Configs;
+  plugins: RstackPlugins;
+  pluginsDefined: boolean;
   active: boolean;
+};
+
+export type RstackInvocation = {
+  cwd: string;
+  command: string;
+  args: string[];
+  configFilePath: string | null;
 };
 
 type ConfigState = {
@@ -61,6 +78,7 @@ type ConfigState = {
    */
   configPath?: string;
   configRoot?: string;
+  invocation?: RstackInvocation;
 };
 
 declare global {
@@ -83,7 +101,7 @@ const getConfigSessionStorage = (): AsyncLocalStorage<ConfigSession> => {
 
 export const getConfigState = (): ConfigState => {
   // The CLI and its internal tool config can also be loaded as separate module
-  // instances. Keep only the CLI config path in its own global state.
+  // instances. Keep CLI invocation state in its own global state.
   if (!globalThis.__rstackCliState) {
     globalThis.__rstackCliState = {};
   }
@@ -119,7 +137,42 @@ export const withRstackConfigTarget = async <T>(
   }
 };
 
+export const getRstackPluginRuntime = (
+  config: LoadedRstackConfig,
+): Promise<RstackPluginRuntime> => {
+  const existingRuntime = loadedPluginRuntimes.get(config);
+  if (existingRuntime) {
+    return existingRuntime;
+  }
+
+  const invocation = getConfigState().invocation;
+  const runtime = createPluginRuntime({
+    plugins: config.plugins,
+    context: {
+      cwd: invocation?.cwd ?? loadedConfigDirectories.get(config) ?? process.cwd(),
+      command: invocation?.command ?? 'programmatic',
+      args: invocation?.args ?? [],
+      configFilePath: config.filePath,
+    },
+    logger,
+  });
+  loadedPluginRuntimes.set(config, runtime);
+  return runtime;
+};
+
+export const applyRstackConfigModifiers = async <K extends keyof RstackConfigMap>(
+  loaded: LoadedRstackConfig,
+  kind: K,
+  config: RstackConfigMap[K],
+): Promise<RstackConfigMap[K]> =>
+  (await getRstackPluginRuntime(loaded)).applyConfigModifiers(kind, config);
 type Define = {
+  /**
+   * Registers plugins that extend the Rstack CLI.
+   *
+   * @see {@link https://rstack.rs/plugins | Rstack plugin guide}
+   */
+  plugins: (plugins: RstackPlugins) => void;
   /**
    * Defines the Rsbuild config for the app.
    *
@@ -185,12 +238,18 @@ type Define = {
   staged: (config: StagedConfig) => void;
 };
 
-const setConfig = <T extends keyof Configs>(type: T, config: Configs[T]): void => {
+const getActiveConfigSession = (type: string): ConfigSession => {
   const session = getConfigSessionStorage().getStore();
 
   if (!session?.active) {
     throw new Error(`The "${type}" config must be defined while loading an Rstack config.`);
   }
+
+  return session;
+};
+
+const setConfig = <T extends keyof Configs>(type: T, config: Configs[T]): void => {
+  const session = getActiveConfigSession(type);
 
   if (type in session.configs) {
     throw new Error(`The "${type}" config has already been defined.`);
@@ -198,7 +257,18 @@ const setConfig = <T extends keyof Configs>(type: T, config: Configs[T]): void =
   session.configs[type] = config;
 };
 
+const setPlugins = (plugins: RstackPlugins): void => {
+  const session = getActiveConfigSession('plugins');
+
+  if (session.pluginsDefined) {
+    throw new Error('The "plugins" config has already been defined.');
+  }
+  session.plugins = plugins;
+  session.pluginsDefined = true;
+};
+
 export const define: Define = {
+  plugins: setPlugins,
   app: (config) => setConfig('app', config),
   lib: (config) => setConfig('lib', config),
   context: (config) => setConfig('context', config),
@@ -222,10 +292,12 @@ export const loadRstackConfig = async ({
   const configRoot = state.configRoot;
   const session: ConfigSession = {
     configs: {},
+    plugins: [],
+    pluginsDefined: false,
     active: true,
   };
 
-  return getConfigSessionStorage().run(session, async () => {
+  const loadedConfig = await getConfigSessionStorage().run(session, async () => {
     try {
       const { filePath, dependencies } = await loadConfig({
         loader: 'native',
@@ -244,14 +316,26 @@ export const loadRstackConfig = async ({
             }),
       });
 
-      return {
+      if (state.invocation) {
+        state.invocation.configFilePath = filePath;
+      }
+
+      const result = {
         configs: session.configs,
+        plugins: session.plugins,
         filePath,
         dependencies,
       };
+      loadedConfigDirectories.set(result, resolve(configRoot ?? cwd ?? process.cwd()));
+      return result;
     } finally {
       session.active = false;
       session.configs = {};
+      session.plugins = [];
+      session.pluginsDefined = false;
     }
   });
+
+  await getRstackPluginRuntime(loadedConfig);
+  return loadedConfig;
 };

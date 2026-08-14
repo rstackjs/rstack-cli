@@ -6,7 +6,7 @@ Rstack CLI 提供统一的配置 API，并通过专用子路径重导出 Rsbuild
 
 | 导入路径                 | 内容                                      | 使用场景                 |
 | ------------------------ | ----------------------------------------- | ------------------------ |
-| `rstack`                 | Rstack CLI 配置 API                       | 注册各项工具配置         |
+| `rstack`                 | Rstack CLI 配置与插件 API                 | 配置并扩展 Rstack CLI    |
 | `rstack/app`             | `@rsbuild/core` 的公开 API                | 构建应用及扩展 Rsbuild   |
 | `rstack/lib`             | `@rslib/core` 的公开 API                  | 构建库及扩展 Rslib       |
 | `rstack/test`            | `@rstest/core` 的公开 API                 | 编写测试及配置测试项目   |
@@ -19,7 +19,9 @@ Rstack CLI 提供统一的配置 API，并通过专用子路径重导出 Rsbuild
 
 ### `define`
 
-从 `rstack` 导入 `define`，用于在 `rstack.config.ts` 中注册各项工具配置；详细用法请参阅[配置 API](./configuration#configuration-apis)。
+从 `rstack` 导入 `define`，用于在 `rstack.config.ts` 中注册各项工具配置和插件；详细用法请参阅[配置 API](./configuration#configuration-apis)和[插件](./plugins)。
+
+主入口还会导出公开插件类型，包括 `RstackPlugin`、`RstackPluginAPI`、`RstackPluginContext`、`RstackConfigMap`、`FmtConfig` 和 `StagedConfig`。
 
 ## 重导出 \{#re-exports}
 

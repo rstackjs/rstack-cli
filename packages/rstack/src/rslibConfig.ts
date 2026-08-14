@@ -1,5 +1,5 @@
 import { realpath } from 'node:fs/promises';
-import type { ConfigParams, RslibConfig } from '@rslib/core';
+import type { ConfigParams, RslibConfig, RslibConfigDefinition } from '@rslib/core';
 import {
   appendBuildContextPlugin,
   createBuildContextPlugin,
@@ -7,7 +7,7 @@ import {
   resolveContextCapture,
   resolveContextWorkspace,
 } from '@rstackjs/context';
-import { loadRstackConfig, type Configs } from './config.ts';
+import { applyRstackConfigModifiers, loadRstackConfig, type Configs } from './config.ts';
 
 export const resolveRslibConfig = async (
   configs: Configs,
@@ -23,10 +23,14 @@ export const resolveRslibConfig = async (
   return libConfig;
 };
 
-export const loadRslibConfig = async (params: ConfigParams): Promise<RslibConfig> => {
+export const loadRslibConfig = (async (params: ConfigParams) => {
   const loaded = await loadRstackConfig();
   const configPath = loaded.filePath === null ? undefined : await realpath(loaded.filePath);
-  const config = await resolveRslibConfig(loaded.configs, params);
+  const config = await applyRstackConfigModifiers(
+    loaded,
+    'lib',
+    await resolveRslibConfig(loaded.configs, params),
+  );
   const capture = resolveContextCapture(loaded.configs.context);
   if (capture === 'off') {
     return config;
@@ -51,6 +55,6 @@ export const loadRslibConfig = async (params: ConfigParams): Promise<RslibConfig
       inputs,
     }),
   );
-};
+}) as RslibConfigDefinition;
 
 export default loadRslibConfig;
