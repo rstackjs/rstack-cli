@@ -31,7 +31,7 @@ test('lists related tests through the current Rstack CLI and normalizes its JSON
     {
       cwd: packageRoot,
       args: [
-        expect.stringMatching(/bin\/rs\.js$/u),
+        expect.stringMatching(/bin[\\/]rs\.js$/u),
         'test',
         'list',
         '--related',
