@@ -29,14 +29,10 @@ rs lint --type-check
 
 ## Configuration
 
-Configure linting through [`define.lint()`](../configuration#define-lint) in the [Rstack configuration file](/guide/configuration#configuration-file). It accepts the standard [Rslint configuration](https://rslint.rs/config/). Presets and plugins can be imported from `rstack/lint` on demand:
+Configure linting through [`define.lint()`](../configuration#define-lint) in the [Rstack configuration file](/guide/configuration#configuration-file). It accepts the standard [Rslint configuration](https://rslint.rs/config/). A configuration function receives all exports from `rstack/lint`, so presets and plugins do not need to be imported manually:
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
 
-define.lint(async () => {
-  const { js, ts } = await import('rstack/lint');
-
-  return [js.configs.recommended, ts.configs.recommended];
-});
+define.lint(({ js, ts }) => [js.configs.recommended, ts.configs.recommendedTypeChecked]);
 ```
