@@ -4,7 +4,7 @@ packages:
   - website
 
 allowBuilds:
-  '@rstackjs/context@https://codeload.github.com/rstackjs/context/tar.gz/f2408b0497a0ee56ce0a9c72fa2603beb8375b42': true
+  '@rstackjs/context@https://pkg.pr.new/rstackjs/context/@rstackjs/context@1': true
   core-js: false
   simple-git-hooks: false
 
