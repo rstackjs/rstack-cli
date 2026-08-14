@@ -309,7 +309,7 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
-  examples/rstest-inline-projects:
+  examples/test-inline-projects:
     dependencies:
       react:
         specifier: 'catalog:'
@@ -320,7 +320,7 @@ importers:
     devDependencies:
       '@rsbuild/plugin-react':
         specifier: 'catalog:'
-        version: 2.1.0(@rsbuild/core@2.1.10)(@rspack/core@2.1.10)
+        version: 2.1.0(@rsbuild/core@2.1.12)(@rspack/core@2.1.10)
       '@testing-library/dom':
         specifier: 'catalog:'
         version: 10.4.1
@@ -3988,12 +3988,30 @@ snapshots:
     transitivePeerDependencies:
       - '@module-federation/runtime-tools'
 
+  '@rsbuild/plugin-react@2.1.0(@rsbuild/core@2.1.10)':
+    dependencies:
+      '@rspack/plugin-react-refresh': 2.0.2(@rspack/core@2.1.10)(react-refresh@0.18.0)
+      react-refresh: 0.18.0
+    optionalDependencies:
+      '@rsbuild/core': 2.1.10
+    transitivePeerDependencies:
+      - '@rspack/core'
+
   '@rsbuild/plugin-react@2.1.0(@rsbuild/core@2.1.10)(@rspack/core@2.1.10)':
     dependencies:
       '@rspack/plugin-react-refresh': 2.0.2(@rspack/core@2.1.10)(react-refresh@0.18.0)
       react-refresh: 0.18.0
     optionalDependencies:
       '@rsbuild/core': 2.1.10
+    transitivePeerDependencies:
+      - '@rspack/core'
+
+  '@rsbuild/plugin-react@2.1.0(@rsbuild/core@2.1.12)(@rspack/core@2.1.10)':
+    dependencies:
+      '@rspack/plugin-react-refresh': 2.0.2(@rspack/core@2.1.10)(react-refresh@0.18.0)
+      react-refresh: 0.18.0
+    optionalDependencies:
+      '@rsbuild/core': 2.1.12
     transitivePeerDependencies:
       - '@rspack/core'
 
@@ -4264,7 +4282,7 @@ snapshots:
       '@mdx-js/mdx': 3.1.1(supports-color@8.1.1)
       '@mdx-js/react': 3.1.1(@types/react@19.2.18)(react@19.2.8)
       '@rsbuild/core': 2.1.10
-      '@rsbuild/plugin-react': 2.1.0(@rsbuild/core@2.1.10)(@rspack/core@2.1.10)
+      '@rsbuild/plugin-react': 2.1.0(@rsbuild/core@2.1.10)
       '@rspress/shared': 2.0.19(supports-color@8.1.1)
       '@shikijs/rehype': 4.3.1
       '@types/mdast': 4.0.4
