@@ -389,8 +389,8 @@ importers:
         specifier: 'catalog:'
         version: 0.8.0
       '@rstackjs/context':
-        specifier: git+https://github.com/rstackjs/context.git#6c992fac8c8e2b22a1a66f8f0d9a954437649bf7
-        version: https://codeload.github.com/rstackjs/context/tar.gz/6c992fac8c8e2b22a1a66f8f0d9a954437649bf7(@rstest/coverage-istanbul@0.11.6)(happy-dom@20.11.2)(supports-color@8.1.1)
+        specifier: git+https://github.com/rstackjs/context.git#f2408b0497a0ee56ce0a9c72fa2603beb8375b42
+        version: https://codeload.github.com/rstackjs/context/tar.gz/f2408b0497a0ee56ce0a9c72fa2603beb8375b42(@rstest/coverage-istanbul@0.11.6)(happy-dom@20.11.2)(supports-color@8.1.1)
       '@rstest/core':
         specifier: 'catalog:'
         version: 0.11.6(happy-dom@20.11.2)
@@ -1655,8 +1655,8 @@ packages:
       '@rspress/core':
         optional: true
 
-  '@rstackjs/context@https://codeload.github.com/rstackjs/context/tar.gz/6c992fac8c8e2b22a1a66f8f0d9a954437649bf7':
-    resolution: {gitHosted: true, integrity: sha512-ziQTvEFgORZW5D4oGejuTSNHZnmbc66zoxkP8pMcSz1OJYEX+0yjep0HLyshDVYFaAHmks+HxjpF9XYfwg3GSg==, tarball: https://codeload.github.com/rstackjs/context/tar.gz/6c992fac8c8e2b22a1a66f8f0d9a954437649bf7}
+  '@rstackjs/context@https://codeload.github.com/rstackjs/context/tar.gz/f2408b0497a0ee56ce0a9c72fa2603beb8375b42':
+    resolution: {gitHosted: true, integrity: sha512-ZjDQAjlwaeQnlFZ05S2aMRNA5xATl0GgTfysE0nHpEEF3DammDhYcOeT22N50yyhyEnTgEDmN8Tm6u5dJo/gDg==, tarball: https://codeload.github.com/rstackjs/context/tar.gz/f2408b0497a0ee56ce0a9c72fa2603beb8375b42}
     version: 0.6.0
     engines: {node: '>=22.12.0', pnpm: '>=11.0.0'}
     peerDependencies:
@@ -4933,7 +4933,7 @@ snapshots:
     optionalDependencies:
       '@rspress/core': 2.0.19(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
 
-  '@rstackjs/context@https://codeload.github.com/rstackjs/context/tar.gz/6c992fac8c8e2b22a1a66f8f0d9a954437649bf7(@rstest/coverage-istanbul@0.11.6)(happy-dom@20.11.2)(supports-color@8.1.1)':
+  '@rstackjs/context@https://codeload.github.com/rstackjs/context/tar.gz/f2408b0497a0ee56ce0a9c72fa2603beb8375b42(@rstest/coverage-istanbul@0.11.6)(happy-dom@20.11.2)(supports-color@8.1.1)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.29.0(supports-color@8.1.1)
       '@rsbuild/core': 2.1.11

@@ -8,7 +8,7 @@ import {
   createContextMcpServer,
   resolveContextWorkspace,
 } from '@rstackjs/context';
-import { withRstackConfigTarget } from './config.ts';
+import { loadRstackConfig, withRstackConfigTarget } from './config.ts';
 import { resolveRelatedTests } from './relatedTests.ts';
 
 declare const RSTACK_VERSION: string;
@@ -47,6 +47,11 @@ const runContextMcpServer = async (startPath: string): Promise<void> => {
         wrapperConfigPath: path.join(import.meta.dirname, 'rstestConfig.js'),
         withConfigTarget: withRstackConfigTarget,
         resolveRelatedTests,
+        isTestConfigured: ({ packageRoot, configPath }) =>
+          withRstackConfigTarget(packageRoot, configPath, async () => {
+            const { configs } = await loadRstackConfig();
+            return configs.test !== undefined;
+          }),
       }),
   });
 

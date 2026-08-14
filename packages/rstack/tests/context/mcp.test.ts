@@ -1091,7 +1091,7 @@ test('reads the current store for every project status call without workspace pa
       expect(firstResult.content).toEqual([
         {
           type: 'text',
-          text: 'Rstack project status: 1 current context (0 ready, 1 pending); 0 context-store/read issues. See structuredContent for details.',
+          text: 'Rstack project status: 1 recorded context identity (0 ready, 1 pending); 0 context-store/read issues. See structuredContent for compact selection details.',
         },
       ]);
 
@@ -1111,7 +1111,14 @@ test('reads the current store for every project status call without workspace pa
             producer: run.producer,
             context,
             state: 'ready',
-            latestSnapshot: snapshot,
+            latestSnapshot: {
+              snapshotId: snapshot.snapshotId,
+              observedAt: snapshot.observedAt,
+              status: snapshot.status,
+              completeness: snapshot.completeness,
+              facets: ['summary'],
+              summary: {},
+            },
             freshness: { state: 'unknown', changedPaths: [] },
           },
         ],
@@ -1120,7 +1127,7 @@ test('reads the current store for every project status call without workspace pa
       expect(secondResult.content).toEqual([
         {
           type: 'text',
-          text: 'Rstack project status: 1 current context (1 ready, 0 pending); 0 context-store/read issues. See structuredContent for details.',
+          text: 'Rstack project status: 1 recorded context identity (1 ready, 0 pending); 0 context-store/read issues. See structuredContent for compact selection details.',
         },
       ]);
     });
@@ -1144,7 +1151,7 @@ test('returns a valid empty project status', async () => {
       expect(result.content).toEqual([
         {
           type: 'text',
-          text: 'Rstack project status: 0 current contexts (0 ready, 0 pending); 0 context-store/read issues. See structuredContent for details.',
+          text: 'Rstack project status: 0 recorded context identities (0 ready, 0 pending); 0 context-store/read issues. See structuredContent for compact selection details.',
         },
       ]);
     });
@@ -1787,6 +1794,50 @@ define.test({ include: ['./tests/*.never.ts'], passWithNoTests: ${fixture.testSt
           summary: expect.objectContaining({ files: 0, tests: 0 }),
         }),
       ]);
+    } finally {
+      await client.close();
+    }
+  });
+});
+
+test('does not capture tests when the selected Rstack package has no test config', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const rstackEntry = pathToFileURL(path.resolve('dist/index.js')).href;
+    await writeFile(
+      path.join(workspaceRoot, 'package.json'),
+      JSON.stringify({ name: '@repo/app', type: 'module' }),
+    );
+    await writeFile(
+      path.join(workspaceRoot, 'rstack.config.ts'),
+      `import { define } from ${JSON.stringify(rstackEntry)};
+define.app({});
+`,
+    );
+
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: [path.resolve('bin/rs.js'), 'mcp'],
+      cwd: workspaceRoot,
+      env: getDefaultEnvironment(),
+      stderr: 'pipe',
+    });
+    const client = new Client({
+      name: 'rstack-unconfigured-test-capture',
+      version: '1.0.0',
+    });
+
+    try {
+      await client.connect(transport);
+      const result = await client.callTool({ name: 'test_snapshot', arguments: {} });
+
+      expect(result.isError).toBe(true);
+      expect(result.content).toEqual([
+        {
+          type: 'text',
+          text: 'Rstest is not configured for package root ".".',
+        },
+      ]);
+      expect((await readProjectStatus(workspaceRoot)).contexts).toEqual([]);
     } finally {
       await client.close();
     }
