@@ -55,9 +55,10 @@ the required application, library, lint, test, or context configuration in `rsta
 monorepo, one root MCP process discovers recorded contexts for every package; it does not assume
 that its current working directory identifies the selected package.
 
-The evidence runtime is implemented by the separate `@rstackjs/context` package and is also
-available through `rstack/context`. The plugin repository contains the launcher and workflows, not
-a second copy of that runtime.
+The evidence runtime is implemented in
+[`rstackjs/context`](https://github.com/rstackjs/context) as the separate
+`@rstackjs/context` package and is also available through `rstack/context`. The plugin repository
+contains the launcher and workflows, not a second copy of that runtime.
 
 ### rstack-cli-best-practices
 

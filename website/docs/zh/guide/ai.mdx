@@ -53,8 +53,9 @@ claude plugin install rstack@rstack
 所需的应用、库、Lint、测试或 Context 配置。在 monorepo 中，一个从根目录启动的 MCP 进程会
 发现所有包记录的 Context，而不会假定当前工作目录就是要选择的包。
 
-证据运行时由独立的 `@rstackjs/context` 包实现，也可以通过 `rstack/context` 使用。插件仓库只
-包含启动器和工作流，不会复制这套运行时。
+证据运行时由 [`rstackjs/context`](https://github.com/rstackjs/context) 中独立的
+`@rstackjs/context` 包实现，也可以通过 `rstack/context` 使用。插件仓库只包含启动器和
+工作流，不会复制这套运行时。
 
 ### rstack-cli-best-practices
 

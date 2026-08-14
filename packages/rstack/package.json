@@ -81,7 +81,7 @@
     "@rsbuild/core": "catalog:",
     "@rslib/core": "catalog:",
     "@rslint/core": "catalog:",
-    "@rstackjs/context": "workspace:*",
+    "@rstackjs/context": "git+https://github.com/rstackjs/context.git#6c992fac8c8e2b22a1a66f8f0d9a954437649bf7",
     "@rstest/core": "catalog:",
     "prettier": "catalog:",
     "tinypool": "catalog:",

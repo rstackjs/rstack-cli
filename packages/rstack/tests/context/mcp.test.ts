@@ -29,7 +29,7 @@ import { getConfigState, loadRstackConfig, withRstackConfigTarget } from '../../
 
 const reachabilityFixture = path.resolve(
   import.meta.dirname,
-  '../../../context/fixtures/context/reachability/application',
+  '../fixtures/context/reachability/application',
 );
 
 const withTempWorkspace = async (

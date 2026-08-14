@@ -4,6 +4,7 @@ packages:
   - website
 
 allowBuilds:
+  '@rstackjs/context@https://codeload.github.com/rstackjs/context/tar.gz/6c992fac8c8e2b22a1a66f8f0d9a954437649bf7': true
   core-js: false
   simple-git-hooks: false
 
@@ -15,7 +16,6 @@ catalog:
   '@modelcontextprotocol/sdk': '1.29.0'
   '@napi-rs/cli': '^3.8.6'
   '@rsbuild/core': '~2.1.11'
-  '@rsdoctor/agent-cli': '0.1.1'
   '@rsdoctor/rspack-plugin': '1.6.1'
   '@rsbuild/plugin-react': '^2.1.0'
   '@rsbuild/plugin-sass': '^2.0.1'
@@ -64,7 +64,6 @@ catalog:
   'vscode-languageserver': '10.1.0'
   'vscode-languageserver-textdocument': '1.0.12'
   yuku-parser: '0.8.5'
-  zod: '4.4.3'
 
 dedupePeers: true
 
