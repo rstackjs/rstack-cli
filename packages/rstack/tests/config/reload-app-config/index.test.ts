@@ -45,7 +45,7 @@ define.app({
   );
 
   await waitForFile(dist2);
-}, 30_000);
+});
 
 test('should reload config when an imported file changes', async ({ execCliAsync, logHelper }) => {
   const configFile = path.join(import.meta.dirname, 'test-temp-import.config.ts');
@@ -70,4 +70,4 @@ define.app({
   await writeFile(importedFile, '// changed\n');
 
   await logHelper.expectLog('restarting server as test-temp-imported.ts changed');
-}, 30_000);
+});
