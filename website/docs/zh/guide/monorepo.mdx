@@ -46,11 +46,7 @@ Rsbuild 插件、测试库等项目专属依赖，建议定义在实际使用它
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
 
-define.lint(async () => {
-  const { js, ts } = await import('rstack/lint');
-
-  return [js.configs.recommended, ts.configs.recommended];
-});
+define.lint(({ js, ts }) => [js.configs.recommended, ts.configs.recommendedTypeChecked]);
 
 define.fmt({
   singleQuote: true,
@@ -86,20 +82,16 @@ define.staged({
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
 
-define.lint(async () => {
-  const { js, ts } = await import('rstack/lint');
-
-  return [
-    js.configs.recommended,
-    ts.configs.recommended,
-    {
-      files: ['apps/web/**/*.{ts,tsx}'],
-      rules: {
-        '@typescript-eslint/no-explicit-any': 'off',
-      },
+define.lint(({ js, ts }) => [
+  js.configs.recommended,
+  ts.configs.recommendedTypeChecked,
+  {
+    files: ['apps/web/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
     },
-  ];
-});
+  },
+]);
 ```
 
 ## 子项目配置 \{#project-configuration}

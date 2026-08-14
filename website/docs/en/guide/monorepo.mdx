@@ -46,11 +46,7 @@ Use [`define.lint()`](./configuration#define-lint), [`define.fmt()`](./configura
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
 
-define.lint(async () => {
-  const { js, ts } = await import('rstack/lint');
-
-  return [js.configs.recommended, ts.configs.recommended];
-});
+define.lint(({ js, ts }) => [js.configs.recommended, ts.configs.recommendedTypeChecked]);
 
 define.fmt({
   singleQuote: true,
@@ -86,20 +82,16 @@ If some projects need different lint rules, use [`files`](https://rslint.rs/conf
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
 
-define.lint(async () => {
-  const { js, ts } = await import('rstack/lint');
-
-  return [
-    js.configs.recommended,
-    ts.configs.recommended,
-    {
-      files: ['apps/web/**/*.{ts,tsx}'],
-      rules: {
-        '@typescript-eslint/no-explicit-any': 'off',
-      },
+define.lint(({ js, ts }) => [
+  js.configs.recommended,
+  ts.configs.recommendedTypeChecked,
+  {
+    files: ['apps/web/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
     },
-  ];
-});
+  },
+]);
 ```
 
 ## Project configuration
