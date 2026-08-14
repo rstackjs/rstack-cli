@@ -29,14 +29,10 @@ rs lint --type-check
 
 ## 配置 \{#configuration}
 
-在 [Rstack 配置文件](/guide/configuration#configuration-file)中通过 [`define.lint()`](../configuration#define-lint) 配置代码检查。该 API 支持标准的 [Rslint 配置](https://rslint.rs/config/)。预设和插件可以从 `rstack/lint` 按需导入：
+在 [Rstack 配置文件](/guide/configuration#configuration-file)中通过 [`define.lint()`](../configuration#define-lint) 配置代码检查。该 API 支持标准的 [Rslint 配置](https://rslint.rs/config/)。配置函数会接收 `rstack/lint` 的全部导出，因此无需手动导入预设和插件：
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
 
-define.lint(async () => {
-  const { js, ts } = await import('rstack/lint');
-
-  return [js.configs.recommended, ts.configs.recommended];
-});
+define.lint(({ js, ts }) => [js.configs.recommended, ts.configs.recommendedTypeChecked]);
 ```

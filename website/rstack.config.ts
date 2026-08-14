@@ -22,7 +22,7 @@ define.doc(async () => {
     root: path.join(import.meta.dirname, 'docs'),
     title,
     icon: 'https://assets.rspack.rs/rspack/rspack-claw-logo.svg',
-    logoText: title,
+    logo: '/horizontal-logo.svg',
     description,
     lang: 'en',
     llms: true,

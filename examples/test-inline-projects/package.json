@@ -1,5 +1,5 @@
 {
-  "name": "@examples/rstest-inline-projects",
+  "name": "@examples/test-inline-projects",
   "private": true,
   "type": "module",
   "scripts": {

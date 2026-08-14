@@ -12,4 +12,4 @@ test('should build docs with define.doc config', async ({ prepareDist, execCli, 
   const output = getFileContent(files, 'index.html');
 
   expect(output).toContain(expectedText);
-}, 30_000);
+});
