@@ -20,6 +20,7 @@ import {
 import { defineConfig as defineLibConfig } from 'rstack/lib';
 import { defineConfig as defineLintConfig } from 'rstack/lint';
 import { expect as importedExpect, test as importedTest } from 'rstack/test';
+import { createRstackContextPlugin } from '@rstackjs/context/rstack';
 
 const appConfig = defineAppConfig({});
 const libConfig = defineLibConfig({});
@@ -40,12 +41,19 @@ const plugins: RstackPlugins = [plugin, false, Promise.resolve([undefined, plugi
 const fmtConfig: FmtConfig = {};
 const stagedConfig: StagedConfig = {};
 const appConfigFromMap: RstackConfigMap['app'] = appConfig;
+const contextPlugin: RstackPlugin = createRstackContextPlugin({
+  cwd: process.cwd(),
+  config: { enabled: true },
+  configFilePath: null,
+  configDependencies: [],
+});
 
 void loadedConfig;
 void configs;
 void fmtConfig;
 void stagedConfig;
 void appConfigFromMap;
+void contextPlugin;
 
 void createRsbuild({ config: appConfig });
 define.app(appConfig);

@@ -2,12 +2,10 @@
 import path from 'node:path';
 import { Writable } from 'node:stream';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  captureLintSnapshot,
-  captureTestSnapshot,
-  createContextMcpServer,
-  resolveContextWorkspace,
-} from '@rstackjs/context';
+import { resolveContextWorkspace } from '@rstackjs/context';
+import { createContextMcpServer } from '@rstackjs/context/mcp';
+import { captureLintSnapshot } from '@rstackjs/context/rslint';
+import { captureTestSnapshot } from '@rstackjs/context/rstest';
 import { loadRstackConfig, withRstackConfigTarget } from './config.ts';
 import { resolveRelatedTests } from './relatedTests.ts';
 

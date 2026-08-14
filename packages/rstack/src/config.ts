@@ -9,6 +9,7 @@ import type { UserConfig, UserConfigAsyncFn } from '@rspress/core';
 import type { RstestConfigExport } from '@rstest/core';
 import type { ContextConfig } from '@rstackjs/context';
 import type { FmtConfigDefinition } from './fmt/types.ts';
+import { createContextPlugin } from './contextPlugin.ts';
 import type { RstackConfigMap, RstackConfigModifierContextMap, RstackPlugins } from './plugin.ts';
 import { createPluginRuntime, type RstackPluginRuntime } from './pluginRuntime.ts';
 import type { StagedConfig } from './staged.ts';
@@ -146,10 +147,11 @@ export const getRstackPluginRuntime = (
   }
 
   const invocation = getConfigState().invocation;
+  const cwd = invocation?.cwd ?? loadedConfigDirectories.get(config) ?? process.cwd();
   const runtime = createPluginRuntime({
-    plugins: config.plugins,
+    plugins: [config.plugins, createContextPlugin(config, cwd)],
     context: {
-      cwd: invocation?.cwd ?? loadedConfigDirectories.get(config) ?? process.cwd(),
+      cwd,
       command: invocation?.command ?? 'programmatic',
       args: invocation?.args ?? [],
       configFilePath: config.filePath,
