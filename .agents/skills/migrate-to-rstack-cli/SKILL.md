@@ -53,13 +53,21 @@ define.test({
 });
 ```
 
-Prefer async config functions and dynamic imports for runtime plugins and presets:
+Use dynamic imports in async config functions only for external plugins, presets, and other dependencies:
 
 ```ts
-define.lint(async () => {
-  const { js, ts } = await import('rstack/lint');
-  return [js.configs.recommended, ts.configs.recommended];
+define.app(async () => {
+  const { pluginReact } = await import('@rsbuild/plugin-react');
+  return {
+    plugins: [pluginReact()],
+  };
 });
+```
+
+`define.lint` provides `@rslint/core` APIs to its config factory, so no manual import is needed:
+
+```ts
+define.lint(({ js }) => [js.configs.recommended]);
 ```
 
 Rstack loads TypeScript configs as native ESM. Preserve runtime-resolvable file extensions, replace CommonJS globals such as `__dirname`.

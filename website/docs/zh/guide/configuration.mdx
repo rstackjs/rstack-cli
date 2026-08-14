@@ -57,7 +57,6 @@ import { define } from 'rstack';
 
 define.app(async () => {
   const { pluginReact } = await import('@rsbuild/plugin-react');
-
   return {
     plugins: [pluginReact()],
   };
@@ -180,16 +179,12 @@ define.test({
 
 ### `define.lint()` \{#define-lint}
 
-定义 [Rslint 配置](https://rslint.rs/config/)。可以直接传入配置，也可以使用异步函数，按需从 `rstack/lint` 加载预设和插件。
+定义 [Rslint 配置](https://rslint.rs/config/)。可以直接传入配置，也可以传入同步或异步函数。函数会接收 `rstack/lint` 的全部导出，因此无需手动导入预设和插件。
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
 
-define.lint(async () => {
-  const { js, ts } = await import('rstack/lint');
-
-  return [js.configs.recommended, ts.configs.recommended];
-});
+define.lint(({ js, ts }) => [js.configs.recommended, ts.configs.recommendedTypeChecked]);
 ```
 
 ### `define.fmt()` \{#define-fmt}

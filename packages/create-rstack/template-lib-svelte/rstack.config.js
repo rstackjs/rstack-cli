@@ -4,7 +4,6 @@ import { define } from 'rstack';
 
 define.lib(async () => {
   const { pluginSvelte } = await import('@rsbuild/plugin-svelte');
-
   return {
     bundle: false,
     source: {
@@ -19,15 +18,7 @@ define.lib(async () => {
   };
 });
 
-define.test({
-  testEnvironment: 'happy-dom',
-});
-
-define.lint(async () => {
-  const { js } = await import('rstack/lint');
-
-  return [js.configs.recommended];
-});
+define.lint(({ js }) => [js.configs.recommended]);
 
 define.fmt({
   plugins: ['prettier-plugin-svelte'],

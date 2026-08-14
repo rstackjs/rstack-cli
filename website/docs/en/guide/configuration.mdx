@@ -57,7 +57,6 @@ import { define } from 'rstack';
 
 define.app(async () => {
   const { pluginReact } = await import('@rsbuild/plugin-react');
-
   return {
     plugins: [pluginReact()],
   };
@@ -180,16 +179,12 @@ If the root test configuration does not define `extends` and contains `projects`
 
 ### `define.lint()` \{#define-lint}
 
-Defines the [Rslint configuration](https://rslint.rs/config/). Pass the configuration directly, or use an async function to load presets and plugins from `rstack/lint` on demand.
+Defines the [Rslint configuration](https://rslint.rs/config/). Pass the configuration directly, or use a synchronous or asynchronous function. The function receives all exports from `rstack/lint`, so presets and plugins do not need to be imported manually.
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
 
-define.lint(async () => {
-  const { js, ts } = await import('rstack/lint');
-
-  return [js.configs.recommended, ts.configs.recommended];
-});
+define.lint(({ js, ts }) => [js.configs.recommended, ts.configs.recommendedTypeChecked]);
 ```
 
 ### `define.fmt()` \{#define-fmt}

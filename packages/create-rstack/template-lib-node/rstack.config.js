@@ -6,15 +6,7 @@ define.lib({
   syntax: ['node 22'],
 });
 
-define.test({
-  // Configure Rstest
-});
-
-define.lint(async () => {
-  const { js } = await import('rstack/lint');
-
-  return [js.configs.recommended];
-});
+define.lint(({ js }) => [js.configs.recommended]);
 
 define.fmt({
   singleQuote: true,

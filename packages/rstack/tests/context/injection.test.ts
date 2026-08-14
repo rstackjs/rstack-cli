@@ -327,7 +327,7 @@ for (const { kind, producer, product } of [
   });
 }
 
-test('keeps the resolved library config unchanged when context is disabled', async () => {
+test('keeps the Context observer disabled while preserving library config watches', async () => {
   await withConfig(
     { kind: 'lib', definition: 'object', contextEnabled: false },
     async (fixture) => {
@@ -335,11 +335,19 @@ test('keeps the resolved library config unchanged when context is disabled', asy
 
       const hooks = fixture.getHooks();
 
-      expect(config).toBe(hooks.config);
+      expect(config).not.toBe(hooks.config);
+      expect(config.plugins).toBe(hooks.config.plugins);
       expect(config.plugins?.map((plugin) => (plugin as { name?: string })?.name)).not.toContain(
         'rstack:context-build',
       );
       expect(config.lib).toBe(hooks.config.lib);
+      expect(config.dev?.watchFiles).toEqual([
+        'user-watch.ts',
+        {
+          paths: [fixture.configPath, path.join(fixture.workspaceRoot, 'context-label.ts')],
+          type: 'restart',
+        },
+      ]);
     },
   );
 });

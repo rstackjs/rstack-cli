@@ -3,7 +3,6 @@ import { define } from 'rstack';
 
 define.lib(async () => {
   const { pluginReact } = await import('@rsbuild/plugin-react');
-
   return {
     bundle: false,
     dts: true,
@@ -23,16 +22,12 @@ define.test({
   setupFiles: ['./tests/rstest.setup.ts'],
 });
 
-define.lint(async () => {
-  const { js, ts, reactPlugin, reactHooksPlugin } = await import('rstack/lint');
-
-  return [
-    js.configs.recommended,
-    ts.configs.recommendedTypeChecked,
-    reactPlugin.configs.recommended,
-    reactHooksPlugin.configs.recommended,
-  ];
-});
+define.lint(({ js, ts, reactPlugin, reactHooksPlugin }) => [
+  js.configs.recommended,
+  ts.configs.recommendedTypeChecked,
+  reactPlugin.configs.recommended,
+  reactHooksPlugin.configs.recommended,
+]);
 
 define.fmt({
   singleQuote: true,

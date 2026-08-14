@@ -5,7 +5,6 @@ import { define } from 'rstack';
 define.lib(async () => {
   const { pluginBabel } = await import('@rsbuild/plugin-babel');
   const { pluginSolid } = await import('@rsbuild/plugin-solid');
-
   return {
     lib: [
       {
@@ -63,7 +62,6 @@ define.lib(async () => {
 define.test(async () => {
   const { pluginBabel } = await import('@rsbuild/plugin-babel');
   const { pluginSolid } = await import('@rsbuild/plugin-solid');
-
   return {
     setupFiles: ['./tests/rstest.setup.js'],
     plugins: [
@@ -75,11 +73,7 @@ define.test(async () => {
   };
 });
 
-define.lint(async () => {
-  const { js } = await import('rstack/lint');
-
-  return [js.configs.recommended];
-});
+define.lint(({ js }) => [js.configs.recommended]);
 
 define.fmt({
   singleQuote: true,

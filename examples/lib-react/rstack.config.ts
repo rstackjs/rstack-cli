@@ -22,12 +22,9 @@ define.test({
   setupFiles: ['./tests/rstest.setup.ts'],
 });
 
-define.lint(async () => {
-  const { js, ts, reactPlugin, reactHooksPlugin } = await import('rstack/lint');
-  return [
-    js.configs.recommended,
-    ts.configs.recommended,
-    reactPlugin.configs.recommended,
-    reactHooksPlugin.configs.recommended,
-  ];
-});
+define.lint(({ js, ts, reactPlugin, reactHooksPlugin }) => [
+  js.configs.recommended,
+  ts.configs.recommended,
+  reactPlugin.configs.recommended,
+  reactHooksPlugin.configs.recommended,
+]);

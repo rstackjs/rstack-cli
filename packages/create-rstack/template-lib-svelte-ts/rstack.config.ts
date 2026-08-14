@@ -4,7 +4,6 @@ import { svelteDtsPlugin } from './scripts/rslib-plugin-svelte-dts.ts';
 
 define.lib(async () => {
   const { pluginSvelte } = await import('@rsbuild/plugin-svelte');
-
   return {
     bundle: false,
     source: {
@@ -19,15 +18,10 @@ define.lib(async () => {
   };
 });
 
-define.test({
-  testEnvironment: 'happy-dom',
-});
-
-define.lint(async () => {
-  const { js, ts } = await import('rstack/lint');
-
-  return [js.configs.recommended, ts.configs.recommendedTypeChecked];
-});
+define.lint(({ js, ts }) => [
+  js.configs.recommended,
+  ts.configs.recommendedTypeChecked,
+]);
 
 define.fmt({
   plugins: ['prettier-plugin-svelte'],
