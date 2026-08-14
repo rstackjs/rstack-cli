@@ -12,10 +12,6 @@ define.app({
   },
 });
 
-define.test({
-  testEnvironment: 'happy-dom',
-});
-
 define.lint(({ js, ts }) => [
   js.configs.recommended,
   ts.configs.recommendedTypeChecked,

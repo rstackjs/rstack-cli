@@ -6,10 +6,6 @@ define.lib({
   dts: true,
 });
 
-define.test({
-  // Configure Rstest
-});
-
 define.lint(({ js, ts }) => [
   js.configs.recommended,
   ts.configs.recommendedTypeChecked,
