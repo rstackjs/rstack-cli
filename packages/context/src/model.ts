@@ -127,8 +127,14 @@ type TestFileRecord = {
   tests: TestCaseRecord[];
 };
 
+type TestRelationRecord = {
+  sources: string[];
+  testFiles: string[];
+};
+
 type TestFacet = {
   producer: 'rstest';
+  relation?: TestRelationRecord;
   files: TestFileRecord[];
   stats: {
     tests: {
@@ -317,4 +323,5 @@ export type {
   TestExecutionStatement,
   TestFacet,
   TestFileRecord,
+  TestRelationRecord,
 };

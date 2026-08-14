@@ -159,10 +159,18 @@ const isTestFile = (value: unknown): boolean =>
   Array.isArray(value.tests) &&
   value.tests.every(isTestCase);
 
+const isTestRelation = (value: unknown): boolean =>
+  isRecordObject(value) &&
+  Array.isArray(value.sources) &&
+  value.sources.every(isRecordPath) &&
+  Array.isArray(value.testFiles) &&
+  value.testFiles.every(isRecordPath);
+
 const validateTestFacet = (value: unknown): TestFacet | undefined => {
   if (
     !isRecordObject(value) ||
     value.producer !== 'rstest' ||
+    (value.relation !== undefined && !isTestRelation(value.relation)) ||
     !Array.isArray(value.files) ||
     !value.files.every(isTestFile) ||
     !isRecordObject(value.stats) ||

@@ -221,6 +221,14 @@ const lintSnapshotInput = z
 const testSnapshotInput = z
   .object({
     files: z.array(z.string().min(1)).optional(),
+    related: z
+      .array(z.string().min(1))
+      .min(1)
+      .max(200)
+      .describe(
+        'Source paths resolved from packageRoot; Rstest selects and runs only statically related test files.',
+      )
+      .optional(),
     testNamePattern: z.string().min(1).optional(),
     packageRoot: packageRootInput.optional(),
     configPath: configPathInput.optional(),
@@ -344,7 +352,7 @@ const formatCodeEvidence = (result: CodeEvidenceResult): string => {
     result.module === undefined
       ? 'not-requested'
       : `${result.module.classification}(binding=${result.module.provenance.artifactBinding})`;
-  return `Code evidence for ${result.path}: coverage=${result.executionCoverage.state}, test=${result.testOutcome.state}, diagnostics=${diagnostics}, module=${module}. See structuredContent for complete data.`;
+  return `Code evidence for ${result.path}: coverage=${result.executionCoverage.state}, relation=${result.testRelation.state}, test=${result.testOutcome.state}, diagnostics=${diagnostics}, module=${module}. See structuredContent for complete data.`;
 };
 
 const isLiteralEmpty = (value: unknown): boolean =>
@@ -607,7 +615,7 @@ const createContextMcpServer = (
     {
       title: 'Inspect code evidence',
       description:
-        'Join exact-path aggregate execution, test outcome, diagnostics, and optional explicit artifact module evidence without collapsing their bounds.',
+        'Join static related-test selection, exact-path test outcome, aggregate execution, diagnostics, and optional explicit artifact module evidence without collapsing their bounds.',
       inputSchema: codeEvidenceInput,
       annotations: readOnlyAnnotations,
     },
@@ -747,7 +755,8 @@ const createContextMcpServer = (
     'test_snapshot',
     {
       title: 'Capture test snapshot',
-      description: 'Run one explicit one-shot Rstest capture and store its immutable results.',
+      description:
+        'Run one explicit one-shot Rstest capture, optionally selected from related source files, and store its immutable results.',
       inputSchema: testSnapshotInput,
       annotations: {
         readOnlyHint: false,

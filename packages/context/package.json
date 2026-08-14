@@ -51,6 +51,11 @@
   "peerDependencies": {
     "@rstest/coverage-istanbul": "0.11.6"
   },
+  "peerDependenciesMeta": {
+    "@rstest/coverage-istanbul": {
+      "optional": true
+    }
+  },
   "engines": {
     "node": ">=22.12.0"
   },

@@ -279,6 +279,79 @@ test('joins newest exact-path execution, test outcome, and diagnostics without i
   });
 });
 
+test('reports captured related-test evidence independently from test execution', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const facet = testFacet('tests/value.test.ts', 'pass', 'unused');
+    facet.relation = {
+      sources: ['src/value.ts'],
+      testFiles: ['tests/value.test.ts'],
+    };
+    await writeSnapshot(workspaceRoot, {
+      producer: 'rstest',
+      snapshotId: 'snap_related',
+      observedAt: '2026-08-13T01:00:00.000Z',
+      facets: { test: facet as unknown as JsonValue },
+      completeness: { test: 'complete' },
+    });
+    const unrelatedFacet = testFacet('tests/other.test.ts', 'pass', 'unused');
+    unrelatedFacet.relation = { sources: ['src/unrelated.ts'], testFiles: [] };
+    await writeSnapshot(workspaceRoot, {
+      producer: 'rstest',
+      snapshotId: 'snap_unrelated',
+      observedAt: '2026-08-13T02:00:00.000Z',
+      facets: { test: unrelatedFacet as unknown as JsonValue },
+      completeness: { test: 'complete' },
+    });
+    const groupedFacet = testFacet('tests/grouped.test.ts', 'pass', 'unused');
+    groupedFacet.relation = {
+      sources: ['src/value.ts', 'src/other.ts'],
+      testFiles: ['tests/grouped.test.ts'],
+    };
+    await writeSnapshot(workspaceRoot, {
+      producer: 'rstest',
+      snapshotId: 'snap_grouped',
+      observedAt: '2026-08-13T03:00:00.000Z',
+      facets: { test: groupedFacet as unknown as JsonValue },
+      completeness: { test: 'complete' },
+    });
+
+    await expect(
+      readCodeEvidence(workspaceRoot, {
+        path: 'src/value.ts',
+        testSnapshotId: 'snap_related',
+      }),
+    ).resolves.toMatchObject({
+      testRelation: { state: 'related', testFiles: ['tests/value.test.ts'] },
+      testOutcome: { state: 'unknown', reason: 'no-exact-test-record' },
+    });
+    await expect(
+      readCodeEvidence(workspaceRoot, {
+        path: 'src/unrelated.ts',
+        testSnapshotId: 'snap_unrelated',
+      }),
+    ).resolves.toMatchObject({
+      testRelation: { state: 'unrelated', testFiles: [] },
+    });
+    await expect(
+      readCodeEvidence(workspaceRoot, {
+        path: 'src/value.ts',
+        testSnapshotId: 'snap_grouped',
+      }),
+    ).resolves.toMatchObject({
+      testRelation: {
+        state: 'unknown',
+        reason: 'selection-not-isolated',
+        testFiles: ['tests/grouped.test.ts'],
+      },
+    });
+    await expect(
+      readCodeEvidence(workspaceRoot, { path: 'src/missing.ts' }),
+    ).resolves.toMatchObject({
+      testRelation: { state: 'unknown', reason: 'source-not-selected', testFiles: [] },
+    });
+  });
+});
+
 test('keeps missing, stale, incomplete, and non-overlapping execution evidence inconclusive', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     const sourcePath = path.join(workspaceRoot, 'packages', 'one', 'src', 'value.ts');
@@ -325,6 +398,7 @@ test('keeps missing, stale, incomplete, and non-overlapping execution evidence i
     const absent = await readCodeEvidence(workspaceRoot, { path: 'packages/two/src/value.ts' });
     expect(absent).toMatchObject({
       executionCoverage: { state: 'unavailable', reason: 'no-test-snapshot' },
+      testRelation: { state: 'unavailable', reason: 'no-test-snapshot', testFiles: [] },
       testOutcome: { state: 'unknown' },
     });
     await expect(

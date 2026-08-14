@@ -118,6 +118,9 @@
   "peerDependenciesMeta": {
     "@rspress/core": {
       "optional": true
+    },
+    "@rstest/coverage-istanbul": {
+      "optional": true
     }
   },
   "engines": {

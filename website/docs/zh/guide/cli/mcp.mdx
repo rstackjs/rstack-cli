@@ -89,7 +89,7 @@ Rsbuild 只会为该命令加载已安装的收集器。构建会在检出目录
 
 只有当每个选定模式都是 Rslint 实际返回的明确文件时，文件模式 lint 的新鲜度才会是 `fresh`。目录、glob、未匹配模式和默认选择会是 `partial`，因为之后新增的匹配文件不在已记录的输入集合中。
 
-`test_snapshot` 也是明确执行操作。它会调用一次已安装的实验性 `runRstest()` API，可按文件或测试名称模式缩小范围，并记录结构化摘要，不启动 watch 模式，也不记录控制台流。它接受相同的可选检出目录相对路径 `packageRoot` 和 `configPath` 选择器。可选的 `execution` 对象会为这一次运行明确启用 Istanbul 聚合覆盖率；其中 `include` 和 `exclude` 数组最多各接受 200 个模式，`allowExternal` 默认为 false。省略 `execution` 时不会启用覆盖率。其标注为 `readOnlyHint: false`、`destructiveHint: true` 和 `openWorldHint: true`，因为它会执行项目配置和测试。调用前应先询问用户。
+`test_snapshot` 也是明确执行操作。它会调用一次已安装的实验性 `runRstest()` API，可按文件或测试名称模式缩小范围，并记录结构化摘要，不启动 watch 模式，也不记录控制台流。它接受相同的可选检出目录相对路径 `packageRoot` 和 `configPath` 选择器。除了 `files`，还可以提供可选的 `related` 数组，其中可包含 1 到 200 个相对于 `packageRoot` 解析的源文件路径；Rstack 会调用 Rstest 支持的 `list --related` 命令查找匹配的测试文件，然后只运行这些文件。快照会记录请求的源文件和匹配的测试。若后续 `code_evidence` 需要将 `related` 或 `unrelated` 结果明确归因到一个源文件，每次捕获只应选择一个源文件。可选的 `execution` 对象会为这一次运行明确启用 Istanbul 聚合覆盖率；其中 `include` 和 `exclude` 数组最多各接受 200 个模式，`allowExternal` 默认为 false。省略 `execution` 时不会启用覆盖率。可选 peer `@rstest/coverage-istanbul` 只在该覆盖率模式下需要；普通测试捕获和所有非测试证据表面在缺少它时仍可使用。其标注为 `readOnlyHint: false`、`destructiveHint: true` 和 `openWorldHint: true`，因为它会执行项目配置和测试。调用前应先询问用户。
 
 新鲜度按生产者和快照分别判断：
 
@@ -100,18 +100,21 @@ Rsbuild 只会为该命令加载已安装的收集器。构建会在检出目录
 
 构建观测只会为已加载的 Rstack 配置文件及其已加载的配置依赖生成指纹。因此，当这些输入仍然匹配时，构建观测最多为 `partial`；任何已记录的配置输入发生变化或缺失时则变为 `stale`。它们不会声称覆盖应用依赖图。
 
-新鲜的构建结果并不会让 lint 或测试证据自动变得新鲜。如需选择相关测试，请明确运行 `rs test list --related <files> --json`；它不是 MCP 工具。
+新鲜的构建结果并不会让 lint 或测试证据自动变得新鲜。只需列表时，请运行 `rs test list --related <files> --json`。需要运行匹配测试并保存关系时，请在获得许可后调用带有 `related: [path]` 的 `test_snapshot`。
+
+每个生产者都是可选的。仅构建应用或仅构建库的仓库可以在没有 Rstest 或 Rslint 观测的情况下使用构建和制品证据。缺失的测试、覆盖率、lint 或 Rsdoctor 数据会在对应轴上报告为不可用，不会阻塞已有的证据轴。
 
 ### 代码证据 {#code-evidence}
 
-`code_evidence` 是只读的精确路径查询。给定相对于检出目录的源文件 `path` 和可选 `line` 后，它会组合包根目录包含该路径的最新 Rstest 与 Rslint 快照。也可以通过明确的 `testSnapshotId` 和 `lintSnapshotId` 选择某个时间点的证据。当制品中同一源路径对应多个模块变体时，可选的 `module` 选择器会保留 `unused_candidates` 或 `dead_code_explain` 返回的精确模块 ID 或名称。它分别报告四个独立表面：
+`code_evidence` 是只读的精确路径查询。给定相对于检出目录的源文件 `path` 和可选 `line` 后，它会组合包根目录包含该路径的最新 Rstest 与 Rslint 快照。也可以通过明确的 `testSnapshotId` 和 `lintSnapshotId` 选择某个时间点的证据。当制品中同一源路径对应多个模块变体时，可选的 `module` 选择器会保留 `unused_candidates` 或 `dead_code_explain` 返回的精确模块 ID 或名称。它分别报告五个独立表面：
 
+- 已捕获的静态 Rstest 关系：`related`、`unrelated`、`unknown` 或 `unavailable`；
 - 聚合执行覆盖率：`observed`、`not-observed`、`unknown` 或 `unavailable`；
 - 所选 Rstest facet 中该精确路径的结果：`failed`、`passed`、`not-run` 或 `unknown`；
 - 精确路径的 Rslint 与 Rstest 诊断；以及
 - 同时提供 `contextId` 和 `dataFile` 时的可选制品模块轴。
 
-`observed` 要求已存储的语句、函数或分支臂命中数为正，并且当前文件摘要精确匹配。`not-observed` 还要求已插桩全集完整、未截断，并存在命中数为零的相关位置。摘要过期、路径缺失、全集不完整或 provider 缺失时，结果仍是不确定的。测试结果只描述其自身路径与查询精确匹配的记录；没有精确记录时返回 `unknown` 和原因 `no-exact-test-record`，只有存在匹配的跳过或待办记录时才返回 `not-run`。它不会推断源文件与测试之间的关系。诊断以 `{ total, returned, truncated, items }` 返回，最多包含 200 个条目。未提供 `module` 时，可选模块轴会先尝试完整工作区路径，再回退到包相对路径；提供 `module` 时，它会解析该精确制品选择器，同时仍使用 `path` 查询运行时、测试和诊断证据。它分别保留生产可达性、公共契约状态、是否进入产物以及优化器保留状态，并报告制品绑定，而不会组合不匹配的证据。
+测试关系来自 Rstest 构建图，而不是运行时执行。`related` 和 `unrelated` 要求每次捕获只选择一个源文件；多源选择只得到并集，因此对单个源文件仍为 `unknown`。`observed` 要求已存储的语句、函数或分支臂命中数为正，并且当前文件摘要精确匹配。`not-observed` 还要求已插桩全集完整、未截断，并存在命中数为零的相关位置。摘要过期、路径缺失、全集不完整或 provider 缺失时，结果仍是不确定的。测试结果只描述其自身路径与查询精确匹配的记录；没有精确记录时返回 `unknown` 和原因 `no-exact-test-record`，只有存在匹配的跳过或待办记录时才返回 `not-run`。诊断以 `{ total, returned, truncated, items }` 返回，最多包含 200 个条目。未提供 `module` 时，可选模块轴会先尝试完整工作区路径，再回退到包相对路径；提供 `module` 时，它会解析该精确制品选择器，同时仍使用 `path` 查询运行时、测试和诊断证据。它分别保留生产可达性、公共契约状态、是否进入产物以及优化器保留状态，并报告制品绑定，而不会组合不匹配的证据。
 
 ## 第 4 阶段变更复核 \{#phase-4-change-review}
 
@@ -119,7 +122,7 @@ Rsbuild 只会为该命令加载已安装的收集器。构建会在检出目录
 
 `lint_fix_preview` 具有相同的只读标注。它会返回启用 `includeFixPreview` 时由 `lint_snapshot` 已存储的修复文本。它不会重新读取或写入源文件，也没有 apply 工具；仅在你选择应用修复时明确运行 `rs lint --fix <path>`。
 
-Rslint 类型检查和计时收集仍是明确的 CLI 工作流，例如 `rs lint --type-check --timing`。Rstest watch 会话、通过 MCP 选择相关测试、自动捕获和源文件修改均明确推迟实现。MCP 服务器没有守护进程、watcher 或生产者连接。
+Rslint 类型检查和计时收集仍是明确的 CLI 工作流，例如 `rs lint --type-check --timing`。Rstest watch 会话、自动捕获和源文件修改均明确推迟实现。MCP 服务器没有守护进程、watcher 或生产者连接。
 
 ### Rsdoctor 分析 \{#rsdoctor-analysis}
 

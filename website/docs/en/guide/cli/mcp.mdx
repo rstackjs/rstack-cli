@@ -92,7 +92,7 @@ The development tools reuse the same immutable checkout-local store. `snapshot_l
 
 File-mode lint freshness is `fresh` only when every selected pattern is an explicit file returned by Rslint. Directory, glob, unmatched, and default selections are `partial` because files that match later are not part of the recorded input set.
 
-`test_snapshot` is also explicit execution. It invokes the installed experimental `runRstest()` API once, optionally narrowed by files or a test-name pattern, and records structured summaries without watch mode or console streams. It accepts the same optional checkout-relative `packageRoot` and `configPath` selectors. An optional `execution` object explicitly enables aggregate Istanbul coverage for that one run; its `include` and `exclude` arrays accept at most 200 patterns, and `allowExternal` defaults to false. Coverage is not enabled when `execution` is omitted. The tool is annotated `readOnlyHint: false`, `destructiveHint: true`, and `openWorldHint: true` because project configuration and tests execute. Ask before calling it.
+`test_snapshot` is also explicit execution. It invokes the installed experimental `runRstest()` API once, optionally narrowed by files or a test-name pattern, and records structured summaries without watch mode or console streams. It accepts the same optional checkout-relative `packageRoot` and `configPath` selectors. Instead of `files`, an optional `related` array accepts 1 through 200 source paths resolved from `packageRoot`; Rstack asks Rstest's supported `list --related` command for the matching test files, then runs only those files. The snapshot records the requested sources and matched tests. Use one source per capture when a later `code_evidence` query needs an attributable `related` or `unrelated` result. An optional `execution` object explicitly enables aggregate Istanbul coverage for that one run; its `include` and `exclude` arrays accept at most 200 patterns, and `allowExternal` defaults to false. Coverage is not enabled when `execution` is omitted. The optional `@rstest/coverage-istanbul` peer is needed only for this coverage mode; ordinary test capture and every non-test evidence surface remain usable without it. The tool is annotated `readOnlyHint: false`, `destructiveHint: true`, and `openWorldHint: true` because project configuration and tests execute. Ask before calling it.
 
 Freshness belongs to each producer and snapshot independently:
 
@@ -103,18 +103,21 @@ Freshness belongs to each producer and snapshot independently:
 
 Build observations fingerprint only the loaded Rstack config file and its loaded config dependencies. They are therefore at best `partial` when those inputs still match and become `stale` when a recorded config input changes or disappears. They do not claim coverage of the application dependency graph.
 
-A fresh build does not make lint or test evidence fresh. If related-test selection is needed, use `rs test list --related <files> --json` explicitly; it is not an MCP tool.
+A fresh build does not make lint or test evidence fresh. Use `rs test list --related <files> --json` when only a list is needed. Use an approved `test_snapshot` with `related: [path]` when the matching tests should run and the relation should be stored.
+
+Each producer is optional. A build-only or library-only repository can use build and artifact evidence without Rstest or Rslint observations. Missing test, coverage, lint, or Rsdoctor data is reported as unavailable on that axis and does not block the axes that exist.
 
 ### Code evidence {#code-evidence}
 
-`code_evidence` is a read-only exact-path query. Given a checkout-relative source `path` and optional `line`, it joins the newest Rstest and Rslint snapshots whose package root contains that path. Explicit `testSnapshotId` and `lintSnapshotId` values select point-in-time evidence instead. When an artifact contains several module variants for the same source path, an optional `module` selector preserves the exact module ID or name returned by `unused_candidates` or `dead_code_explain`. It reports four independent surfaces:
+`code_evidence` is a read-only exact-path query. Given a checkout-relative source `path` and optional `line`, it joins the newest Rstest and Rslint snapshots whose package root contains that path. Explicit `testSnapshotId` and `lintSnapshotId` values select point-in-time evidence instead. When an artifact contains several module variants for the same source path, an optional `module` selector preserves the exact module ID or name returned by `unused_candidates` or `dead_code_explain`. It reports five independent surfaces:
 
+- the captured static Rstest relation as `related`, `unrelated`, `unknown`, or `unavailable`;
 - aggregate execution coverage as `observed`, `not-observed`, `unknown`, or `unavailable`;
 - the selected Rstest facet's outcome for that exact path as `failed`, `passed`, `not-run`, or `unknown`;
 - exact-path Rslint and Rstest diagnostics; and
 - an optional artifact module axis when both `contextId` and `dataFile` are supplied.
 
-`observed` requires a positive stored statement, function, or branch-arm hit and an exact current file digest. `not-observed` additionally requires a complete, untruncated instrumented universe with relevant zero-hit locations. A stale digest, missing path, partial universe, or missing provider remains inconclusive. Test outcomes describe only records whose own path exactly matches the query; no exact record returns `unknown` with reason `no-exact-test-record`, while `not-run` requires matching skipped or todo records. They do not infer source-to-test relationships. Diagnostics return `{ total, returned, truncated, items }` and at most 200 items. Without `module`, the optional module axis tries the full workspace path before a package-relative fallback. With `module`, it resolves that exact artifact selector while still using `path` for runtime, test, and diagnostic evidence. It preserves production reachability, public-contract status, shipment, and optimizer retention separately, and reports artifact binding rather than combining mismatched evidence.
+The test relation comes from Rstest's build graph, not runtime execution. `related` and `unrelated` require an isolated one-source capture; a multi-source selection is a union and remains `unknown` for an individual source. `observed` requires a positive stored statement, function, or branch-arm hit and an exact current file digest. `not-observed` additionally requires a complete, untruncated instrumented universe with relevant zero-hit locations. A stale digest, missing path, partial universe, or missing provider remains inconclusive. Test outcomes describe only records whose own path exactly matches the query; no exact record returns `unknown` with reason `no-exact-test-record`, while `not-run` requires matching skipped or todo records. Diagnostics return `{ total, returned, truncated, items }` and at most 200 items. Without `module`, the optional module axis tries the full workspace path before a package-relative fallback. With `module`, it resolves that exact artifact selector while still using `path` for runtime, test, and diagnostic evidence. It preserves production reachability, public-contract status, shipment, and optimizer retention separately, and reports artifact binding rather than combining mismatched evidence.
 
 ## Phase 4 change review {#phase-4-change-review}
 
@@ -122,7 +125,7 @@ A fresh build does not make lint or test evidence fresh. If related-test selecti
 
 `lint_fix_preview` has the same read-only annotations. It returns fixed text already stored by `lint_snapshot` when `includeFixPreview` was enabled. It does not reread or write the source file, and there is no apply tool; use an explicit `rs lint --fix <path>` only when you choose to apply fixes.
 
-Rslint type-check and timing collection remain explicit CLI workflows such as `rs lint --type-check --timing`. Rstest watch sessions, related-test selection through MCP, automatic captures, and source mutation are deliberately deferred. The MCP server has no daemon, watcher, or producer connection.
+Rslint type-check and timing collection remain explicit CLI workflows such as `rs lint --type-check --timing`. Rstest watch sessions, automatic captures, and source mutation are deliberately deferred. The MCP server has no daemon, watcher, or producer connection.
 
 ### Rsdoctor analysis
 

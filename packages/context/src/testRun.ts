@@ -36,6 +36,7 @@ import {
 
 type TestSnapshotRequest = {
   files?: string[];
+  related?: string[];
   testNamePattern?: string;
   packageRoot?: string;
   configPath?: string;
@@ -74,6 +75,14 @@ type TestCaptureResult = {
 
 type RunRstest = (options?: RunRstestOptions) => Promise<TestRunResult>;
 
+type RelatedTestRequest = {
+  packageRoot: string;
+  configPath?: string;
+  sources: string[];
+};
+
+type ResolveRelatedTests = (request: RelatedTestRequest) => Promise<string[]>;
+
 type TestCaptureDependencies = {
   runRstest?: RunRstest;
   createRunId?: () => string;
@@ -81,6 +90,7 @@ type TestCaptureDependencies = {
   now?: () => Date;
   wrapperConfigPath?: string;
   withConfigTarget?: ConfigTargetRunner;
+  resolveRelatedTests?: ResolveRelatedTests;
 };
 
 const toWorkspacePath = (workspaceRoot: string, filePath: string): string =>
@@ -139,8 +149,13 @@ const normalizeTestFile = (
     .sort(compareTestCases),
 });
 
-const normalizeTestFacet = (workspaceRoot: string, result: TestRunResult): TestFacet => ({
+const normalizeTestFacet = (
+  workspaceRoot: string,
+  result: TestRunResult,
+  relation?: TestFacet['relation'],
+): TestFacet => ({
   producer: 'rstest',
+  ...(relation === undefined ? {} : { relation }),
   files: result.files
     .map((fileResult) => normalizeTestFile(workspaceRoot, fileResult))
     .sort(
@@ -159,6 +174,9 @@ const testCaptureSelection = (request: TestSnapshotRequest): JsonValue => ({
   ...(request.files === undefined
     ? {}
     : { files: [...new Set(request.files)].sort((left, right) => left.localeCompare(right)) }),
+  ...(request.related === undefined
+    ? {}
+    : { related: [...new Set(request.related)].sort((left, right) => left.localeCompare(right)) }),
   ...(request.testNamePattern === undefined ? {} : { testNamePattern: request.testNamePattern }),
 });
 
@@ -173,12 +191,38 @@ const ensureWritten = (result: Awaited<ReturnType<typeof writeContextSnapshot>>)
 
 const loadRunRstest = async (): Promise<RunRstest> => (await import('@rstest/core/api')).runRstest;
 
+const validateRelatedSelection = (request: TestSnapshotRequest): void => {
+  if (request.files !== undefined && request.related !== undefined) {
+    throw new Error('files and related cannot be used together.');
+  }
+  if (
+    request.related !== undefined &&
+    (request.related.length === 0 ||
+      request.related.length > 200 ||
+      request.related.some((source) => source.length === 0))
+  ) {
+    throw new Error('related must contain from 1 to 200 non-empty source paths.');
+  }
+};
+
+const emptyTestRunResult = (): TestRunResult => ({
+  ok: true,
+  files: [],
+  stats: {
+    tests: { total: 0, passed: 0, failed: 0, skipped: 0, todo: 0 },
+    files: { total: 0, failed: 0 },
+  },
+  unhandledErrors: [],
+  duration: { total: 0 },
+});
+
 const captureTestSnapshot = async (
   workspaceRoot: string,
   request: TestSnapshotRequest,
   dependencies: TestCaptureDependencies = {},
 ): Promise<TestCaptureResult> => {
   validateExecutionRequest(request.execution);
+  validateRelatedSelection(request);
   const target = await resolveExplicitCaptureTarget(workspaceRoot, request);
   const wrapperConfigPath =
     dependencies.wrapperConfigPath ??
@@ -198,46 +242,74 @@ const captureTestSnapshot = async (
     now,
   });
   ensureWritten(await writeContextRunManifest(workspaceRoot, run));
-  let result: TestRunResult;
+  let result: TestRunResult | undefined;
+  let relation: TestFacet['relation'];
   try {
-    const runRstest = dependencies.runRstest ?? (await loadRunRstest());
-    const withConfigTarget =
-      dependencies.withConfigTarget ??
-      (async (_configRoot, _configPath, action) => {
-        if (dependencies.runRstest === undefined) {
-          throw new Error('Rstack test capture requires a config adapter.');
-        }
-        return action();
-      });
-    result = await withConfigTarget(target.packageRoot, target.configPath, () =>
-      runRstest({
-        cwd: target.packageRoot,
-        config: wrapperConfigPath,
-        ...(request.execution === undefined
-          ? {}
-          : {
-              inlineConfig: {
-                coverage: {
-                  enabled: true,
-                  provider: 'istanbul' as const,
-                  reporters: [],
-                  reportOnFailure: true,
-                  ...(request.execution.include === undefined
-                    ? {}
-                    : { include: request.execution.include }),
-                  ...(request.execution.exclude === undefined
-                    ? {}
-                    : { exclude: request.execution.exclude }),
-                  allowExternal: request.execution.allowExternal ?? false,
+    let selectedFiles = request.files;
+    if (request.related !== undefined) {
+      if (dependencies.resolveRelatedTests === undefined) {
+        throw new Error('Rstack test capture requires a related-test resolver.');
+      }
+      const sourceFiles = [
+        ...new Set(request.related.map((source) => path.resolve(target.packageRoot, source))),
+      ];
+      const testFiles = [
+        ...new Set(
+          await dependencies.resolveRelatedTests({
+            packageRoot: target.packageRoot,
+            configPath: target.configPath,
+            sources: sourceFiles,
+          }),
+        ),
+      ];
+      relation = {
+        sources: sourceFiles.map((source) => toWorkspacePath(workspaceRoot, source)).sort(),
+        testFiles: testFiles.map((file) => toWorkspacePath(workspaceRoot, file)).sort(),
+      };
+      selectedFiles = testFiles.map((file) => toWorkspacePath(target.packageRoot, file));
+      if (selectedFiles.length === 0) result = emptyTestRunResult();
+    }
+
+    if (result === undefined) {
+      const runRstest = dependencies.runRstest ?? (await loadRunRstest());
+      const withConfigTarget =
+        dependencies.withConfigTarget ??
+        (async (_configRoot, _configPath, action) => {
+          if (dependencies.runRstest === undefined) {
+            throw new Error('Rstack test capture requires a config adapter.');
+          }
+          return action();
+        });
+      result = await withConfigTarget(target.packageRoot, target.configPath, () =>
+        runRstest({
+          cwd: target.packageRoot,
+          config: wrapperConfigPath,
+          ...(request.execution === undefined
+            ? {}
+            : {
+                inlineConfig: {
+                  coverage: {
+                    enabled: true,
+                    provider: 'istanbul' as const,
+                    reporters: [],
+                    reportOnFailure: true,
+                    ...(request.execution.include === undefined
+                      ? {}
+                      : { include: request.execution.include }),
+                    ...(request.execution.exclude === undefined
+                      ? {}
+                      : { exclude: request.execution.exclude }),
+                    allowExternal: request.execution.allowExternal ?? false,
+                  },
                 },
-              },
-            }),
-        ...(request.files === undefined ? {} : { files: request.files }),
-        ...(request.testNamePattern === undefined
-          ? {}
-          : { testNamePattern: request.testNamePattern }),
-      }),
-    );
+              }),
+          ...(selectedFiles === undefined ? {} : { files: selectedFiles }),
+          ...(request.testNamePattern === undefined
+            ? {}
+            : { testNamePattern: request.testNamePattern }),
+        }),
+      );
+    }
   } catch (error) {
     const capturedError: TestErrorRecord =
       error instanceof Error
@@ -283,7 +355,7 @@ const captureTestSnapshot = async (
     ensureWritten(await writeContextSnapshot(workspaceRoot, snapshot));
     throw error;
   }
-  const facet = normalizeTestFacet(workspaceRoot, result);
+  const facet = normalizeTestFacet(workspaceRoot, result, relation);
   const executionFacet =
     request.execution === undefined
       ? undefined
@@ -294,7 +366,11 @@ const captureTestSnapshot = async (
           result.coverage,
         );
   const testInputs = await recordContextInputFiles(workspaceRoot, [
-    ...new Set(facet.files.map((file) => file.path)),
+    ...new Set([
+      ...facet.files.map((file) => file.path),
+      ...(facet.relation?.sources ?? []),
+      ...(facet.relation?.testFiles ?? []),
+    ]),
   ]);
   const executionInputs =
     executionFacet?.files.flatMap((file) =>
@@ -407,6 +483,8 @@ export { captureTestSnapshot, listTestResults };
 export type {
   TestCaptureDependencies,
   TestCaptureResult,
+  RelatedTestRequest,
+  ResolveRelatedTests,
   TestResultPage,
   TestResultsQuery,
   TestSnapshotRequest,

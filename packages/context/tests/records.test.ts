@@ -124,6 +124,10 @@ test('validates lint and test facets with captured source inputs', () => {
   } as const;
   const testFacet = {
     producer: 'rstest',
+    relation: {
+      sources: ['src/index.ts'],
+      testFiles: ['src/index.test.ts'],
+    },
     files: [
       {
         project: 'unit',
@@ -365,6 +369,12 @@ test('rejects malformed known facets and unpaired source input metadata', () => 
   expect(validateLintFacet({ ...lint, mode: 'watch' })).toBeUndefined();
   expect(validateLintFacet({ ...lint, files: [{ path: 'a.ts' }] })).toBeUndefined();
   expect(validateTestFacet({ ...testFacet, durationMs: -1 })).toBeUndefined();
+  expect(
+    validateTestFacet({
+      ...testFacet,
+      relation: { sources: ['src/index.ts'], testFiles: [42] },
+    }),
+  ).toBeUndefined();
   expect(
     validateTestFacet({
       ...testFacet,

@@ -52,7 +52,7 @@ const createDependencies = (
   now: () => new Date('2026-08-12T08:00:00.000Z'),
 });
 
-test('publishes the Istanbul provider as an exact required peer', async () => {
+test('publishes the opt-in Istanbul provider as an exact optional peer', async () => {
   const packageJson = JSON.parse(
     await readFile(new URL('../package.json', import.meta.url), 'utf8'),
   ) as {
@@ -65,7 +65,9 @@ test('publishes the Istanbul provider as an exact required peer', async () => {
   expect(packageJson.dependencies?.['@rstest/coverage-istanbul']).toBeUndefined();
   expect(packageJson.devDependencies?.['@rstest/coverage-istanbul']).toBe('catalog:');
   expect(packageJson.peerDependencies?.['@rstest/coverage-istanbul']).toBe('0.11.6');
-  expect(packageJson.peerDependenciesMeta?.['@rstest/coverage-istanbul']).toBeUndefined();
+  expect(packageJson.peerDependenciesMeta?.['@rstest/coverage-istanbul']).toEqual({
+    optional: true,
+  });
 });
 
 test('captures one passing run with partial source freshness', async () => {
@@ -192,6 +194,123 @@ test('captures one passing run with partial source freshness', async () => {
     await expect(listTestResults(workspaceRoot, {})).resolves.toMatchObject({
       snapshotId: 'snap_pass',
       freshness: { state: 'stale', changedPaths: ['src/math.test.ts'] },
+    });
+  });
+});
+
+test('resolves related source files before running and records the static test relation', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const sourcePath = path.join(workspaceRoot, 'packages', 'app', 'src', 'config.ts');
+    const testPath = path.join(workspaceRoot, 'packages', 'app', 'tests', 'config.test.ts');
+    await mkdir(path.dirname(sourcePath), { recursive: true });
+    await mkdir(path.dirname(testPath), { recursive: true });
+    await writeFile(sourcePath, 'export const value = 1;\n');
+    await writeFile(testPath, 'test');
+    const calls: unknown[] = [];
+    const relatedCalls: unknown[] = [];
+    const result = createResult({
+      files: [
+        {
+          project: 'default',
+          testPath,
+          name: 'config.test.ts',
+          status: 'pass',
+          results: [],
+        },
+      ],
+      stats: {
+        tests: { total: 0, passed: 0, failed: 0, skipped: 0, todo: 0 },
+        files: { total: 1, failed: 0 },
+      },
+    });
+
+    const capture = await captureTestSnapshot(
+      workspaceRoot,
+      { packageRoot: 'packages/app', related: ['src/config.ts'] },
+      {
+        ...createDependencies(result, calls, 'related'),
+        resolveRelatedTests: (request) => {
+          relatedCalls.push(request);
+          return Promise.resolve([testPath]);
+        },
+      },
+    );
+
+    expect(relatedCalls).toEqual([
+      {
+        packageRoot: path.join(workspaceRoot, 'packages/app'),
+        configPath: undefined,
+        sources: [sourcePath],
+      },
+    ]);
+    expect(calls).toEqual([
+      {
+        cwd: path.join(workspaceRoot, 'packages/app'),
+        config: expect.stringMatching(/rstestConfig\.js$/u),
+        files: ['tests/config.test.ts'],
+      },
+    ]);
+    const stored = await readContextSnapshotById(workspaceRoot, capture.snapshotId);
+    expect(stored?.snapshot.source).toEqual({
+      captureSelection: { related: ['src/config.ts'] },
+      inputCompleteness: 'partial',
+      inputs: [
+        {
+          path: 'packages/app/src/config.ts',
+          digest: '5d8f65d2774e206bc9f7a7a4ad39ca2dc563b5c31e46ab57ef4874961237ce29',
+        },
+        {
+          path: 'packages/app/tests/config.test.ts',
+          digest: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+        },
+      ],
+    });
+    expect(stored?.snapshot.facets.test).toMatchObject({
+      relation: {
+        sources: ['packages/app/src/config.ts'],
+        testFiles: ['packages/app/tests/config.test.ts'],
+      },
+    });
+  });
+});
+
+test('rejects files and related source selection together', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const calls: unknown[] = [];
+    const dependencies = createDependencies(createResult(), calls, 'invalid-related');
+    await expect(
+      captureTestSnapshot(
+        workspaceRoot,
+        { files: ['tests/config.test.ts'], related: ['src/config.ts'] },
+        dependencies,
+      ),
+    ).rejects.toThrow('files and related cannot be used together');
+    expect(calls).toEqual([]);
+  });
+});
+
+test('records an empty related selection without falling back to the full test suite', async () => {
+  await withTempWorkspace(async (workspaceRoot) => {
+    const sourcePath = path.join(workspaceRoot, 'src', 'unused.ts');
+    await mkdir(path.dirname(sourcePath), { recursive: true });
+    await writeFile(sourcePath, 'export const unused = true;\n');
+    const calls: unknown[] = [];
+
+    const capture = await captureTestSnapshot(
+      workspaceRoot,
+      { related: ['src/unused.ts'] },
+      {
+        ...createDependencies(createResult(), calls, 'unrelated'),
+        resolveRelatedTests: () => Promise.resolve([]),
+      },
+    );
+
+    expect(calls).toEqual([]);
+    expect(capture).toMatchObject({ status: 'pass', summary: { files: 0, tests: 0 } });
+    const stored = await readContextSnapshotById(workspaceRoot, capture.snapshotId);
+    expect(stored?.snapshot.facets.test).toMatchObject({
+      relation: { sources: ['src/unused.ts'], testFiles: [] },
+      files: [],
     });
   });
 });
@@ -1060,7 +1179,7 @@ type AssertNever<T extends never> = T;
 type UnsupportedRequestFields = AssertNever<
   Extract<
     keyof TestSnapshotRequest,
-    'apply' | 'changed' | 'related' | 'reporter' | 'shard' | 'update' | 'watch'
+    'apply' | 'changed' | 'reporter' | 'shard' | 'update' | 'watch'
   >
 >;
 

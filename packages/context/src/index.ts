@@ -27,6 +27,7 @@ export {
   type TestErrorRecord,
   type TestFacet,
   type TestFileRecord,
+  type TestRelationRecord,
 } from './model.ts';
 export {
   readContextSnapshotById,
@@ -71,6 +72,8 @@ export {
 export {
   captureTestSnapshot,
   listTestResults,
+  type RelatedTestRequest,
+  type ResolveRelatedTests,
   type TestCaptureDependencies,
   type TestCaptureResult,
   type TestResultPage,

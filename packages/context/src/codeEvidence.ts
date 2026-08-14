@@ -59,6 +59,12 @@ type TestOutcomeEvidence = {
   matchingTests: number;
 };
 
+type TestRelationEvidence = {
+  state: 'related' | 'unrelated' | 'unknown' | 'unavailable';
+  reason?: 'no-test-snapshot' | 'not-captured' | 'source-not-selected' | 'selection-not-isolated';
+  testFiles: string[];
+};
+
 type CodeDiagnosticEvidence = {
   total: number;
   returned: number;
@@ -70,6 +76,7 @@ type CodeEvidenceResult = {
   path: string;
   line?: number;
   executionCoverage: ExecutionCoverageEvidence;
+  testRelation: TestRelationEvidence;
   testOutcome: TestOutcomeEvidence;
   diagnostics: CodeDiagnosticEvidence;
   module?: DeadCodeExplanation;
@@ -241,6 +248,33 @@ const testOutcome = (
   return { state: 'not-run', matchingFiles: files.length, matchingTests: tests.length };
 };
 
+const testRelation = (
+  sourcePath: string,
+  stored: StoredContextSnapshot | undefined,
+): TestRelationEvidence => {
+  if (stored === undefined) {
+    return { state: 'unavailable', reason: 'no-test-snapshot', testFiles: [] };
+  }
+  const facet = stored.snapshot.facets.test as unknown as TestFacet | undefined;
+  if (facet?.relation === undefined) {
+    return { state: 'unavailable', reason: 'not-captured', testFiles: [] };
+  }
+  if (!facet.relation.sources.includes(sourcePath)) {
+    return { state: 'unknown', reason: 'source-not-selected', testFiles: [] };
+  }
+  if (facet.relation.sources.length !== 1) {
+    return {
+      state: 'unknown',
+      reason: 'selection-not-isolated',
+      testFiles: [...facet.relation.testFiles],
+    };
+  }
+  return {
+    state: facet.relation.testFiles.length > 0 ? 'related' : 'unrelated',
+    testFiles: [...facet.relation.testFiles],
+  };
+};
+
 const compareDiagnostics = (left: DiagnosticRecord, right: DiagnosticRecord): number =>
   left.producer.localeCompare(right.producer) ||
   (left.line ?? 0) - (right.line ?? 0) ||
@@ -365,6 +399,7 @@ const readCodeEvidence = async (
   };
   const bounds = [
     'aggregate-execution-no-test-attribution',
+    'test-relation-static-build-graph',
     'test-outcome-exact-path-only',
     'diagnostics-exact-path-only',
     ...(module !== undefined && module.provenance.artifactBinding !== 'exact'
@@ -375,6 +410,7 @@ const readCodeEvidence = async (
     path: sourcePath,
     ...(query.line === undefined ? {} : { line: query.line }),
     executionCoverage: await executionCoverage(workspaceRoot, sourcePath, query.line, testSnapshot),
+    testRelation: testRelation(sourcePath, testSnapshot),
     testOutcome: testOutcome(sourcePath, testSnapshot),
     diagnostics,
     ...(module === undefined ? {} : { module }),
@@ -391,4 +427,5 @@ export type {
   ExecutionCoverageEvidence,
   SnapshotEvidence,
   TestOutcomeEvidence,
+  TestRelationEvidence,
 };

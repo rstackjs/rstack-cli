@@ -241,6 +241,10 @@ test('registers the exact ordered fifteen-tool catalog with accurate annotations
   });
 });
 
+test('keeps the opt-in execution coverage provider optional for partial-stack installs', () => {
+  expect(pkgJson.peerDependenciesMeta['@rstest/coverage-istanbul']).toEqual({ optional: true });
+});
+
 test('publishes discoverable descriptions for opaque and conditional tool inputs', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await withMcpClient(workspaceRoot, async (client) => {
@@ -326,6 +330,12 @@ test('publishes discoverable descriptions for opaque and conditional tool inputs
         },
       });
       expect(toolByName.get('test_snapshot')?.inputSchema.properties).toMatchObject({
+        related: {
+          description:
+            'Source paths resolved from packageRoot; Rstest selects and runs only statically related test files.',
+          type: 'array',
+          maxItems: 200,
+        },
         packageRoot: {
           description: 'Checkout-relative package directory; defaults to the checkout root.',
         },
@@ -377,7 +387,7 @@ test('returns compact code evidence and rejects an unpaired artifact selector', 
         content: [
           {
             type: 'text',
-            text: 'Code evidence for src/value.ts: coverage=unavailable, test=unknown, diagnostics=0, module=not-requested. See structuredContent for complete data.',
+            text: 'Code evidence for src/value.ts: coverage=unavailable, relation=unavailable, test=unknown, diagnostics=0, module=not-requested. See structuredContent for complete data.',
           },
         ],
         structuredContent: {
@@ -421,7 +431,7 @@ test('includes artifact binding in compact code evidence module text', async () 
       expect(result.content).toEqual([
         {
           type: 'text',
-          text: 'Code evidence for src/live.ts: coverage=unavailable, test=unknown, diagnostics=0, module=reachable(binding=explicit-unverified). See structuredContent for complete data.',
+          text: 'Code evidence for src/live.ts: coverage=unavailable, relation=unavailable, test=unknown, diagnostics=0, module=reachable(binding=explicit-unverified). See structuredContent for complete data.',
         },
       ]);
     });
@@ -1443,7 +1453,7 @@ test('runs explicit captures through injected producers and returns ordinary MCP
 
         const testResult = await client.callTool({
           name: 'test_snapshot',
-          arguments: { files: ['src/index.test.ts'] },
+          arguments: { related: ['src/index.ts'] },
         });
         expect(testResult.isError).toBe(true);
         expect(testResult.content).toEqual([{ type: 'text', text: 'Test capture failed.' }]);

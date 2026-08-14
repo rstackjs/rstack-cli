@@ -1,0 +1,72 @@
+import { execFile } from 'node:child_process';
+import path from 'node:path';
+import type { RelatedTestRequest } from '@rstackjs/context';
+
+type RelatedTestCliRequest = {
+  cwd: string;
+  args: string[];
+};
+
+type RelatedTestCliResult = {
+  stdout: string;
+  stderr: string;
+};
+
+type RelatedTestResolverDependencies = {
+  runCli?: (request: RelatedTestCliRequest) => Promise<RelatedTestCliResult>;
+};
+
+type RelatedTestListEntry = { file: string };
+
+const isRelatedTestListEntry = (value: unknown): value is RelatedTestListEntry =>
+  typeof value === 'object' && value !== null && 'file' in value && typeof value.file === 'string';
+
+const runCli = ({ cwd, args }: RelatedTestCliRequest): Promise<RelatedTestCliResult> =>
+  new Promise((resolve, reject) => {
+    execFile(process.execPath, args, { cwd }, (error, stdout, stderr) => {
+      if (error) {
+        reject(error instanceof Error ? error : new Error('Rstack test list failed.'));
+        return;
+      }
+      resolve({ stdout, stderr });
+    });
+  });
+
+const resolveRelatedTests = async (
+  request: RelatedTestRequest,
+  dependencies: RelatedTestResolverDependencies = {},
+): Promise<string[]> => {
+  const args = [
+    path.join(import.meta.dirname, '..', 'bin', 'rs.js'),
+    'test',
+    'list',
+    '--related',
+    ...request.sources,
+    '--filesOnly',
+    '--json',
+    ...(request.configPath === undefined ? [] : ['--config', request.configPath]),
+  ];
+  const { stdout, stderr } = await (dependencies.runCli ?? runCli)({
+    cwd: request.packageRoot,
+    args,
+  });
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(stdout);
+  } catch {
+    throw new Error(
+      `Rstest related-test listing returned invalid JSON${stderr.length === 0 ? '.' : `: ${stderr.trim()}`}`,
+    );
+  }
+  if (!Array.isArray(parsed) || !parsed.every(isRelatedTestListEntry)) {
+    throw new Error('Rstest related-test listing returned an invalid file list.');
+  }
+
+  return [...new Set(parsed.map((entry) => path.resolve(request.packageRoot, entry.file)))].sort(
+    (left, right) => left.localeCompare(right),
+  );
+};
+
+export { resolveRelatedTests };
+export type { RelatedTestResolverDependencies };
