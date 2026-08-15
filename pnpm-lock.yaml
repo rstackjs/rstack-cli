@@ -383,8 +383,8 @@ importers:
         specifier: 'catalog:'
         version: 2.1.13
       '@rsdoctor/agent-cli':
-        specifier: https://pkg.pr.new/@rsdoctor/agent-cli@84e86fef
-        version: https://pkg.pr.new/@rsdoctor/agent-cli@84e86fef
+        specifier: https://pkg.pr.new/@rsdoctor/agent-cli@8926633c
+        version: https://pkg.pr.new/@rsdoctor/agent-cli@8926633c
       '@rslib/core':
         specifier: 'catalog:'
         version: 1.0.0-beta.3(typescript@7.0.2)
@@ -393,7 +393,7 @@ importers:
         version: 0.8.0
       '@rstackjs/context':
         specifier: https://pkg.pr.new/rstackjs/context/@rstackjs/context@d48e151
-        version: https://pkg.pr.new/rstackjs/context/@rstackjs/context@d48e151(@rsbuild/core@2.1.13)(@rsdoctor/agent-cli@0.0.0-preview-84e86fe)(happy-dom@20.11.2)(supports-color@8.1.1)
+        version: https://pkg.pr.new/rstackjs/context/@rstackjs/context@d48e151(@rsbuild/core@2.1.13)(@rsdoctor/agent-cli@0.0.0-preview-8926633)(happy-dom@20.11.2)(supports-color@8.1.1)
       '@rstest/core':
         specifier: 'catalog:'
         version: 0.11.6(happy-dom@20.11.2)
@@ -1358,9 +1358,9 @@ packages:
       '@rsbuild/core':
         optional: true
 
-  '@rsdoctor/agent-cli@https://pkg.pr.new/@rsdoctor/agent-cli@84e86fef':
-    resolution: {integrity: sha512-JdH+uLtdNeU/UMNrQNtm9S/AWDwFZGQIG0yS/jI9w55CCJrjzXBpaw1WmIA8zHGbD/kp+H8ASDbc0I8tOP9G8Q==, tarball: https://pkg.pr.new/@rsdoctor/agent-cli@84e86fef}
-    version: 0.0.0-preview-84e86fe
+  '@rsdoctor/agent-cli@https://pkg.pr.new/@rsdoctor/agent-cli@8926633c':
+    resolution: {integrity: sha512-9gRufeY3ZqCIduHiZTzIciG1mC3Pm1aluNN+ZDxKmD2E0JbvAUur0qtSwtJtKsQJbVnb0gaKzWHxxd7MHnC63A==, tarball: https://pkg.pr.new/@rsdoctor/agent-cli@8926633c}
+    version: 0.0.0-preview-8926633
     engines: {node: '>=22.18.0'}
     hasBin: true
 
@@ -4593,7 +4593,7 @@ snapshots:
     optionalDependencies:
       '@rsbuild/core': 2.1.10
 
-  '@rsdoctor/agent-cli@https://pkg.pr.new/@rsdoctor/agent-cli@84e86fef': {}
+  '@rsdoctor/agent-cli@https://pkg.pr.new/@rsdoctor/agent-cli@8926633c': {}
 
   '@rsdoctor/client@1.6.1': {}
 
@@ -4942,7 +4942,7 @@ snapshots:
     optionalDependencies:
       '@rspress/core': 2.0.19(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
 
-  '@rstackjs/context@https://pkg.pr.new/rstackjs/context/@rstackjs/context@d48e151(@rsbuild/core@2.1.13)(@rsdoctor/agent-cli@0.0.0-preview-84e86fe)(happy-dom@20.11.2)(supports-color@8.1.1)':
+  '@rstackjs/context@https://pkg.pr.new/rstackjs/context/@rstackjs/context@d48e151(@rsbuild/core@2.1.13)(@rsdoctor/agent-cli@0.0.0-preview-8926633)(happy-dom@20.11.2)(supports-color@8.1.1)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.29.0(supports-color@8.1.1)
       '@rslint/core': 0.8.0
@@ -4950,7 +4950,7 @@ snapshots:
       zod: 4.4.3
     optionalDependencies:
       '@rsbuild/core': 2.1.13
-      '@rsdoctor/agent-cli': https://pkg.pr.new/@rsdoctor/agent-cli@84e86fef
+      '@rsdoctor/agent-cli': https://pkg.pr.new/@rsdoctor/agent-cli@8926633c
     transitivePeerDependencies:
       - '@cfworker/json-schema'
       - '@module-federation/runtime-tools'
