@@ -392,8 +392,8 @@ importers:
         specifier: 'catalog:'
         version: 0.8.0
       '@rstackjs/context':
-        specifier: https://pkg.pr.new/rstackjs/context/@rstackjs/context@d48e151
-        version: https://pkg.pr.new/rstackjs/context/@rstackjs/context@d48e151(@rsbuild/core@2.1.13)(@rsdoctor/agent-cli@0.0.0-preview-8926633)(happy-dom@20.11.2)(supports-color@8.1.1)
+        specifier: https://pkg.pr.new/rstackjs/context/@rstackjs/context@711b987
+        version: https://pkg.pr.new/rstackjs/context/@rstackjs/context@711b987(@rsbuild/core@2.1.13)(@rsdoctor/agent-cli@0.0.0-preview-8926633)(happy-dom@20.11.2)(supports-color@8.1.1)
       '@rstest/core':
         specifier: 'catalog:'
         version: 0.11.6(happy-dom@20.11.2)
@@ -1650,9 +1650,9 @@ packages:
       '@rspress/core':
         optional: true
 
-  '@rstackjs/context@https://pkg.pr.new/rstackjs/context/@rstackjs/context@d48e151':
-    resolution: {integrity: sha512-EigfR4XDX7GBLEbBigr8hOsrYGp4fd/H6hMlVIJUABJTLsy0dKTtGu5+FQ5QakcLdpzrpWuv9BKfKH6jEdMHHA==, tarball: https://pkg.pr.new/rstackjs/context/@rstackjs/context@d48e151}
-    version: 0.0.0-preview-d48e151
+  '@rstackjs/context@https://pkg.pr.new/rstackjs/context/@rstackjs/context@711b987':
+    resolution: {integrity: sha512-eBkCzyjGqOyLN5vdQlFVVgv8srhz8rUp5aN5c25NfGzgM0gJJnQxiTiXgwGj4BOq8+uggza93fcesaffg3R/1A==, tarball: https://pkg.pr.new/rstackjs/context/@rstackjs/context@711b987}
+    version: 0.0.0-preview-711b987
     engines: {node: '>=22.12.0', pnpm: '>=11.0.0'}
     peerDependencies:
       '@rsbuild/core': ^2.0.0
@@ -4942,7 +4942,7 @@ snapshots:
     optionalDependencies:
       '@rspress/core': 2.0.19(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
 
-  '@rstackjs/context@https://pkg.pr.new/rstackjs/context/@rstackjs/context@d48e151(@rsbuild/core@2.1.13)(@rsdoctor/agent-cli@0.0.0-preview-8926633)(happy-dom@20.11.2)(supports-color@8.1.1)':
+  '@rstackjs/context@https://pkg.pr.new/rstackjs/context/@rstackjs/context@711b987(@rsbuild/core@2.1.13)(@rsdoctor/agent-cli@0.0.0-preview-8926633)(happy-dom@20.11.2)(supports-color@8.1.1)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.29.0(supports-color@8.1.1)
       '@rslint/core': 0.8.0
