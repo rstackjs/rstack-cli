@@ -1,4 +1,4 @@
-// Rstack configuration guide: https://rstack.rs/config
+// Configuration guide: https://rstack.rs/config
 import { define } from 'rstack';
 
 define.lint(async ({ js, ts }) => {

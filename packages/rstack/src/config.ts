@@ -94,7 +94,7 @@ type Define = {
    *
    * This config is used by the `rs dev`, `rs build`, and `rs preview` commands.
    *
-   * @see {@link https://rstack.rs/config | Rstack configuration guide}
+   * @see {@link https://rstack.rs/config | Configuration guide}
    */
   app: (config: RsbuildConfigDefinition) => void;
   /**
@@ -102,7 +102,7 @@ type Define = {
    *
    * This config is used by the `rs lib` command.
    *
-   * @see {@link https://rstack.rs/config | Rstack configuration guide}
+   * @see {@link https://rstack.rs/config | Configuration guide}
    */
   lib: (config: RslibConfigDefinition) => void;
   /**
@@ -110,7 +110,7 @@ type Define = {
    *
    * This config is used by the `rs doc` command.
    *
-   * @see {@link https://rstack.rs/config | Rstack configuration guide}
+   * @see {@link https://rstack.rs/config | Configuration guide}
    */
   doc: (config: RspressConfigDefinition) => void;
   /**
@@ -122,7 +122,7 @@ type Define = {
    * falls back to `define.lib`. For multi-project configs, this applies to every inline
    * project without an explicit `extends`. The app config takes precedence when both are defined.
    *
-   * @see {@link https://rstack.rs/config | Rstack configuration guide}
+   * @see {@link https://rstack.rs/config | Configuration guide}
    */
   test: (config: RstestConfigExport) => void;
   /**
@@ -131,7 +131,7 @@ type Define = {
    * This config is used by the `rs lint` command.
    * A config factory receives the exports from `rstack/lint`.
    *
-   * @see {@link https://rstack.rs/config | Rstack configuration guide}
+   * @see {@link https://rstack.rs/config | Configuration guide}
    */
   lint: (config: RslintConfig | RslintConfigFactory) => void;
   /**
@@ -139,7 +139,7 @@ type Define = {
    *
    * This config will be used by the `rs fmt` command.
    *
-   * @see {@link https://rstack.rs/config | Rstack configuration guide}
+   * @see {@link https://rstack.rs/config | Configuration guide}
    */
   fmt: (config: FmtConfigDefinition) => void;
   /**
@@ -147,7 +147,7 @@ type Define = {
    *
    * This config is used by the `rs staged` command.
    *
-   * @see {@link https://rstack.rs/config | Rstack configuration guide}
+   * @see {@link https://rstack.rs/config | Configuration guide}
    */
   staged: (config: StagedConfig) => void;
 };
