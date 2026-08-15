@@ -79,10 +79,10 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "catalog:",
     "@rsbuild/core": "catalog:",
-    "@rsdoctor/agent-cli": "https://pkg.pr.new/@rsdoctor/agent-cli@ba5f0a83",
+    "@rsdoctor/agent-cli": "https://pkg.pr.new/@rsdoctor/agent-cli@84e86fef",
     "@rslib/core": "catalog:",
     "@rslint/core": "catalog:",
-    "@rstackjs/context": "https://pkg.pr.new/rstackjs/context/@rstackjs/context@291a442",
+    "@rstackjs/context": "https://pkg.pr.new/rstackjs/context/@rstackjs/context@c4b9bff",
     "@rstest/core": "catalog:",
     "prettier": "catalog:",
     "tinypool": "catalog:",
