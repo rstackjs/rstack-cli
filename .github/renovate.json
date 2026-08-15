@@ -1,4 +1,18 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>rstackjs/renovate"]
+  "extends": ["github>rstackjs/renovate"],
+  "packageRules": [
+    {
+      "description": "Disable TypeScript updates in Svelte and Vue templates until svelte-check, svelte2tsx, and vue-tsc support TypeScript 7",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["typescript"],
+      "matchFileNames": [
+        "packages/create-rstack/template-app-svelte-ts/package.json",
+        "packages/create-rstack/template-app-vue-ts/package.json",
+        "packages/create-rstack/template-lib-svelte-ts/package.json",
+        "packages/create-rstack/template-lib-vue-ts/package.json"
+      ],
+      "enabled": false
+    }
+  ]
 }
