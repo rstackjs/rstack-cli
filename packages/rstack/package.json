@@ -79,9 +79,10 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "catalog:",
     "@rsbuild/core": "catalog:",
+    "@rsdoctor/agent-cli": "https://pkg.pr.new/@rsdoctor/agent-cli@ba5f0a83",
     "@rslib/core": "catalog:",
     "@rslint/core": "catalog:",
-    "@rstackjs/context": "https://pkg.pr.new/rstackjs/context/@rstackjs/context@50bce81",
+    "@rstackjs/context": "https://pkg.pr.new/rstackjs/context/@rstackjs/context@291a442",
     "@rstest/core": "catalog:",
     "prettier": "catalog:",
     "tinypool": "catalog:",
