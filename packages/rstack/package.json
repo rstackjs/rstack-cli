@@ -82,7 +82,7 @@
     "@rsdoctor/agent-cli": "https://pkg.pr.new/@rsdoctor/agent-cli@84e86fef",
     "@rslib/core": "catalog:",
     "@rslint/core": "catalog:",
-    "@rstackjs/context": "https://pkg.pr.new/rstackjs/context/@rstackjs/context@c4b9bff",
+    "@rstackjs/context": "https://pkg.pr.new/rstackjs/context/@rstackjs/context@d48e151",
     "@rstest/core": "catalog:",
     "prettier": "catalog:",
     "tinypool": "catalog:",

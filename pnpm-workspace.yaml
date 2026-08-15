@@ -4,7 +4,7 @@ packages:
   - website
 
 allowBuilds:
-  '@rstackjs/context@https://pkg.pr.new/rstackjs/context/@rstackjs/context@c4b9bff': true
+  '@rstackjs/context@https://pkg.pr.new/rstackjs/context/@rstackjs/context@d48e151': true
   core-js: false
   simple-git-hooks: false
 
