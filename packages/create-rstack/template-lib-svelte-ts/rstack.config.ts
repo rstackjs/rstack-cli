@@ -1,4 +1,4 @@
-// Rstack configuration guide: https://rstack.rs/config
+// Configuration guide: https://rstack.rs/config
 import { define } from 'rstack';
 import { svelteDtsPlugin } from './scripts/rslib-plugin-svelte-dts.ts';
 
