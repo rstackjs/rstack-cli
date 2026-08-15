@@ -1,8 +1,241 @@
-:global {
-  .rs-oval {
-    width: 70% !important;
-    height: 70% !important;
-    top: calc(50% + 20px) !important;
-    left: calc(50% + 5px) !important;
+.hero {
+  --hero-title: #111214;
+  --hero-title-muted: #747474;
+  --hero-text: #707174;
+  --hero-border: #d9dbde;
+  --hero-command-bg: rgba(255, 255, 255, 0.72);
+  --hero-link: #686a6d;
+  --hero-link-hover: #111214;
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: calc(100svh - var(--rp-nav-height));
+  padding: clamp(4.5rem, 9vh, 7rem) 2rem;
+  overflow: hidden;
+  background: var(--rp-c-bg);
+}
+
+:global(.dark) .hero {
+  --hero-title: #f5f5f5;
+  --hero-title-muted: #9a9a9a;
+  --hero-text: #a1a3a6;
+  --hero-border: #3a3c40;
+  --hero-command-bg: rgba(255, 255, 255, 0.025);
+  --hero-link: #a6a8ab;
+  --hero-link-hover: #f5f5f5;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 64rem;
+  text-align: center;
+  transform: translateY(-1.5rem);
+}
+
+.title {
+  margin: 0;
+  color: var(--hero-title);
+  font-size: clamp(3rem, 4.5vw, 4rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.055em;
+  text-wrap: balance;
+
+  span {
+    display: block;
+  }
+}
+
+.subtitle {
+  color: var(--hero-title-muted);
+}
+
+.description {
+  max-width: 42rem;
+  margin: clamp(2.5rem, 5vh, 3.75rem) 0 0;
+  color: var(--hero-text);
+  font-size: clamp(1rem, 1.25vw, 1.25rem);
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.command {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  box-sizing: border-box;
+  width: min(100%, 20rem);
+  min-height: 3.125rem;
+  margin-top: clamp(2.75rem, 6vh, 4rem);
+  padding: 0 0.5rem 0 1rem;
+  color: var(--hero-title);
+  text-align: left;
+  border: 1px solid var(--hero-border);
+  border-radius: 0.5rem;
+  background: var(--hero-command-bg);
+
+  code,
+  .prompt {
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+    font-size: clamp(0.8125rem, 1vw, 0.9375rem);
+    line-height: 1.4;
+  }
+
+  code {
+    padding: 0 0.625rem;
+    overflow: hidden;
+    color: inherit;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: transparent;
+  }
+}
+
+.prompt {
+  color: var(--hero-text);
+}
+
+.copyButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: var(--hero-text);
+  cursor: pointer;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  &:hover {
+    color: var(--hero-link-hover);
+    background: color-mix(in srgb, var(--hero-title) 7%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--rp-c-brand);
+    outline-offset: 2px;
+  }
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem 2.5rem;
+  margin-top: clamp(2rem, 4vh, 2.5rem);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--hero-link);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.5;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    color: var(--hero-link-hover);
+
+    svg {
+      transform: translateX(0.2rem);
+    }
+  }
+
+  &:focus-visible {
+    border-radius: 0.25rem;
+    outline: 2px solid var(--rp-c-brand);
+    outline-offset: 4px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    min-height: calc(100svh - var(--rp-nav-height));
+    padding: 4rem 1.25rem;
+  }
+
+  .title {
+    font-size: clamp(2.25rem, 10vw, 2.75rem);
+    line-height: 1.04;
+    letter-spacing: -0.055em;
+  }
+
+  .description {
+    max-width: 28rem;
+    margin-top: 2rem;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+
+  .command {
+    min-height: 3.25rem;
+    margin-top: 2.25rem;
+    padding: 0 0.5rem 0 0.875rem;
+    border-radius: 0.625rem;
+
+    code,
+    .prompt {
+      font-size: 0.8125rem;
+    }
+
+    code {
+      padding: 0 0.625rem;
+    }
+  }
+
+  .copyButton {
+    width: 2rem;
+    height: 2rem;
+
+    svg {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
+
+  .links {
+    gap: 1rem 1.75rem;
+    margin-top: 2rem;
+  }
+
+  .link {
+    font-size: 0.875rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copyButton,
+  .link,
+  .link svg {
+    transition: none;
   }
 }
