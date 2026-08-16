@@ -31,29 +31,65 @@ type SourceTemplate = {
 
 const sourceTemplates: SourceTemplate[] = [
   { template: 'app-vanilla', sourceExtension: 'js', testFile: 'dom.test.js' },
-  { template: 'app-vanilla-ts', sourceExtension: 'ts', testFile: 'dom.test.ts' },
+  {
+    template: 'app-vanilla-ts',
+    sourceExtension: 'ts',
+    testFile: 'dom.test.ts',
+  },
   { template: 'app-react', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
-  { template: 'app-react-ts', sourceExtension: 'tsx', testFile: 'index.test.tsx' },
-  { template: 'app-preact', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
-  { template: 'app-preact-ts', sourceExtension: 'tsx', testFile: 'index.test.tsx' },
+  {
+    template: 'app-react-ts',
+    sourceExtension: 'tsx',
+    testFile: 'index.test.tsx',
+  },
+  {
+    template: 'app-preact',
+    sourceExtension: 'jsx',
+    testFile: 'index.test.jsx',
+  },
+  {
+    template: 'app-preact-ts',
+    sourceExtension: 'tsx',
+    testFile: 'index.test.tsx',
+  },
   { template: 'app-vue', sourceExtension: 'js', testFile: 'index.test.js' },
   { template: 'app-vue-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
   { template: 'app-lit', sourceExtension: 'js', testFile: 'index.test.js' },
   { template: 'app-lit-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
   { template: 'app-svelte', sourceExtension: 'js', testFile: 'index.test.js' },
-  { template: 'app-svelte-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
+  {
+    template: 'app-svelte-ts',
+    sourceExtension: 'ts',
+    testFile: 'index.test.ts',
+  },
   { template: 'app-solid', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
-  { template: 'app-solid-ts', sourceExtension: 'tsx', testFile: 'index.test.tsx' },
+  {
+    template: 'app-solid-ts',
+    sourceExtension: 'tsx',
+    testFile: 'index.test.tsx',
+  },
   { template: 'lib-node', sourceExtension: 'js', testFile: 'index.test.js' },
   { template: 'lib-node-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
   { template: 'lib-react', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
-  { template: 'lib-react-ts', sourceExtension: 'tsx', testFile: 'index.test.tsx' },
+  {
+    template: 'lib-react-ts',
+    sourceExtension: 'tsx',
+    testFile: 'index.test.tsx',
+  },
   { template: 'lib-vue', sourceExtension: 'js', testFile: 'index.test.js' },
   { template: 'lib-vue-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
   { template: 'lib-svelte', sourceExtension: 'js', testFile: 'index.test.js' },
-  { template: 'lib-svelte-ts', sourceExtension: 'ts', testFile: 'index.test.ts' },
+  {
+    template: 'lib-svelte-ts',
+    sourceExtension: 'ts',
+    testFile: 'index.test.ts',
+  },
   { template: 'lib-solid', sourceExtension: 'jsx', testFile: 'index.test.jsx' },
-  { template: 'lib-solid-ts', sourceExtension: 'tsx', testFile: 'index.test.tsx' },
+  {
+    template: 'lib-solid-ts',
+    sourceExtension: 'tsx',
+    testFile: 'index.test.tsx',
+  },
 ];
 
 const docTemplates = [
@@ -74,14 +110,25 @@ const docTemplates = [
 ];
 
 const getCheckScript = (template: string, hasTypeScript: boolean): string =>
-  hasTypeScript && !templatesWithoutTypeCheck.has(template) ? typeCheckScript : checkScript;
+  hasTypeScript && !templatesWithoutTypeCheck.has(template)
+    ? typeCheckScript
+    : checkScript;
 
-const readProjectPackage = async (projectDirectory: string): Promise<ProjectPackage> =>
-  JSON.parse(await readFile(path.join(projectDirectory, 'package.json'), 'utf8')) as ProjectPackage;
+const readProjectPackage = async (
+  projectDirectory: string,
+): Promise<ProjectPackage> =>
+  JSON.parse(
+    await readFile(path.join(projectDirectory, 'package.json'), 'utf8'),
+  ) as ProjectPackage;
 
-const expectFiles = async (projectDirectory: string, files: string[]): Promise<void> => {
+const expectFiles = async (
+  projectDirectory: string,
+  files: string[],
+): Promise<void> => {
   for (const file of files) {
-    await expect(access(path.join(projectDirectory, file))).resolves.toBeUndefined();
+    await expect(
+      access(path.join(projectDirectory, file)),
+    ).resolves.toBeUndefined();
   }
 };
 
@@ -92,10 +139,16 @@ const expectStagedSetup = async (
 ): Promise<void> => {
   expect(scripts.prepare).toBe('rs setup');
   expect(
-    await readFile(path.join(projectDirectory, '.rstack', 'hooks', 'pre-commit'), 'utf8'),
+    await readFile(
+      path.join(projectDirectory, '.rstack', 'hooks', 'pre-commit'),
+      'utf8',
+    ),
   ).toBe('rs staged\n');
   expect(
-    await readFile(path.join(projectDirectory, `rstack.config.${configExtension}`), 'utf8'),
+    await readFile(
+      path.join(projectDirectory, `rstack.config.${configExtension}`),
+      'utf8',
+    ),
   ).toContain('define.staged({');
 };
 
@@ -109,7 +162,10 @@ const expectNoStagedSetup = async (
     access(path.join(projectDirectory, '.rstack', 'hooks', 'pre-commit')),
   ).rejects.toThrow();
   expect(
-    await readFile(path.join(projectDirectory, `rstack.config.${configExtension}`), 'utf8'),
+    await readFile(
+      path.join(projectDirectory, `rstack.config.${configExtension}`),
+      'utf8',
+    ),
   ).not.toContain('define.staged({');
 };
 
@@ -122,8 +178,14 @@ const expectProjectSetup = async (
   const packageJson = await readProjectPackage(projectDirectory);
 
   expect(packageJson.name).toBe('my-app');
-  expect(packageJson.scripts.check).toBe(getCheckScript(template, hasTypeScript));
-  await expectStagedSetup(projectDirectory, configExtension, packageJson.scripts);
+  expect(packageJson.scripts.check).toBe(
+    getCheckScript(template, hasTypeScript),
+  );
+  await expectStagedSetup(
+    projectDirectory,
+    configExtension,
+    packageJson.scripts,
+  );
 
   const tsconfig = access(path.join(projectDirectory, 'tsconfig.json'));
   if (hasTypeScript) {
@@ -135,7 +197,9 @@ const expectProjectSetup = async (
 
 afterEach(async () => {
   await Promise.all(
-    tempDirectories.splice(0).map((directory) => rm(directory, { recursive: true, force: true })),
+    tempDirectories
+      .splice(0)
+      .map((directory) => rm(directory, { recursive: true, force: true })),
   );
 });
 
@@ -154,7 +218,8 @@ const createProject = async (
   tempDirectories.push(tempDirectory);
 
   if (initializeGitIn) {
-    const gitDirectory = initializeGitIn === 'project' ? projectDirectory : tempDirectory;
+    const gitDirectory =
+      initializeGitIn === 'project' ? projectDirectory : tempDirectory;
     await mkdir(gitDirectory, { recursive: true });
     await execFileAsync('git', ['init', '--quiet'], { cwd: gitDirectory });
   }
@@ -209,14 +274,22 @@ test.each(sourceTemplates)(
       files.push('src/env.d.ts');
     }
 
-    await expectProjectSetup(projectDirectory, template, configExtension, hasTypeScript);
+    await expectProjectSetup(
+      projectDirectory,
+      template,
+      configExtension,
+      hasTypeScript,
+    );
     await expectFiles(projectDirectory, files);
   },
 );
 
-test.each(docTemplates)('creates the $template template', async ({ template, files }) => {
-  const projectDirectory = await createProject(template);
+test.each(docTemplates)(
+  'creates the $template template',
+  async ({ template, files }) => {
+    const projectDirectory = await createProject(template);
 
-  await expectProjectSetup(projectDirectory, template, 'ts', true);
-  await expectFiles(projectDirectory, files);
-});
+    await expectProjectSetup(projectDirectory, template, 'ts', true);
+    await expectFiles(projectDirectory, files);
+  },
+);

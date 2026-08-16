@@ -21,7 +21,9 @@ const git = (args: string[]): string => {
   });
 
   if (result.status !== 0) {
-    throw new Error(result.stderr || `Git exited with status ${result.status}.`);
+    throw new Error(
+      result.stderr || `Git exited with status ${result.status}.`,
+    );
   }
 
   return result.stdout;
@@ -35,7 +37,9 @@ const runStaged = () =>
   });
 
 beforeEach(() => {
-  projectPath = mkdtempSync(path.join(import.meta.dirname, 'test-temp-staged-fmt-'));
+  projectPath = mkdtempSync(
+    path.join(import.meta.dirname, 'test-temp-staged-fmt-'),
+  );
   env = {
     ...process.env,
     GIT_CONFIG_GLOBAL: path.join(projectPath, 'global.gitconfig'),
@@ -74,11 +78,21 @@ test('formats staged files with rs fmt and applies ignore rules', () => {
   const result = runStaged();
 
   expect(result.status).toBe(0);
-  expect(readProjectFile('file with spaces.ts')).toBe('const spaced = "spaced";\n');
-  expect(readProjectFile('ignored-by-git.ts')).toBe('const gitIgnored = "git ignored";\n');
-  expect(readProjectFile('ignored-by-fmt.ts')).toBe('const fmtIgnored="fmt ignored"');
-  expect(git(['show', ':file with spaces.ts'])).toBe('const spaced = "spaced";\n');
-  expect(git(['show', ':ignored-by-git.ts'])).toBe('const gitIgnored = "git ignored";\n');
+  expect(readProjectFile('file with spaces.ts')).toBe(
+    'const spaced = "spaced";\n',
+  );
+  expect(readProjectFile('ignored-by-git.ts')).toBe(
+    'const gitIgnored = "git ignored";\n',
+  );
+  expect(readProjectFile('ignored-by-fmt.ts')).toBe(
+    'const fmtIgnored="fmt ignored"',
+  );
+  expect(git(['show', ':file with spaces.ts'])).toBe(
+    'const spaced = "spaced";\n',
+  );
+  expect(git(['show', ':ignored-by-git.ts'])).toBe(
+    'const gitIgnored = "git ignored";\n',
+  );
 });
 
 test('allows rs fmt when all staged files are ignored', () => {
@@ -91,7 +105,9 @@ test('allows rs fmt when all staged files are ignored', () => {
   expect(result.status).toBe(0);
   expect(readProjectFile('ignored-by-fmt.ts')).toBe(source);
   expect(git(['show', ':ignored-by-fmt.ts'])).toBe(source);
-  expect(`${result.stdout}\n${result.stderr}`).not.toContain('No supported files matched');
+  expect(`${result.stdout}\n${result.stderr}`).not.toContain(
+    'No supported files matched',
+  );
 });
 
 test('still rejects staged files unsupported by rs fmt', () => {
@@ -101,7 +117,9 @@ test('still rejects staged files unsupported by rs fmt', () => {
   const result = runStaged();
 
   expect(result.status).toBe(1);
-  expect(`${result.stdout}\n${result.stderr}`).toContain('No supported files matched');
+  expect(`${result.stdout}\n${result.stderr}`).toContain(
+    'No supported files matched',
+  );
 });
 
 test('allows staged files unsupported by rs fmt with --ignore-unknown', () => {
@@ -120,7 +138,9 @@ define.staged({
   const result = runStaged();
 
   expect(result.status).toBe(0);
-  expect(`${result.stdout}\n${result.stderr}`).not.toContain('No supported files matched');
+  expect(`${result.stdout}\n${result.stderr}`).not.toContain(
+    'No supported files matched',
+  );
 });
 
 test('propagates rs fmt failures', () => {

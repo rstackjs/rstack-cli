@@ -1,4 +1,7 @@
-import type { Config as PrettierConfig, Options as PrettierOptions } from 'prettier';
+import type {
+  Config as PrettierConfig,
+  Options as PrettierOptions,
+} from 'prettier';
 import type { FmtCacheEntry } from './cacheStore.ts';
 
 /** Plugin objects cannot cross worker boundaries and are not planned for support. */
@@ -25,7 +28,8 @@ type FmtOverride = Omit<PrettierOverride, 'options'> & {
   options?: FmtOptions;
 };
 
-interface FmtConfig extends Omit<PrettierConfig, 'plugins' | 'overrides'>, FmtBuiltinOptions {
+interface FmtConfig
+  extends Omit<PrettierConfig, 'plugins' | 'overrides'>, FmtBuiltinOptions {
   plugins?: FmtPluginSpecifier[];
   overrides?: FmtOverride[];
   /** Gitignore-compatible patterns relative to the Rstack config root. */

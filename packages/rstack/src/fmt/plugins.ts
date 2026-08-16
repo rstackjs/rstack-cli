@@ -1,5 +1,11 @@
 import { readFile, realpath } from 'node:fs/promises';
-import { isAbsolute, join, relative, resolve as resolvePath, sep } from 'node:path';
+import {
+  isAbsolute,
+  join,
+  relative,
+  resolve as resolvePath,
+  sep,
+} from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { moduleResolve } from 'import-meta-resolve';
 import type { Options as PrettierOptions } from 'prettier';
@@ -8,12 +14,16 @@ import type { FmtPluginSpecifier, ResolvedFmtOptions } from './types.ts';
 
 type FmtPlugin = NonNullable<PrettierOptions['plugins']>[number];
 type FmtPluginResolver = (options: ResolvedFmtOptions) => ResolvedFmtOptions;
-type FingerprintResolver = (plugin: FmtPluginSpecifier) => Promise<string | undefined>;
+type FingerprintResolver = (
+  plugin: FmtPluginSpecifier,
+) => Promise<string | undefined>;
 
 const resolveModuleUrl = (specifier: string, parentUrl: URL): string =>
   moduleResolve(specifier, parentUrl).href;
 
-const isFmtPluginSpecifier = (plugin: FmtPlugin): plugin is FmtPluginSpecifier =>
+const isFmtPluginSpecifier = (
+  plugin: FmtPlugin,
+): plugin is FmtPluginSpecifier =>
   typeof plugin === 'string' || plugin instanceof URL;
 
 const getPackageRoot = (entryPath: string): string | undefined => {
@@ -38,7 +48,9 @@ const getPackageRoot = (entryPath: string): string | undefined => {
   return entryPath.slice(0, end);
 };
 
-const fingerprintPlugin = async (pluginUrl: string): Promise<string | undefined> => {
+const fingerprintPlugin = async (
+  pluginUrl: string,
+): Promise<string | undefined> => {
   try {
     const url = new URL(pluginUrl);
     if (url.protocol !== 'file:') {
@@ -53,7 +65,9 @@ const fingerprintPlugin = async (pluginUrl: string): Promise<string | undefined>
       return undefined;
     }
 
-    const pkg: unknown = JSON.parse(await readFile(join(packageRoot, 'package.json'), 'utf8'));
+    const pkg: unknown = JSON.parse(
+      await readFile(join(packageRoot, 'package.json'), 'utf8'),
+    );
     if (
       typeof pkg !== 'object' ||
       pkg === null ||
@@ -142,7 +156,9 @@ const createPluginResolver = (rootPath: string): FmtPluginResolver => {
     }
 
     const resolvedPlugins = plugins.map(resolvePlugin);
-    const resolvedOptions = resolvedPlugins.every((plugin, index) => plugin === plugins[index])
+    const resolvedOptions = resolvedPlugins.every(
+      (plugin, index) => plugin === plugins[index],
+    )
       ? options
       : { ...options, plugins: resolvedPlugins };
     optionsCache.set(options, resolvedOptions);

@@ -46,7 +46,10 @@ Rsbuild 插件、测试库等项目专属依赖，建议定义在实际使用它
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
 
-define.lint(({ js, ts }) => [js.configs.recommended, ts.configs.recommendedTypeChecked]);
+define.lint(({ js, ts }) => [
+  js.configs.recommended,
+  ts.configs.recommendedTypeChecked,
+]);
 
 define.fmt({
   singleQuote: true,

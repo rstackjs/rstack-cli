@@ -28,6 +28,8 @@ missing-command
 
     expect(missing.status).toBe(127);
     expect(output).toContain('Rstack - pre-commit hook failed (code 127)');
-    expect(output).toContain(`Rstack - command not found in PATH=${actualPath}`);
+    expect(output).toContain(
+      `Rstack - command not found in PATH=${actualPath}`,
+    );
   });
 });

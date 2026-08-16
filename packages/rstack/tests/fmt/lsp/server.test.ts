@@ -9,7 +9,10 @@ test('maps the edit onto the formatted document', async () => {
 
   expect(edits).toEqual([
     {
-      range: { start: { line: 1, character: 7 }, end: { line: 1, character: 8 } },
+      range: {
+        start: { line: 1, character: 7 },
+        end: { line: 1, character: 8 },
+      },
       newText: ' = ',
     },
   ]);
@@ -18,8 +21,12 @@ test('maps the edit onto the formatted document', async () => {
 test('returns no edits for an already formatted document', async () => {
   const getText = () => 'const a = 1;\n';
 
-  expect(await createDocumentEdits(getText, () => Promise.resolve('const a = 1;\n'))).toEqual([]);
-  expect(await createDocumentEdits(getText, () => Promise.resolve(undefined))).toEqual([]);
+  expect(
+    await createDocumentEdits(getText, () => Promise.resolve('const a = 1;\n')),
+  ).toEqual([]);
+  expect(
+    await createDocumentEdits(getText, () => Promise.resolve(undefined)),
+  ).toEqual([]);
 });
 
 test('returns no edits for a document that is not open', async () => {

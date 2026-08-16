@@ -1,8 +1,20 @@
-import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { installHooks } from '../../src/setup/install.ts';
-import { runGitHook, runHook, withRepository, writeHook, writeInit } from './helpers.ts';
+import {
+  runGitHook,
+  runHook,
+  withRepository,
+  writeHook,
+  writeInit,
+} from './helpers.ts';
 
 test('loads user init and project binaries', () => {
   withRepository((cwd) => {
@@ -30,8 +42,12 @@ rstack-hook-command
     expect(installHooks({ cwd: projectDirectory }).status).toBe('installed');
 
     expect(runHook(cwd).status).toBe(0);
-    expect(readFileSync(path.join(projectDirectory, 'init-ran'), 'utf8')).toBe('loaded\n');
-    expect(readFileSync(path.join(projectDirectory, 'project-bin-ran'), 'utf8')).toBe('ran\n');
+    expect(readFileSync(path.join(projectDirectory, 'init-ran'), 'utf8')).toBe(
+      'loaded\n',
+    );
+    expect(
+      readFileSync(path.join(projectDirectory, 'project-bin-ran'), 'utf8'),
+    ).toBe('ran\n');
   });
 });
 

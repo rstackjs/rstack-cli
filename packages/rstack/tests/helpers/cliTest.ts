@@ -1,8 +1,16 @@
-import { type ChildProcess, type SpawnOptions, spawn as nodeSpawn } from 'node:child_process';
+import {
+  type ChildProcess,
+  type SpawnOptions,
+  spawn as nodeSpawn,
+} from 'node:child_process';
 import path from 'node:path';
 import { prepareDist as basePrepareDist } from '@rstackjs/test-utils';
 import { test as baseTest } from 'rstack/test';
-import { execCli as baseExecCli, type ExecCli, RSTACK_BIN_PATH } from './cli.ts';
+import {
+  execCli as baseExecCli,
+  type ExecCli,
+  RSTACK_BIN_PATH,
+} from './cli.ts';
 import { type ExtendedLogHelper, proxyConsole } from './logs.ts';
 
 type Exec = (
@@ -33,7 +41,10 @@ function makeBox(title: string) {
   };
 }
 
-const setupExecOptions = <T extends SpawnOptions>(options: T, cwd: string): T => {
+const setupExecOptions = <T extends SpawnOptions>(
+  options: T,
+  cwd: string,
+): T => {
   // inherit process.env from current process
   const { NODE_ENV: _, ...restEnv } = process.env;
   options.env ||= {};
@@ -47,7 +58,9 @@ export const test: CliTest = baseTest.extend<CliTestFixtures>({
     const { testPath } = expect.getState();
 
     if (!testPath) {
-      throw new Error('Unable to resolve current test file path from expect state.');
+      throw new Error(
+        'Unable to resolve current test file path from expect state.',
+      );
     }
 
     await use(path.dirname(testPath));
@@ -86,7 +99,10 @@ export const test: CliTest = baseTest.extend<CliTestFixtures>({
     const closes: Array<() => void> = [];
 
     const exec: Exec = (command, options = {}) => {
-      const childProcess = nodeSpawn(command, setupExecOptions({ shell: true, ...options }, cwd));
+      const childProcess = nodeSpawn(
+        command,
+        setupExecOptions({ shell: true, ...options }, cwd),
+      );
 
       const onData = (data: Buffer) => {
         logHelper.addLog(data.toString());

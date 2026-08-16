@@ -14,7 +14,8 @@ const resolveAutomaticExtends = async (
       /* rspackChunkName: 'adapterRsbuild' */
       '@rstest/adapter-rsbuild'
     );
-    const config = typeof appConfig === 'function' ? await appConfig(params) : appConfig;
+    const config =
+      typeof appConfig === 'function' ? await appConfig(params) : appConfig;
 
     return withRsbuildConfig({
       config,
@@ -27,7 +28,8 @@ const resolveAutomaticExtends = async (
       /* rspackChunkName: 'adapterRslib' */
       '@rstest/adapter-rslib'
     );
-    const config = typeof libConfig === 'function' ? await libConfig(params) : libConfig;
+    const config =
+      typeof libConfig === 'function' ? await libConfig(params) : libConfig;
 
     return withRslibConfig({
       config,
@@ -51,7 +53,11 @@ const injectExtends = <T extends RstestConfig>(
   };
 };
 
-const extendsConfig = async (configs: Configs, testConfig: RstestConfig, params: ConfigParams) => {
+const extendsConfig = async (
+  configs: Configs,
+  testConfig: RstestConfig,
+  params: ConfigParams,
+) => {
   if ('extends' in testConfig) {
     return testConfig;
   }
@@ -73,7 +79,9 @@ const extendsConfig = async (configs: Configs, testConfig: RstestConfig, params:
   return {
     ...testConfig,
     projects: testConfig.projects.map((project) =>
-      typeof project === 'string' ? project : injectExtends(project, automaticExtends),
+      typeof project === 'string'
+        ? project
+        : injectExtends(project, automaticExtends),
     ),
   };
 };

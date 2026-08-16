@@ -16,7 +16,9 @@ const createFmtFileResolver = (config: ResolvedFmtConfig): FmtFileResolver => {
       pluginResolver ??= import(
         /* rspackChunkName: 'fmtPlugins' */
         './plugins.ts'
-      ).then(({ createPluginResolver }) => createPluginResolver(config.rootPath));
+      ).then(({ createPluginResolver }) =>
+        createPluginResolver(config.rootPath),
+      );
       options = (await pluginResolver)(options);
     }
 

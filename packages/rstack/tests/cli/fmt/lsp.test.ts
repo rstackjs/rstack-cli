@@ -1,6 +1,11 @@
 import { expect, test } from 'rstack/test';
 import { setupFmtTest } from './helpers.ts';
-import { applyTextEdits, type LspClient, startLspServer, toFileUri } from './lspClient.ts';
+import {
+  applyTextEdits,
+  type LspClient,
+  startLspServer,
+  toFileUri,
+} from './lspClient.ts';
 
 const { resolveProjectPath, runFmt, writeProjectFile } = setupFmtTest();
 
@@ -27,7 +32,11 @@ const withLspServer = async (
   }
 };
 
-const openDocument = (client: LspClient, filePath: string, text: string): string => {
+const openDocument = (
+  client: LspClient,
+  filePath: string,
+  text: string,
+): string => {
   const uri = toFileUri(resolveProjectPath(filePath));
   client.openDocument(uri, 'typescript', text);
 
@@ -87,7 +96,9 @@ test(
 
       const edits = await client.formatDocument(uri);
 
-      expect(applyTextEdits(source, edits)).toBe('const inBuffer = "buffer";\n');
+      expect(applyTextEdits(source, edits)).toBe(
+        'const inBuffer = "buffer";\n',
+      );
     });
   },
   TEST_TIMEOUT,
@@ -252,8 +263,16 @@ test(
     await withLspServer(
       async (client) => {
         await client.initialize(resolveProjectPath('.'));
-        const ignoredUri = openDocument(client, 'src/ignored.ts', 'const ignored="ignored"\n');
-        const formattedUri = openDocument(client, 'src/index.ts', 'const x=1\n');
+        const ignoredUri = openDocument(
+          client,
+          'src/ignored.ts',
+          'const ignored="ignored"\n',
+        );
+        const formattedUri = openDocument(
+          client,
+          'src/index.ts',
+          'const x=1\n',
+        );
 
         expect(await client.formatDocument(ignoredUri)).toEqual([]);
         // The ignore file was read rather than reported as missing.
@@ -330,7 +349,11 @@ define.fmt({ ignorePatterns: ['src/ignored.ts'] });
 
     await withLspServer(async (client) => {
       await client.initialize();
-      const uri = openDocument(client, 'src/ignored.ts', 'const ignored="ignored"\n');
+      const uri = openDocument(
+        client,
+        'src/ignored.ts',
+        'const ignored="ignored"\n',
+      );
 
       expect(await client.formatDocument(uri)).toEqual([]);
     });
@@ -379,12 +402,16 @@ test('returns exit code 2 for file arguments with --lsp', () => {
   const result = runFmt(['--lsp', 'src/index.ts']);
 
   expect(result.status).toBe(2);
-  expect(result.stderr).toContain('The --lsp option cannot be used with file arguments.');
+  expect(result.stderr).toContain(
+    'The --lsp option cannot be used with file arguments.',
+  );
 });
 
 test('returns exit code 2 for --stdin-filepath with --lsp', () => {
   const result = runFmt(['--lsp', '--stdin-filepath', 'src/index.ts']);
 
   expect(result.status).toBe(2);
-  expect(result.stderr).toContain('The --lsp option cannot be used with --stdin-filepath.');
+  expect(result.stderr).toContain(
+    'The --lsp option cannot be used with --stdin-filepath.',
+  );
 });

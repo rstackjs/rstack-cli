@@ -1,6 +1,10 @@
 import { expect, test } from 'rstack/test';
 import { normalizeHelpOutput } from '#test-helpers';
-import { expectWriteSummary, normalizeDuration, setupFmtTest } from './helpers.ts';
+import {
+  expectWriteSummary,
+  normalizeDuration,
+  setupFmtTest,
+} from './helpers.ts';
 
 const { readProjectFile, runCLI, runFmt, writeProjectFile } = setupFmtTest();
 
@@ -77,7 +81,9 @@ test('formats files in node_modules with --with-node-modules', () => {
   expect(result.status).toBe(0);
   expectWriteSummary(result.stdout, 1, 1);
   expect(result.stderr).toBe('');
-  expect(readProjectFile('node_modules/example/index.ts')).toBe('const message = "hello";\n');
+  expect(readProjectFile('node_modules/example/index.ts')).toBe(
+    'const message = "hello";\n',
+  );
 });
 
 test('summarizes write mode when no files change', () => {
@@ -116,18 +122,21 @@ test('checks formatting without writing files', () => {
   expect(formattedResult.stderr).toBe('');
 });
 
-test.each(['-l', '--list-different'])('lists only paths that differ with %s', (option) => {
-  const source = 'const message="hello"';
-  writeProjectFile('src/index.ts', source);
-  writeProjectFile('src/formatted.ts', 'const formatted = true;\n');
+test.each(['-l', '--list-different'])(
+  'lists only paths that differ with %s',
+  (option) => {
+    const source = 'const message="hello"';
+    writeProjectFile('src/index.ts', source);
+    writeProjectFile('src/formatted.ts', 'const formatted = true;\n');
 
-  const result = runFmt([option, 'src/*.ts']);
+    const result = runFmt([option, 'src/*.ts']);
 
-  expect(result.status).toBe(1);
-  expect(result.stdout).toBe('src/index.ts\n');
-  expect(result.stderr).toBe('');
-  expect(readProjectFile('src/index.ts')).toBe(source);
-});
+    expect(result.status).toBe(1);
+    expect(result.stdout).toBe('src/index.ts\n');
+    expect(result.stderr).toBe('');
+    expect(readProjectFile('src/index.ts')).toBe(source);
+  },
+);
 
 test('returns exit code 2 for formatting errors', () => {
   writeProjectFile('index.ts', 'const value = ;');

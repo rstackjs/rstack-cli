@@ -1,6 +1,9 @@
 import { expect, test } from 'rstack/test';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { computeMinimalEdit, computeMinimalTextEdit } from '../../../src/fmt/lsp/minimalEdit.ts';
+import {
+  computeMinimalEdit,
+  computeMinimalTextEdit,
+} from '../../../src/fmt/lsp/minimalEdit.ts';
 
 /** Applies an edit the way an editor does, to prove it rewrites the document. */
 const applyMinimalEdit = (source: string, formatted: string): string => {
@@ -17,7 +20,10 @@ const applyMinimalEdit = (source: string, formatted: string): string => {
  * does: offsets become positions on the server and positions become offsets
  * again on the client, which moves any offset that lands inside a `\r\n`.
  */
-const applyMinimalEditThroughPositions = (source: string, formatted: string): string => {
+const applyMinimalEditThroughPositions = (
+  source: string,
+  formatted: string,
+): string => {
   const edit = computeMinimalEdit(source, formatted);
   if (!edit) {
     return source;
@@ -35,7 +41,9 @@ const applyMinimalEditThroughPositions = (source: string, formatted: string): st
 
 test('returns no edit for identical sources', () => {
   expect(computeMinimalEdit('', '')).toBeUndefined();
-  expect(computeMinimalEdit('const x = 1;\n', 'const x = 1;\n')).toBeUndefined();
+  expect(
+    computeMinimalEdit('const x = 1;\n', 'const x = 1;\n'),
+  ).toBeUndefined();
 });
 
 test('replaces the whole document when nothing is shared', () => {
@@ -44,7 +52,11 @@ test('replaces the whole document when nothing is shared', () => {
     end: 0,
     newText: 'const x = 1;\n',
   });
-  expect(computeMinimalEdit('a\n', '')).toEqual({ start: 0, end: 2, newText: '' });
+  expect(computeMinimalEdit('a\n', '')).toEqual({
+    start: 0,
+    end: 2,
+    newText: '',
+  });
 });
 
 test('trims a shared prefix', () => {
@@ -134,8 +146,12 @@ test('survives a round trip through a real text document', () => {
   const formatted = 'const a = 1;\r\nconst b = 2;\r\n';
 
   expect(applyMinimalEditThroughPositions(source, formatted)).toBe(formatted);
-  expect(applyMinimalEditThroughPositions('a\nb\n', 'a\r\nb\r\n')).toBe('a\r\nb\r\n');
-  expect(applyMinimalEditThroughPositions('a\r\nb\r\n', 'a\nb\n')).toBe('a\nb\n');
+  expect(applyMinimalEditThroughPositions('a\nb\n', 'a\r\nb\r\n')).toBe(
+    'a\r\nb\r\n',
+  );
+  expect(applyMinimalEditThroughPositions('a\r\nb\r\n', 'a\nb\n')).toBe(
+    'a\nb\n',
+  );
 });
 
 // Line terminators are where offsets stop being interchangeable with positions,
@@ -146,13 +162,20 @@ test('addresses every combination of line terminators', () => {
   const texts: string[] = [''];
   let current = [''];
   for (let length = 0; length < 5; length++) {
-    current = current.flatMap((text) => alphabet.map((character) => text + character));
+    current = current.flatMap((text) =>
+      alphabet.map((character) => text + character),
+    );
     texts.push(...current);
   }
 
   const failures: string[] = [];
   for (const source of texts) {
-    const document = TextDocument.create('file:///a.ts', 'typescript', 1, source);
+    const document = TextDocument.create(
+      'file:///a.ts',
+      'typescript',
+      1,
+      source,
+    );
     for (const formatted of texts) {
       const edit = computeMinimalEdit(source, formatted);
       if (!edit) {
@@ -163,7 +186,9 @@ test('addresses every combination of line terminators', () => {
       const end = document.offsetAt(document.positionAt(edit.end));
       const applied = source.slice(0, start) + edit.newText + source.slice(end);
       if (applied !== formatted) {
-        failures.push(`${JSON.stringify(source)} -> ${JSON.stringify(formatted)}`);
+        failures.push(
+          `${JSON.stringify(source)} -> ${JSON.stringify(formatted)}`,
+        );
       }
 
       // The hand-rolled position mapping must agree with the reference
@@ -174,7 +199,9 @@ test('addresses every combination of line terminators', () => {
         end: document.positionAt(edit.end),
       };
       if (JSON.stringify(range) !== JSON.stringify(expected)) {
-        failures.push(`positions ${JSON.stringify(source)} -> ${JSON.stringify(formatted)}`);
+        failures.push(
+          `positions ${JSON.stringify(source)} -> ${JSON.stringify(formatted)}`,
+        );
       }
     }
   }

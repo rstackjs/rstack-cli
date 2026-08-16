@@ -1,6 +1,13 @@
 #!/usr/bin/env node
 import { spawn } from 'node:child_process';
-import { copyFile, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import {
+  copyFile,
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import path from 'node:path';
 
 const rootDir = path.resolve(import.meta.dirname, '..');

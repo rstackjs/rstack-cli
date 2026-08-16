@@ -54,7 +54,9 @@ test('includes plugin fingerprints in option hashes', () => {
   const second = createOptionsHasher(new Map([[plugin, 'plugin@2']]));
 
   expect(first({ plugins: [plugin] })).toHaveLength(cacheHashLength);
-  expect(first({ plugins: [new URL(plugin)] })).toBe(first({ plugins: [plugin] }));
+  expect(first({ plugins: [new URL(plugin)] })).toBe(
+    first({ plugins: [plugin] }),
+  );
   expect(first({ plugins: [plugin] })).not.toBe(second({ plugins: [plugin] }));
 });
 
@@ -71,8 +73,12 @@ test('bypasses user plugins and unserializable options', () => {
   );
   cyclic.self = cyclic;
 
-  expect(hashOptions({ plugins: [path.resolve('plugin.mjs')] })).toBeUndefined();
-  expect(hashOptions({ plugins: [pathToFileURL(path.resolve('plugin.mjs'))] })).toBeUndefined();
+  expect(
+    hashOptions({ plugins: [path.resolve('plugin.mjs')] }),
+  ).toBeUndefined();
+  expect(
+    hashOptions({ plugins: [pathToFileURL(path.resolve('plugin.mjs'))] }),
+  ).toBeUndefined();
 
   expect(hashOptions(asOptions({ custom: cyclic }))).toBeUndefined();
   expect(hashOptions(asOptions(unreadable))).toBeUndefined();
@@ -94,5 +100,7 @@ test('creates config-root-relative POSIX cache keys', () => {
   expect(resolveKey(firstPath)).toBe('src/nested/index.ts');
   expect(resolveKey(secondPath)).toBe('src/other.ts');
   expect(resolveKey(firstPath)).not.toBe(resolveKey(secondPath));
-  expect(resolveKey(path.join(rootPath, '../shared/index.ts'))).toBe('../shared/index.ts');
+  expect(resolveKey(path.join(rootPath, '../shared/index.ts'))).toBe(
+    '../shared/index.ts',
+  );
 });

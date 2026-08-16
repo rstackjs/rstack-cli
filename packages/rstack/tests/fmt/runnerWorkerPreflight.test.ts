@@ -1,5 +1,8 @@
 import { beforeEach, expect, rs, test } from 'rstack/test';
-import { cacheNamespace, createOptionsHasher } from '../../src/fmt/cacheIdentity.ts';
+import {
+  cacheNamespace,
+  createOptionsHasher,
+} from '../../src/fmt/cacheIdentity.ts';
 import { loadFmtCacheStore } from '../../src/fmt/cacheStore.ts';
 import { runFmtFiles } from '../../src/fmt/runner.ts';
 import {
@@ -24,7 +27,10 @@ beforeEach(() => {
   mocks.workerPoolCalls.length = 0;
 });
 
-const createCachedUnsupportedFile = async (rootPath: string, fileName: string) => {
+const createCachedUnsupportedFile = async (
+  rootPath: string,
+  fileName: string,
+) => {
   const filePath = writeProjectFile(rootPath, fileName, 'plain text');
   const cache = createFmtCacheContext(rootPath);
   const file = createFmtRequest(filePath, {});
@@ -42,7 +48,10 @@ const createCachedUnsupportedFile = async (rootPath: string, fileName: string) =
 
 test('does not start the worker pool when every parser result is cached as unsupported', async () => {
   await withTempProject(async (rootPath) => {
-    const { cache, file } = await createCachedUnsupportedFile(rootPath, 'example.unknown');
+    const { cache, file } = await createCachedUnsupportedFile(
+      rootPath,
+      'example.unknown',
+    );
 
     await expect(
       runFmtFiles({
@@ -61,7 +70,10 @@ test('does not start the worker pool when every parser result is cached as unsup
 
 test('starts the worker pool for a path-only unsupported entry without an extension', async () => {
   await withTempProject(async (rootPath) => {
-    const { cache, file } = await createCachedUnsupportedFile(rootPath, 'script');
+    const { cache, file } = await createCachedUnsupportedFile(
+      rootPath,
+      'script',
+    );
 
     await expect(
       runFmtFiles({

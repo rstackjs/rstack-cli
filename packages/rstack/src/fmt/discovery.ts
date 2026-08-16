@@ -19,7 +19,9 @@ const discoverFmtFiles = async ({
   config,
 }: DiscoverFmtFilesOptions): Promise<FmtFileRequest[]> => {
   const isIgnored = await createIgnoreMatcher({ config, cwd, ignorePaths });
-  const isExcluded = excludedDirPath ? createDirMatcher(excludedDirPath) : undefined;
+  const isExcluded = excludedDirPath
+    ? createDirMatcher(excludedDirPath)
+    : undefined;
   const shouldIgnore = isExcluded
     ? (filePath: string, isDirectory = false) =>
         isExcluded(filePath) || isIgnored(filePath, isDirectory)

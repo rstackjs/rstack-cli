@@ -1,4 +1,9 @@
-import { format, getFileInfo, type Options, type ParserOptions } from 'prettier';
+import {
+  format,
+  getFileInfo,
+  type Options,
+  type ParserOptions,
+} from 'prettier';
 import { expect, test } from 'rstack/test';
 import { yukuPlugin } from '../../src/fmt/yukuPlugin.ts';
 
@@ -9,11 +14,14 @@ const formatWithYuku = (
   format(source, {
     plugins: [yukuPlugin],
     ...options,
-    filepath: options.filepath ?? `example.${options.parser === 'yuku' ? 'js' : 'ts'}`,
+    filepath:
+      options.filepath ?? `example.${options.parser === 'yuku' ? 'js' : 'ts'}`,
   });
 
 test('exposes the same JavaScript and TypeScript language mappings as the official plugin', async () => {
-  expect(yukuPlugin.languages?.map(({ name, parsers }) => ({ name, parsers }))).toEqual([
+  expect(
+    yukuPlugin.languages?.map(({ name, parsers }) => ({ name, parsers })),
+  ).toEqual([
     { name: 'JavaScript', parsers: ['yuku', 'yuku-ts'] },
     { name: 'JSX', parsers: ['yuku', 'yuku-ts'] },
     { name: 'TypeScript', parsers: ['yuku-ts'] },
@@ -63,7 +71,9 @@ test.each(['example.d.ts', 'example.d.mts', 'example.d.cts'])(
         filepath,
         parser: 'yuku-ts',
       }),
-    ).rejects.toThrow('An implementation cannot be declared in ambient contexts');
+    ).rejects.toThrow(
+      'An implementation cannot be declared in ambient contexts',
+    );
   },
 );
 
@@ -115,7 +125,8 @@ test.each([
     parser: 'yuku-ts' as const,
     filepath: 'example.tsx',
     source: 'const view=(<Component value={{foo:1}}>{(item)}</Component>)',
-    expected: 'const view = <Component value={{ foo: 1 }}>{item}</Component>;\n',
+    expected:
+      'const view = <Component value={{ foo: 1 }}>{item}</Component>;\n',
   },
 ])('normalizes $name for the ESTree printer', async (fixture) => {
   await expect(
@@ -179,15 +190,18 @@ test.each([
     hasPragma: false,
     hasIgnorePragma: false,
   },
-])('matches Prettier pragma detection for $source', ({ source, hasPragma, hasIgnorePragma }) => {
-  const parser = yukuPlugin.parsers?.yuku;
-  if (!parser?.hasPragma || !parser.hasIgnorePragma) {
-    throw new Error('The Yuku parser does not expose pragma handlers.');
-  }
+])(
+  'matches Prettier pragma detection for $source',
+  ({ source, hasPragma, hasIgnorePragma }) => {
+    const parser = yukuPlugin.parsers?.yuku;
+    if (!parser?.hasPragma || !parser.hasIgnorePragma) {
+      throw new Error('The Yuku parser does not expose pragma handlers.');
+    }
 
-  expect(parser.hasPragma(source)).toBe(hasPragma);
-  expect(parser.hasIgnorePragma(source)).toBe(hasIgnorePragma);
-});
+    expect(parser.hasPragma(source)).toBe(hasPragma);
+    expect(parser.hasIgnorePragma(source)).toBe(hasIgnorePragma);
+  },
+);
 
 test('matches Prettier JavaScript location overrides', () => {
   const parser = yukuPlugin.parsers?.yuku;
@@ -278,10 +292,10 @@ test('matches the official hashbang AST shape', async () => {
   }
 
   const options = { filepath: 'example.js' } as ParserOptions;
-  const astWithoutHashbang = (await parser.parse('const value = 1', options)) as Record<
-    string,
-    unknown
-  >;
+  const astWithoutHashbang = (await parser.parse(
+    'const value = 1',
+    options,
+  )) as Record<string, unknown>;
   const astWithHashbang = (await parser.parse(
     '#!/usr/bin/env node\nconst value = 1',
     options,

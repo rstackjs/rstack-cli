@@ -1,4 +1,8 @@
-import { cacheNamespace, createCacheKeyResolver, createOptionsHasher } from './cacheIdentity.ts';
+import {
+  cacheNamespace,
+  createCacheKeyResolver,
+  createOptionsHasher,
+} from './cacheIdentity.ts';
 import { loadFmtCacheStore } from './cacheStore.ts';
 import type { FmtCacheEntry, FmtCacheStore } from './cacheStore.ts';
 import { hasDottedBasename } from './pathHelpers.ts';
@@ -77,7 +81,10 @@ const loadPluginFingerprints = async (
   );
   const resolveFingerprint = createFingerprintResolver();
   const entries = await Promise.all(
-    Array.from(plugins, async ([key, plugin]) => [key, await resolveFingerprint(plugin)] as const),
+    Array.from(
+      plugins,
+      async ([key, plugin]) => [key, await resolveFingerprint(plugin)] as const,
+    ),
   );
   const fingerprints = new Map<string, string>();
   for (const [key, fingerprint] of entries) {
@@ -89,7 +96,10 @@ const loadPluginFingerprints = async (
 };
 
 /** Resolves the portable cache identity before work is dispatched. */
-const createRunTask = (file: FmtFileRequest, cache?: RunCache): FmtFileRunTask => {
+const createRunTask = (
+  file: FmtFileRequest,
+  cache?: RunCache,
+): FmtFileRunTask => {
   let key: string | undefined;
   let fileCache: FmtFileCache | undefined;
 
@@ -207,7 +217,9 @@ const runWithWorkers = async (
       workerPool.workerCount >= minPriorityWorkers
         ? await runPriorityTasks(tasks, shouldWrite, workerPool.formatFile)
         : await Promise.all(
-            tasks.map((task) => runFmtFile(task, shouldWrite, workerPool.formatFile)),
+            tasks.map((task) =>
+              runFmtFile(task, shouldWrite, workerPool.formatFile),
+            ),
           );
     const processedFiles: FmtFileResult[] = [];
     let processedFileCount = 0;
@@ -277,7 +289,10 @@ const runFmtFiles = async ({
 
   return {
     ...result,
-    exitCode: files.length > 0 && result.processedFileCount === 0 ? 2 : getExitCode(result.files),
+    exitCode:
+      files.length > 0 && result.processedFileCount === 0
+        ? 2
+        : getExitCode(result.files),
   };
 };
 

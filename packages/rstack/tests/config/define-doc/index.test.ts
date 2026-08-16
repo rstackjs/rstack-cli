@@ -3,7 +3,11 @@ import { test } from '#test-helpers';
 
 const expectedText = 'define.doc works';
 
-test('should build docs with define.doc config', async ({ prepareDist, execCli, expect }) => {
+test('should build docs with define.doc config', async ({
+  prepareDist,
+  execCli,
+  expect,
+}) => {
   const distPath = await prepareDist('doc_build');
 
   execCli('doc build');

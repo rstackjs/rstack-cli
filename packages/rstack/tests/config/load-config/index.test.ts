@@ -15,7 +15,8 @@ declare global {
 }
 
 const state = getConfigState();
-const configPath = (fileName: string): string => path.join(import.meta.dirname, fileName);
+const configPath = (fileName: string): string =>
+  path.join(import.meta.dirname, fileName);
 const loadConfigFile = (fileName: string) =>
   loadRstackConfig({ configFilePath: configPath(fileName) });
 
@@ -62,7 +63,9 @@ test('should resolve a relative explicit config path from cwd', async () => {
 });
 
 test('should search for the config file in cwd', async () => {
-  await expect(loadRstackConfig({ cwd: import.meta.dirname })).rejects.toThrow('test config error');
+  await expect(loadRstackConfig({ cwd: import.meta.dirname })).rejects.toThrow(
+    'test config error',
+  );
 });
 
 test('should isolate parallel config sessions across top-level await', async () => {

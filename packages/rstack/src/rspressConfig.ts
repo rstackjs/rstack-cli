@@ -34,7 +34,11 @@ export default async (): Promise<UserConfig> => {
       dev: {
         ...config.builderConfig?.dev,
         watchFiles: [
-          ...(watchFiles ? (Array.isArray(watchFiles) ? watchFiles : [watchFiles]) : []),
+          ...(watchFiles
+            ? Array.isArray(watchFiles)
+              ? watchFiles
+              : [watchFiles]
+            : []),
           watchConfig,
         ],
       },

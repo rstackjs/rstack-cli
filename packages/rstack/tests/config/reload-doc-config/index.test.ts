@@ -7,8 +7,14 @@ test('should restart doc dev server when Rstack config changes', async ({
   execCliAsync,
   logHelper,
 }) => {
-  const configFile = path.join(import.meta.dirname, 'test-temp-rstack.config.ts');
-  const userWatchFile = path.join(import.meta.dirname, 'test-temp-user-watch.txt');
+  const configFile = path.join(
+    import.meta.dirname,
+    'test-temp-rstack.config.ts',
+  );
+  const userWatchFile = path.join(
+    import.meta.dirname,
+    'test-temp-user-watch.txt',
+  );
 
   const writeConfig = (title: string) =>
     writeFile(
@@ -33,19 +39,25 @@ define.doc({
   await writeFile(userWatchFile, 'initial\n');
   await writeConfig('before config change');
 
-  execCliAsync(`doc --config test-temp-rstack.config.ts --port ${await getRandomPort()}`);
+  execCliAsync(
+    `doc --config test-temp-rstack.config.ts --port ${await getRandomPort()}`,
+  );
   await logHelper.expectBuildEnd();
   logHelper.clearLogs();
 
   await writeConfig('after config change');
 
-  await logHelper.expectLog('restarting server as test-temp-rstack.config.ts changed');
+  await logHelper.expectLog(
+    'restarting server as test-temp-rstack.config.ts changed',
+  );
   await logHelper.expectBuildEnd();
   logHelper.clearLogs();
 
   await writeFile(userWatchFile, 'changed\n');
 
-  await logHelper.expectLog('restarting server as test-temp-user-watch.txt changed');
+  await logHelper.expectLog(
+    'restarting server as test-temp-user-watch.txt changed',
+  );
   await logHelper.expectBuildEnd();
 });
 
@@ -53,10 +65,16 @@ test('should restart doc dev server when an imported config file changes', async
   execCliAsync,
   logHelper,
 }) => {
-  const configFile = path.join(import.meta.dirname, 'test-temp-import.config.ts');
+  const configFile = path.join(
+    import.meta.dirname,
+    'test-temp-import.config.ts',
+  );
   const importedFile = path.join(import.meta.dirname, 'test-temp-imported.ts');
 
-  await writeFile(importedFile, "export const title = 'before import change';\n");
+  await writeFile(
+    importedFile,
+    "export const title = 'before import change';\n",
+  );
   await writeFile(
     configFile,
     `import { define } from 'rstack';
@@ -69,12 +87,19 @@ define.doc({
 `,
   );
 
-  execCliAsync(`doc --config test-temp-import.config.ts --port ${await getRandomPort()}`);
+  execCliAsync(
+    `doc --config test-temp-import.config.ts --port ${await getRandomPort()}`,
+  );
   await logHelper.expectBuildEnd();
   logHelper.clearLogs();
 
-  await writeFile(importedFile, "export const title = 'after import change';\n");
+  await writeFile(
+    importedFile,
+    "export const title = 'after import change';\n",
+  );
 
-  await logHelper.expectLog('restarting server as test-temp-imported.ts changed');
+  await logHelper.expectLog(
+    'restarting server as test-temp-imported.ts changed',
+  );
   await logHelper.expectBuildEnd();
 });
