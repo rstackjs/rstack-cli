@@ -6,7 +6,8 @@ import {
   sortedPackageJson,
 } from './helpers.ts';
 
-const { readProjectFile, runFmt, writeFixturePlugin, writeProjectFile } = setupFmtTest();
+const { readProjectFile, runFmt, writeFixturePlugin, writeProjectFile } =
+  setupFmtTest();
 
 test('does not sort package.json by default', () => {
   writeProjectFile('package.json', packageJsonSource);
@@ -35,7 +36,9 @@ define.fmt({ sortPackageJson: true });
   expect(result.status).toBe(0);
   expect(result.stderr).toBe('');
   expect(readProjectFile('package.json')).toBe(sortedPackageJson);
-  expect(readProjectFile('packages/example/package.json')).toBe(sortedPackageJson);
+  expect(readProjectFile('packages/example/package.json')).toBe(
+    sortedPackageJson,
+  );
 });
 
 test('supports configuring the worker count', () => {
@@ -52,17 +55,28 @@ test('supports configuring the worker count', () => {
 });
 
 test('does not load Prettier config or ignore files', () => {
-  writeProjectFile('.prettierrc.json', '{ "singleQuote": true, "semi": false }\n');
+  writeProjectFile(
+    '.prettierrc.json',
+    '{ "singleQuote": true, "semi": false }\n',
+  );
   writeProjectFile('.prettierignore', 'index.ts\n');
-  writeProjectFile('.editorconfig', 'root = true\n\n[*]\nindent_style = space\nindent_size = 8\n');
-  writeProjectFile('index.ts', "function getMessage(){\n        return 'hello'\n}");
+  writeProjectFile(
+    '.editorconfig',
+    'root = true\n\n[*]\nindent_style = space\nindent_size = 8\n',
+  );
+  writeProjectFile(
+    'index.ts',
+    "function getMessage(){\n        return 'hello'\n}",
+  );
 
   const result = runFmt(['index.ts']);
 
   expect(result.status).toBe(0);
   expectWriteSummary(result.stdout, 1, 1);
   expect(result.stderr).toBe('');
-  expect(readProjectFile('index.ts')).toBe('function getMessage() {\n  return "hello";\n}\n');
+  expect(readProjectFile('index.ts')).toBe(
+    'function getMessage() {\n  return "hello";\n}\n',
+  );
 });
 
 test('applies repeated ignore paths', () => {
@@ -84,8 +98,12 @@ test('applies repeated ignore paths', () => {
   expect(result.status).toBe(0);
   expectWriteSummary(result.stdout, 1, 1);
   expect(result.stderr).toBe('');
-  expect(readProjectFile('src/ignored-by-root.ts')).toBe('const root="ignored"');
-  expect(readProjectFile('src/ignored-by-extra.ts')).toBe('const extra="ignored"');
+  expect(readProjectFile('src/ignored-by-root.ts')).toBe(
+    'const root="ignored"',
+  );
+  expect(readProjectFile('src/ignored-by-extra.ts')).toBe(
+    'const extra="ignored"',
+  );
   expect(readProjectFile('src/index.ts')).toBe('const index = "formatted";\n');
 });
 
@@ -96,7 +114,9 @@ test('returns exit code 2 for an unreadable ignore path', () => {
 
   expect(result.status).toBe(2);
   expect(result.stdout).toBe('');
-  expect(result.stderr).toContain('Failed to read ignore file "missing.ignore".');
+  expect(result.stderr).toContain(
+    'Failed to read ignore file "missing.ignore".',
+  );
   expect(readProjectFile('index.ts')).toBe('const value=true');
 });
 
@@ -156,7 +176,10 @@ define.fmt({
 });
 
 test('returns exit code 2 for config errors', () => {
-  writeProjectFile('rstack.config.ts', 'throw new Error("invalid fmt config");\n');
+  writeProjectFile(
+    'rstack.config.ts',
+    'throw new Error("invalid fmt config");\n',
+  );
 
   const result = runFmt(['index.ts']);
 

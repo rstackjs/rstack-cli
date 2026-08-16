@@ -8,7 +8,8 @@ import type { RstestConfigExport } from '@rstest/core';
 import type { FmtConfigDefinition } from './fmt/types.ts';
 import type { StagedConfig } from './staged.ts';
 
-export type RslintConfigDefinition = RslintConfig | (() => Promise<RslintConfig>);
+export type RslintConfigDefinition =
+  RslintConfig | (() => Promise<RslintConfig>);
 export type RspressConfigDefinition = UserConfig | UserConfigAsyncFn;
 
 type RslintConfigFactory = (
@@ -62,7 +63,8 @@ type ConfigState = {
 
 declare global {
   // rslint-disable-next-line no-var
-  var __rstackConfigSessionStorage: AsyncLocalStorage<ConfigSession> | undefined;
+  var __rstackConfigSessionStorage:
+    AsyncLocalStorage<ConfigSession> | undefined;
   // rslint-disable-next-line no-var
   var __rstackCliState: ConfigState | undefined;
 }
@@ -72,7 +74,8 @@ const getConfigSessionStorage = (): AsyncLocalStorage<ConfigSession> => {
   // imports the internal Rstack config. Keep the storage on globalThis so
   // every module instance reads and writes the same active session.
   if (!globalThis.__rstackConfigSessionStorage) {
-    globalThis.__rstackConfigSessionStorage = new AsyncLocalStorage<ConfigSession>();
+    globalThis.__rstackConfigSessionStorage =
+      new AsyncLocalStorage<ConfigSession>();
   }
 
   return globalThis.__rstackConfigSessionStorage;
@@ -152,11 +155,16 @@ type Define = {
   staged: (config: StagedConfig) => void;
 };
 
-const setConfig = <T extends keyof Configs>(type: T, config: Configs[T]): void => {
+const setConfig = <T extends keyof Configs>(
+  type: T,
+  config: Configs[T],
+): void => {
   const session = getConfigSessionStorage().getStore();
 
   if (!session?.active) {
-    throw new Error(`The "${type}" config must be defined while loading an Rstack config.`);
+    throw new Error(
+      `The "${type}" config must be defined while loading an Rstack config.`,
+    );
   }
 
   if (type in session.configs) {
@@ -173,7 +181,9 @@ export const define: Define = {
   lint: (config) =>
     setConfig(
       'lint',
-      typeof config === 'function' ? async () => config(await import('@rslint/core')) : config,
+      typeof config === 'function'
+        ? async () => config(await import('@rslint/core'))
+        : config,
     ),
   fmt: (config) => setConfig('fmt', config),
   staged: (config) => setConfig('staged', config),

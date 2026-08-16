@@ -20,7 +20,10 @@ test('discovers non-binary files in stable order and skips hard-ignored paths', 
     writeProjectFile(rootPath, '.jj/internal.js');
 
     const files = await discoverFmtPaths({ cwd: rootPath });
-    const filesWithNodeModules = await discoverFmtPaths({ cwd: rootPath, withNodeModules: true });
+    const filesWithNodeModules = await discoverFmtPaths({
+      cwd: rootPath,
+      withNodeModules: true,
+    });
 
     expect(relativePaths(rootPath, files)).toEqual([
       'a.js',
@@ -36,7 +39,10 @@ test('discovers non-binary files in stable order and skips hard-ignored paths', 
       'unknown.extension',
     ]);
     await expect(
-      discoverFmtPaths({ cwd: rootPath, patterns: ['node_modules/package/index.js'] }),
+      discoverFmtPaths({
+        cwd: rootPath,
+        patterns: ['node_modules/package/index.js'],
+      }),
     ).resolves.toEqual([]);
     await expect(
       discoverFmtPaths({
@@ -54,7 +60,10 @@ test('keeps node_modules excluded by gitignore when built-in exclusion is disabl
     writeProjectFile(rootPath, 'node_modules/package/index.js');
     writeProjectFile(rootPath, 'index.js');
 
-    const files = await discoverFmtPaths({ cwd: rootPath, withNodeModules: true });
+    const files = await discoverFmtPaths({
+      cwd: rootPath,
+      withNodeModules: true,
+    });
 
     expect(relativePaths(rootPath, files)).toEqual(['.gitignore', 'index.js']);
   });
@@ -93,7 +102,9 @@ test('combines files, directories, and globs without duplicates', async () => {
       path.join('src', 'a.ts'),
       path.join('test', 'c.ts'),
     ]);
-    expect(relativePaths(rootPath, dotFiles)).toEqual([path.join('dot', '.hidden.ts')]);
+    expect(relativePaths(rootPath, dotFiles)).toEqual([
+      path.join('dot', '.hidden.ts'),
+    ]);
     await expect(
       discoverFmtPaths({ cwd: rootPath, patterns: ['missing/**/*.ts'] }),
     ).resolves.toEqual([]);
@@ -112,13 +123,19 @@ test('applies nested gitignore rules with child negation', async () => {
     writeProjectFile(rootPath, 'dist/nested/keep.js');
     writeProjectFile(rootPath, 'visible.ts');
 
-    const files = await discoverFmtPaths({ cwd: rootPath, patterns: ['**/*.{js,ts}'] });
+    const files = await discoverFmtPaths({
+      cwd: rootPath,
+      patterns: ['**/*.{js,ts}'],
+    });
     const ignoredNestedDirectory = await discoverFmtPaths({
       cwd: rootPath,
       patterns: ['dist/nested'],
     });
 
-    expect(relativePaths(rootPath, files)).toEqual([path.join('src', 'keep.js'), 'visible.ts']);
+    expect(relativePaths(rootPath, files)).toEqual([
+      path.join('src', 'keep.js'),
+      'visible.ts',
+    ]);
     expect(ignoredNestedDirectory).toEqual([]);
   });
 });
@@ -129,7 +146,10 @@ test('does not extend a nested directory negation to its files', async () => {
     writeProjectFile(rootPath, 'scripts/.gitignore', '!debug\n');
     writeProjectFile(rootPath, 'scripts/debug/launch.mjs');
 
-    const files = await discoverFmtPaths({ cwd: rootPath, patterns: ['**/*.mjs'] });
+    const files = await discoverFmtPaths({
+      cwd: rootPath,
+      patterns: ['**/*.mjs'],
+    });
 
     expect(files).toEqual([]);
   });
@@ -195,9 +215,15 @@ test('keeps valid nested gitignore rules around normalized and malformed lines',
     writeProjectFile(rootPath, 'src/drop.js');
     writeProjectFile(rootPath, 'visible.ts');
 
-    const files = await discoverFmtPaths({ cwd: rootPath, patterns: ['**/*.{js,ts}'] });
+    const files = await discoverFmtPaths({
+      cwd: rootPath,
+      patterns: ['**/*.{js,ts}'],
+    });
 
-    expect(relativePaths(rootPath, files)).toEqual([path.join('src', 'keep.js'), 'visible.ts']);
+    expect(relativePaths(rootPath, files)).toEqual([
+      path.join('src', 'keep.js'),
+      'visible.ts',
+    ]);
   });
 });
 
@@ -213,7 +239,9 @@ test('propagates native binding errors while loading a nested gitignore', async 
       });
 
     try {
-      await expect(discoverFmtPaths({ cwd: rootPath })).rejects.toBe(nativeError);
+      await expect(discoverFmtPaths({ cwd: rootPath })).rejects.toBe(
+        nativeError,
+      );
     } finally {
       loadNativeBinding.mockRestore();
     }
@@ -230,10 +258,17 @@ test('lets explicit files bypass gitignore', async () => {
       cwd: rootPath,
       patterns: ['**/*.ts'],
     });
-    const explicitFiles = await discoverFmtPaths({ cwd: rootPath, patterns: [keepPath] });
+    const explicitFiles = await discoverFmtPaths({
+      cwd: rootPath,
+      patterns: [keepPath],
+    });
 
-    expect(relativePaths(rootPath, discoveredFiles)).toEqual([path.join('src', 'index.ts')]);
-    expect(relativePaths(rootPath, explicitFiles)).toEqual([path.join('generated', 'keep.ts')]);
+    expect(relativePaths(rootPath, discoveredFiles)).toEqual([
+      path.join('src', 'index.ts'),
+    ]);
+    expect(relativePaths(rootPath, explicitFiles)).toEqual([
+      path.join('generated', 'keep.ts'),
+    ]);
   });
 });
 
@@ -249,7 +284,9 @@ test('applies an external ignore matcher to traversed and explicit paths', async
         path: path.relative(rootPath, filePath),
         isDirectory,
       });
-      return isDirectory ? filePath === generatedPath : filePath === ignoredFilePath;
+      return isDirectory
+        ? filePath === generatedPath
+        : filePath === ignoredFilePath;
     };
 
     const files = await discoverFmtPaths({ cwd: rootPath, isIgnored });
@@ -264,10 +301,15 @@ test('applies an external ignore matcher to traversed and explicit paths', async
       isIgnored,
     });
 
-    expect(relativePaths(rootPath, files)).toEqual([path.join('src', 'index.ts')]);
+    expect(relativePaths(rootPath, files)).toEqual([
+      path.join('src', 'index.ts'),
+    ]);
     expect(ignoredRoot).toEqual([]);
     expect(explicitIgnoredFile).toEqual([]);
-    expect(checkedPaths).toContainEqual({ path: 'generated', isDirectory: true });
+    expect(checkedPaths).toContainEqual({
+      path: 'generated',
+      isDirectory: true,
+    });
     expect(checkedPaths).toContainEqual({
       path: path.join('src', 'ignored.ts'),
       isDirectory: false,
@@ -279,19 +321,27 @@ test('applies an external ignore matcher to traversed and explicit paths', async
   });
 });
 
-test.runIf(process.platform !== 'win32')('does not follow file or directory symlinks', async () => {
-  await withTempProject(async (rootPath) => {
-    const targetPath = writeProjectFile(rootPath, 'target/index.ts');
-    symlinkSync(path.join(rootPath, 'target'), path.join(rootPath, 'linked-directory'));
-    symlinkSync(targetPath, path.join(rootPath, 'linked-file.ts'));
+test.runIf(process.platform !== 'win32')(
+  'does not follow file or directory symlinks',
+  async () => {
+    await withTempProject(async (rootPath) => {
+      const targetPath = writeProjectFile(rootPath, 'target/index.ts');
+      symlinkSync(
+        path.join(rootPath, 'target'),
+        path.join(rootPath, 'linked-directory'),
+      );
+      symlinkSync(targetPath, path.join(rootPath, 'linked-file.ts'));
 
-    const discoveredFiles = await discoverFmtPaths({ cwd: rootPath });
-    const explicitFiles = await discoverFmtPaths({
-      cwd: rootPath,
-      patterns: ['linked-directory', 'linked-file.ts'],
+      const discoveredFiles = await discoverFmtPaths({ cwd: rootPath });
+      const explicitFiles = await discoverFmtPaths({
+        cwd: rootPath,
+        patterns: ['linked-directory', 'linked-file.ts'],
+      });
+
+      expect(relativePaths(rootPath, discoveredFiles)).toEqual([
+        path.join('target', 'index.ts'),
+      ]);
+      expect(explicitFiles).toEqual([]);
     });
-
-    expect(relativePaths(rootPath, discoveredFiles)).toEqual([path.join('target', 'index.ts')]);
-    expect(explicitFiles).toEqual([]);
-  });
-});
+  },
+);

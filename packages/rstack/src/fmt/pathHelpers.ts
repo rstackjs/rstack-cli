@@ -3,10 +3,14 @@ import path from 'node:path';
 type RelativePathResolver = (filePath: string) => string;
 
 const toPosixPath: (filePath: string) => string =
-  path.sep === '\\' ? (filePath) => filePath.replaceAll('\\', '/') : (filePath) => filePath;
+  path.sep === '\\'
+    ? (filePath) => filePath.replaceAll('\\', '/')
+    : (filePath) => filePath;
 
 const createRelativePathResolver = (rootPath: string): RelativePathResolver => {
-  const rootPrefix = rootPath.endsWith(path.sep) ? rootPath : `${rootPath}${path.sep}`;
+  const rootPrefix = rootPath.endsWith(path.sep)
+    ? rootPath
+    : `${rootPath}${path.sep}`;
 
   return (filePath) =>
     filePath === rootPath
@@ -17,7 +21,8 @@ const createRelativePathResolver = (rootPath: string): RelativePathResolver => {
 };
 
 /** Prettier only inspects a file's shebang when its basename contains no dot. */
-const hasDottedBasename = (filePath: string): boolean => path.basename(filePath).includes('.');
+const hasDottedBasename = (filePath: string): boolean =>
+  path.basename(filePath).includes('.');
 
 export { createRelativePathResolver, hasDottedBasename, toPosixPath };
 export type { RelativePathResolver };

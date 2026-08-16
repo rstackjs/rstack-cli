@@ -6,13 +6,17 @@ const { readProjectFile, runFmt, writeProjectFile } = setupFmtTest();
 test.each([
   {
     name: 'TypeScript',
-    source: '<script setup lang="ts">\nconst title=ref<string>("Rstack + Vue")\n</script>\n',
-    expected: '<script setup lang="ts">\nconst title = ref<string>("Rstack + Vue");\n</script>\n',
+    source:
+      '<script setup lang="ts">\nconst title=ref<string>("Rstack + Vue")\n</script>\n',
+    expected:
+      '<script setup lang="ts">\nconst title = ref<string>("Rstack + Vue");\n</script>\n',
   },
   {
     name: 'TSX',
-    source: '<script setup lang="tsx">\nconst view=<Component value={1}/>\n</script>\n',
-    expected: '<script setup lang="tsx">\nconst view = <Component value={1} />;\n</script>\n',
+    source:
+      '<script setup lang="tsx">\nconst view=<Component value={1}/>\n</script>\n',
+    expected:
+      '<script setup lang="tsx">\nconst view = <Component value={1} />;\n</script>\n',
   },
 ])('formats $name embedded in Vue files', ({ source, expected }) => {
   writeProjectFile('App.vue', source);

@@ -6,15 +6,22 @@ import { discoverFmtFiles } from '../../src/fmt/discovery.ts';
 import type { FmtConfig } from '../../src/fmt/types.ts';
 import { withTempProject, writeProjectFile } from './helpers.ts';
 
-const discover = async (cwd: string, patterns?: string[], config?: FmtConfig, configRoot = cwd) =>
+const discover = async (
+  cwd: string,
+  patterns?: string[],
+  config?: FmtConfig,
+  configRoot = cwd,
+) =>
   discoverFmtFiles({
     cwd,
     patterns,
     config: normalizeFmtConfig(config, configRoot),
   });
 
-const relativePaths = (rootPath: string, files: Awaited<ReturnType<typeof discover>>): string[] =>
-  files.map((file) => path.relative(rootPath, file.path));
+const relativePaths = (
+  rootPath: string,
+  files: Awaited<ReturnType<typeof discover>>,
+): string[] => files.map((file) => path.relative(rootPath, file.path));
 
 test('applies config ignore patterns to discovered and explicit files', async () => {
   await withTempProject(async (rootPath) => {
@@ -24,13 +31,19 @@ test('applies config ignore patterns to discovered and explicit files', async ()
     const config = { ignorePatterns: ['generated/blocked.ts'] };
 
     const discoveredFiles = await discover(rootPath, undefined, config);
-    const explicitFiles = await discover(rootPath, [keepPath, blockedPath], config);
+    const explicitFiles = await discover(
+      rootPath,
+      [keepPath, blockedPath],
+      config,
+    );
 
     expect(relativePaths(rootPath, discoveredFiles)).toEqual([
       path.join('generated', 'keep.ts'),
       path.join('src', 'index.ts'),
     ]);
-    expect(relativePaths(rootPath, explicitFiles)).toEqual([path.join('generated', 'keep.ts')]);
+    expect(relativePaths(rootPath, explicitFiles)).toEqual([
+      path.join('generated', 'keep.ts'),
+    ]);
   });
 });
 
@@ -41,14 +54,23 @@ test('applies config ignore patterns outside the config root', async () => {
     mkdirSync(configRoot);
 
     await expect(
-      discover(configRoot, [filePath], { ignorePatterns: ['../shared/*.ts'] }, configRoot),
+      discover(
+        configRoot,
+        [filePath],
+        { ignorePatterns: ['../shared/*.ts'] },
+        configRoot,
+      ),
     ).resolves.toEqual([]);
   });
 });
 
 test('excludes .rstack from discovery', async () => {
   await withTempProject(async (rootPath) => {
-    const cacheFile = writeProjectFile(rootPath, '.rstack/cache/fmt-v1.json', '{}');
+    const cacheFile = writeProjectFile(
+      rootPath,
+      '.rstack/cache/fmt-v1.json',
+      '{}',
+    );
     writeProjectFile(rootPath, 'index.ts');
 
     const discoveredFiles = await discover(rootPath);
@@ -85,7 +107,11 @@ test('excludes a custom cache directory', async () => {
 
 test('keeps files re-included by a CLI ignore file during directory traversal', async () => {
   await withTempProject(async (rootPath) => {
-    writeProjectFile(rootPath, '.prettierignore', 'generated/*\n!generated/keep.ts\n');
+    writeProjectFile(
+      rootPath,
+      '.prettierignore',
+      'generated/*\n!generated/keep.ts\n',
+    );
     writeProjectFile(rootPath, 'generated/drop.ts');
     writeProjectFile(rootPath, 'generated/keep.ts');
     writeProjectFile(rootPath, 'src/index.ts');
@@ -112,7 +138,9 @@ test('defers parser inference to workers and preserves an explicit parser', asyn
     writeProjectFile(rootPath, 'unknown.extension');
 
     const inferredFiles = await discover(rootPath);
-    const configuredFiles = await discover(rootPath, ['source.custom'], { parser: 'babel' });
+    const configuredFiles = await discover(rootPath, ['source.custom'], {
+      parser: 'babel',
+    });
 
     expect(relativePaths(rootPath, inferredFiles)).toEqual([
       'index.js',
@@ -120,7 +148,9 @@ test('defers parser inference to workers and preserves an explicit parser', asyn
       'source.custom',
       'unknown.extension',
     ]);
-    expect(inferredFiles.every((file) => file.options.parser === undefined)).toBe(true);
+    expect(
+      inferredFiles.every((file) => file.options.parser === undefined),
+    ).toBe(true);
     expect(configuredFiles[0]).toEqual({
       path: path.join(rootPath, 'source.custom'),
       options: { parser: 'babel' },

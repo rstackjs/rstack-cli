@@ -26,7 +26,9 @@ type OptionsCacheNode = {
   options: ResolvedFmtOptions;
 };
 
-const createOptionsCacheNode = (options: ResolvedFmtOptions): OptionsCacheNode => ({
+const createOptionsCacheNode = (
+  options: ResolvedFmtOptions,
+): OptionsCacheNode => ({
   children: new WeakMap(),
   options,
 });
@@ -52,7 +54,9 @@ const compileMatchers = (
     return micromatch.matcher(patterns[0], options);
   }
 
-  const matchers = patterns.map((pattern) => micromatch.matcher(pattern, options));
+  const matchers = patterns.map((pattern) =>
+    micromatch.matcher(pattern, options),
+  );
 
   return (filePath) => {
     for (const matches of matchers) {
@@ -79,7 +83,11 @@ const createPathMatcher = (
     }
   }
 
-  const basenameMatcher = compileMatchers(basenamePatterns, excludedPatterns, true);
+  const basenameMatcher = compileMatchers(
+    basenamePatterns,
+    excludedPatterns,
+    true,
+  );
   const pathMatcher = compileMatchers(pathPatterns, excludedPatterns, false);
 
   if (!basenameMatcher || !pathMatcher) {
@@ -89,7 +97,10 @@ const createPathMatcher = (
 };
 
 /** Splits a flat config into project-level formatting options and rules. */
-const normalizeFmtConfig = (config: FmtConfig | undefined, rootPath: string): ResolvedFmtConfig => {
+const normalizeFmtConfig = (
+  config: FmtConfig | undefined,
+  rootPath: string,
+): ResolvedFmtConfig => {
   const { ignorePatterns = [], overrides = [], ...baseOptions } = config ?? {};
 
   return {
@@ -104,7 +115,9 @@ const normalizeFmtConfig = (config: FmtConfig | undefined, rootPath: string): Re
 };
 
 /** Creates a reusable resolver for applying per-file formatter overrides. */
-const createOptionsResolver = (config: ResolvedFmtConfig): FmtOptionsResolver => {
+const createOptionsResolver = (
+  config: ResolvedFmtConfig,
+): FmtOptionsResolver => {
   if (config.overrides.length === 0) {
     return () => config.baseOptions;
   }
@@ -124,7 +137,10 @@ const createOptionsResolver = (config: ResolvedFmtConfig): FmtOptionsResolver =>
       // Reuse the merged result for this override after the current matched sequence.
       let nextCacheNode = cacheNode.children.get(override.options);
       if (!nextCacheNode) {
-        nextCacheNode = createOptionsCacheNode({ ...cacheNode.options, ...override.options });
+        nextCacheNode = createOptionsCacheNode({
+          ...cacheNode.options,
+          ...override.options,
+        });
         cacheNode.children.set(override.options, nextCacheNode);
       }
       cacheNode = nextCacheNode;
@@ -140,7 +156,8 @@ const resolveFmtConfig = async ({
   configFilePath,
   cwd,
 }: ResolveFmtConfigOptions): Promise<ResolvedFmtConfig> => {
-  const config = typeof definition === 'function' ? await definition() : definition;
+  const config =
+    typeof definition === 'function' ? await definition() : definition;
   const rootPath = configFilePath ? dirname(configFilePath) : cwd;
 
   return normalizeFmtConfig(config, rootPath);

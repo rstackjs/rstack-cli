@@ -10,8 +10,14 @@ test('should restart lib watch build when Rstack config changes', async ({
 }) => {
   const dist1 = await prepareDist();
   const dist2 = await prepareDist('dist-2');
-  const configFile = path.join(import.meta.dirname, 'test-temp-rstack.config.ts');
-  const userWatchFile = path.join(import.meta.dirname, 'test-temp-user-watch.txt');
+  const configFile = path.join(
+    import.meta.dirname,
+    'test-temp-rstack.config.ts',
+  );
+  const userWatchFile = path.join(
+    import.meta.dirname,
+    'test-temp-user-watch.txt',
+  );
 
   const writeConfig = (distPath: string) =>
     writeFile(
@@ -42,14 +48,18 @@ define.lib({
 
   await writeConfig('dist-2');
 
-  await logHelper.expectLog('restarting build as test-temp-rstack.config.ts changed');
+  await logHelper.expectLog(
+    'restarting build as test-temp-rstack.config.ts changed',
+  );
   await logHelper.expectLog('build completed, watching for changes...');
   await waitForFile(path.join(dist2, 'index.js'));
   logHelper.clearLogs();
 
   await writeFile(userWatchFile, 'changed\n');
 
-  await logHelper.expectLog('restarting build as test-temp-user-watch.txt changed');
+  await logHelper.expectLog(
+    'restarting build as test-temp-user-watch.txt changed',
+  );
   await logHelper.expectLog('build completed, watching for changes...');
 });
 
@@ -60,7 +70,10 @@ test('should restart lib watch build when an imported config file changes', asyn
 }) => {
   const dist1 = await prepareDist('dist-import-1');
   const dist2 = await prepareDist('dist-import-2');
-  const configFile = path.join(import.meta.dirname, 'test-temp-import.config.ts');
+  const configFile = path.join(
+    import.meta.dirname,
+    'test-temp-import.config.ts',
+  );
   const importedFile = path.join(import.meta.dirname, 'test-temp-imported.ts');
 
   await writeFile(importedFile, "export const distPath = 'dist-import-1';\n");
@@ -84,7 +97,9 @@ define.lib({
 
   await writeFile(importedFile, "export const distPath = 'dist-import-2';\n");
 
-  await logHelper.expectLog('restarting build as test-temp-imported.ts changed');
+  await logHelper.expectLog(
+    'restarting build as test-temp-imported.ts changed',
+  );
   await logHelper.expectLog('build completed, watching for changes...');
   await waitForFile(path.join(dist2, 'index.js'));
 });

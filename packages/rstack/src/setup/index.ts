@@ -16,7 +16,9 @@ export const runSetupCLI = async (args: string[]): Promise<void> => {
 
   const hooksDirs = values.hooksDir;
   if (hooksDirs && hooksDirs.length > 1) {
-    throw new Error('The --hooks-dir option cannot be specified more than once.');
+    throw new Error(
+      'The --hooks-dir option cannot be specified more than once.',
+    );
   }
 
   const hooksDir = hooksDirs?.[0];
@@ -39,7 +41,9 @@ export const runSetupCLI = async (args: string[]): Promise<void> => {
     }
 
     const reason =
-      result.reason === 'disabled' ? 'disabled by RSTACK_HOOKS' : 'not a Git repository';
+      result.reason === 'disabled'
+        ? 'disabled by RSTACK_HOOKS'
+        : 'not a Git repository';
     logger.info(`Git hooks setup skipped: ${color.yellow(reason)}.`);
     return;
   }

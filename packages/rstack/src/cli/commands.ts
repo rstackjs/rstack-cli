@@ -18,7 +18,11 @@ async function runRsbuildCLI(args: string[]): Promise<void> {
   const argv = [
     process.execPath,
     'rsbuild',
-    ...insertConfigArg(args, '--config', join(import.meta.dirname, 'rsbuildConfig.js')),
+    ...insertConfigArg(
+      args,
+      '--config',
+      join(import.meta.dirname, 'rsbuildConfig.js'),
+    ),
   ];
 
   const { runCLI } = await import('@rsbuild/core');
@@ -46,7 +50,11 @@ async function runRstestCLI(args: string[]): Promise<void> {
   const argv = [
     process.execPath,
     'rstest',
-    ...insertConfigArg(args, '--config', join(import.meta.dirname, 'rstestConfig.js')),
+    ...insertConfigArg(
+      args,
+      '--config',
+      join(import.meta.dirname, 'rstestConfig.js'),
+    ),
   ];
 
   const { runCLI } = await import('@rstest/core');
@@ -70,7 +78,11 @@ async function runRslibCLI(args: string[]): Promise<void> {
   const argv = [
     process.execPath,
     'rslib',
-    ...insertConfigArg(args, '--config', join(import.meta.dirname, 'rslibConfig.js')),
+    ...insertConfigArg(
+      args,
+      '--config',
+      join(import.meta.dirname, 'rslibConfig.js'),
+    ),
   ];
 
   const { runCLI } = await import('@rslib/core');
@@ -83,7 +95,9 @@ const isMissingRspressCoreError = (error: unknown): boolean => {
   }
 
   const code = 'code' in error ? error.code : undefined;
-  return code === 'ERR_MODULE_NOT_FOUND' && error.message.includes('@rspress/core');
+  return (
+    code === 'ERR_MODULE_NOT_FOUND' && error.message.includes('@rspress/core')
+  );
 };
 
 async function runRspressCLI(args: string[]): Promise<void> {
@@ -103,7 +117,11 @@ async function runRspressCLI(args: string[]): Promise<void> {
   const argv = [
     process.execPath,
     'rspress',
-    ...insertConfigArg(args, '--config', join(import.meta.dirname, 'rspressConfig.js')),
+    ...insertConfigArg(
+      args,
+      '--config',
+      join(import.meta.dirname, 'rspressConfig.js'),
+    ),
   ];
 
   try {
@@ -128,7 +146,11 @@ async function runRslintCLI(args: string[]): Promise<void> {
   const argv = [
     process.execPath,
     'rslint',
-    ...insertConfigArg(args, '--config', join(import.meta.dirname, 'rslintConfig.js')),
+    ...insertConfigArg(
+      args,
+      '--config',
+      join(import.meta.dirname, 'rslintConfig.js'),
+    ),
   ];
 
   const { runCLI } = await import('@rslint/core');
@@ -171,7 +193,8 @@ export async function setupCommands(): Promise<void> {
   // when the config is later loaded from another directory. The motivating case
   // is `rs fmt --lsp`, which loads the config from the LSP workspace root the
   // client reports, and that root need not be the process working directory.
-  getConfigState().configPath = configPath === undefined ? undefined : resolve(configPath);
+  getConfigState().configPath =
+    configPath === undefined ? undefined : resolve(configPath);
 
   if (!command || command === '-h' || command === '--help') {
     return printCommandHelp('root');

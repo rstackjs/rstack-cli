@@ -65,7 +65,9 @@ test('enables type checking only with --type-check', () => {
 
   expect(withoutTypeCheck.status).toBe(0);
   expect(withTypeCheck.status).toBe(1);
-  expect(`${withTypeCheck.stdout}\n${withTypeCheck.stderr}`).toContain('TS2322');
+  expect(`${withTypeCheck.stdout}\n${withTypeCheck.stderr}`).toContain(
+    'TS2322',
+  );
 });
 
 test('does not run the formatting check when lint fails', () => {
@@ -75,6 +77,8 @@ test('does not run the formatting check when lint fails', () => {
   const result = runCheck();
 
   expect(result.status).toBe(1);
-  expect(`${result.stdout}\n${result.stderr}`).toContain("Unexpected 'debugger' statement");
+  expect(`${result.stdout}\n${result.stderr}`).toContain(
+    "Unexpected 'debugger' statement",
+  );
   expect(result.stdout).not.toContain('Checking formatting...');
 });

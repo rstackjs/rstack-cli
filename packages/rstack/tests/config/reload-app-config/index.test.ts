@@ -9,7 +9,10 @@ test('should restart dev server and reload config when Rstack config changes', a
 }) => {
   const dist1 = await prepareDist();
   const dist2 = await prepareDist('dist-2');
-  const configFile = path.join(import.meta.dirname, 'test-temp-rstack.config.ts');
+  const configFile = path.join(
+    import.meta.dirname,
+    'test-temp-rstack.config.ts',
+  );
 
   await writeFile(
     configFile,
@@ -47,8 +50,14 @@ define.app({
   await waitForFile(dist2);
 });
 
-test('should reload config when an imported file changes', async ({ execCliAsync, logHelper }) => {
-  const configFile = path.join(import.meta.dirname, 'test-temp-import.config.ts');
+test('should reload config when an imported file changes', async ({
+  execCliAsync,
+  logHelper,
+}) => {
+  const configFile = path.join(
+    import.meta.dirname,
+    'test-temp-import.config.ts',
+  );
   const importedFile = path.join(import.meta.dirname, 'test-temp-imported.ts');
 
   await writeFile(importedFile, '');
@@ -69,5 +78,7 @@ define.app({
 
   await writeFile(importedFile, '// changed\n');
 
-  await logHelper.expectLog('restarting server as test-temp-imported.ts changed');
+  await logHelper.expectLog(
+    'restarting server as test-temp-imported.ts changed',
+  );
 });

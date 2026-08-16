@@ -65,7 +65,12 @@ export function Hero() {
             <span>{t('quickStart')}</span>
             <SvgWrapper icon={IconArrowRight} />
           </Link>
-          <a className={styles.link} href={githubUrl} target="_blank" rel="noopener noreferrer">
+          <a
+            className={styles.link}
+            href={githubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <span>{t('viewSource')}</span>
             <SvgWrapper icon={IconArrowRight} />
           </a>

@@ -5,7 +5,13 @@ import {
   create,
   select,
 } from '@rstackjs/create-toolkit';
-import { access, appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import {
+  access,
+  appendFile,
+  mkdir,
+  readFile,
+  writeFile,
+} from 'node:fs/promises';
 import path from 'node:path';
 
 const packageRoot = path.join(import.meta.dirname, '..');
@@ -87,12 +93,15 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
       }),
     );
 
-    return resolveTemplateName(documentationType === 'basic' ? 'doc' : 'doc-i18n');
+    return resolveTemplateName(
+      documentationType === 'basic' ? 'doc' : 'doc-i18n',
+    );
   }
 
   const templateType = checkCancel<string>(
     await select({
-      message: projectType === 'app' ? 'Select framework' : 'Select library type',
+      message:
+        projectType === 'app' ? 'Select framework' : 'Select library type',
       options:
         projectType === 'app'
           ? [
@@ -129,12 +138,32 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
 };
 
 const getStagedConfig = (templateName: string): string => {
-  const scriptExtensions = ['js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs', 'mts', 'cts'];
-  const formatExtensions = ['json', 'jsonc', 'md', 'mdx', 'css', 'html', 'yml', 'yaml'];
+  const scriptExtensions = [
+    'js',
+    'jsx',
+    'ts',
+    'tsx',
+    'mjs',
+    'cjs',
+    'mts',
+    'cts',
+  ];
+  const formatExtensions = [
+    'json',
+    'jsonc',
+    'md',
+    'mdx',
+    'css',
+    'html',
+    'yml',
+    'yaml',
+  ];
   const componentExtensions = ['svelte', 'vue'];
   const templateFormatExtensions = [
     ...formatExtensions,
-    ...componentExtensions.filter((extension) => templateName.includes(extension)),
+    ...componentExtensions.filter((extension) =>
+      templateName.includes(extension),
+    ),
   ];
 
   return [
@@ -157,7 +186,9 @@ const injectStagedSetup = async ({
     return;
   }
 
-  const configExtension = await access(path.join(distFolder, 'rstack.config.ts')).then(
+  const configExtension = await access(
+    path.join(distFolder, 'rstack.config.ts'),
+  ).then(
     () => 'ts',
     () => 'js',
   );
@@ -167,8 +198,8 @@ const injectStagedSetup = async ({
   };
 
   packageJson.scripts = Object.fromEntries(
-    Object.entries({ ...packageJson.scripts, prepare: 'rs setup' }).sort(([left], [right]) =>
-      left.localeCompare(right),
+    Object.entries({ ...packageJson.scripts, prepare: 'rs setup' }).sort(
+      ([left], [right]) => left.localeCompare(right),
     ),
   );
 

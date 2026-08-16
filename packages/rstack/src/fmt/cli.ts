@@ -35,15 +35,25 @@ const parseMaxWorkers = (value: string | undefined): number | undefined => {
   }
 
   const maxWorkers = Number(value);
-  if (!/^\d+$/.test(value) || !Number.isSafeInteger(maxWorkers) || maxWorkers < 1) {
-    throw new Error('The --parallel-workers option must be a positive integer.');
+  if (
+    !/^\d+$/.test(value) ||
+    !Number.isSafeInteger(maxWorkers) ||
+    maxWorkers < 1
+  ) {
+    throw new Error(
+      'The --parallel-workers option must be a positive integer.',
+    );
   }
 
   return maxWorkers;
 };
 
 /** Rejects the mode flags and file arguments that a server-like option replaces. */
-const assertExclusiveMode = (option: string, hasMode: boolean, positionals: string[]): void => {
+const assertExclusiveMode = (
+  option: string,
+  hasMode: boolean,
+  positionals: string[],
+): void => {
   if (hasMode) {
     throw new Error(
       `The ${option} option cannot be used with --write, --check, or --list-different.`,
@@ -82,7 +92,9 @@ const parseFmtArgs = (args: string[]): ParsedFmtCLIArgs => {
   const listDifferent = values.listDifferent;
   const modes = [write, check, listDifferent].filter(Boolean);
   if (modes.length > 1) {
-    throw new Error('The --write, --check, and --list-different options cannot be used together.');
+    throw new Error(
+      'The --write, --check, and --list-different options cannot be used together.',
+    );
   }
 
   const mode = check ? 'check' : listDifferent ? 'list-different' : 'write';
@@ -130,14 +142,17 @@ const parseFmtArgs = (args: string[]): ParsedFmtCLIArgs => {
   };
 };
 
-const createDisplayPathResolver = (cwd: string): ((filePath: string) => string) => {
+const createDisplayPathResolver = (
+  cwd: string,
+): ((filePath: string) => string) => {
   const resolveRelativePath = createRelativePathResolver(cwd);
 
   return (filePath) => toPosixPath(resolveRelativePath(filePath));
 };
 
 const prettyTime = (seconds: number): string => {
-  const format = (time: string, unit: 'm' | 's') => color.bold(`${time}${unit}`);
+  const format = (time: string, unit: 'm' | 's') =>
+    color.bold(`${time}${unit}`);
 
   if (seconds < 10) {
     const digits = seconds >= 0.01 ? 2 : 3;
@@ -156,7 +171,10 @@ const prettyTime = (seconds: number): string => {
     return minutesLabel;
   }
 
-  const secondsLabel = format(remainingSeconds.toFixed(remainingSeconds % 1 === 0 ? 0 : 1), 's');
+  const secondsLabel = format(
+    remainingSeconds.toFixed(remainingSeconds % 1 === 0 ? 0 : 1),
+    's',
+  );
 
   return `${minutesLabel} ${secondsLabel}`;
 };
@@ -171,7 +189,9 @@ const reportNoSupportedFiles = (patterns: string[]): void => {
   const targets = (patterns.length ? patterns : ['.'])
     .map((pattern) => color.cyan(JSON.stringify(pattern)))
     .join(', ');
-  logger.error(`No supported files matched ${targets}, or all matching files were ignored.`);
+  logger.error(
+    `No supported files matched ${targets}, or all matching files were ignored.`,
+  );
   process.exitCode = 2;
 };
 
@@ -303,7 +323,9 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       return;
     }
 
-    const cacheDirPath = cacheLocation ? path.resolve(cwd, cacheLocation) : undefined;
+    const cacheDirPath = cacheLocation
+      ? path.resolve(cwd, cacheLocation)
+      : undefined;
     if (cacheDirPath) {
       const cacheDirPrefix = cacheDirPath.endsWith(path.sep)
         ? cacheDirPath
@@ -327,7 +349,8 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
 
     if (files.length === 0) {
       // Staged tasks may pass only paths excluded by formatter ignore rules.
-      const allowUnmatched = noErrorOnUnmatchedPattern || process.env.RSTACK_STAGED === '1';
+      const allowUnmatched =
+        noErrorOnUnmatchedPattern || process.env.RSTACK_STAGED === '1';
       if (allowUnmatched) {
         return;
       }

@@ -24,7 +24,10 @@ const getPrettierPlugins = async (
 ): Promise<PrettierPlugins> => {
   const plugins =
     options.sortPackageJson === true && /(^|[/\\])package\.json$/.test(filePath)
-      ? [...defaultFmtPlugins, (await import('./sortPackageJsonPlugin.ts')).sortPackageJsonPlugin]
+      ? [
+          ...defaultFmtPlugins,
+          (await import('./sortPackageJsonPlugin.ts')).sortPackageJsonPlugin,
+        ]
       : defaultFmtPlugins;
 
   return options.plugins?.length ? [...plugins, ...options.plugins] : plugins;

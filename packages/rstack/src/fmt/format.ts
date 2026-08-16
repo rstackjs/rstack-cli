@@ -12,7 +12,8 @@ import type { FmtFileRequest } from './types.ts';
 type PrettierPlugins = NonNullable<PrettierOptions['plugins']>;
 
 type FormatFmtSourceResult =
-  { status: 'unsupported' } | { status: 'formatted'; source: string; formatted: string };
+  | { status: 'unsupported' }
+  | { status: 'formatted'; source: string; formatted: string };
 
 const fileInfoOptions = {
   ignorePath: [],

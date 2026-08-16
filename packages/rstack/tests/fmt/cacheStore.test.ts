@@ -1,4 +1,10 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import {
@@ -144,6 +150,8 @@ test('does not throw or leave temporary files when persistence fails', async () 
     store.set('src/a.ts', firstEntry);
 
     await expect(store.save()).resolves.toBe(false);
-    expect(readdirSync(rootPath).filter((name) => name.endsWith('.tmp'))).toEqual([]);
+    expect(
+      readdirSync(rootPath).filter((name) => name.endsWith('.tmp')),
+    ).toEqual([]);
   });
 });

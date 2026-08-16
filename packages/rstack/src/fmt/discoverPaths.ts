@@ -142,7 +142,10 @@ class GitIgnoreFiles {
   }
 
   /** Matches one directory's entries in a single native call. */
-  matchDirents(parentPath: string, dirents: Dirent[]): boolean | number | Uint8Array | undefined {
+  matchDirents(
+    parentPath: string,
+    dirents: Dirent[],
+  ): boolean | number | Uint8Array | undefined {
     if (!this.#hasRules || dirents.length === 0) {
       return;
     }
@@ -156,7 +159,11 @@ class GitIgnoreFiles {
 
     if (dirents.length === 1) {
       const dirent = dirents[0];
-      return this.#matcher!.isIgnoredChild(relativeParent, dirent.name, dirent.isDirectory());
+      return this.#matcher!.isIgnoredChild(
+        relativeParent,
+        dirent.name,
+        dirent.isDirectory(),
+      );
     }
 
     const names = new Array<string>(dirents.length);
@@ -168,7 +175,11 @@ class GitIgnoreFiles {
         names[index] = dirent.name;
         directoryMask |= Number(dirent.isDirectory()) << index;
       }
-      return this.#matcher!.isIgnoredBatchMask(relativeParent, names, directoryMask >>> 0);
+      return this.#matcher!.isIgnoredBatchMask(
+        relativeParent,
+        names,
+        directoryMask >>> 0,
+      );
     }
 
     const directoryFlags = new Uint8Array(dirents.length);
@@ -188,9 +199,14 @@ class GitIgnoreFiles {
     }
 
     // Ignore files may disappear or become unreadable during traversal.
-    const loading = readFile(path.join(directoryPath, '.gitignore'), 'utf8').then(
+    const loading = readFile(
+      path.join(directoryPath, '.gitignore'),
+      'utf8',
+    ).then(
       (content) => {
-        const relativePath = toPosixPath(this.#resolveRelativePath(directoryPath));
+        const relativePath = toPosixPath(
+          this.#resolveRelativePath(directoryPath),
+        );
         this.#matcher ??= new (loadNativeBinding().GitIgnoreMatcher)();
         this.#hasRules = this.#matcher.addSource(relativePath, content);
       },
@@ -222,7 +238,8 @@ const createTraversalOptions = (
 
       if (dirent.isDirectory()) {
         return (
-          (dirent as GitIgnoreDirent)[gitIgnored] === true || isIgnored?.(targetPath, true) === true
+          (dirent as GitIgnoreDirent)[gitIgnored] === true ||
+          isIgnored?.(targetPath, true) === true
         );
       }
 
@@ -298,7 +315,14 @@ const discoverDirectoryFiles = async (
 
   const result = await readdir(
     rootPath,
-    createTraversalOptions(gitIgnore, ignoredDirNames, signal, onError, isIncluded, isIgnored),
+    createTraversalOptions(
+      gitIgnore,
+      ignoredDirNames,
+      signal,
+      onError,
+      isIncluded,
+      isIgnored,
+    ),
   );
 
   // tiny-readdir only handles fulfilled onDirents promises, so rethrow after its counter settles.
@@ -310,7 +334,9 @@ const discoverDirectoryFiles = async (
 };
 
 const normalizeGlob = (cwd: string, pattern: string): string => {
-  const relativePattern = path.isAbsolute(pattern) ? path.relative(cwd, pattern) : pattern;
+  const relativePattern = path.isAbsolute(pattern)
+    ? path.relative(cwd, pattern)
+    : pattern;
   return toPosixPath(relativePattern);
 };
 
@@ -334,7 +360,10 @@ const classifyPatterns = async (
   const entries = await Promise.all(
     patterns.map(async (pattern): Promise<PatternEntry | undefined> => {
       if (pattern.startsWith('!')) {
-        return { kind: 'negative-glob', value: normalizeGlob(cwd, pattern.slice(1)) };
+        return {
+          kind: 'negative-glob',
+          value: normalizeGlob(cwd, pattern.slice(1)),
+        };
       }
 
       const filePath = path.resolve(cwd, pattern);
@@ -344,7 +373,9 @@ const classifyPatterns = async (
 
       const stats = await lstatSafe(filePath);
       if (stats?.isFile()) {
-        return isBinaryPath(filePath) ? undefined : { kind: 'file', value: filePath };
+        return isBinaryPath(filePath)
+          ? undefined
+          : { kind: 'file', value: filePath };
       }
       if (stats?.isDirectory()) {
         return { kind: 'directory', value: filePath };
@@ -389,11 +420,15 @@ const classifyPatterns = async (
 };
 
 const getOutermostPaths = (paths: string[]): string[] => {
-  const sortedPaths = [...new Set(paths)].sort((left, right) => left.length - right.length);
+  const sortedPaths = [...new Set(paths)].sort(
+    (left, right) => left.length - right.length,
+  );
   const outermostPaths: string[] = [];
 
   for (const filePath of sortedPaths) {
-    if (!outermostPaths.some((parentPath) => isPathInside(parentPath, filePath))) {
+    if (
+      !outermostPaths.some((parentPath) => isPathInside(parentPath, filePath))
+    ) {
       outermostPaths.push(filePath);
     }
   }
@@ -402,8 +437,14 @@ const getOutermostPaths = (paths: string[]): string[] => {
 };
 
 /** Merges overlapping roots; micromatch remains responsible for glob syntax. */
-const getTraversalRoots = (cwd: string, directories: string[], globs: string[]): string[] => {
-  const globRoots = globs.map((pattern) => path.resolve(cwd, micromatch.scan(pattern).base || '.'));
+const getTraversalRoots = (
+  cwd: string,
+  directories: string[],
+  globs: string[],
+): string[] => {
+  const globRoots = globs.map((pattern) =>
+    path.resolve(cwd, micromatch.scan(pattern).base || '.'),
+  );
 
   return getOutermostPaths([...directories, ...globRoots]);
 };
@@ -431,9 +472,13 @@ const discoverFmtPaths = async ({
     negativeGlobs,
   } = await classifyPatterns(cwd, patterns, ignoredDirNames);
   const directoryRoots = getOutermostPaths(directories);
-  const globMatchers = globs.map((pattern) => micromatch.matcher(pattern, { dot: true }));
+  const globMatchers = globs.map((pattern) =>
+    micromatch.matcher(pattern, { dot: true }),
+  );
   const candidates = new Set(
-    isIgnored ? explicitFiles.filter((filePath) => !isIgnored(filePath, false)) : explicitFiles,
+    isIgnored
+      ? explicitFiles.filter((filePath) => !isIgnored(filePath, false))
+      : explicitFiles,
   );
   const traversalRoots = getTraversalRoots(cwd, directoryRoots, globs);
 
@@ -447,7 +492,10 @@ const discoverFmtPaths = async ({
         }
 
         await gitIgnore.loadThrough(rootPath);
-        if (gitIgnore.isIgnored(rootPath, true) || isIgnored?.(rootPath, true) === true) {
+        if (
+          gitIgnore.isIgnored(rootPath, true) ||
+          isIgnored?.(rootPath, true) === true
+        ) {
           return [];
         }
 
@@ -457,7 +505,11 @@ const discoverFmtPaths = async ({
         const isIncluded = includesAll
           ? undefined
           : (filePath: string): boolean => {
-              if (directoryRoots.some((directoryPath) => isPathInside(directoryPath, filePath))) {
+              if (
+                directoryRoots.some((directoryPath) =>
+                  isPathInside(directoryPath, filePath),
+                )
+              ) {
                 return true;
               }
 
@@ -465,7 +517,13 @@ const discoverFmtPaths = async ({
               return globMatchers.some((matches) => matches(relativePath));
             };
 
-        return discoverDirectoryFiles(rootPath, gitIgnore, ignoredDirNames, isIncluded, isIgnored);
+        return discoverDirectoryFiles(
+          rootPath,
+          gitIgnore,
+          ignoredDirNames,
+          isIncluded,
+          isIgnored,
+        );
       }),
     );
 

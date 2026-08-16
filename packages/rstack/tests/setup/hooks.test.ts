@@ -6,7 +6,9 @@ import { createHookFiles } from '../../src/setup/hooks.ts';
 import { withDirectory } from './helpers.ts';
 
 test('generates the runner and all client-side Git hook shims', () => {
-  expect(Object.keys(createHookFiles()).filter((name) => name !== 'runner')).toEqual([
+  expect(
+    Object.keys(createHookFiles()).filter((name) => name !== 'runner'),
+  ).toEqual([
     'pre-commit',
     'pre-merge-commit',
     'prepare-commit-msg',
@@ -25,17 +27,24 @@ test('generates the runner and all client-side Git hook shims', () => {
 });
 
 test.runIf(process.platform === 'win32')('converts Windows Node paths', () => {
-  const { runner } = createHookFiles(String.raw`C:\Program Files\nodejs\node.exe`);
+  const { runner } = createHookFiles(
+    String.raw`C:\Program Files\nodejs\node.exe`,
+  );
 
-  expect(runner).toContain("rs_node_fallback='/c/Program Files/nodejs/node.exe'");
+  expect(runner).toContain(
+    "rs_node_fallback='/c/Program Files/nodejs/node.exe'",
+  );
 });
 
-test.runIf(process.platform !== 'win32')('preserves backslashes in POSIX Node paths', () => {
-  const nodeExecutable = String.raw`/opt/node\24/bin/node`;
-  const { runner } = createHookFiles(nodeExecutable);
+test.runIf(process.platform !== 'win32')(
+  'preserves backslashes in POSIX Node paths',
+  () => {
+    const nodeExecutable = String.raw`/opt/node\24/bin/node`;
+    const { runner } = createHookFiles(nodeExecutable);
 
-  expect(runner).toContain(`rs_node_fallback='${nodeExecutable}'`);
-});
+    expect(runner).toContain(`rs_node_fallback='${nodeExecutable}'`);
+  },
+);
 
 test.runIf(process.platform !== 'win32')('runs generated hooks', () => {
   withDirectory((directory) => {
@@ -58,7 +67,9 @@ test.runIf(process.platform !== 'win32')('runs generated hooks', () => {
     writeFileSync(path.join(generatedDirectory, 'runner'), files.runner);
     writeFileSync(generatedHook, files['pre-commit']);
 
-    expect(spawnSync('sh', [generatedHook], { cwd: directory, env }).status).toBe(0);
+    expect(
+      spawnSync('sh', [generatedHook], { cwd: directory, env }).status,
+    ).toBe(0);
 
     writeFileSync(
       userHook,
@@ -89,7 +100,9 @@ printf 'unreachable\\n'
     });
 
     expect(errexitResult.status).toBe(1);
-    expect(errexitResult.stdout).toBe('Rstack - pre-commit hook failed (code 1)\n');
+    expect(errexitResult.stdout).toBe(
+      'Rstack - pre-commit hook failed (code 1)\n',
+    );
 
     mkdirSync(runtimeDirectory, { recursive: true });
     writeFileSync(init, `export PATH="${runtimeDirectory}"\n`);

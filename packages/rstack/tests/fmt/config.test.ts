@@ -1,6 +1,9 @@
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
-import { createOptionsResolver, normalizeFmtConfig } from '../../src/fmt/config.ts';
+import {
+  createOptionsResolver,
+  normalizeFmtConfig,
+} from '../../src/fmt/config.ts';
 
 const rootPath = path.join(import.meta.dirname, 'project');
 
@@ -14,7 +17,9 @@ test('reuses base options when no override matches', () => {
   );
   const resolveOptions = createOptionsResolver(config);
 
-  expect(resolveOptions(path.join(rootPath, 'index.js'))).toBe(config.baseOptions);
+  expect(resolveOptions(path.join(rootPath, 'index.js'))).toBe(
+    config.baseOptions,
+  );
 });
 
 test('applies basename and path overrides in declaration order', () => {
@@ -82,5 +87,7 @@ test('applies overrides outside the config root', () => {
   );
   const resolveOptions = createOptionsResolver(config);
 
-  expect(resolveOptions(path.join(rootPath, '../shared/index.ts'))).toEqual({ semi: false });
+  expect(resolveOptions(path.join(rootPath, '../shared/index.ts'))).toEqual({
+    semi: false,
+  });
 });

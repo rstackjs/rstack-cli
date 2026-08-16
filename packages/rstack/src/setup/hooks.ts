@@ -24,7 +24,10 @@ const quoteShellPath = (value: string): string => {
     process.platform === 'win32'
       ? value
           .replaceAll('\\', '/')
-          .replace(/^([A-Za-z]):\//u, (_, drive: string) => `/${drive.toLowerCase()}/`)
+          .replace(
+            /^([A-Za-z]):\//u,
+            (_, drive: string) => `/${drive.toLowerCase()}/`,
+          )
       : value;
 
   return `'${shellPath.replaceAll("'", `'"'"'`)}'`;
@@ -78,7 +81,8 @@ rs_run "$@"
 export const createHookFiles = (
   nodeExecutable: string = process.execPath,
 ): Record<string, string> => {
-  const messageShim = createShim(`# Keep the message file valid after changing directories.
+  const messageShim =
+    createShim(`# Keep the message file valid after changing directories.
 [ -n "\${1-}" ] || exit 1
 case "$1" in
   /*|[A-Za-z]:/*) ;;
@@ -90,7 +94,8 @@ case "$1" in
 esac
 `);
 
-  const prePushShim = createShim(`# Keep a local remote path valid after changing directories.
+  const prePushShim =
+    createShim(`# Keep a local remote path valid after changing directories.
 rs_remote_name=\${1-}
 rs_remote_location=\${2-}
 [ -n "$rs_remote_name" ] && [ -n "$rs_remote_location" ] || exit 1
@@ -109,7 +114,9 @@ set -- "$rs_remote_name" "$rs_remote_location" "$@"
 `);
 
   const defaultShim = createShim();
-  const files: Record<string, string> = { runner: createRunner(nodeExecutable) };
+  const files: Record<string, string> = {
+    runner: createRunner(nodeExecutable),
+  };
 
   for (const name of hookNames) {
     files[name] = name.endsWith('-msg')
