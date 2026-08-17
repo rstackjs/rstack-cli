@@ -115,6 +115,9 @@ catalogs:
     micromatch:
       specifier: 4.0.8
       version: 4.0.8
+    pkg-pr-new:
+      specifier: 0.0.87
+      version: 0.0.87
     prettier:
       specifier: 3.9.6
       version: 3.9.6
@@ -177,6 +180,9 @@ importers:
       heading-case:
         specifier: 'catalog:'
         version: 1.1.5
+      pkg-pr-new:
+        specifier: 'catalog:'
+        version: 0.0.87
       prettier:
         specifier: 'catalog:'
         version: 3.9.6
@@ -3160,6 +3166,10 @@ packages:
   pkce-challenge@5.0.1:
     resolution: {integrity: sha512-wQ0b/W4Fr01qtpHlqSqspcj3EhBvimsdh0KlHhH8HRZnMsEa0ea2fTULOXOS9ccQr3om+GcGRk4e+isrZWV8qQ==}
     engines: {node: '>=16.20.0'}
+
+  pkg-pr-new@0.0.87:
+    resolution: {integrity: sha512-nm+30Py1csXWfyMH1ueQyTR11IZGHS5oW8Qok/MxMwjPx9g1jX3wMRrJf8TgEvNo0a0M4i14T0zQsEPWdZfAhg==}
+    hasBin: true
 
   postcss@8.5.19:
     resolution: {integrity: sha512-Mz8SaolMd8nB+G13WkORcxQKHZ/NE4xXevtkJHVuG+guo9/wYKlIMTKAqGdEmYOXR2ijPjTYNHssizdaVSUNdQ==}
@@ -6671,6 +6681,8 @@ snapshots:
   picomatch@4.0.5: {}
 
   pkce-challenge@5.0.1: {}
+
+  pkg-pr-new@0.0.87: {}
 
   postcss@8.5.19:
     dependencies:

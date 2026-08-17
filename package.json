@@ -22,6 +22,7 @@
     "cspell-ban-words": "catalog:",
     "globals": "catalog:",
     "heading-case": "catalog:",
+    "pkg-pr-new": "catalog:",
     "prettier": "catalog:",
     "rstack": "workspace:*",
     "typescript": "catalog:"
