@@ -1,5 +1,12 @@
 import { type SpawnSyncReturns, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach, expect } from 'rstack/test';
 import { RSTACK_BIN_PATH } from '#test-helpers';
@@ -9,7 +16,11 @@ export const packageJsonSource =
 export const sortedPackageJson =
   '{\n  "name": "fixture",\n  "version": "1.0.0",\n  "type": "module",\n  "dependencies": {\n    "a": "1.0.0",\n    "z": "1.0.0"\n  }\n}\n';
 
-type RunCLI = (args: string[], input?: string, cwd?: string) => SpawnSyncReturns<string>;
+type RunCLI = (
+  args: string[],
+  input?: string,
+  cwd?: string,
+) => SpawnSyncReturns<string>;
 
 type FmtTestHarness = {
   projectFileExists: (filePath: string) => boolean;
@@ -42,15 +53,19 @@ export const expectWriteSummary = (
   const message = writtenCount
     ? `Formatted ${writtenCount} of ${matchedFileCount} ${files} in <duration>.`
     : `Checked ${matchedFileCount} ${files} in <duration>. No changes needed.`;
-  expect(normalizeDuration(output)).toBe(`start   Formatting...\nsuccess ${message}\n`);
+  expect(normalizeDuration(output)).toBe(
+    `start   Formatting...\nsuccess ${message}\n`,
+  );
 };
 
 export const setupFmtTest = (): FmtTestHarness => {
   let projectPath: string;
 
-  const resolveProjectPath = (filePath: string): string => path.join(projectPath, filePath);
+  const resolveProjectPath = (filePath: string): string =>
+    path.join(projectPath, filePath);
 
-  const projectFileExists = (filePath: string): boolean => existsSync(resolveProjectPath(filePath));
+  const projectFileExists = (filePath: string): boolean =>
+    existsSync(resolveProjectPath(filePath));
 
   const writeProjectFile = (filePath: string, content: string): void => {
     const absolutePath = resolveProjectPath(filePath);
@@ -64,7 +79,10 @@ export const setupFmtTest = (): FmtTestHarness => {
   const writeFixturePlugin = (): void => {
     writeProjectFile(
       'node_modules/prettier-plugin-fixture/package.json',
-      JSON.stringify({ name: 'prettier-plugin-fixture', exports: './index.mjs' }),
+      JSON.stringify({
+        name: 'prettier-plugin-fixture',
+        exports: './index.mjs',
+      }),
     );
     writeProjectFile(
       'node_modules/prettier-plugin-fixture/index.mjs',
@@ -86,7 +104,8 @@ export const setupFmtTest = (): FmtTestHarness => {
   const runFmt = (args: string[] = [], cwd = projectPath) =>
     runCLI(['fmt', ...args], undefined, cwd);
 
-  const runFmtStdin = (args: string[], input: string) => runCLI(['fmt', ...args], input);
+  const runFmtStdin = (args: string[], input: string) =>
+    runCLI(['fmt', ...args], input);
 
   beforeEach(() => {
     projectPath = mkdtempSync(path.join(import.meta.dirname, 'test-temp-fmt-'));

@@ -13,14 +13,19 @@ type JsonRpcMessage = {
 };
 
 export type Position = { line: number; character: number };
-export type TextEdit = { range: { start: Position; end: Position }; newText: string };
+export type TextEdit = {
+  range: { start: Position; end: Position };
+  newText: string;
+};
 
 export type ShownMessage = { type: number; message: string };
 
 export type LspClient = {
   notify: (method: string, params: unknown) => void;
   /** Initializes the server with `root` as the workspace root; defaults to the spawn cwd. */
-  initialize: (root?: string) => Promise<{ capabilities: Record<string, unknown> }>;
+  initialize: (
+    root?: string,
+  ) => Promise<{ capabilities: Record<string, unknown> }>;
   openDocument: (uri: string, languageId: string, text: string) => void;
   formatDocument: (uri: string) => Promise<TextEdit[]>;
   /** `window/showMessage` notifications received so far, in order. */
@@ -34,13 +39,19 @@ const CONTENT_LENGTH_REGEXP = /content-length:\s*(\d+)/i;
 /** A header block is `key: value` lines separated by `\r\n` and nothing else. */
 const HEADER_BLOCK_REGEXP = /^[^\r\n:]+:[^\r\n]*(?:\r\n[^\r\n:]+:[^\r\n]*)*$/;
 
-export const toFileUri = (filePath: string): string => pathToFileURL(filePath).href;
+export const toFileUri = (filePath: string): string =>
+  pathToFileURL(filePath).href;
 
 /** Applies LSP text edits to a document, mirroring an editor. */
 export const applyTextEdits = (text: string, edits: TextEdit[]): string =>
-  TextDocument.applyEdits(TextDocument.create('file:///document', 'plaintext', 1, text), edits);
+  TextDocument.applyEdits(
+    TextDocument.create('file:///document', 'plaintext', 1, text),
+    edits,
+  );
 
-const readMessage = (buffer: Buffer): { message: JsonRpcMessage; rest: Buffer } | undefined => {
+const readMessage = (
+  buffer: Buffer,
+): { message: JsonRpcMessage; rest: Buffer } | undefined => {
   const headerEnd = buffer.indexOf('\r\n\r\n');
   if (headerEnd === -1) {
     return undefined;
@@ -50,7 +61,9 @@ const readMessage = (buffer: Buffer): { message: JsonRpcMessage; rest: Buffer } 
   // Real clients fall out of sync here, so anything that is not a header is a
   // failure rather than something to skip over.
   if (!HEADER_BLOCK_REGEXP.test(headers)) {
-    throw new Error(`Unexpected bytes on stdout before a message: ${JSON.stringify(headers)}.`);
+    throw new Error(
+      `Unexpected bytes on stdout before a message: ${JSON.stringify(headers)}.`,
+    );
   }
 
   const contentLength = CONTENT_LENGTH_REGEXP.exec(headers);
@@ -65,7 +78,9 @@ const readMessage = (buffer: Buffer): { message: JsonRpcMessage; rest: Buffer } 
   }
 
   return {
-    message: JSON.parse(buffer.subarray(bodyStart, bodyEnd).toString('utf8')) as JsonRpcMessage,
+    message: JSON.parse(
+      buffer.subarray(bodyStart, bodyEnd).toString('utf8'),
+    ) as JsonRpcMessage,
     rest: buffer.subarray(bodyEnd),
   };
 };
@@ -128,18 +143,26 @@ export const startLspServer = (cwd: string, args: string[] = []): LspClient => {
   const closed = new Promise<number | null>((resolve) => {
     childProcess.once('close', (code) => {
       exitCode = code;
-      fail(new Error(`The language server exited with code ${code}.\n${stderr}`));
+      fail(
+        new Error(`The language server exited with code ${code}.\n${stderr}`),
+      );
       resolve(code);
     });
   });
 
   const send = (message: Record<string, unknown>): void => {
-    const body = Buffer.from(JSON.stringify({ jsonrpc: '2.0', ...message }), 'utf8');
+    const body = Buffer.from(
+      JSON.stringify({ jsonrpc: '2.0', ...message }),
+      'utf8',
+    );
     childProcess.stdin.write(`Content-Length: ${body.byteLength}\r\n\r\n`);
     childProcess.stdin.write(body);
   };
 
-  const request = <Result>(method: string, params: unknown): Promise<Result> => {
+  const request = <Result>(
+    method: string,
+    params: unknown,
+  ): Promise<Result> => {
     if (failure) {
       return Promise.reject(failure);
     }
@@ -147,7 +170,10 @@ export const startLspServer = (cwd: string, args: string[] = []): LspClient => {
     const id = nextId++;
 
     return new Promise<Result>((resolve, reject) => {
-      pending.set(id, { resolve: resolve as (result: unknown) => void, reject });
+      pending.set(id, {
+        resolve: resolve as (result: unknown) => void,
+        reject,
+      });
       send({ id, method, params });
     });
   };

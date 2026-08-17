@@ -34,5 +34,8 @@ Configure linting through [`define.lint()`](../configuration#define-lint) in the
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
 
-define.lint(({ js, ts }) => [js.configs.recommended, ts.configs.recommendedTypeChecked]);
+define.lint(({ js, ts }) => [
+  js.configs.recommended,
+  ts.configs.recommendedTypeChecked,
+]);
 ```

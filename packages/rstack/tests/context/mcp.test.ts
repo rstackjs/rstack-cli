@@ -25,7 +25,11 @@ import {
 } from '@rstackjs/context';
 import { expect, test } from 'rstack/test';
 import pkgJson from '../../package.json' with { type: 'json' };
-import { getConfigState, loadRstackConfig, withRstackConfigTarget } from '../../src/config.ts';
+import {
+  getConfigState,
+  loadRstackConfig,
+  withRstackConfigTarget,
+} from '../../src/config.ts';
 
 const reachabilityFixture = path.resolve(
   import.meta.dirname,
@@ -35,7 +39,9 @@ const reachabilityFixture = path.resolve(
 const withTempWorkspace = async (
   callback: (workspaceRoot: string) => Promise<void>,
 ): Promise<void> => {
-  const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'rstack-context-mcp-'));
+  const workspaceRoot = await mkdtemp(
+    path.join(os.tmpdir(), 'rstack-context-mcp-'),
+  );
 
   try {
     await callback(workspaceRoot);
@@ -54,7 +60,8 @@ const withMcpClient = async (
     ...dependencies,
   });
   const client = new Client({ name: 'rstack-test-client', version: '1.0.0' });
-  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  const [clientTransport, serverTransport] =
+    InMemoryTransport.createLinkedPair();
 
   try {
     await server.connect(serverTransport);
@@ -66,7 +73,10 @@ const withMcpClient = async (
   }
 };
 
-const createRun = (runId: string, context: ContextDescriptor): ContextRunManifest => ({
+const createRun = (
+  runId: string,
+  context: ContextDescriptor,
+): ContextRunManifest => ({
   schemaVersion: contextStoreSchemaVersion,
   runId,
   producer: 'rslib',
@@ -78,7 +88,10 @@ const createRun = (runId: string, context: ContextDescriptor): ContextRunManifes
 const writeRsdoctorArtifact = async (workspaceRoot: string): Promise<void> => {
   const dataFile = path.join(workspaceRoot, 'artifacts', 'rsdoctor-data.json');
   await mkdir(path.dirname(dataFile), { recursive: true });
-  await writeFile(dataFile, JSON.stringify({ data: { summary: { costs: [{ costs: 12 }] } } }));
+  await writeFile(
+    dataFile,
+    JSON.stringify({ data: { summary: { costs: [{ costs: 12 }] } } }),
+  );
 };
 
 test('registers the exact ordered fifteen-tool catalog with accurate annotations', async () => {
@@ -174,7 +187,11 @@ test('registers the exact ordered fifteen-tool catalog with accurate annotations
             dataFile: expect.objectContaining({ type: 'string' }),
             testSnapshotId: expect.objectContaining({ type: 'string' }),
             lintSnapshotId: expect.objectContaining({ type: 'string' }),
-            maxDepth: expect.objectContaining({ type: 'integer', minimum: 1, maximum: 32 }),
+            maxDepth: expect.objectContaining({
+              type: 'integer',
+              minimum: 1,
+              maximum: 32,
+            }),
           }),
         },
         annotations: {
@@ -242,7 +259,9 @@ test('registers the exact ordered fifteen-tool catalog with accurate annotations
 });
 
 test('keeps the opt-in execution coverage provider optional for partial-stack installs', () => {
-  expect(pkgJson.peerDependenciesMeta['@rstest/coverage-istanbul']).toEqual({ optional: true });
+  expect(pkgJson.peerDependenciesMeta['@rstest/coverage-istanbul']).toEqual({
+    optional: true,
+  });
 });
 
 test('publishes discoverable descriptions for opaque and conditional tool inputs', async () => {
@@ -254,7 +273,8 @@ test('publishes discoverable descriptions for opaque and conditional tool inputs
         description: 'Context ID returned by project_status.',
       };
       const dataFile = {
-        description: 'Checkout-relative path to an explicit Rsdoctor JSON artifact.',
+        description:
+          'Checkout-relative path to an explicit Rsdoctor JSON artifact.',
       };
       const module = {
         description: 'Exact module ID, path, name, or unique path suffix.',
@@ -276,10 +296,14 @@ test('publishes discoverable descriptions for opaque and conditional tool inputs
         });
       }
       for (const toolName of ['rsdoctor_analyze', 'report_link']) {
-        expect(toolByName.get(toolName)?.inputSchema.properties).toMatchObject({ dataFile });
+        expect(toolByName.get(toolName)?.inputSchema.properties).toMatchObject({
+          dataFile,
+        });
       }
       for (const toolName of ['dead_code_explain', 'module_impact']) {
-        expect(toolByName.get(toolName)?.inputSchema.properties).toMatchObject({ module });
+        expect(toolByName.get(toolName)?.inputSchema.properties).toMatchObject({
+          module,
+        });
       }
       for (const toolName of [
         'unused_candidates',
@@ -287,7 +311,9 @@ test('publishes discoverable descriptions for opaque and conditional tool inputs
         'diagnostics_list',
         'test_results',
       ]) {
-        expect(toolByName.get(toolName)?.inputSchema.properties).toMatchObject({ cursor });
+        expect(toolByName.get(toolName)?.inputSchema.properties).toMatchObject({
+          cursor,
+        });
       }
 
       expect(toolByName.get('snapshot_list')).toMatchObject({
@@ -302,24 +328,31 @@ test('publishes discoverable descriptions for opaque and conditional tool inputs
         description:
           'List deterministic test cases, optionally filtered by completed Rstest snapshot, project, path prefix, or status.',
       });
-      expect(toolByName.get('code_evidence')?.inputSchema.properties).toMatchObject({
+      expect(
+        toolByName.get('code_evidence')?.inputSchema.properties,
+      ).toMatchObject({
         module: {
           description:
             'Optional exact artifact module ID, path, or name to join with path-based test, coverage, and lint evidence.',
         },
       });
-      expect(toolByName.get('lint_snapshot')?.inputSchema.properties).toMatchObject({
+      expect(
+        toolByName.get('lint_snapshot')?.inputSchema.properties,
+      ).toMatchObject({
         mode: {
-          description: 'Lint files selected by patterns, or one text buffer supplied in code.',
+          description:
+            'Lint files selected by patterns, or one text buffer supplied in code.',
         },
         patterns: {
-          description: 'File patterns used only when mode is files; defaults to ["."].',
+          description:
+            'File patterns used only when mode is files; defaults to ["."].',
         },
         code: {
           description: 'Source text required when mode is text.',
         },
         filePath: {
-          description: 'Checkout-relative virtual source path required when mode is text.',
+          description:
+            'Checkout-relative virtual source path required when mode is text.',
         },
         packageRoot: {
           description:
@@ -330,7 +363,9 @@ test('publishes discoverable descriptions for opaque and conditional tool inputs
             'Checkout-relative Rstack config path that must stay inside the checkout; defaults to ordinary discovery in packageRoot.',
         },
       });
-      expect(toolByName.get('test_snapshot')?.inputSchema.properties).toMatchObject({
+      expect(
+        toolByName.get('test_snapshot')?.inputSchema.properties,
+      ).toMatchObject({
         related: {
           description:
             'Source paths resolved from packageRoot; Rstest selects and runs only statically related test files.',
@@ -357,7 +392,9 @@ test('publishes discoverable descriptions for opaque and conditional tool inputs
           type: 'object',
         },
       });
-      expect(toolByName.get('rsdoctor_analyze')?.inputSchema.properties).toMatchObject({
+      expect(
+        toolByName.get('rsdoctor_analyze')?.inputSchema.properties,
+      ).toMatchObject({
         toolName: {
           description: 'Supported Rsdoctor catalog tool to run.',
           enum: [
@@ -395,7 +432,10 @@ test('returns compact code evidence and rejects an unpaired artifact selector', 
         structuredContent: {
           path: 'src/value.ts',
           line: 2,
-          executionCoverage: { state: 'unavailable', reason: 'no-test-snapshot' },
+          executionCoverage: {
+            state: 'unavailable',
+            reason: 'no-test-snapshot',
+          },
           testOutcome: { state: 'unknown' },
           diagnostics: { total: 0, returned: 0, truncated: false, items: [] },
         },
@@ -407,7 +447,12 @@ test('returns compact code evidence and rejects an unpaired artifact selector', 
       });
       expect(invalid).toMatchObject({
         isError: true,
-        content: [{ type: 'text', text: 'contextId and dataFile must be supplied together.' }],
+        content: [
+          {
+            type: 'text',
+            text: 'contextId and dataFile must be supplied together.',
+          },
+        ],
       });
     });
   });
@@ -416,9 +461,16 @@ test('returns compact code evidence and rejects an unpaired artifact selector', 
 test('includes artifact binding in compact code evidence module text', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await cp(reachabilityFixture, workspaceRoot, { recursive: true });
-    const context = { contextId: 'ctx_app', packageRoot: '.', product: 'application' } as const;
+    const context = {
+      contextId: 'ctx_app',
+      packageRoot: '.',
+      product: 'application',
+    } as const;
     expect(
-      await writeContextRunManifest(workspaceRoot, createRun('run_app', context)),
+      await writeContextRunManifest(
+        workspaceRoot,
+        createRun('run_app', context),
+      ),
     ).toMatchObject({ written: true });
 
     await withMcpClient(workspaceRoot, async (client) => {
@@ -449,7 +501,10 @@ test('returns structured results for each artifact-scoped module tool', async ()
       product: 'application',
     } as const;
     expect(
-      await writeContextRunManifest(workspaceRoot, createRun('run_app', context)),
+      await writeContextRunManifest(
+        workspaceRoot,
+        createRun('run_app', context),
+      ),
     ).toMatchObject({ written: true });
 
     await withMcpClient(workspaceRoot, async (client) => {
@@ -562,7 +617,10 @@ test('continues unused candidates with an opaque cursor', async () => {
       product: 'application',
     } as const;
     expect(
-      await writeContextRunManifest(workspaceRoot, createRun('run_app', context)),
+      await writeContextRunManifest(
+        workspaceRoot,
+        createRun('run_app', context),
+      ),
     ).toMatchObject({ written: true });
     await writeFile(
       path.join(workspaceRoot, 'rsdoctor-data.json'),
@@ -598,7 +656,8 @@ test('continues unused candidates with an opaque cursor', async () => {
         nextCursor: expect.any(String),
       });
 
-      const nextCursor = (firstPage.structuredContent as { nextCursor: string }).nextCursor;
+      const nextCursor = (firstPage.structuredContent as { nextCursor: string })
+        .nextCursor;
       const secondPage = await client.callTool({
         name: 'unused_candidates',
         arguments: {
@@ -710,11 +769,17 @@ test('distinguishes literal and recursively zero-shaped Rsdoctor analysis data',
     const cases = [
       {
         data: [],
-        expected: 'Rsdoctor build_summary analysis returned literal empty data.',
+        expected:
+          'Rsdoctor build_summary analysis returned literal empty data.',
       },
       {
-        data: { costs: [], nested: { cached: null, modules: [] }, totalCost: 0 },
-        expected: 'Rsdoctor build_summary analysis returned recursively zero-shaped data.',
+        data: {
+          costs: [],
+          nested: { cached: null, modules: [] },
+          totalCost: 0,
+        },
+        expected:
+          'Rsdoctor build_summary analysis returned recursively zero-shaped data.',
       },
     ];
     for (const { data, expected } of cases) {
@@ -792,7 +857,10 @@ test('loads Rsdoctor only when a built MCP process receives an analysis request'
   await withTempWorkspace(async (workspaceRoot) => {
     const markerFile = path.join(workspaceRoot, 'rsdoctor-loaded');
     const hookFile = path.join(workspaceRoot, 'import-hook.mjs');
-    await writeFile(path.join(workspaceRoot, 'package.json'), '{"name":"mcp-startup-test"}');
+    await writeFile(
+      path.join(workspaceRoot, 'package.json'),
+      '{"name":"mcp-startup-test"}',
+    );
     await writeRsdoctorArtifact(workspaceRoot);
     await writeFile(
       hookFile,
@@ -850,7 +918,11 @@ registerHooks({
 test('returns a contained report resource link only for an existing report', async () => {
   await withTempWorkspace(async (workspaceRoot) => {
     await writeRsdoctorArtifact(workspaceRoot);
-    const reportPath = path.join(workspaceRoot, 'artifacts', 'report-rsdoctor.html');
+    const reportPath = path.join(
+      workspaceRoot,
+      'artifacts',
+      'report-rsdoctor.html',
+    );
     await writeFile(reportPath, '<html></html>');
 
     await withMcpClient(workspaceRoot, async (client) => {
@@ -931,7 +1003,9 @@ test('rejects an invalid Rsdoctor tool name at the MCP schema boundary', async (
       expect(unknownTool.content).toEqual([
         expect.objectContaining({
           type: 'text',
-          text: expect.stringContaining('Invalid arguments for tool rsdoctor_analyze'),
+          text: expect.stringContaining(
+            'Invalid arguments for tool rsdoctor_analyze',
+          ),
         }),
       ]);
     });
@@ -947,7 +1021,10 @@ test('returns ordinary MCP errors for invalid module-analysis selections', async
       product: 'application',
     } as const;
     expect(
-      await writeContextRunManifest(workspaceRoot, createRun('run_app', context)),
+      await writeContextRunManifest(
+        workspaceRoot,
+        createRun('run_app', context),
+      ),
     ).toMatchObject({ written: true });
 
     await withMcpClient(workspaceRoot, async (client) => {
@@ -1097,7 +1174,9 @@ test('reads the current store for every project status call without workspace pa
         },
       ]);
 
-      expect(await writeContextSnapshot(workspaceRoot, snapshot)).toMatchObject({ written: true });
+      expect(await writeContextSnapshot(workspaceRoot, snapshot)).toMatchObject(
+        { written: true },
+      );
 
       const secondResult = await client.callTool({
         name: 'project_status',
@@ -1272,7 +1351,9 @@ test('queries immutable lint and test snapshots with paging, diffs, and previews
       expect(await writeContextRunManifest(workspaceRoot, run)).toMatchObject({
         written: true,
       });
-      expect(await writeContextSnapshot(workspaceRoot, snapshot)).toMatchObject({ written: true });
+      expect(await writeContextSnapshot(workspaceRoot, snapshot)).toMatchObject(
+        { written: true },
+      );
     }
 
     await withMcpClient(workspaceRoot, async (client) => {
@@ -1296,7 +1377,8 @@ test('queries immutable lint and test snapshots with paging, diffs, and previews
         name: 'snapshot_list',
         arguments: {
           limit: 1,
-          cursor: (snapshots.structuredContent as { nextCursor: string }).nextCursor,
+          cursor: (snapshots.structuredContent as { nextCursor: string })
+            .nextCursor,
         },
       });
       expect(nextSnapshots.structuredContent).toMatchObject({
@@ -1325,7 +1407,9 @@ test('queries immutable lint and test snapshots with paging, diffs, and previews
       expect(diagnostics.structuredContent).toMatchObject({
         snapshotId: lintSnapshot.snapshotId,
         total: 1,
-        items: [{ producer: 'rslint', path: 'src/index.ts', ruleId: 'no-debugger' }],
+        items: [
+          { producer: 'rslint', path: 'src/index.ts', ruleId: 'no-debugger' },
+        ],
       });
 
       const results = await client.callTool({
@@ -1465,14 +1549,17 @@ test('runs explicit captures through injected producers and returns ordinary MCP
           arguments: { related: ['src/index.ts'] },
         });
         expect(testResult.isError).toBe(true);
-        expect(testResult.content).toEqual([{ type: 'text', text: 'Test capture failed.' }]);
+        expect(testResult.content).toEqual([
+          { type: 'text', text: 'Test capture failed.' },
+        ]);
       },
       {
         captureLintSnapshot: (_root, request) => {
           captureRequests.push(request);
           return Promise.resolve(lintResult);
         },
-        captureTestSnapshot: () => Promise.reject(new Error('Test capture failed.')),
+        captureTestSnapshot: () =>
+          Promise.reject(new Error('Test capture failed.')),
       },
     );
   });
@@ -1496,8 +1583,14 @@ test('captures independent monorepo package contexts through one root MCP', asyn
           type: 'module',
         }),
       );
-      await writeFile(path.join(workspaceRoot, configPaths[index]), 'export default {};\n');
-      await writeFile(path.join(absolutePackageRoot, 'src/index.ts'), 'export {};\n');
+      await writeFile(
+        path.join(workspaceRoot, configPaths[index]),
+        'export default {};\n',
+      );
+      await writeFile(
+        path.join(absolutePackageRoot, 'src/index.ts'),
+        'export {};\n',
+      );
     }
     const packageWithoutConfig = path.join(workspaceRoot, 'packages/no-config');
     await mkdir(path.join(packageWithoutConfig, 'src'), { recursive: true });
@@ -1505,7 +1598,10 @@ test('captures independent monorepo package contexts through one root MCP', asyn
       path.join(packageWithoutConfig, 'package.json'),
       JSON.stringify({ name: '@repo/no-config' }),
     );
-    await writeFile(path.join(packageWithoutConfig, 'src/index.ts'), 'export {};\n');
+    await writeFile(
+      path.join(packageWithoutConfig, 'src/index.ts'),
+      'export {};\n',
+    );
 
     const lintCalls: unknown[] = [];
     const testCalls: unknown[] = [];
@@ -1575,10 +1671,15 @@ test('captures independent monorepo package contexts through one root MCP', asyn
           );
           expect(
             status.contexts
-              .filter(({ context }) => context.packageRoot === 'packages/no-config')
+              .filter(
+                ({ context }) => context.packageRoot === 'packages/no-config',
+              )
               .every(({ context }) => context.configPath === undefined),
           ).toBe(true);
-          expect(new Set(status.contexts.map(({ context }) => context.contextId)).size).toBe(6);
+          expect(
+            new Set(status.contexts.map(({ context }) => context.contextId))
+              .size,
+          ).toBe(6);
         },
         {
           captureLintSnapshot: (root, request) =>
@@ -1608,7 +1709,10 @@ test('captures independent monorepo package contexts through one root MCP', asyn
                 close: () => Promise.resolve(),
               }),
               {
-                wrapperConfigPath: path.join(import.meta.dirname, '../../dist/rslintConfig.js'),
+                wrapperConfigPath: path.join(
+                  import.meta.dirname,
+                  '../../dist/rslintConfig.js',
+                ),
                 withConfigTarget: withRstackConfigTarget,
               },
             ),
@@ -1616,7 +1720,10 @@ test('captures independent monorepo package contexts through one root MCP', asyn
             testSequence += 1;
             const sequence = testSequence;
             return captureTestSnapshot(root, request, {
-              wrapperConfigPath: path.join(import.meta.dirname, '../../dist/rstestConfig.js'),
+              wrapperConfigPath: path.join(
+                import.meta.dirname,
+                '../../dist/rstestConfig.js',
+              ),
               withConfigTarget: withRstackConfigTarget,
               runRstest: async (options) => {
                 await new Promise((resolve) => setTimeout(resolve, 5));
@@ -1653,12 +1760,21 @@ test('captures independent monorepo package contexts through one root MCP', asyn
         {
           cwd: path.join(workspaceRoot, 'packages/app'),
           configPath: path.join(workspaceRoot, 'packages/app/rstack.config.ts'),
-          loadedConfigPath: path.join(workspaceRoot, 'packages/app/rstack.config.ts'),
+          loadedConfigPath: path.join(
+            workspaceRoot,
+            'packages/app/rstack.config.ts',
+          ),
         },
         {
           cwd: path.join(workspaceRoot, 'packages/library'),
-          configPath: path.join(workspaceRoot, 'packages/library/custom.config.ts'),
-          loadedConfigPath: path.join(workspaceRoot, 'packages/library/custom.config.ts'),
+          configPath: path.join(
+            workspaceRoot,
+            'packages/library/custom.config.ts',
+          ),
+          loadedConfigPath: path.join(
+            workspaceRoot,
+            'packages/library/custom.config.ts',
+          ),
         },
         {
           cwd: path.join(workspaceRoot, 'packages/no-config'),
@@ -1752,7 +1868,9 @@ define.test({ include: ['./tests/*.never.ts'], passWithNoTests: ${fixture.testSt
               mode: 'files',
               patterns: ['src/index.ts'],
               packageRoot: fixture.root,
-              ...(fixture.root === 'packages/app' ? {} : { configPath: fixture.configPath }),
+              ...(fixture.root === 'packages/app'
+                ? {}
+                : { configPath: fixture.configPath }),
             },
           }),
         ),
@@ -1763,7 +1881,9 @@ define.test({ include: ['./tests/*.never.ts'], passWithNoTests: ${fixture.testSt
             name: 'test_snapshot',
             arguments: {
               packageRoot: fixture.root,
-              ...(fixture.root === 'packages/app' ? {} : { configPath: fixture.configPath }),
+              ...(fixture.root === 'packages/app'
+                ? {}
+                : { configPath: fixture.configPath }),
             },
           }),
         ),
@@ -1830,7 +1950,10 @@ define.app({});
 
     try {
       await client.connect(transport);
-      const result = await client.callTool({ name: 'test_snapshot', arguments: {} });
+      const result = await client.callTool({
+        name: 'test_snapshot',
+        arguments: {},
+      });
 
       expect(result.isError).toBe(true);
       expect(result.content).toEqual([
@@ -1861,7 +1984,10 @@ test('rejects unexpected fields at every Phase 3/4 MCP input boundary', async ()
             unexpected: true,
           },
         ],
-        ['lint_fix_preview', { snapshotId: 'snap', path: 'src/a.ts', unexpected: true }],
+        [
+          'lint_fix_preview',
+          { snapshotId: 'snap', path: 'src/a.ts', unexpected: true },
+        ],
         ['lint_snapshot', { mode: 'files', unexpected: true }],
         ['test_snapshot', { unexpected: true }],
       ] as const) {

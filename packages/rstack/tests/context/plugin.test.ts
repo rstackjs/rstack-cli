@@ -24,8 +24,12 @@ const createLoadedConfig = (
   dependencies: [],
 });
 
-const withWorkspace = async (callback: (workspaceRoot: string) => Promise<void>): Promise<void> => {
-  const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'rstack-context-plugin-host-'));
+const withWorkspace = async (
+  callback: (workspaceRoot: string) => Promise<void>,
+): Promise<void> => {
+  const workspaceRoot = await mkdtemp(
+    path.join(os.tmpdir(), 'rstack-context-plugin-host-'),
+  );
   try {
     await writeFile(
       path.join(workspaceRoot, 'package.json'),
@@ -43,7 +47,10 @@ const createRuntime = async (
   userPlugin?: RstackPlugin,
 ) =>
   createPluginRuntime({
-    plugins: [userPlugin, createContextPlugin(createLoadedConfig(context), workspaceRoot)],
+    plugins: [
+      userPlugin,
+      createContextPlugin(createLoadedConfig(context), workspaceRoot),
+    ],
     context: {
       cwd: workspaceRoot,
       command: 'build',
@@ -72,16 +79,26 @@ test('runs user modifiers before independent app and lib Context observers', asy
         setup({ modifyConfig }) {
           modifyConfig('app', (config) => ({
             ...config,
-            plugins: [...(config.plugins ?? []), { name: 'user-app', setup() {} }],
+            plugins: [
+              ...(config.plugins ?? []),
+              { name: 'user-app', setup() {} },
+            ],
           }));
           modifyConfig('lib', (config) => ({
             ...config,
-            plugins: [...(config.plugins ?? []), { name: 'user-lib', setup() {} }],
+            plugins: [
+              ...(config.plugins ?? []),
+              { name: 'user-lib', setup() {} },
+            ],
           }));
         },
       },
     );
-    const params = { command: 'build', env: 'production', envMode: 'production' } as never;
+    const params = {
+      command: 'build',
+      env: 'production',
+      envMode: 'production',
+    } as never;
 
     expect(runtime.hasConfigModifier('app')).toBe(true);
     expect(runtime.hasConfigModifier('lib')).toBe(true);
@@ -89,18 +106,16 @@ test('runs user modifiers before independent app and lib Context observers', asy
     const base = { plugins: [{ name: 'base', setup() {} }] };
     const app = await runtime.applyConfigModifiers('app', base, { params });
     const lib = await runtime.applyConfigModifiers('lib', base, { params });
-    const appAgain = await runtime.applyConfigModifiers('app', base, { params });
+    const appAgain = await runtime.applyConfigModifiers('app', base, {
+      params,
+    });
 
-    expect(app.plugins?.map((plugin) => plugin && 'name' in plugin && plugin.name)).toEqual([
-      'base',
-      'user-app',
-      'rstack:context-build',
-    ]);
-    expect(lib.plugins?.map((plugin) => plugin && 'name' in plugin && plugin.name)).toEqual([
-      'base',
-      'user-lib',
-      'rstack:context-build',
-    ]);
+    expect(
+      app.plugins?.map((plugin) => plugin && 'name' in plugin && plugin.name),
+    ).toEqual(['base', 'user-app', 'rstack:context-build']);
+    expect(
+      lib.plugins?.map((plugin) => plugin && 'name' in plugin && plugin.name),
+    ).toEqual(['base', 'user-lib', 'rstack:context-build']);
     expect(appAgain.plugins).toHaveLength(3);
     expect(base.plugins).toHaveLength(1);
   });

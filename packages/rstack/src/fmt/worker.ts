@@ -74,7 +74,8 @@ const formatFile = async ({
           cacheEntry: [
             hasDottedBasename(file.path)
               ? ''
-              : (contentHash ?? hashContent(sourceBuffer ?? readFileSync(file.path))),
+              : (contentHash ??
+                hashContent(sourceBuffer ?? readFileSync(file.path))),
             cache.optionsHash,
             'unsupported',
           ],

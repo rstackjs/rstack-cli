@@ -1,7 +1,11 @@
 import { getDistFiles, getFileContent } from '@rstackjs/test-utils';
 import { test } from '#test-helpers';
 
-test('should build with rstack --config', async ({ prepareDist, execCli, expect }) => {
+test('should build with rstack --config', async ({
+  prepareDist,
+  execCli,
+  expect,
+}) => {
   const distPath = await prepareDist();
 
   execCli('build --config ./custom.config.ts');

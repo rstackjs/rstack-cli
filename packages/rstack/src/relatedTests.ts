@@ -20,14 +20,26 @@ type RelatedTestResolverDependencies = {
 
 type RelatedTestListEntry = { file: string };
 
-const isRelatedTestListEntry = (value: unknown): value is RelatedTestListEntry =>
-  typeof value === 'object' && value !== null && 'file' in value && typeof value.file === 'string';
+const isRelatedTestListEntry = (
+  value: unknown,
+): value is RelatedTestListEntry =>
+  typeof value === 'object' &&
+  value !== null &&
+  'file' in value &&
+  typeof value.file === 'string';
 
-const runCli = ({ cwd, args }: RelatedTestCliRequest): Promise<RelatedTestCliResult> =>
+const runCli = ({
+  cwd,
+  args,
+}: RelatedTestCliRequest): Promise<RelatedTestCliResult> =>
   new Promise((resolve, reject) => {
     execFile(process.execPath, args, { cwd }, (error, stdout, stderr) => {
       if (error) {
-        reject(error instanceof Error ? error : new Error('Rstack test list failed.'));
+        reject(
+          error instanceof Error
+            ? error
+            : new Error('Rstack test list failed.'),
+        );
         return;
       }
       resolve({ stdout, stderr });
@@ -38,7 +50,9 @@ const resolveRelatedTests = async (
   request: RelatedTestRequest,
   dependencies: RelatedTestResolverDependencies = {},
 ): Promise<string[]> => {
-  const outputDirectory = await mkdtemp(path.join(os.tmpdir(), 'rstack-related-tests-'));
+  const outputDirectory = await mkdtemp(
+    path.join(os.tmpdir(), 'rstack-related-tests-'),
+  );
   const outputFile = path.join(outputDirectory, 'tests.json');
   let source: string;
   let stderr: string;
@@ -52,7 +66,9 @@ const resolveRelatedTests = async (
       '--filesOnly',
       '--json',
       outputFile,
-      ...(request.configPath === undefined ? [] : ['--config', request.configPath]),
+      ...(request.configPath === undefined
+        ? []
+        : ['--config', request.configPath]),
     ];
     ({ stderr } = await (dependencies.runCli ?? runCli)({
       cwd: request.packageRoot,
@@ -72,12 +88,16 @@ const resolveRelatedTests = async (
     );
   }
   if (!Array.isArray(parsed) || !parsed.every(isRelatedTestListEntry)) {
-    throw new Error('Rstest related-test listing returned an invalid file list.');
+    throw new Error(
+      'Rstest related-test listing returned an invalid file list.',
+    );
   }
 
-  return [...new Set(parsed.map((entry) => path.resolve(request.packageRoot, entry.file)))].sort(
-    (left, right) => left.localeCompare(right),
-  );
+  return [
+    ...new Set(
+      parsed.map((entry) => path.resolve(request.packageRoot, entry.file)),
+    ),
+  ].sort((left, right) => left.localeCompare(right));
 };
 
 export { resolveRelatedTests };

@@ -2,7 +2,8 @@ import { defineConfig } from '@rslib/core';
 import prettierPkgJson from 'prettier/package.json' with { type: 'json' };
 import pkgJson from './package.json' with { type: 'json' };
 
-const fullyMinifiedChunks = /(?:fmt(?:Lsp|Plugins)?|sortPackageJsonPlugin|staged)\.js$/;
+const fullyMinifiedChunks =
+  /(?:fmt(?:Lsp|Plugins)?|sortPackageJsonPlugin|staged)\.js$/;
 
 export default defineConfig({
   dts: true,

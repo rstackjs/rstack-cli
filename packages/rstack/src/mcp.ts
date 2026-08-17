@@ -48,7 +48,9 @@ const runContextMcpServer = async (startPath: string): Promise<void> => {
     },
   });
 
-  await server.connect(new StdioServerTransport(process.stdin, reserveStandardOutputForProtocol()));
+  await server.connect(
+    new StdioServerTransport(process.stdin, reserveStandardOutputForProtocol()),
+  );
 };
 
 export { runContextMcpServer };

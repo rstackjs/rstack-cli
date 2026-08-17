@@ -10,7 +10,9 @@ const withTempConfig = async (
   source: string,
   callback: (configPath: string) => Promise<void>,
 ): Promise<void> => {
-  const directory = await mkdtemp(path.join(os.tmpdir(), 'rstack-context-config-'));
+  const directory = await mkdtemp(
+    path.join(os.tmpdir(), 'rstack-context-config-'),
+  );
   const configPath = path.join(directory, 'rstack.config.ts');
 
   try {
@@ -24,14 +26,20 @@ const withTempConfig = async (
 test('resolves context capture with explicit opt-out precedence', () => {
   expect(resolveContextCapture(undefined, undefined)).toBe('off');
   expect(resolveContextCapture({ enabled: true }, undefined)).toBe('metadata');
-  expect(resolveContextCapture({ enabled: true, capture: 'deep' }, undefined)).toBe('deep');
-  expect(resolveContextCapture({ enabled: true, capture: 'off' }, '1')).toBe('off');
+  expect(
+    resolveContextCapture({ enabled: true, capture: 'deep' }, undefined),
+  ).toBe('deep');
+  expect(resolveContextCapture({ enabled: true, capture: 'off' }, '1')).toBe(
+    'off',
+  );
   expect(resolveContextCapture({ enabled: true }, '0')).toBe('off');
   expect(resolveContextCapture(undefined, '1')).toBe('metadata');
 });
 
 test('loads context config separately from app and library configs', async () => {
-  const configModuleUrl = pathToFileURL(path.join(import.meta.dirname, '../../src/config.ts')).href;
+  const configModuleUrl = pathToFileURL(
+    path.join(import.meta.dirname, '../../src/config.ts'),
+  ).href;
 
   await withTempConfig(
     [

@@ -55,7 +55,11 @@ test('does not apply negated directory patterns to files', async () => {
 
 test('applies negated patterns in declaration order', async () => {
   const isIgnored = await createMatcher(['*.js', '!src/keep.js']);
-  const isIgnoredAgain = await createMatcher(['*.js', '!src/keep.js', 'src/keep.js']);
+  const isIgnoredAgain = await createMatcher([
+    '*.js',
+    '!src/keep.js',
+    'src/keep.js',
+  ]);
   const isIgnoredAfterReinclude = await createMatcher(['dist', '!dist']);
   const filePath = path.join(rootPath, 'src/keep.js');
 
@@ -70,11 +74,17 @@ test('ignores common lock files by default and allows explicit negation', async 
   const isIgnoredAfterReinclude = await createMatcher(['!pnpm-lock.yaml']);
 
   expect(isIgnored(path.join(rootPath, 'package-lock.json'))).toBe(true);
-  expect(isIgnored(path.join(rootPath, 'packages/app/pnpm-lock.yaml'))).toBe(true);
-  expect(isIgnored(path.join(rootPath, 'packages/app/PNPM-LOCK.YAML'))).toBe(false);
+  expect(isIgnored(path.join(rootPath, 'packages/app/pnpm-lock.yaml'))).toBe(
+    true,
+  );
+  expect(isIgnored(path.join(rootPath, 'packages/app/PNPM-LOCK.YAML'))).toBe(
+    false,
+  );
   expect(isIgnored(path.join(rootPath, '../shared/pnpm-lock.yaml'))).toBe(true);
   expect(isIgnored(path.join(rootPath, 'pnpm-lock.yaml.backup'))).toBe(false);
-  expect(isIgnoredAfterReinclude(path.join(rootPath, 'pnpm-lock.yaml'))).toBe(false);
+  expect(isIgnoredAfterReinclude(path.join(rootPath, 'pnpm-lock.yaml'))).toBe(
+    false,
+  );
 });
 
 test('does not let explicit files bypass ignore patterns', async () => {
@@ -99,11 +109,18 @@ test('does not ignore other files when no patterns are configured', async () => 
 
 test('loads repeated ignore paths relative to cwd and each ignore file', async () => {
   await withTempProject(async (projectPath) => {
-    writeProjectFile(projectPath, '.prettierignore', 'src/*.js\n!src/keep.js\n');
+    writeProjectFile(
+      projectPath,
+      '.prettierignore',
+      'src/*.js\n!src/keep.js\n',
+    );
     writeProjectFile(projectPath, 'config/extra.ignore', '../generated/*.js\n');
 
     const isIgnored = await createIgnoreMatcher({
-      config: normalizeFmtConfig({ ignorePatterns: ['configured.js'] }, projectPath),
+      config: normalizeFmtConfig(
+        { ignorePatterns: ['configured.js'] },
+        projectPath,
+      ),
       cwd: projectPath,
       ignorePaths: ['.prettierignore', 'config/extra.ignore'],
     });

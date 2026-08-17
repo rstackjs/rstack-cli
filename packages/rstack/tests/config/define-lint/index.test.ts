@@ -7,7 +7,11 @@ test('should run lint with define.lint config', ({ execCli }) => {
   execCli('lint src/index.js');
 });
 
-test('should fail when lint reports errors', async ({ cwd, execCli, logHelper }) => {
+test('should fail when lint reports errors', async ({
+  cwd,
+  execCli,
+  logHelper,
+}) => {
   const filePath = path.join(cwd, 'src/test-temp-error.js');
   await writeFile(filePath, 'debugger;');
   expect(() => execCli('lint src/test-temp-error.js')).toThrow();

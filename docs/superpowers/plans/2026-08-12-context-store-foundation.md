@@ -46,7 +46,11 @@ integration, or MCP transport is introduced in this foundation.
 ```ts
 test('resolves a package from its config path without using process cwd', async () => {
   const result = await resolveContextWorkspace(configPath);
-  expect(result).toEqual({ workspaceRoot, packageRoot, packageName: '@repo/lib' });
+  expect(result).toEqual({
+    workspaceRoot,
+    packageRoot,
+    packageName: '@repo/lib',
+  });
 });
 
 test('falls back to a standalone package root', async () => {
@@ -94,23 +98,38 @@ Expected: PASS with both workspace cases green.
 
 ```ts
 test('publishes concurrent run snapshots and reads each latest context', async () => {
-  expect(await writeContextRunManifest(rootPath, run)).toMatchObject({ written: true });
-  expect(await writeContextSnapshot(rootPath, first)).toMatchObject({ written: true });
-  expect(await writeContextSnapshot(rootPath, second)).toMatchObject({ written: true });
+  expect(await writeContextRunManifest(rootPath, run)).toMatchObject({
+    written: true,
+  });
+  expect(await writeContextSnapshot(rootPath, first)).toMatchObject({
+    written: true,
+  });
+  expect(await writeContextSnapshot(rootPath, second)).toMatchObject({
+    written: true,
+  });
   expect(await readContextWorkspaceStatus(rootPath)).toMatchObject({
-    runs: [{ run, contexts: [{ context: run.contexts[0], latestSnapshot: second }] }],
+    runs: [
+      { run, contexts: [{ context: run.contexts[0], latestSnapshot: second }] },
+    ],
   });
 });
 
 test('does not replace an immutable record', async () => {
-  expect(await writeContextSnapshot(rootPath, first)).toMatchObject({ written: true });
-  expect(await writeContextSnapshot(rootPath, replacement)).toMatchObject({ written: false });
+  expect(await writeContextSnapshot(rootPath, first)).toMatchObject({
+    written: true,
+  });
+  expect(await writeContextSnapshot(rootPath, replacement)).toMatchObject({
+    written: false,
+  });
 });
 
 test('reports malformed completed records without reading temporary files', async () => {
   const status = await readContextWorkspaceStatus(rootPath);
   expect(status.issues).toEqual([
-    expect.objectContaining({ code: 'invalid-record', path: expect.any(String) }),
+    expect.objectContaining({
+      code: 'invalid-record',
+      path: expect.any(String),
+    }),
   ]);
 });
 ```

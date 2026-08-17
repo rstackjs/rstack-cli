@@ -1,6 +1,10 @@
 import type { WatchFiles } from '@rsbuild/core';
 import type { ConfigParams, RslibConfig } from '@rslib/core';
-import { applyRstackConfigModifiers, loadRstackConfig, type Configs } from './config.ts';
+import {
+  applyRstackConfigModifiers,
+  loadRstackConfig,
+  type Configs,
+} from './config.ts';
 
 export const resolveRslibConfig = async (
   configs: Configs,
@@ -16,7 +20,9 @@ export const resolveRslibConfig = async (
   return libConfig;
 };
 
-export const loadRslibConfig = async (params: ConfigParams): Promise<RslibConfig> => {
+export const loadRslibConfig = async (
+  params: ConfigParams,
+): Promise<RslibConfig> => {
   const loaded = await loadRstackConfig();
   const config = await applyRstackConfigModifiers(
     loaded,
@@ -40,7 +46,11 @@ export const loadRslibConfig = async (params: ConfigParams): Promise<RslibConfig
     dev: {
       ...config.dev,
       watchFiles: [
-        ...(watchFiles ? (Array.isArray(watchFiles) ? watchFiles : [watchFiles]) : []),
+        ...(watchFiles
+          ? Array.isArray(watchFiles)
+            ? watchFiles
+            : [watchFiles]
+          : []),
         watchConfig,
       ],
     },

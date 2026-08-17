@@ -74,8 +74,12 @@ import { resolveContextCapture } from '../../src/context/config.ts';
 test('resolves context capture with explicit opt-out precedence', () => {
   expect(resolveContextCapture(undefined, undefined)).toBe('off');
   expect(resolveContextCapture({ enabled: true }, undefined)).toBe('metadata');
-  expect(resolveContextCapture({ enabled: true, capture: 'deep' }, undefined)).toBe('deep');
-  expect(resolveContextCapture({ enabled: true, capture: 'off' }, '1')).toBe('off');
+  expect(
+    resolveContextCapture({ enabled: true, capture: 'deep' }, undefined),
+  ).toBe('deep');
+  expect(resolveContextCapture({ enabled: true, capture: 'off' }, '1')).toBe(
+    'off',
+  );
   expect(resolveContextCapture({ enabled: true }, '0')).toBe('off');
   expect(resolveContextCapture(undefined, '1')).toBe('metadata');
 });
@@ -480,7 +484,11 @@ server.registerTool(
     title: 'Rstack project status',
     description:
       'Return checkout-local Rstack build contexts and their latest completed observations.',
-    annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      openWorldHint: false,
+    },
   },
   async () => {
     const status = await readProjectStatus(workspaceRoot);

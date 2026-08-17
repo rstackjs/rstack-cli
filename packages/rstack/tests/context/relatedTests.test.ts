@@ -5,7 +5,8 @@ import { resolveRelatedTests } from '../../src/relatedTests.ts';
 
 const getOutputFile = (args: string[]): string => {
   const outputFile = args[args.indexOf('--json') + 1];
-  if (outputFile === undefined) throw new Error('Missing related-test output file.');
+  if (outputFile === undefined)
+    throw new Error('Missing related-test output file.');
   return outputFile;
 };
 
@@ -28,7 +29,10 @@ test('lists related tests through the current Rstack CLI and normalizes its JSON
           outputFile,
           JSON.stringify([
             { file: 'tests/index.test.ts', type: 'file' },
-            { file: path.join(packageRoot, 'tests/index.test.ts'), type: 'file' },
+            {
+              file: path.join(packageRoot, 'tests/index.test.ts'),
+              type: 'file',
+            },
           ]),
         ).then(() => ({ stdout: 'config log that is not JSON', stderr: '' }));
       },
@@ -78,6 +82,8 @@ test('uses the built Rstack and Rstest graph to find tests related to this packa
     sources: [path.join(packageRoot, 'src/config.ts')],
   });
 
-  expect(files).toContain(path.join(packageRoot, 'tests/context/config.test.ts'));
+  expect(files).toContain(
+    path.join(packageRoot, 'tests/context/config.test.ts'),
+  );
   expect(files.every((file) => path.isAbsolute(file))).toBe(true);
 });

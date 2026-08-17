@@ -4,13 +4,17 @@ import path from 'node:path';
 const cacheGitignore = '*\n';
 
 type ProjectCacheResult =
-  { status: 'available'; path: string } | { status: 'unavailable'; path: string; error: unknown };
+  | { status: 'available'; path: string }
+  | { status: 'unavailable'; path: string; error: unknown };
 
 /** Returns the disposable cache directory for a resolved Rstack project root. */
-const getProjectCacheDir = (rootPath: string): string => path.join(rootPath, '.rstack', 'cache');
+const getProjectCacheDir = (rootPath: string): string =>
+  path.join(rootPath, '.rstack', 'cache');
 
 /** Creates the project cache directory without making cache failures fatal. */
-const ensureProjectCacheDir = async (rootPath: string): Promise<ProjectCacheResult> => {
+const ensureProjectCacheDir = async (
+  rootPath: string,
+): Promise<ProjectCacheResult> => {
   const cachePath = getProjectCacheDir(rootPath);
   const ignorePath = path.join(cachePath, '.gitignore');
 

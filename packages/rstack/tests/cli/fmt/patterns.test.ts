@@ -19,7 +19,11 @@ test('returns exit code 2 when no files match', () => {
 
 test('allows no files to match with --no-error-on-unmatched-pattern', () => {
   for (const modeArgs of [[], ['--check'], ['--list-different']]) {
-    const result = runFmt([...modeArgs, '--no-error-on-unmatched-pattern', 'missing/**/*.ts']);
+    const result = runFmt([
+      ...modeArgs,
+      '--no-error-on-unmatched-pattern',
+      'missing/**/*.ts',
+    ]);
 
     expect(result.status).toBe(0);
     expect(result.stdout).toBe('');
@@ -78,7 +82,9 @@ test('supports -u as an alias for --ignore-unknown', () => {
   const result = runFmt(['-u', 'notes.unknown']);
 
   expect(result.status).toBe(0);
-  expect(result.stdout).toBe('start   Formatting...\nsuccess No supported files to format.\n');
+  expect(result.stdout).toBe(
+    'start   Formatting...\nsuccess No supported files to format.\n',
+  );
   expect(result.stderr).toBe('');
 });
 
@@ -87,7 +93,9 @@ test('does not treat unmatched patterns as unknown files', () => {
 
   expect(result.status).toBe(2);
   expect(result.stdout).toBe('');
-  expect(result.stderr).toContain('No supported files matched "missing/**/*.unknown"');
+  expect(result.stderr).toContain(
+    'No supported files matched "missing/**/*.unknown"',
+  );
 });
 
 test('does not treat unsupported files as unmatched patterns', () => {

@@ -1,5 +1,11 @@
-import type { ConfigParams as RsbuildConfigParams, RsbuildConfig } from '@rsbuild/core';
-import type { ConfigParams as RslibConfigParams, RslibConfig } from '@rslib/core';
+import type {
+  ConfigParams as RsbuildConfigParams,
+  RsbuildConfig,
+} from '@rsbuild/core';
+import type {
+  ConfigParams as RslibConfigParams,
+  RslibConfig,
+} from '@rslib/core';
 import type { RslintConfig } from '@rslint/core';
 import type { UserConfig as RspressConfig } from '@rspress/core';
 import type { RstestConfig } from '@rstest/core';

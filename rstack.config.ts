@@ -1,4 +1,4 @@
-// Rstack configuration guide: https://rstack.rs/config
+// Configuration guide: https://rstack.rs/config
 import { define } from 'rstack';
 
 define.lint(async ({ js, ts }) => {
@@ -52,16 +52,10 @@ define.lint(async ({ js, ts }) => {
 });
 
 define.fmt({
-  ignorePatterns: ['packages/rstack/binding.cjs', 'packages/rstack/binding.d.cts'],
-  overrides: [
-    {
-      files: 'packages/create-rstack/template-*/**/*',
-      options: {
-        printWidth: 80,
-      },
-    },
+  ignorePatterns: [
+    'packages/rstack/binding.cjs',
+    'packages/rstack/binding.d.cts',
   ],
-  printWidth: 100,
   singleQuote: true,
   sortPackageJson: true,
 });

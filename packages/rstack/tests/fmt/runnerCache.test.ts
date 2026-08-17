@@ -10,7 +10,11 @@ import {
 } from '../../src/fmt/cacheIdentity.ts';
 import { loadFmtCacheStore } from '../../src/fmt/cacheStore.ts';
 import { runFmtFiles } from '../../src/fmt/runner.ts';
-import type { FmtCacheContext, FmtFileRequest, FmtMode } from '../../src/fmt/types.ts';
+import type {
+  FmtCacheContext,
+  FmtFileRequest,
+  FmtMode,
+} from '../../src/fmt/types.ts';
 import {
   createFmtCacheContext,
   createFmtRequest,
@@ -77,7 +81,9 @@ test('uses content hashes instead of file metadata', async () => {
       size: Buffer.byteLength(clean),
     });
 
-    await expect(run([createFmtRequest(filePath)], 'check', cache)).resolves.toMatchObject({
+    await expect(
+      run([createFmtRequest(filePath)], 'check', cache),
+    ).resolves.toMatchObject({
       exitCode: 1,
       files: [{ path: filePath, status: 'different' }],
     });
@@ -99,10 +105,16 @@ test('invalidates entries when final options change', async () => {
     const cache = createFmtCacheContext(rootPath);
     writeFileSync(filePath, 'const value = "text";\n');
 
-    const initial = createFmtRequest(filePath, { parser: 'typescript', singleQuote: false });
+    const initial = createFmtRequest(filePath, {
+      parser: 'typescript',
+      singleQuote: false,
+    });
     await run([initial], 'check', cache);
 
-    const changed = createFmtRequest(filePath, { parser: 'typescript', singleQuote: true });
+    const changed = createFmtRequest(filePath, {
+      parser: 'typescript',
+      singleQuote: true,
+    });
     await expect(run([changed], 'check', cache)).resolves.toMatchObject({
       exitCode: 1,
       files: [{ path: filePath, status: 'different' }],
@@ -119,7 +131,11 @@ test('invalidates entries when final options change', async () => {
 
 test('caches unsupported parser results until final options change', async () => {
   await withTempProject(async (rootPath) => {
-    const filePath = writeProjectFile(rootPath, 'data.unknown', '{"value":true}');
+    const filePath = writeProjectFile(
+      rootPath,
+      'data.unknown',
+      '{"value":true}',
+    );
     const cache = createFmtCacheContext(rootPath);
     const unsupported = createFmtRequest(filePath, {});
 
@@ -129,11 +145,11 @@ test('caches unsupported parser results until final options change', async () =>
       files: [],
       processedFileCount: 0,
     });
-    expect((await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('data.unknown')).toEqual([
-      '',
-      createOptionsHasher()(unsupported.options),
-      'unsupported',
-    ]);
+    expect(
+      (await loadFmtCacheStore(cache.filePath, cacheNamespace)).get(
+        'data.unknown',
+      ),
+    ).toEqual(['', createOptionsHasher()(unsupported.options), 'unsupported']);
 
     await expect(run([unsupported], 'check', cache)).resolves.toEqual(first);
 
@@ -143,7 +159,11 @@ test('caches unsupported parser results until final options change', async () =>
       files: [{ path: filePath, status: 'different' }],
       processedFileCount: 1,
     });
-    expect((await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('data.unknown')).toEqual([
+    expect(
+      (await loadFmtCacheStore(cache.filePath, cacheNamespace)).get(
+        'data.unknown',
+      ),
+    ).toEqual([
       createCacheHash(readFileSync(filePath)),
       createOptionsHasher()(supported.options),
       'dirty',
@@ -163,7 +183,9 @@ test('invalidates cached unsupported parser results when content changes without
       files: [],
       processedFileCount: 0,
     });
-    expect((await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('script')).toEqual([
+    expect(
+      (await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('script'),
+    ).toEqual([
       createCacheHash(readFileSync(filePath)),
       createOptionsHasher()(file.options),
       'unsupported',
@@ -177,7 +199,9 @@ test('invalidates cached unsupported parser results when content changes without
       files: [{ path: filePath, status: 'different' }],
       processedFileCount: 1,
     });
-    expect((await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('script')).toEqual([
+    expect(
+      (await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('script'),
+    ).toEqual([
       createCacheHash(readFileSync(filePath)),
       createOptionsHasher()(file.options),
       'dirty',
@@ -187,7 +211,11 @@ test('invalidates cached unsupported parser results when content changes without
 
 test('caches only plugins with stable fingerprints', async () => {
   await withTempProject(async (rootPath) => {
-    const filePath = writeProjectFile(rootPath, 'data.fixture', '{"value":true}');
+    const filePath = writeProjectFile(
+      rootPath,
+      'data.fixture',
+      '{"value":true}',
+    );
     const pluginEntry = writeProjectFile(
       rootPath,
       'node_modules/prettier-plugin-fixture/index.mjs',
@@ -208,26 +236,30 @@ test('caches only plugins with stable fingerprints', async () => {
         }),
       );
     const cache = createFmtCacheContext(rootPath);
-    const file = createFmtRequest(filePath, { plugins: [pathToFileURL(pluginEntry).href] });
+    const file = createFmtRequest(filePath, {
+      plugins: [pathToFileURL(pluginEntry).href],
+    });
 
     writePackageJson();
     await run([file], 'check', cache);
-    expect((await loadFmtCacheStore(cache.filePath, cacheNamespace)).get('data.fixture')).toBe(
-      undefined,
-    );
+    expect(
+      (await loadFmtCacheStore(cache.filePath, cacheNamespace)).get(
+        'data.fixture',
+      ),
+    ).toBe(undefined);
 
     writePackageJson('1.0.0');
     await run([file], 'check', cache);
-    const firstHash = (await loadFmtCacheStore(cache.filePath, cacheNamespace)).get(
-      'data.fixture',
-    )?.[1];
+    const firstHash = (
+      await loadFmtCacheStore(cache.filePath, cacheNamespace)
+    ).get('data.fixture')?.[1];
     expect(firstHash).toHaveLength(cacheHashLength);
 
     writePackageJson('2.0.0');
     await run([file], 'check', cache);
-    const secondHash = (await loadFmtCacheStore(cache.filePath, cacheNamespace)).get(
-      'data.fixture',
-    )?.[1];
+    const secondHash = (
+      await loadFmtCacheStore(cache.filePath, cacheNamespace)
+    ).get('data.fixture')?.[1];
     expect(secondHash).toHaveLength(cacheHashLength);
     expect(secondHash).not.toBe(firstHash);
   });
@@ -241,7 +273,11 @@ test('preserves entries outside the formatted subset', async () => {
     writeFileSync(firstPath, 'const first = 1;\n');
     writeFileSync(secondPath, 'const second = 2;\n');
 
-    await run([createFmtRequest(firstPath), createFmtRequest(secondPath)], 'check', cache);
+    await run(
+      [createFmtRequest(firstPath), createFmtRequest(secondPath)],
+      'check',
+      cache,
+    );
     const firstStore = await loadFmtCacheStore(cache.filePath, cacheNamespace);
     const secondEntry = firstStore.get('second.ts');
 
@@ -262,7 +298,9 @@ test('does not cache formatting errors', async () => {
     writeFileSync(invalidPath, 'const invalid = ;');
 
     await run([createFmtRequest(validPath)], 'check', cache);
-    await expect(run([createFmtRequest(invalidPath)], 'check', cache)).resolves.toMatchObject({
+    await expect(
+      run([createFmtRequest(invalidPath)], 'check', cache),
+    ).resolves.toMatchObject({
       exitCode: 2,
       files: [{ path: invalidPath, status: 'error' }],
     });
@@ -306,7 +344,9 @@ test('write persists clean results for misses and hits', async () => {
       files: [],
       processedFileCount: 2,
     });
-    expect(files.map((file) => statSync(file.path).mtimeMs)).toEqual(timestamps);
+    expect(files.map((file) => statSync(file.path).mtimeMs)).toEqual(
+      timestamps,
+    );
   });
 });
 

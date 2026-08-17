@@ -22,7 +22,9 @@ import { define } from 'rstack';
 
 define.plugins([
   import('@acme/rstack-plugin').then(({ pluginAcme }) => pluginAcme()),
-  process.env.CI ? import('@acme/rstack-ci').then(({ pluginCI }) => pluginCI()) : false,
+  process.env.CI
+    ? import('@acme/rstack-ci').then(({ pluginCI }) => pluginCI())
+    : false,
 ]);
 ```
 

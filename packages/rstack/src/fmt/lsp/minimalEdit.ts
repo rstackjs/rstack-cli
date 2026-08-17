@@ -8,8 +8,10 @@ interface MinimalEdit {
 const CARRIAGE_RETURN = 0x0d;
 const LINE_FEED = 0x0a;
 
-const isHighSurrogate = (code: number): boolean => code >= 0xd800 && code <= 0xdbff;
-const isLowSurrogate = (code: number): boolean => code >= 0xdc00 && code <= 0xdfff;
+const isHighSurrogate = (code: number): boolean =>
+  code >= 0xd800 && code <= 0xdbff;
+const isLowSurrogate = (code: number): boolean =>
+  code >= 0xdc00 && code <= 0xdfff;
 
 /**
  * True when `index` splits a unit that occupies a single position: a surrogate
@@ -33,7 +35,10 @@ const splitsIndivisibleUnit = (text: string, index: number): boolean => {
  * ends instead of replacing the whole document, which keeps selections, folds,
  * and undo history intact. Offsets are converted to positions by the caller.
  */
-const computeMinimalEdit = (source: string, formatted: string): MinimalEdit | undefined => {
+const computeMinimalEdit = (
+  source: string,
+  formatted: string,
+): MinimalEdit | undefined => {
   if (source === formatted) {
     return undefined;
   }
@@ -109,7 +114,10 @@ interface MinimalTextEdit {
  * `\r\n`, or a lone `\r`, like the protocol's. `computeMinimalEdit` keeping
  * boundaries out of surrogate pairs and `\r\n` is what makes the mapping exact.
  */
-const computeMinimalTextEdit = (source: string, formatted: string): MinimalTextEdit | undefined => {
+const computeMinimalTextEdit = (
+  source: string,
+  formatted: string,
+): MinimalTextEdit | undefined => {
   const edit = computeMinimalEdit(source, formatted);
   if (!edit) {
     return undefined;

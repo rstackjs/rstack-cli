@@ -1,10 +1,21 @@
-import { mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  realpath,
+  rm,
+  symlink,
+  writeFile,
+} from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { RsbuildConfig } from '@rsbuild/core';
 import type { RslibConfig } from '@rslib/core';
-import { readContextWorkspaceStatus, readProjectStatus } from '@rstackjs/context';
+import {
+  readContextWorkspaceStatus,
+  readProjectStatus,
+} from '@rstackjs/context';
 import { afterEach, expect, test } from 'rstack/test';
 import { getConfigState } from '../../src/config.ts';
 import defaultLoadRsbuildConfig, {
@@ -64,7 +75,9 @@ const withConfig = async (
   const fixtureRoot = await realpath(
     await mkdtemp(path.join(os.tmpdir(), 'rstack-context-injection-')),
   );
-  const workspaceRoot = symlinked ? path.join(fixtureRoot, 'checkout') : fixtureRoot;
+  const workspaceRoot = symlinked
+    ? path.join(fixtureRoot, 'checkout')
+    : fixtureRoot;
   await mkdir(workspaceRoot, { recursive: true });
   const configPath = path.join(workspaceRoot, 'rstack.config.ts');
   const configDefinition =
@@ -83,7 +96,10 @@ const withConfig = async (
       type: 'module',
     }),
   );
-  await writeFile(path.join(workspaceRoot, 'pnpm-workspace.yaml'), 'packages: []\n');
+  await writeFile(
+    path.join(workspaceRoot, 'pnpm-workspace.yaml'),
+    'packages: []\n',
+  );
   await writeFile(
     path.join(workspaceRoot, 'context-label.ts'),
     "export const variant = 'firefox_v3';\n",
@@ -135,9 +151,15 @@ const getObserver = (config: { plugins?: Array<unknown> }) => {
   return observer!;
 };
 
-const observeBuild = async (config: { plugins?: Array<unknown> }, workspaceRoot: string) => {
+const observeBuild = async (
+  config: { plugins?: Array<unknown> },
+  workspaceRoot: string,
+) => {
   let beforeBuild:
-    ((context: { environments: Record<string, unknown> }) => Promise<void> | void) | undefined;
+    | ((context: {
+        environments: Record<string, unknown>;
+      }) => Promise<void> | void)
+    | undefined;
   const observer = getObserver(config);
 
   observer.setup?.({
@@ -230,72 +252,86 @@ for (const { kind, definition, producer, product } of [
   { kind: 'lib', definition: 'async', producer: 'rslib', product: 'library' },
 ] as const) {
   test(`injects one trailing observer for enabled ${definition} ${kind} configs`, async () => {
-    await withConfig({ kind, definition, contextEnabled: true }, async (fixture) => {
-      const config =
-        kind === 'app' ? await loadRsbuildConfig(params) : await loadRslibConfig(params);
-      const result = config as {
-        dev?: { watchFiles?: unknown };
-        lib?: unknown;
-        plugins?: Array<unknown>;
-      };
+    await withConfig(
+      { kind, definition, contextEnabled: true },
+      async (fixture) => {
+        const config =
+          kind === 'app'
+            ? await loadRsbuildConfig(params)
+            : await loadRslibConfig(params);
+        const result = config as {
+          dev?: { watchFiles?: unknown };
+          lib?: unknown;
+          plugins?: Array<unknown>;
+        };
 
-      const hooks = fixture.getHooks();
+        const hooks = fixture.getHooks();
 
-      expect(result).not.toBe(hooks.config);
-      expect(result.plugins).not.toBe(hooks.config.plugins);
-      expect(result.plugins).toHaveLength(4);
-      expect(result.plugins?.slice(0, -1)).toEqual(hooks.config.plugins);
-      expect(hooks.config.plugins).toEqual([
-        { name: 'user-first' },
-        false,
-        [{ name: 'user-last' }],
-      ]);
-      expect(hooks.params).toBe(definition === 'async' ? params : undefined);
+        expect(result).not.toBe(hooks.config);
+        expect(result.plugins).not.toBe(hooks.config.plugins);
+        expect(result.plugins).toHaveLength(4);
+        expect(result.plugins?.slice(0, -1)).toEqual(hooks.config.plugins);
+        expect(hooks.config.plugins).toEqual([
+          { name: 'user-first' },
+          false,
+          [{ name: 'user-last' }],
+        ]);
+        expect(hooks.params).toBe(definition === 'async' ? params : undefined);
 
-      if (kind === 'app') {
-        const watchFiles = result.dev?.watchFiles as Array<{
-          paths?: string[];
-        }>;
-        expect(watchFiles[0]).toBe('user-watch.ts');
-        expect(watchFiles.at(-1)).toMatchObject({
-          paths: [fixture.configPath, path.join(fixture.workspaceRoot, 'context-label.ts')],
-          type: 'reload-server',
+        if (kind === 'app') {
+          const watchFiles = result.dev?.watchFiles as Array<{
+            paths?: string[];
+          }>;
+          expect(watchFiles[0]).toBe('user-watch.ts');
+          expect(watchFiles.at(-1)).toMatchObject({
+            paths: [
+              fixture.configPath,
+              path.join(fixture.workspaceRoot, 'context-label.ts'),
+            ],
+            type: 'reload-server',
+          });
+        } else {
+          expect(result.lib).toBe(hooks.config.lib);
+          expect(result.lib).toEqual([{ format: 'esm' }, { format: 'cjs' }]);
+        }
+
+        const status = await observeBuild(result, fixture.workspaceRoot);
+        expect(status.runs).toHaveLength(1);
+        expect(status.runs[0].run).toMatchObject({
+          command: 'build',
+          producer,
+          contexts: [
+            {
+              configPath: 'rstack.config.ts',
+              variant: 'firefox_v3',
+              mode: 'injection-test',
+              packageName: '@rstack/injection-fixture',
+              packageRoot: '.',
+              product,
+            },
+          ],
         });
-      } else {
-        expect(result.lib).toBe(hooks.config.lib);
-        expect(result.lib).toEqual([{ format: 'esm' }, { format: 'cjs' }]);
-      }
-
-      const status = await observeBuild(result, fixture.workspaceRoot);
-      expect(status.runs).toHaveLength(1);
-      expect(status.runs[0].run).toMatchObject({
-        command: 'build',
-        producer,
-        contexts: [
-          {
-            configPath: 'rstack.config.ts',
-            variant: 'firefox_v3',
-            mode: 'injection-test',
-            packageName: '@rstack/injection-fixture',
-            packageRoot: '.',
-            product,
-          },
-        ],
-      });
-      const snapshotStatus = await observeCompletedBuild(result, fixture.workspaceRoot);
-      expect(snapshotStatus.contexts[0].freshness).toEqual({
-        state: 'partial',
-        changedPaths: [],
-      });
-      await writeFile(
-        path.join(fixture.workspaceRoot, 'context-label.ts'),
-        `${await readFile(path.join(fixture.workspaceRoot, 'context-label.ts'), 'utf8')}\n`,
-      );
-      expect((await readProjectStatus(fixture.workspaceRoot)).contexts[0].freshness).toEqual({
-        state: 'stale',
-        changedPaths: ['context-label.ts'],
-      });
-    });
+        const snapshotStatus = await observeCompletedBuild(
+          result,
+          fixture.workspaceRoot,
+        );
+        expect(snapshotStatus.contexts[0].freshness).toEqual({
+          state: 'partial',
+          changedPaths: [],
+        });
+        await writeFile(
+          path.join(fixture.workspaceRoot, 'context-label.ts'),
+          `${await readFile(path.join(fixture.workspaceRoot, 'context-label.ts'), 'utf8')}\n`,
+        );
+        expect(
+          (await readProjectStatus(fixture.workspaceRoot)).contexts[0]
+            .freshness,
+        ).toEqual({
+          state: 'stale',
+          changedPaths: ['context-label.ts'],
+        });
+      },
+    );
   });
 }
 
@@ -308,7 +344,9 @@ for (const { kind, producer, product } of [
       { kind, definition: 'object', contextEnabled: true, symlinked: true },
       async (fixture) => {
         const config =
-          kind === 'app' ? await loadRsbuildConfig(params) : await loadRslibConfig(params);
+          kind === 'app'
+            ? await loadRsbuildConfig(params)
+            : await loadRslibConfig(params);
 
         const status = await observeBuild(config, fixture.workspaceRoot);
         expect(status.runs).toHaveLength(1);
@@ -337,14 +375,17 @@ test('keeps the Context observer disabled while preserving library config watche
 
       expect(config).not.toBe(hooks.config);
       expect(config.plugins).toBe(hooks.config.plugins);
-      expect(config.plugins?.map((plugin) => (plugin as { name?: string })?.name)).not.toContain(
-        'rstack:context-build',
-      );
+      expect(
+        config.plugins?.map((plugin) => (plugin as { name?: string })?.name),
+      ).not.toContain('rstack:context-build');
       expect(config.lib).toBe(hooks.config.lib);
       expect(config.dev?.watchFiles).toEqual([
         'user-watch.ts',
         {
-          paths: [fixture.configPath, path.join(fixture.workspaceRoot, 'context-label.ts')],
+          paths: [
+            fixture.configPath,
+            path.join(fixture.workspaceRoot, 'context-label.ts'),
+          ],
           type: 'restart',
         },
       ]);
@@ -355,18 +396,24 @@ test('keeps the Context observer disabled while preserving library config watche
 test('RSTACK_CONTEXT=0 prevents app observer injection while preserving config watches', async () => {
   process.env.RSTACK_CONTEXT = '0';
 
-  await withConfig({ kind: 'app', definition: 'object', contextEnabled: true }, async (fixture) => {
-    const config = await loadRsbuildConfig(params);
-    const watchFiles = config.dev?.watchFiles as Array<{ paths?: string[] }>;
+  await withConfig(
+    { kind: 'app', definition: 'object', contextEnabled: true },
+    async (fixture) => {
+      const config = await loadRsbuildConfig(params);
+      const watchFiles = config.dev?.watchFiles as Array<{ paths?: string[] }>;
 
-    expect(config.plugins?.map((plugin) => (plugin as { name?: string })?.name)).not.toContain(
-      'rstack:context-build',
-    );
-    expect(watchFiles[0]).toBe('user-watch.ts');
-    expect(watchFiles.at(-1)).toMatchObject({
-      paths: [fixture.configPath, path.join(fixture.workspaceRoot, 'context-label.ts')],
-    });
-  });
+      expect(
+        config.plugins?.map((plugin) => (plugin as { name?: string })?.name),
+      ).not.toContain('rstack:context-build');
+      expect(watchFiles[0]).toBe('user-watch.ts');
+      expect(watchFiles.at(-1)).toMatchObject({
+        paths: [
+          fixture.configPath,
+          path.join(fixture.workspaceRoot, 'context-label.ts'),
+        ],
+      });
+    },
+  );
 });
 
 test('pure config resolvers never inject context observers', async () => {
@@ -375,8 +422,12 @@ test('pure config resolvers never inject context observers', async () => {
   const app = { plugins: [appPlugin] } as RsbuildConfig;
   const lib = { lib: [{ format: 'esm' }], plugins: [libPlugin] } as RslibConfig;
 
-  expect(await resolveRsbuildConfig({ app, context: { enabled: true } }, params)).toBe(app);
-  expect(await resolveRslibConfig({ lib, context: { enabled: true } }, params)).toBe(lib);
+  expect(
+    await resolveRsbuildConfig({ app, context: { enabled: true } }, params),
+  ).toBe(app);
+  expect(
+    await resolveRslibConfig({ lib, context: { enabled: true } }, params),
+  ).toBe(lib);
   expect(app.plugins).toEqual([appPlugin]);
   expect(lib.plugins).toEqual([libPlugin]);
   expect(defaultLoadRsbuildConfig).toBe(loadRsbuildConfig);

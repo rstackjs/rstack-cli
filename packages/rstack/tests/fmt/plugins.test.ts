@@ -1,6 +1,9 @@
 import { pathToFileURL } from 'node:url';
 import { expect, test } from 'rstack/test';
-import { createFingerprintResolver, createPluginResolver } from '../../src/fmt/plugins.ts';
+import {
+  createFingerprintResolver,
+  createPluginResolver,
+} from '../../src/fmt/plugins.ts';
 import { withTempProject, writeProjectFile } from './helpers.ts';
 
 test('resolves plugin specifiers from the config root', async () => {
@@ -65,7 +68,10 @@ test('rejects imported plugin objects', () => {
 
 test('fingerprints installed package plugins once', async () => {
   await withTempProject(async (rootPath) => {
-    const entry = writeProjectFile(rootPath, 'node_modules/prettier-plugin-fixture/dist/index.mjs');
+    const entry = writeProjectFile(
+      rootPath,
+      'node_modules/prettier-plugin-fixture/dist/index.mjs',
+    );
     const packageJsonPath = 'node_modules/prettier-plugin-fixture/package.json';
     writeProjectFile(
       rootPath,

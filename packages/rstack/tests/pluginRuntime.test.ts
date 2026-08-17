@@ -76,9 +76,9 @@ test('rejects invalid plugin objects and duplicate plugin names', async () => {
       plugins: [true] as unknown as RstackPlugins,
     }),
   ).rejects.toThrow('Invalid Rstack plugin');
-  await expect(createPluginRuntime({ ...options, plugins: {} as RstackPlugins })).rejects.toThrow(
-    'Invalid Rstack plugins',
-  );
+  await expect(
+    createPluginRuntime({ ...options, plugins: {} as RstackPlugins }),
+  ).rejects.toThrow('Invalid Rstack plugins');
   await expect(
     createPluginRuntime({
       ...options,

@@ -18,8 +18,18 @@ test('returns cached states before resolving the parser', async () => {
       [[contentHash, optionsHash, 'clean'], filePath, false, 'unchanged'],
       [[contentHash, optionsHash, 'dirty'], filePath, false, 'changed'],
       [[contentHash, optionsHash, 'clean'], filePath, true, 'unchanged'],
-      [[contentHash, optionsHash, 'unsupported'], noExtensionPath, false, 'unsupported'],
-      [[contentHash, optionsHash, 'unsupported'], noExtensionPath, true, 'unsupported'],
+      [
+        [contentHash, optionsHash, 'unsupported'],
+        noExtensionPath,
+        false,
+        'unsupported',
+      ],
+      [
+        [contentHash, optionsHash, 'unsupported'],
+        noExtensionPath,
+        true,
+        'unsupported',
+      ],
       [['', optionsHash, 'unsupported'], missingPath, false, 'unsupported'],
       [['', optionsHash, 'unsupported'], missingPath, true, 'unsupported'],
     ] as const) {
@@ -44,7 +54,11 @@ test('returns cached states before resolving the parser', async () => {
 
 test('does not trust path-only unsupported entries for files without extensions', async () => {
   await withTempProject(async (rootPath) => {
-    const filePath = writeProjectFile(rootPath, 'script', '#!/usr/bin/env node\nconst value=1');
+    const filePath = writeProjectFile(
+      rootPath,
+      'script',
+      '#!/usr/bin/env node\nconst value=1',
+    );
 
     await expect(
       formatFile({

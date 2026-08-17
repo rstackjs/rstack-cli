@@ -3,13 +3,16 @@ import { parseArgs } from './cli/args.ts';
 import { printCommandHelp } from './cli/help.ts';
 import { getRstackPluginRuntime, loadRstackConfig } from './config.ts';
 
-export type StagedSyncTaskGenerator = (stagedFileNames: readonly string[]) => string | string[];
+export type StagedSyncTaskGenerator = (
+  stagedFileNames: readonly string[],
+) => string | string[];
 
 export type StagedAsyncTaskGenerator = (
   stagedFileNames: readonly string[],
 ) => Promise<string | string[]>;
 
-export type StagedTaskGenerator = StagedSyncTaskGenerator | StagedAsyncTaskGenerator;
+export type StagedTaskGenerator =
+  StagedSyncTaskGenerator | StagedAsyncTaskGenerator;
 
 export type StagedFunctionTask = {
   title: string;
@@ -17,7 +20,10 @@ export type StagedFunctionTask = {
 };
 
 export type StagedTask =
-  string | StagedFunctionTask | StagedTaskGenerator | (string | StagedTaskGenerator)[];
+  | string
+  | StagedFunctionTask
+  | StagedTaskGenerator
+  | (string | StagedTaskGenerator)[];
 
 export type StagedConfig = Record<string, StagedTask> | StagedTaskGenerator;
 

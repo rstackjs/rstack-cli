@@ -1,5 +1,12 @@
 import { spawnSync } from 'node:child_process';
-import { chmodSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { createHookFiles, hookNames } from './hooks.ts';
 
@@ -54,7 +61,10 @@ const resolveHooksDir = (hooksDir: string): string | FailedInstallResult => {
   const resolvedDir = hooksDir.replaceAll('\\', '/');
 
   if (resolvedDir.length === 0) {
-    return fail('invalid-hooks-directory', 'Git hooks directory must not be empty.');
+    return fail(
+      'invalid-hooks-directory',
+      'Git hooks directory must not be empty.',
+    );
   }
 
   if (path.isAbsolute(resolvedDir)) {
@@ -65,15 +75,20 @@ const resolveHooksDir = (hooksDir: string): string | FailedInstallResult => {
   }
 
   if (resolvedDir.includes('..')) {
-    return fail('invalid-hooks-directory', 'Git hooks directory must not contain "..".');
+    return fail(
+      'invalid-hooks-directory',
+      'Git hooks directory must not contain "..".',
+    );
   }
 
   return resolvedDir;
 };
 
-const runGit = (cwd: string, args: string[]) => spawnSync('git', args, { cwd, encoding: 'utf8' });
+const runGit = (cwd: string, args: string[]) =>
+  spawnSync('git', args, { cwd, encoding: 'utf8' });
 
-const removeLineEnding = (value: string): string => value.replace(/\r?\n$/u, '');
+const removeLineEnding = (value: string): string =>
+  value.replace(/\r?\n$/u, '');
 
 const gitFailure = (
   error: NodeJS.ErrnoException | undefined,
@@ -83,7 +98,10 @@ const gitFailure = (
     return fail('git-not-found', 'Git command not found.');
   }
 
-  return fail('git-command-failed', `Failed to run Git: ${error?.message || stderr.trim()}`);
+  return fail(
+    'git-command-failed',
+    `Failed to run Git: ${error?.message || stderr.trim()}`,
+  );
 };
 
 const resolveGitContext = (cwd: string): GitContext | InstallResult => {
@@ -123,23 +141,33 @@ const resolveGitContext = (cwd: string): GitContext | InstallResult => {
   }
 
   if (!gitRoot || !gitCommonDirectory || !effectiveHooksDirectory) {
-    return fail('git-command-failed', 'Failed to resolve the Git repository paths.');
+    return fail(
+      'git-command-failed',
+      'Failed to resolve the Git repository paths.',
+    );
   }
 
   return {
     defaultHooksDirectory: path.join(gitCommonDirectory, 'hooks'),
     effectiveHooksDirectory,
     gitRoot,
-    projectPath: repositoryPrefix.replaceAll('\\', '/').replace(/\/$/u, '') || '.',
+    projectPath:
+      repositoryPrefix.replaceAll('\\', '/').replace(/\/$/u, '') || '.',
   };
 };
 
-const isCurrentFile = (filePath: string, content: string, executable = false): boolean => {
+const isCurrentFile = (
+  filePath: string,
+  content: string,
+  executable = false,
+): boolean => {
   try {
     // Windows does not expose POSIX executable bits, but Git for Windows still runs hook shims.
     return (
       readFileSync(filePath, 'utf8') === content &&
-      (!executable || process.platform === 'win32' || (statSync(filePath).mode & 0o777) === 0o755)
+      (!executable ||
+        process.platform === 'win32' ||
+        (statSync(filePath).mode & 0o777) === 0o755)
     );
   } catch {
     return false;
@@ -153,7 +181,9 @@ const readOwner = (directory: string): string | undefined => {
   try {
     const content = readFileSync(path.join(directory, ownerFileName), 'utf8');
     const owner = removeLineEnding(content);
-    return content === `${owner}\n` && owner.length > 0 && !/[\r\n]/u.test(owner)
+    return content === `${owner}\n` &&
+      owner.length > 0 &&
+      !/[\r\n]/u.test(owner)
       ? owner
       : undefined;
   } catch {
@@ -163,13 +193,21 @@ const readOwner = (directory: string): string | undefined => {
 
 const displayPath = (gitRoot: string, filePath: string): string => {
   const relativePath = path.relative(gitRoot, filePath).replaceAll('\\', '/');
-  return relativePath.length > 0 && !relativePath.startsWith('../') ? relativePath : filePath;
+  return relativePath.length > 0 && !relativePath.startsWith('../')
+    ? relativePath
+    : filePath;
 };
 
 const ownerConflict = (project: string): SkippedInstallResult =>
-  skip('owned-by-another-project', `Git hooks are already managed by Rstack project "${project}"`);
+  skip(
+    'owned-by-another-project',
+    `Git hooks are already managed by Rstack project "${project}"`,
+  );
 
-const directoryConflict = (gitRoot: string, directory: string): SkippedInstallResult =>
+const directoryConflict = (
+  gitRoot: string,
+  directory: string,
+): SkippedInstallResult =>
   skip(
     'hooks-directory-conflict',
     `the hooks directory "${displayPath(gitRoot, directory)}" is not managed by Rstack`,
@@ -191,7 +229,8 @@ const claimOwner = (
     // Exclusive creation makes concurrent prepare scripts agree on one owner.
     writeFileSync(ownerPath, `${project}\n`, { flag: 'wx' });
   } catch (error) {
-    const code = error instanceof Error && 'code' in error ? error.code : undefined;
+    const code =
+      error instanceof Error && 'code' in error ? error.code : undefined;
     if (code !== 'EEXIST') {
       throw error;
     }
@@ -200,7 +239,9 @@ const claimOwner = (
     if (!concurrentOwner) {
       return directoryConflict(gitRoot, directory);
     }
-    return concurrentOwner === project ? undefined : ownerConflict(concurrentOwner);
+    return concurrentOwner === project
+      ? undefined
+      : ownerConflict(concurrentOwner);
   }
 
   return undefined;
@@ -228,11 +269,19 @@ export const installHooks = ({
     return context;
   }
 
-  const { defaultHooksDirectory, effectiveHooksDirectory, gitRoot, projectPath } = context;
+  const {
+    defaultHooksDirectory,
+    effectiveHooksDirectory,
+    gitRoot,
+    projectPath,
+  } = context;
   const hooksPath = `${resolvedDir}/${generatedDirectoryName}`;
   const directory = path.join(gitRoot, resolvedDir, generatedDirectoryName);
   const hooksPathMatches = isSamePath(effectiveHooksDirectory, directory);
-  const usesDefaultHooks = isSamePath(effectiveHooksDirectory, defaultHooksDirectory);
+  const usesDefaultHooks = isSamePath(
+    effectiveHooksDirectory,
+    defaultHooksDirectory,
+  );
 
   if (!hooksPathMatches && !usesDefaultHooks) {
     const activeOwner = readOwner(effectiveHooksDirectory);
@@ -269,7 +318,9 @@ export const installHooks = ({
     const unchanged =
       hooksPathMatches &&
       isCurrentFile(path.join(directory, '.gitignore'), gitignore) &&
-      files.every(([name, content]) => isCurrentFile(path.join(directory, name), content, true));
+      files.every(([name, content]) =>
+        isCurrentFile(path.join(directory, name), content, true),
+      );
     if (unchanged) {
       return { status: 'unchanged', hooksPath };
     }
@@ -293,7 +344,12 @@ export const installHooks = ({
   }
 
   // Point Git at the generated directory only after every runtime file is ready.
-  const configured = runGit(cwd, ['config', '--local', 'core.hooksPath', hooksPath]);
+  const configured = runGit(cwd, [
+    'config',
+    '--local',
+    'core.hooksPath',
+    hooksPath,
+  ]);
   if (configured.error || configured.status === null) {
     return gitFailure(configured.error, configured.stderr);
   }

@@ -1,7 +1,10 @@
 import lintStaged from 'lint-staged';
 import { afterEach, beforeEach, expect, rs } from 'rstack/test';
 import { normalizeHelpOutput, test } from '#test-helpers';
-import { getRstackPluginRuntime, loadRstackConfig } from '../../../src/config.ts';
+import {
+  getRstackPluginRuntime,
+  loadRstackConfig,
+} from '../../../src/config.ts';
 import { runStagedCLI, type StagedConfig } from '../../../src/staged.ts';
 
 rs.mock('lint-staged');
@@ -19,7 +22,8 @@ const stagedConfig: StagedConfig = {
 
 const noStagedModifiers = {
   hasConfigModifier: () => false,
-  applyConfigModifiers: (_kind: 'staged', config: StagedConfig) => Promise.resolve(config),
+  applyConfigModifiers: (_kind: 'staged', config: StagedConfig) =>
+    Promise.resolve(config),
 };
 
 beforeEach(() => {
@@ -43,10 +47,14 @@ test('should preserve the missing staged config error when no plugin contributes
     dependencies: [],
   });
 
-  await expect(runStagedCLI([])).rejects.toThrow('No define.staged config found');
+  await expect(runStagedCLI([])).rejects.toThrow(
+    'No define.staged config found',
+  );
 });
 
-test('should accept a staged config supplied only by a plugin modifier', async ({ expect }) => {
+test('should accept a staged config supplied only by a plugin modifier', async ({
+  expect,
+}) => {
   const modifierConfig: StagedConfig = { '*.ts': 'echo plugin' };
   mocks.loadRstackConfig.mockResolvedValue({
     configs: {},

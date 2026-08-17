@@ -1,6 +1,13 @@
 import { expect, test } from 'rstack/test';
 
-const commonTestMethods = ['test', 'it', 'describe', 'expect', 'beforeAll', 'afterAll'] as const;
+const commonTestMethods = [
+  'test',
+  'it',
+  'describe',
+  'expect',
+  'beforeAll',
+  'afterAll',
+] as const;
 
 test('should expose test APIs from `rstack/test`', async () => {
   const test = await import('rstack/test');
