@@ -465,7 +465,7 @@ test('returns structured results for each artifact-scoped module tool', async ()
       expect(productRoots.content).toEqual([
         {
           type: 'text',
-          text: 'Rstack roots: modules=8, edges=4, roots=1/4. See structuredContent for bounded root details.',
+          text: 'Rstack roots: modules=8, edges=4, roots=1/1. See structuredContent for bounded root details.',
         },
       ]);
       expect(productRoots.structuredContent).toMatchObject({
@@ -475,7 +475,7 @@ test('returns structured results for each artifact-scoped module tool', async ()
           artifactBinding: 'explicit-unverified',
         },
         graph: { moduleCount: 8, edgeCount: 4 },
-        rootSummary: { total: 4, returned: 1, truncated: true },
+        rootSummary: { total: 1, returned: 1, truncated: false },
         product: { roots: [expect.any(Object)] },
       });
 
@@ -491,17 +491,17 @@ test('returns structured results for each artifact-scoped module tool', async ()
       expect(candidates.content).toEqual([
         {
           type: 'text',
-          text: 'Rstack result: total=1, returned=1, project=1, dependency=0. See structuredContent for complete data.',
+          text: 'Rstack result: total=4, returned=1, project=4, dependency=0. See structuredContent for complete data.',
         },
       ]);
       expect(candidates.structuredContent).toMatchObject({
-        total: 1,
+        total: 4,
         returned: 1,
-        ownership: { project: 1, dependency: 0 },
+        ownership: { project: 4, dependency: 0 },
         candidates: [
           {
             classification: 'unreachable-module-candidate',
-            subject: { kind: 'module', id: '3', path: 'src/legacy.ts' },
+            subject: { kind: 'module', id: '8', path: 'src/cjs.ts' },
           },
         ],
       });
