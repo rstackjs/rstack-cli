@@ -6,9 +6,13 @@ define.lib({
   dts: true,
 });
 
-define.lint(({ js, ts }) => [
+define.lint(({ js, ts, rstestPlugin }) => [
   js.configs.recommended,
   ts.configs.recommendedTypeChecked,
+  {
+    files: ['**/*.test.{ts,tsx}'],
+    ...rstestPlugin.configs.recommended,
+  },
 ]);
 
 define.fmt({

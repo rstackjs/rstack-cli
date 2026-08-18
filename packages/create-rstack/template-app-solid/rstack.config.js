@@ -19,7 +19,13 @@ define.test({
   setupFiles: ['./tests/rstest.setup.js'],
 });
 
-define.lint(({ js }) => [js.configs.recommended]);
+define.lint(({ js, rstestPlugin }) => [
+  js.configs.recommended,
+  {
+    files: ['**/*.test.{js,jsx}'],
+    ...rstestPlugin.configs.recommended,
+  },
+]);
 
 define.fmt({
   singleQuote: true,
