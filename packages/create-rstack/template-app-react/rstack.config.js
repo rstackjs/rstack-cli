@@ -18,7 +18,7 @@ define.lint(({ js, reactHooksPlugin, reactPlugin, rstestPlugin }) => [
   reactPlugin.configs.recommended,
   reactHooksPlugin.configs.recommended,
   {
-    files: ['**/*.test.{js,jsx}'],
+    files: ['**/*.{test,spec}.?(c|m)[jt]s?(x)'],
     ...rstestPlugin.configs.recommended,
   },
 ]);

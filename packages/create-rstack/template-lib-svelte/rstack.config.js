@@ -21,7 +21,7 @@ define.lib(async () => {
 define.lint(({ js, rstestPlugin }) => [
   js.configs.recommended,
   {
-    files: ['**/*.test.{js,jsx}'],
+    files: ['**/*.{test,spec}.?(c|m)[jt]s?(x)'],
     ...rstestPlugin.configs.recommended,
   },
 ]);
