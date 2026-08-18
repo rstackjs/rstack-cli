@@ -19,7 +19,7 @@ define.lint(async ({ js, ts, rstestPlugin }) => {
       },
     },
     {
-      files: ['**/*.test.ts'],
+      files: ['**/*.test.{ts,tsx}'],
       ...rstestPlugin.configs.recommended,
     },
     // Source imports use .ts for Node.js native TypeScript execution; builds rewrite them to .js.
