@@ -3,17 +3,13 @@
     "en": "Quick start",
     "zh": "快速上手"
   },
-  "viewSource": {
-    "en": "View the code",
-    "zh": "查看源码"
+  "getStarted": {
+    "en": "Get Started",
+    "zh": "开始使用"
   },
-  "copyCommand": {
-    "en": "Copy command",
-    "zh": "复制命令"
-  },
-  "copiedCommand": {
-    "en": "Command copied",
-    "zh": "命令已复制"
+  "github": {
+    "en": "GitHub",
+    "zh": "GitHub"
   },
   "title": {
     "en": "Unified Toolchain for",
