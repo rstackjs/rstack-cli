@@ -1,0 +1,85 @@
+---
+description: '介绍如何在 VS Code 中使用 Rstack 官方扩展进行代码检查、格式化和测试。'
+---
+
+# IDE 集成 \{#ide-integration}
+
+Rstack 目前通过 [Rstack 扩展](https://github.com/rstackjs/rstack-editor) 提供官方的 VS Code 集成。该扩展将 Rstack CLI 的代码检查、格式化和测试能力集成到编辑器中。
+
+## 安装 \{#installation}
+
+根据所用编辑器，从对应的扩展市场安装 `Rstack`：
+
+- VS Code 用户从 [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=rstack.rstack) 安装。
+- Cursor、VSCodium、Trae 及其他兼容 VS Code 的编辑器用户从 [Open VSX Registry](https://open-vsx.org/extension/rstack/rstack) 安装。
+
+也可以在编辑器的扩展视图中搜索扩展标识 `rstack.rstack`。
+
+> 扩展本身不内置 Rstack CLI，而是使用项目 `node_modules` 中安装的 `rstack` 包。请先安装项目依赖，以确保编辑器和 CLI 使用相同版本的 Rstack CLI。
+
+## 配置 \{#configuration}
+
+要将 Rstack 设为默认格式化工具，并在保存文件时执行格式化，请添加以下配置：
+
+```json title=".vscode/settings.json"
+{
+  "editor.defaultFormatter": "rstack.rstack",
+  "[javascript]": {
+    "editor.defaultFormatter": "rstack.rstack"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "rstack.rstack"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "rstack.rstack"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "rstack.rstack"
+  },
+  "editor.formatOnSave": true
+}
+```
+
+其中，针对 JavaScript 和 TypeScript 的语言级配置可以避免开发者已有的格式化设置覆盖工作区默认值。
+
+如需在手动保存文件时同时修复代码检查问题，可以添加：
+
+```json title=".vscode/settings.json"
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.rslint": "explicit"
+  }
+}
+```
+
+> `"explicit"` 表示仅在手动保存时应用代码检查修复；如需在自动保存时也执行修复，可以改为 `"always"`。
+
+若希望团队成员打开仓库时收到安装建议，可以将该扩展添加到工作区推荐列表：
+
+```json title=".vscode/extensions.json"
+{
+  "recommendations": ["rstack.rstack"]
+}
+```
+
+## 支持能力 \{#features}
+
+### 代码检查 \{#linting}
+
+在编辑过程中显示代码检查诊断、提供快速修复，并支持保存时修复。
+
+### 格式化 \{#formatting}
+
+扩展会通过项目本地的 [`rs fmt`](./cli/fmt) language server 格式化文档，并读取工作区根目录 [`rstack.config.*`](./configuration#configuration-file) 中的 `define.fmt()` 配置，使编辑器与 CLI 使用一致的格式化规则。
+
+### 测试 \{#testing}
+
+将项目测试添加到 VS Code 的测试资源管理器。你可以运行或调试单个测试、测试套件或测试文件，失败的测试也会显示为编辑器诊断信息。
+
+## 排查问题 \{#troubleshooting}
+
+状态栏中的 `Rstack` 项会显示当前启用的功能及其状态，并提示配置发现或版本兼容问题。如果安装依赖或修改配置后状态未更新，请打开命令面板并运行 `Rstack: Relaunch Extension`。
+
+更多用法请参阅[扩展文档](https://github.com/rstackjs/rstack-editor/blob/main/packages/vscode/README.md)。
+
+如需报告问题或提出功能建议，请前往 [Rstack Editor Issues](https://github.com/rstackjs/rstack-editor/issues)。

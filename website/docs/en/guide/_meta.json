@@ -48,6 +48,11 @@
     "label": "Monorepo"
   },
   {
+    "type": "file",
+    "name": "ide-integration",
+    "label": "IDE integration"
+  },
+  {
     "type": "dir-section-header",
     "name": "cli",
     "label": "CLI"
