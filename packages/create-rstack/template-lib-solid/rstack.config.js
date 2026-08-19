@@ -9,7 +9,6 @@ define.lib(async () => {
     lib: [
       {
         id: 'compiled',
-        bundle: false,
         plugins: [
           pluginBabel({
             include: /\.(?:jsx|tsx)$/,
@@ -19,7 +18,6 @@ define.lib(async () => {
       },
       {
         id: 'source',
-        bundle: false,
         output: {
           filename: {
             js: '[name].jsx',
@@ -48,11 +46,7 @@ define.lib(async () => {
         },
       },
     ],
-    source: {
-      entry: {
-        index: ['./src/**'],
-      },
-    },
+    bundle: false,
     output: {
       target: 'web',
     },
