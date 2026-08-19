@@ -8,6 +8,7 @@
     "skipLibCheck": true,
     "types": ["rstack/types", "node", "svelte"],
     "useDefineForClassFields": true,
+    "rootDir": "src",
 
     /* modules */
     "moduleDetection": "force",
