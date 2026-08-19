@@ -22,10 +22,14 @@ define.test({
   setupFiles: ['./tests/rstest.setup.js'],
 });
 
-define.lint(({ js, reactHooksPlugin, reactPlugin }) => [
+define.lint(({ js, reactHooksPlugin, reactPlugin, rstestPlugin }) => [
   js.configs.recommended,
   reactPlugin.configs.recommended,
   reactHooksPlugin.configs.recommended,
+  {
+    files: ['**/*.{test,spec}.?(c|m)[jt]s?(x)'],
+    ...rstestPlugin.configs.recommended,
+  },
 ]);
 
 define.fmt({
