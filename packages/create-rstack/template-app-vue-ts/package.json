@@ -24,6 +24,6 @@
     "happy-dom": "^20.11.2",
     "rstack": "^0.6.1",
     "typescript": "^6.0.3",
-    "vue-tsc": "^3.3.9"
+    "vue-tsc": "^3.3.10"
   }
 }

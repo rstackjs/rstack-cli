@@ -21,7 +21,7 @@ catalog:
   '@rspress/core': '^2.0.19'
   '@rspress/plugin-client-redirects': '^2.0.19'
   '@rspress/plugin-sitemap': '^2.0.19'
-  '@rstack-dev/doc-ui': '1.14.7'
+  '@rstack-dev/doc-ui': '1.14.8'
   '@rstackjs/create-toolkit': '2.2.3'
   '@rstackjs/load-config': ^0.1.2
   '@rstackjs/test-utils': ^0.2.0
@@ -59,7 +59,7 @@ catalog:
   'typescript': '^7.0.2'
   'vscode-languageserver': '10.1.0'
   'vscode-languageserver-textdocument': '1.0.12'
-  yuku-parser: '0.8.7'
+  yuku-parser: '0.9.0'
 
 dedupePeers: true
 
