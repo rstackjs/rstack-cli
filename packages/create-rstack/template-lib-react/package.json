@@ -2,11 +2,7 @@
   "name": "rstack-lib-react",
   "version": "0.0.0",
   "type": "module",
-  "exports": {
-    ".": {
-      "default": "./dist/index.js"
-    }
-  },
+  "exports": "./dist/index.js",
   "files": [
     "dist",
     "README.md"
