@@ -1,9 +1,8 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "noEmit": true,
     "rootDir": "..",
-    "types": ["rstack/types", "node", "svelte"]
+    "types": ["rstack/types", "node"]
   },
   "include": ["./"]
 }

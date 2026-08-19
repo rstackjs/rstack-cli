@@ -4,13 +4,13 @@
     "target": "ES2022",
     "declaration": true,
     "emitDeclarationOnly": true,
-    "isolatedModules": true,
+    "outDir": "dist",
     "skipLibCheck": true,
     "types": ["rstack/types", "node", "svelte"],
     "useDefineForClassFields": true,
+    "rootDir": "src",
 
     /* modules */
-    "module": "preserve",
     "moduleDetection": "force",
     "moduleResolution": "bundler",
     "verbatimModuleSyntax": true,
@@ -21,5 +21,5 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "include": ["src", "scripts", "*.config.ts"]
+  "include": ["src"]
 }
