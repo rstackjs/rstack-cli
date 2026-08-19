@@ -1,0 +1,85 @@
+---
+description: 'Set up the official Rstack extension for linting, formatting, and testing in VS Code.'
+---
+
+# IDE integration
+
+Rstack currently provides official VS Code integration through the [Rstack extension](https://github.com/rstackjs/rstack-editor). The extension brings Rstack CLI's linting, formatting, and testing capabilities into the editor.
+
+## Installation
+
+Install `Rstack` from the registry for your editor:
+
+- [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=rstack.rstack) for VS Code.
+- [Open VSX Registry](https://open-vsx.org/extension/rstack/rstack) for Cursor, VSCodium, Trae, and other VS Code-compatible editors.
+
+You can also search for the extension identifier `rstack.rstack` in your editor's Extensions view.
+
+> The extension does not bundle Rstack CLI. It uses the `rstack` package installed in the project's `node_modules`. Install the project dependencies first so the editor and CLI use the same Rstack CLI version.
+
+## Configuration
+
+To use Rstack as the default formatter and format files on save, add the following settings:
+
+```json title=".vscode/settings.json"
+{
+  "editor.defaultFormatter": "rstack.rstack",
+  "[javascript]": {
+    "editor.defaultFormatter": "rstack.rstack"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "rstack.rstack"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "rstack.rstack"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "rstack.rstack"
+  },
+  "editor.formatOnSave": true
+}
+```
+
+The language-specific JavaScript and TypeScript settings prevent existing formatter preferences from overriding the workspace default.
+
+To apply lint fixes when you save a file manually, add:
+
+```json title=".vscode/settings.json"
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.rslint": "explicit"
+  }
+}
+```
+
+> `"explicit"` applies lint fixes only on manual saves. Use `"always"` to apply them during auto-save as well.
+
+To recommend the extension to team members who open the repository, add it to the workspace recommendations:
+
+```json title=".vscode/extensions.json"
+{
+  "recommendations": ["rstack.rstack"]
+}
+```
+
+## Features
+
+### Linting
+
+Shows lint diagnostics as you edit, provides quick fixes, and fixes issues on save.
+
+### Formatting
+
+Formats documents through the project-local [`rs fmt`](./cli/fmt) language server. It loads `define.fmt()` from [`rstack.config.*`](./configuration#configuration-file) at the workspace root, keeping the editor and CLI on the same formatting rules.
+
+### Testing
+
+Adds project tests to VS Code's Test Explorer. You can run or debug an individual test, suite, or file, and failed tests also appear as editor diagnostics.
+
+## Troubleshooting
+
+The `Rstack` status bar item shows the active features and their status, including configuration discovery and version compatibility problems. If its status does not update after installing dependencies or editing configuration, open the Command Palette and run `Rstack: Relaunch Extension`.
+
+For more usage details, see the [extension documentation](https://github.com/rstackjs/rstack-editor/blob/main/packages/vscode/README.md).
+
+Report bugs and feature requests through [Rstack Editor Issues](https://github.com/rstackjs/rstack-editor/issues).

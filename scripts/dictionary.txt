@@ -30,6 +30,7 @@ rstest
 shiki
 shikijs
 solidjs
+Trae
 turborepo
 typicode
 worktank
