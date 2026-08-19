@@ -1,7 +1,7 @@
 // Configuration guide: https://rstack.rs/config
 import { define } from 'rstack';
 
-define.lint(async ({ js, ts }) => {
+define.lint(async ({ js, ts, rstestPlugin }) => {
   const { default: globals } = await import('globals');
   return [
     js.configs.recommended,
@@ -17,6 +17,10 @@ define.lint(async ({ js, ts }) => {
           DEFINE_VALUE: 'readonly',
         },
       },
+    },
+    {
+      files: ['**/*.test.{ts,tsx}'],
+      ...rstestPlugin.configs.recommended,
     },
     // Source imports use .ts for Node.js native TypeScript execution; builds rewrite them to .js.
     {
