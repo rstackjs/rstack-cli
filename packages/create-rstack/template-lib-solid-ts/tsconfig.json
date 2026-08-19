@@ -6,7 +6,7 @@
     "target": "ES2022",
     "noEmit": true,
     "skipLibCheck": true,
-    "types": ["rstack/types", "node"],
+    "types": ["rstack/types"],
     "useDefineForClassFields": true,
     "rootDir": "src",
 

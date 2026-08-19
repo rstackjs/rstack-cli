@@ -6,7 +6,7 @@
     "emitDeclarationOnly": true,
     "outDir": "dist",
     "skipLibCheck": true,
-    "types": ["rstack/types", "node", "svelte"],
+    "types": ["rstack/types", "svelte"],
     "useDefineForClassFields": true,
     "rootDir": "src",
 
