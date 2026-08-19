@@ -29,7 +29,7 @@ define.fmt({
 });
 ```
 
-配置文件无需默认导出。每个 `define.*()` API 最多调用一次；重复定义同一类型的配置会抛出错误。
+配置文件无需默认导出。每个 `define.*()` API 最多调用一次；重复定义同一类型的配置会抛出错误。当外部包需要扩展 Rstack 本身或同时贡献多项工具配置时，请使用 [`define.plugins()`](./plugins#registering-plugins)。
 
 Rstack CLI 默认会查找使用以下任一文件名的配置文件：
 
@@ -38,7 +38,7 @@ Rstack CLI 默认会查找使用以下任一文件名的配置文件：
 - `rstack.config.mts`
 - `rstack.config.mjs`
 
-所有 `rs` 命令都支持全局的 `-c, --config` 选项，用于加载其他名称或位置的配置文件：
+会使用 Rstack 配置的命令都支持全局的 `-c, --config` 选项，用于加载其他名称或位置的配置文件：
 
 ```bash
 rs build --config ./configs/rstack.config.ts
@@ -46,7 +46,9 @@ rs build --config ./configs/rstack.config.ts
 
 ## 按需加载依赖 \{#loading-dependencies-on-demand}
 
-每次执行 `rs` 命令时，Rstack CLI 都会加载并执行配置文件，然后只解析当前命令需要的配置函数。
+每次执行会使用 Rstack 配置的命令时，Rstack CLI 都会加载并执行配置文件，然后只解析当前命令需要的配置函数。
+
+> [`rs mcp`](./cli/mcp) 提供的查询工具会读取已完成的记录，而不会加载或执行 `rstack.config.*`。显式调用 `lint_snapshot` 和 `test_snapshot` 工具时则会加载所选项目的配置，并运行对应的 lint 或测试生产者。请在 [`rs dev`](./cli/dev)、[`rs build`](./cli/build) 和 [`rs lib`](./cli/lib) 上启用构建上下文捕获。
 
 如果配置需要导入插件或其他工具专属依赖，请使用异步配置函数，并在函数内通过动态 `import()` 加载这些依赖。这样只有解析该配置时才会加载相关依赖。
 
@@ -65,15 +67,21 @@ define.app(async () => {
 
 各 API 沿用底层工具的配置格式。使用 Rstack CLI 已重导出的 API 和辅助函数时，推荐从 `rstack/app`、`rstack/lib`、`rstack/test` 和 `rstack/lint` 入口导入。
 
-| API                                 | 底层工具                                                                | 对应命令                                                                        |
-| ----------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| [`define.app()`](#define-app)       | [Rsbuild](https://rsbuild.rs/zh/config/)                                | [`rs dev`](./cli/dev)、[`rs build`](./cli/build)、[`rs preview`](./cli/preview) |
-| [`define.lib()`](#define-lib)       | [Rslib](https://rslib.rs/zh/config/)                                    | [`rs lib`](./cli/lib)                                                           |
-| [`define.doc()`](#define-doc)       | [Rspress](https://rspress.rs/zh/api/config/config-basic)                | [`rs doc`](./cli/doc)                                                           |
-| [`define.test()`](#define-test)     | [Rstest](https://rstest.rs/zh/config/)                                  | [`rs test`](./cli/test)                                                         |
-| [`define.lint()`](#define-lint)     | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
-| [`define.fmt()`](#define-fmt)       | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
-| [`define.staged()`](#define-staged) | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
+| API                                   | 底层工具                                                                | 对应命令                                                                        |
+| ------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [`define.app()`](#define-app)         | [Rsbuild](https://rsbuild.rs/zh/config/)                                | [`rs dev`](./cli/dev)、[`rs build`](./cli/build)、[`rs preview`](./cli/preview) |
+| [`define.lib()`](#define-lib)         | [Rslib](https://rslib.rs/zh/config/)                                    | [`rs lib`](./cli/lib)                                                           |
+| [`define.context()`](#define-context) | Rstack 构建上下文捕获                                                   | [`rs dev`](./cli/dev)、[`rs build`](./cli/build)、[`rs lib`](./cli/lib)         |
+| [`define.doc()`](#define-doc)         | [Rspress](https://rspress.rs/zh/api/config/config-basic)                | [`rs doc`](./cli/doc)                                                           |
+| [`define.test()`](#define-test)       | [Rstest](https://rstest.rs/zh/config/)                                  | [`rs test`](./cli/test)                                                         |
+| [`define.lint()`](#define-lint)       | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
+| [`define.fmt()`](#define-fmt)         | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
+| [`define.staged()`](#define-staged)   | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
+| [`define.plugins()`](#define-plugins) | Rstack CLI                                                              | 插件命令及已配置的工具命令                                                      |
+
+### `define.plugins()` \{#define-plugins}
+
+显式注册 Rstack CLI 插件。插件可以添加顶层命令，也可以转换下方列出的原生工具配置。API、生命周期和示例请参阅[插件](./plugins)指南。
 
 ### `define.app()` \{#define-app}
 
@@ -106,6 +114,28 @@ define.lib({
   format: 'esm',
 });
 ```
+
+### `define.context()` \{#define-context}
+
+为 `rs dev`、`rs build` 和 `rs lib` 配置检出目录本地的 Rstack 构建上下文捕获。这是 Rstack 自有配置，不会转发给 Rsbuild 或 Rslib。
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.context({
+  enabled: true,
+  capture: 'metadata',
+  variant: 'firefox_v3',
+});
+```
+
+除非 `enabled` 为 `true` 或设置了 `RSTACK_CONTEXT=1`，否则捕获会保持禁用。`RSTACK_CONTEXT=0` 始终会禁用捕获；即使已启用，`capture: 'off'` 也会禁用捕获。启用捕获但省略 `capture` 时，默认值为 `metadata`；`deep` 仍会捕获元数据，并在 Phase 1A 中将深度捕获记录为不受支持。
+
+当不同构建需要在包、环境、模式、目标和输出目录之外拥有不同的上下文标识时，请使用可选的 `variant` 字符串。例如，即使 `firefox_v3` 和 `chrome_v3` 写入同一目录，它们仍会保持为不同上下文。Rstack 不会根据任意环境变量猜测变体。相对于检出目录的 Rsbuild/Rslib `distPath` 也会被自动记录并参与上下文标识。
+
+构建快照会为已加载的 Rstack 配置文件及其已加载的配置依赖生成指纹。指纹未变化时会报告为 `partial`，而不是 `fresh`，因为 Rstack 不会收集完整的应用依赖图。任何已记录的配置输入发生变化或缺失时，快照会变为 `stale`。
+
+使用 [`rs mcp`](./cli/mcp) 提供的查询工具读取已完成的观测结果。显式调用 `lint_snapshot` 和 `test_snapshot` 工具时会加载所选项目的配置，并运行对应的 lint 或测试生产者。
 
 ### `define.doc()` \{#define-doc}
 

@@ -35,5 +35,5 @@ const ensureProjectCacheDir = async (
   }
 };
 
-export { ensureProjectCacheDir };
+export { ensureProjectCacheDir, getProjectCacheDir };
 export type { ProjectCacheResult };

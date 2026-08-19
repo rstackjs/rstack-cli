@@ -15,6 +15,11 @@
   },
   {
     "type": "file",
+    "name": "plugins",
+    "label": "插件"
+  },
+  {
+    "type": "file",
     "name": "ai",
     "label": "AI"
   },

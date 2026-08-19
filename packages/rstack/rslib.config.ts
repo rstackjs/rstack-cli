@@ -21,6 +21,8 @@ export default defineConfig({
       lib: './src/lib.ts',
       lint: './src/lint.ts',
       test: './src/test.ts',
+      mcp: './src/mcp.ts',
+      context: './src/context.ts',
       'native/index': './src/native/index.ts',
       fmtWorker: './src/fmt/worker.ts',
     },

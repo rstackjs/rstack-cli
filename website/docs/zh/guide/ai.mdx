@@ -33,6 +33,30 @@ This project uses Rstack CLI as its JavaScript toolchain.
 
 Rstack CLI 提供面向特定领域的 Agent Skills，帮助 Coding Agent 更准确地提供建议并执行相关任务。
 
+### Rstack 插件 \{#rstack-plugin}
+
+官方 [`rstackjs/agent-skills`](https://github.com/rstackjs/agent-skills) 仓库为 Codex 和 Claude
+Code 提供统一的 `rstack` 插件。它既包含 Rspack 生态 Skills，也包含用于构建分析、产物范围内
+未使用代码候选项、变更影响、Lint 与测试失败以及快照审查的 Rstack Context 工作流。
+
+```bash title="Codex"
+codex plugin marketplace add rstackjs/agent-skills
+codex plugin add rstack@rstack
+```
+
+```bash title="Claude Code"
+claude plugin marketplace add rstackjs/agent-skills
+claude plugin install rstack@rstack
+```
+
+插件会启动项目本地的 `rs mcp` 命令。请在项目中安装 `rstack`，并在 `rstack.config.*` 中启用
+所需的应用、库、Lint、测试或 Context 配置。在 monorepo 中，一个从根目录启动的 MCP 进程会
+发现所有包记录的 Context，而不会假定当前工作目录就是要选择的包。
+
+证据运行时由 [`rstackjs/context`](https://github.com/rstackjs/context) 中独立的
+`@rstackjs/context` 包实现，也可以通过 `rstack/context` 使用。插件仓库只包含启动器和
+工作流，不会复制这套运行时。
+
 ### rstack-cli-best-practices
 
 [rstack-cli-best-practices](https://github.com/rstackjs/rstack-cli/tree/main/.agents/skills/rstack-cli-best-practices) Skill 提供 Rstack CLI 的使用指南和最佳实践。

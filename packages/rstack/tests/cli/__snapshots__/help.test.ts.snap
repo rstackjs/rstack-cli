@@ -196,6 +196,16 @@ Options:
 "
 `;
 
+exports[`displays mcp help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs mcp
+
+Start the local Rstack MCP server over stdio
+"
+`;
+
 exports[`displays preview help 1`] = `
 "Rstack v<version>
 
@@ -351,6 +361,7 @@ Commands:
   lint         Lint code
   check        Run static checks, including lint and format
   test         Run tests
+  mcp          Start the local Rstack MCP server over stdio
   staged       Run tasks on staged Git files
   setup        Install Git hooks
 

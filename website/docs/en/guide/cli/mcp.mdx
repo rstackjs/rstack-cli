@@ -1,0 +1,161 @@
+import { PackageManagerTabs } from '@rspress/core/theme';
+
+# MCP
+
+`rs mcp` exposes checkout-local Rstack observations and explicit Rsdoctor artifacts to an MCP client. Query tools are read-only. The two snapshot tools run lint or tests only when they are called explicitly; no tool changes Rstack configuration or applies a lint fix.
+
+## Usage
+
+Start one local MCP server from the repository root:
+
+```bash
+rs mcp
+```
+
+The server communicates over standard input and output, so stdout is reserved for MCP protocol messages. It resolves the checkout from the command's launch path and exposes fifteen tools: `project_status`, `product_roots`, `unused_candidates`, `dead_code_explain`, `module_impact`, `code_evidence`, `snapshot_list`, `diagnostics_list`, `test_results`, `snapshot_diff`, `lint_fix_preview`, `lint_snapshot`, `test_snapshot`, `rsdoctor_analyze`, and `report_link`.
+
+Successful tool responses keep `content` compact for conversation. The authoritative result, including explicit pagination or truncation metadata for bounded collections, is available in `structuredContent`.
+
+## Capture build context
+
+Enable metadata capture in `rstack.config.ts`:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.context({
+  enabled: true,
+  capture: 'metadata',
+  variant: 'firefox_v3',
+});
+```
+
+`define.context()` is Rstack-owned configuration. It is not forwarded to Rsbuild or Rslib. `RSTACK_CONTEXT=1` enables capture, while `RSTACK_CONTEXT=0` always disables it. `capture: 'off'` also disables capture.
+
+Rstack implements this capture through its built-in `@rstackjs/context/rstack` plugin, registered after user plugins. Do not add it to `define.plugins()`. `rs mcp` is a separate built-in host command rather than a plugin command, so it can reserve stdout for the protocol and start without loading project configuration.
+
+The optional `variant` gives builds such as `firefox_v3` and `chrome_v3` distinct context identities without guessing arbitrary environment variables. Rstack also records the checkout-relative Rsbuild/Rslib output directory and includes it in context identity.
+
+Producers write completed observations to the checkout-local store during `rs dev`, `rs build`, and `rs lib`. They do not connect to the MCP process; the MCP server reads the store when `project_status` is called.
+
+For all configuration rules, see [`define.context()`](../configuration#define-context).
+
+## Create an Rsdoctor artifact
+
+Install the optional Rsdoctor collector in each package whose build you want to analyze:
+
+<PackageManagerTabs command="install -D @rsdoctor/rspack-plugin" />
+
+Run the package's real Rstack build with context capture and JSON output enabled:
+
+```bash
+# Rsbuild application
+RSTACK_CONTEXT=1 RSDOCTOR=true RSDOCTOR_OUTPUT=json rs build
+
+# Rslib library
+RSTACK_CONTEXT=1 RSDOCTOR=true RSDOCTOR_OUTPUT=json rs lib
+```
+
+Rsbuild loads the installed collector only for that command. The build records its Rstack context
+in the checkout-local store and normally writes `dist/rsdoctor-data.json`. Pass that explicit JSON
+path to the artifact-analysis tools. Installing the collector does not make normal builds collect
+Rsdoctor data unless `RSDOCTOR=true` is set.
+
+Context reads the resulting artifact through `@rsdoctor/agent-cli`. This is one-way consumption: Rsdoctor does not install or load an `@rstackjs/context` plugin.
+
+## Monorepos
+
+Run one MCP process at the monorepo root. It reads the recorded runs from every package in that checkout, even when the builds were started independently from package directories.
+
+The same root MCP process can explicitly capture lint and test results for any package. Pass a checkout-relative `packageRoot` to `lint_snapshot` or `test_snapshot`; without it, capture defaults to the checkout root. Pass a checkout-relative `configPath` only to select a nonstandard Rstack config. When `configPath` is omitted, Rstack selects the first ordinary `rstack.config.ts`, `rstack.config.js`, `rstack.config.mts`, or `rstack.config.mjs` in the selected package root. The capture runs with that package as its working directory, and the stored context records its package root, package name when available, and selected config path.
+
+This works for Rslib-only repositories, Rsbuild-only repositories, and repositories that use both. It does not require Turbo, Nx, a daemon, a task graph, or a producer-to-MCP connection.
+
+## MCP tools {#mcp-tools}
+
+### Build context
+
+`project_status` returns one current row for each recorded Rstack `contextId`, selected deterministically from the latest run. The row is `ready` only when that selected run has a completed snapshot; an older completed run does not make a newer pending run ready.
+
+### Artifact-scoped module analysis
+
+The four module-analysis tools require both a `contextId` from `project_status` and an explicit Rsdoctor `dataFile`. Valid Rsdoctor v1 metadata can bind the artifact to the selected build observation when their identities match. Legacy artifacts without that metadata remain `artifactBinding: "explicit-unverified"`: the selected build observation is useful context, but Rstack does not claim that the supplied artifact came from that run.
+
+- `product_roots` returns application entry roots, exactly matched library package targets, and conservative optimizer roots, together with graph issues and analysis bounds. Its `rootLimit` is an integer from 1 through 100 and defaults to 50; `rootSummary` reports total, returned, truncated, and per-kind counts so large conservative root sets do not flood an agent response.
+- `unused_candidates` returns modules with no observed path from the selected roots in that artifact graph. Its optional `limit` is an integer from 1 through 100 and defaults to 50. Project-owned modules precede dependency modules, and `ownership` counts both groups across the complete result. Follow `nextCursor` with the same filters only for an exhaustive inventory; when `ownership.project` is zero, later pages cannot contain project-owned candidates.
+- `dead_code_explain` accepts a non-empty exact module ID, path, name, or unique path suffix. Its optional `maxDepth` is an integer from 1 through 32 and defaults to 32, matching `unused_candidates`. It reports whether the module is reachable, conservatively preserved, an unreachable module candidate, or unknown because the evidence is incomplete.
+- `module_impact` accepts the same module selector. `direction` is `dependencies` or `dependents` and defaults to `dependents`; its independently bounded `maxDepth` remains 1 through 16 with a default of 8. It returns the bounded observed modules, reached product roots, affected chunk IDs, and truncation state.
+
+These results describe modules in one supplied artifact. An unreachable result is a review candidate, not a deletion instruction, and does not prove that a local function, class, variable, or export is unused.
+
+## Phase 3 development intelligence {#phase-3-development-intelligence}
+
+The development tools reuse the same immutable checkout-local store. `snapshot_list`, `diagnostics_list`, and `test_results` are read-only, non-destructive, and closed-world. They read the store for each request and never start a producer. Lint entries from `snapshot_list` include `metadata.lint.fixPreviewCaptured`, so clients can determine whether `lint_fix_preview` is available without loading the full lint facet. Their optional `limit` defaults to 50 and accepts 1 through 200; a returned `nextCursor` continues the same deterministic ordering.
+
+`lint_snapshot` is explicit execution. It runs Rslint once for file patterns (default `['.']`) or one supplied text buffer, then records diagnostics and optional fixed output without writing source files. Its optional `packageRoot` and `configPath` select a monorepo package and Rstack config as described above. It is annotated `readOnlyHint: false`, `destructiveHint: false`, and `openWorldHint: true` because configuration is loaded and lint runs. Ask before calling it.
+
+File-mode lint freshness is `fresh` only when every selected pattern is an explicit file returned by Rslint. Directory, glob, unmatched, and default selections are `partial` because files that match later are not part of the recorded input set.
+
+`test_snapshot` is also explicit execution. It invokes the installed experimental `runRstest()` API once, optionally narrowed by files or a test-name pattern, and records structured summaries without watch mode or console streams. It accepts the same optional checkout-relative `packageRoot` and `configPath` selectors. Instead of `files`, an optional `related` array accepts 1 through 200 source paths resolved from `packageRoot`; Rstack asks Rstest's supported `list --related` command for the matching test files, then runs only those files. The snapshot records the requested sources and matched tests. Use one source per capture when a later `code_evidence` query needs an attributable `related` or `unrelated` result. An optional `execution` object explicitly enables aggregate Istanbul coverage for that one run; its `include` and `exclude` arrays accept at most 200 patterns, and `allowExternal` defaults to false. Coverage is not enabled when `execution` is omitted. The optional `@rstest/coverage-istanbul` peer is needed only for this coverage mode; ordinary test capture and every non-test evidence surface remain usable without it. The tool is annotated `readOnlyHint: false`, `destructiveHint: true`, and `openWorldHint: true` because project configuration and tests execute. Ask before calling it.
+
+Freshness belongs to each producer and snapshot independently:
+
+- `fresh`: all completely recorded input files still match.
+- `stale`: one or more recorded paths are missing or changed; `changedPaths` lists them.
+- `partial`: every recorded input still matches, but the producer recorded only part of its dependency surface. One-shot test snapshots are at best partial because they fingerprint test files, not every imported application source.
+- `unknown`: the snapshot has no comparable input set. Unsaved lint text and older build observations can have unknown freshness.
+
+Build observations fingerprint only the loaded Rstack config file and its loaded config dependencies. They are therefore at best `partial` when those inputs still match and become `stale` when a recorded config input changes or disappears. They do not claim coverage of the application dependency graph.
+
+A fresh build does not make lint or test evidence fresh. Use `rs test list --related <files> --json` when only a list is needed. Use an approved `test_snapshot` with `related: [path]` when the matching tests should run and the relation should be stored.
+
+Each producer is optional. A build-only or library-only repository can use build and artifact evidence without Rstest or Rslint observations. Missing test, coverage, lint, or Rsdoctor data is reported as unavailable on that axis and does not block the axes that exist.
+
+### Code evidence {#code-evidence}
+
+`code_evidence` is a read-only exact-path query. Given a checkout-relative source `path` and optional `line`, it joins the newest Rstest and Rslint snapshots whose package root contains that path. Explicit `testSnapshotId` and `lintSnapshotId` values select point-in-time evidence instead. When an artifact contains several module variants for the same source path, an optional `module` selector preserves the exact module ID or name returned by `unused_candidates` or `dead_code_explain`. It reports five independent surfaces:
+
+- the captured static Rstest relation as `related`, `unrelated`, `unknown`, or `unavailable`;
+- aggregate execution coverage as `observed`, `not-observed`, `unknown`, or `unavailable`;
+- the selected Rstest facet's outcome for that exact path as `failed`, `passed`, `not-run`, or `unknown`;
+- exact-path Rslint and Rstest diagnostics; and
+- an optional artifact module axis when both `contextId` and `dataFile` are supplied.
+
+The test relation comes from Rstest's build graph, not runtime execution. `related` and `unrelated` require an isolated one-source capture; a multi-source selection is a union and remains `unknown` for an individual source. `observed` requires a positive stored statement, function, or branch-arm hit and an exact current file digest. `not-observed` additionally requires a complete, untruncated instrumented universe with relevant zero-hit locations. A stale digest, missing path, partial universe, or missing provider remains inconclusive. Test outcomes describe only records whose own path exactly matches the query; no exact record returns `unknown` with reason `no-exact-test-record`, while `not-run` requires matching skipped or todo records. Diagnostics return `{ total, returned, truncated, items }` and at most 200 items. Without `module`, the optional module axis tries the full workspace path before a package-relative fallback. With `module`, it resolves that exact artifact selector while still using `path` for runtime, test, and diagnostic evidence. It preserves production reachability, public-contract status, shipment, and optimizer retention separately, and reports artifact binding rather than combining mismatched evidence.
+
+## Phase 4 change review {#phase-4-change-review}
+
+`snapshot_diff` is read-only, non-destructive, and closed-world. It compares normalized diagnostics or tests only when both snapshots have the same schema version, producer, context, capture selection, and requested facet. Test diffs include file, case, and unhandled run errors. An incompatible comparison returns reasons instead of inferring a delta. Compatible results include the independent freshness of both sides and deterministic added, removed, and changed items.
+
+`lint_fix_preview` has the same read-only annotations. It returns fixed text already stored by `lint_snapshot` when `includeFixPreview` was enabled. It does not reread or write the source file, and there is no apply tool; use an explicit `rs lint --fix <path>` only when you choose to apply fixes.
+
+Rslint type-check and timing collection remain explicit CLI workflows such as `rs lint --type-check --timing`. Rstest watch sessions, automatic captures, and source mutation are deliberately deferred. The MCP server has no daemon, watcher, or producer connection.
+
+### Rsdoctor analysis
+
+`rsdoctor_analyze` accepts an explicit `dataFile`, a `toolName`, and optional tool input. The data file must contain JSON with an object-valued `data` field, and the input must match the selected Rsdoctor tool schema. Its compact text reports the result's data state and any unavailable required sections; the full result is in `structuredContent`.
+
+When valid Rsdoctor v1 metadata is present, `structuredContent.sectionEvidence` reports each section required by the selected tool as `collected` or `omitted`. An omitted entry includes its reason and means that section was unavailable to the analysis, so an empty or zero-shaped result must not be interpreted as a confirmed zero. Legacy artifacts remain accepted but unverified; they return an empty `sectionEvidence` array and provide no section-availability state.
+
+The supported tool names are:
+
+- `build_summary`
+- `bundle_optimize`
+- `chunks_list`
+- `errors_list`
+- `packages_direct_dependencies`
+- `packages_duplicates`
+- `packages_similar`
+- `tree_shaking_retained_modules`
+- `tree_shaking_side_effects`
+- `tree_shaking_summary`
+
+### Report links
+
+`report_link` accepts an explicit `dataFile` and returns a `file:` URI when it finds the conventional sibling `report-rsdoctor.html`, one unambiguous sibling HTML file, or the checkout's `.rsdoctor/manifest.json`. GUI links are optional. This tool does not start a report server, run a command, or create a report.
+
+## Limitations
+
+Build observations, lint diagnostics, test results, and artifact graphs may be partial or stale. A source file that never entered the bundler graph, such as a completely unimported file, is not discoverable from the artifact. Export-level and local-symbol dead-code analysis are also unavailable because the current Rsdoctor artifact contract does not provide a supported export-use schema. Watch queries, mutation tools, automatic captures, and automatic report generation are not included.
+
+Build context is evidence about observed builds, not proof that unobserved code is dead or unused.

@@ -1,11 +1,14 @@
-import type {
-  ConfigParams,
-  RsbuildConfigDefinition,
-  WatchFiles,
-} from '@rsbuild/core';
-import { loadRstackConfig, type Configs } from './config.ts';
+import type { ConfigParams, RsbuildConfig, WatchFiles } from '@rsbuild/core';
+import {
+  applyRstackConfigModifiers,
+  loadRstackConfig,
+  type Configs,
+} from './config.ts';
 
-const resolveRsbuildConfig = async (configs: Configs, params: ConfigParams) => {
+export const resolveRsbuildConfig = async (
+  configs: Configs,
+  params: ConfigParams,
+): Promise<RsbuildConfig> => {
   const appConfig = configs.app;
   if (!appConfig) {
     return {};
@@ -16,17 +19,24 @@ const resolveRsbuildConfig = async (configs: Configs, params: ConfigParams) => {
   return appConfig;
 };
 
-const loadRsbuildConfig: RsbuildConfigDefinition = async (params) => {
-  const { configs, filePath, dependencies } = await loadRstackConfig();
-  const config = await resolveRsbuildConfig(configs, params);
+export const loadRsbuildConfig = async (
+  params: ConfigParams,
+): Promise<RsbuildConfig> => {
+  const loaded = await loadRstackConfig();
+  const config = await applyRstackConfigModifiers(
+    loaded,
+    'app',
+    await resolveRsbuildConfig(loaded.configs, params),
+    { params },
+  );
 
-  if (!filePath) {
+  if (!loaded.filePath) {
     return config;
   }
 
   const watchFiles = config.dev?.watchFiles;
   const watchConfig: WatchFiles = {
-    paths: [filePath, ...dependencies],
+    paths: [loaded.filePath, ...loaded.dependencies],
     type: 'reload-server',
   };
 

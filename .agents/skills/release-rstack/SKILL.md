@@ -1,6 +1,6 @@
 ---
 name: release-rstack
-description: Create a coordinated release pull request for the `rstack` and `create-rstack` npm packages. Use when asked to prepare, create, or open an rstack package release PR.
+description: Create a coordinated release pull request for the `rstack`, `@rstackjs/context`, and `create-rstack` npm packages. Use when asked to prepare, create, or open an rstack package release PR.
 ---
 
 # Release Rstack
@@ -13,7 +13,8 @@ If the version is missing, ask for it before making changes.
 
 ## Version rules
 
-- Read both package versions before editing. Require the rstack target to be a valid, increasing SemVer version.
+- Read all three package versions before editing. Require the rstack target to be a valid, increasing SemVer version.
+- Keep `@rstackjs/context` on exactly the same version as `rstack`.
 - Keep the package version lines independent. Apply the rstack bump type to the current `create-rstack` version:
   - Patch: increment the patch version.
   - Minor: increment the minor version and reset patch to `0`.
@@ -29,13 +30,13 @@ If the version is missing, ask for it before making changes.
 
 3. Create and switch to `release/v<version>` from the clean default-branch HEAD.
 
-4. Update the `version` field in `packages/rstack/package.json` to `<version>` and the `version` field in `packages/create-rstack/package.json` to the derived `create-rstack` version.
+4. Update the `version` fields in `packages/rstack/package.json` and `packages/context/package.json` to `<version>`. Update the `version` field in `packages/create-rstack/package.json` to the derived `create-rstack` version.
 
 5. In every `packages/create-rstack/template-*/package.json`, set the `rstack` dependency to `^<version>`. Update only that dependency entry and verify every template package manifest uses the same target version.
 
 6. Run `pnpm --filter rstack build:native` to regenerate `packages/rstack/binding.cjs` and `packages/rstack/binding.d.cts` for the new version. Do not edit generated binding files manually.
 
-7. Review the diff and confirm it contains only both package version changes, the template `rstack` dependency updates, and the regenerated binding files above. Verify the two package version changes use the intended matching bump type and no template retains an older rstack version.
+7. Review the diff and confirm it contains only the three package version changes, the template `rstack` dependency updates, and the regenerated binding files above. Verify `rstack` and `@rstackjs/context` have the same target version, `create-rstack` uses the intended matching bump type, and no template retains an older rstack version.
 
 8. Create a commit with this exact message: `release: v<version>`.
 

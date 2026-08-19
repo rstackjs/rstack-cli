@@ -1,9 +1,13 @@
 # Custom Dictionary Words
 applypatch
+backpressure
+bundleless
 cdpath
 clippy
 dirents
+doctest
 editmsg
+effectful
 errexit
 esac
 extglob
@@ -11,14 +15,18 @@ fnames
 huskyrc
 indentable
 jsonline
+killable
 llms
 napi
 noformat
+nonliteral
 noprettier
 nosystem
 oxfmt
 quasis
+realpath
 rsbuild
+rsdoctor
 rslib
 rslint
 rslog
@@ -30,6 +38,8 @@ rstest
 shiki
 shikijs
 solidjs
+streamable
+treemap
 turborepo
 typicode
 worktank

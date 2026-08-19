@@ -33,6 +33,33 @@ This content serves a similar purpose to the [rstack-cli-best-practices](#rstack
 
 Rstack CLI provides domain-specific Agent Skills that help coding agents give more accurate guidance and perform relevant tasks.
 
+### Rstack plugin
+
+The official [`rstackjs/agent-skills`](https://github.com/rstackjs/agent-skills) repository provides
+one `rstack` plugin for Codex and Claude Code. It includes Rspack ecosystem skills plus Rstack
+Context workflows for build analysis, artifact-scoped unused-code candidates, change impact, lint
+and test failures, and snapshot review.
+
+```bash title="Codex"
+codex plugin marketplace add rstackjs/agent-skills
+codex plugin add rstack@rstack
+```
+
+```bash title="Claude Code"
+claude plugin marketplace add rstackjs/agent-skills
+claude plugin install rstack@rstack
+```
+
+The plugin starts the project's local `rs mcp` command. Install `rstack` in the project, and enable
+the required application, library, lint, test, or context configuration in `rstack.config.*`. In a
+monorepo, one root MCP process discovers recorded contexts for every package; it does not assume
+that its current working directory identifies the selected package.
+
+The evidence runtime is implemented in
+[`rstackjs/context`](https://github.com/rstackjs/context) as the separate
+`@rstackjs/context` package and is also available through `rstack/context`. The plugin repository
+contains the launcher and workflows, not a second copy of that runtime.
+
 ### rstack-cli-best-practices
 
 The [rstack-cli-best-practices](https://github.com/rstackjs/rstack-cli/tree/main/.agents/skills/rstack-cli-best-practices) Skill provides guidance and best practices for using Rstack CLI.

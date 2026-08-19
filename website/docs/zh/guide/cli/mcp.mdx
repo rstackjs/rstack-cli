@@ -1,0 +1,158 @@
+import { PackageManagerTabs } from '@rspress/core/theme';
+
+# MCP \{#mcp}
+
+`rs mcp` 将当前检出的 Rstack 观测结果和明确指定的 Rsdoctor 产物提供给 MCP 客户端。查询工具均为只读。两个快照工具只会在被明确调用时运行 lint 或测试；没有工具会修改 Rstack 配置或应用 lint 修复。
+
+## 用法 \{#usage}
+
+在仓库根目录启动一个本地 MCP 服务器：
+
+```bash
+rs mcp
+```
+
+服务器通过标准输入和输出通信，因此 stdout 仅用于 MCP 协议消息。它会根据命令的启动路径解析检出目录，并公开十五个工具：`project_status`、`product_roots`、`unused_candidates`、`dead_code_explain`、`module_impact`、`code_evidence`、`snapshot_list`、`diagnostics_list`、`test_results`、`snapshot_diff`、`lint_fix_preview`、`lint_snapshot`、`test_snapshot`、`rsdoctor_analyze` 和 `report_link`。
+
+工具成功响应时，`content` 会保持紧凑以便用于对话。具有权威性的结果位于 `structuredContent` 中；对于有界集合，其中会明确包含分页或截断元数据。
+
+## 捕获构建上下文 \{#capture-build-context}
+
+在 `rstack.config.ts` 中启用元数据捕获：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.context({
+  enabled: true,
+  capture: 'metadata',
+  variant: 'firefox_v3',
+});
+```
+
+`define.context()` 是 Rstack 自有配置，不会转发给 Rsbuild 或 Rslib。`RSTACK_CONTEXT=1` 会启用捕获，而 `RSTACK_CONTEXT=0` 始终会禁用捕获。`capture: 'off'` 也会禁用捕获。
+
+Rstack 通过内置的 `@rstackjs/context/rstack` 插件实现该捕获，并在用户插件之后注册它。不要再将它添加到 `define.plugins()`。`rs mcp` 是独立的内置宿主命令，而不是插件命令，因此它可以为协议保留 stdout，并且无需加载项目配置即可启动。
+
+可选的 `variant` 可以让 `firefox_v3` 和 `chrome_v3` 等构建拥有不同的上下文标识，无需猜测任意环境变量。Rstack 还会记录相对于检出目录的 Rsbuild/Rslib 输出目录，并将其纳入上下文标识。
+
+生产者会在执行 `rs dev`、`rs build` 和 `rs lib` 时，将已完成的观测结果写入检出目录本地存储。它们不会连接到 MCP 进程；MCP 服务器会在调用 `project_status` 时读取存储。
+
+所有配置规则请参阅 [`define.context()`](../configuration#define-context)。
+
+## 创建 Rsdoctor 产物 \{#create-an-rsdoctor-artifact}
+
+在需要分析构建的每个包中安装可选的 Rsdoctor 收集器：
+
+<PackageManagerTabs command="install -D @rsdoctor/rspack-plugin" />
+
+启用上下文捕获和 JSON 输出，然后运行该包真实的 Rstack 构建：
+
+```bash
+# Rsbuild 应用
+RSTACK_CONTEXT=1 RSDOCTOR=true RSDOCTOR_OUTPUT=json rs build
+
+# Rslib 库
+RSTACK_CONTEXT=1 RSDOCTOR=true RSDOCTOR_OUTPUT=json rs lib
+```
+
+Rsbuild 只会为该命令加载已安装的收集器。构建会在检出目录本地存储中记录 Rstack 上下文，并通常写入 `dist/rsdoctor-data.json`。将这个明确的 JSON 路径传给产物分析工具。安装收集器不会让普通构建收集 Rsdoctor 数据；只有设置 `RSDOCTOR=true` 时才会收集。
+
+Context 通过 `@rsdoctor/agent-cli` 读取生成的产物。这是单向消费关系：Rsdoctor 不会安装或加载 `@rstackjs/context` 插件。
+
+## Monorepo \{#monorepos}
+
+在 monorepo 根目录运行一个 MCP 进程。即使构建是在各个包目录中独立启动，它也会读取该检出目录内每个包记录的运行信息。
+
+同一个根 MCP 进程可以为任意包明确捕获 lint 和测试结果。向 `lint_snapshot` 或 `test_snapshot` 传入相对于检出目录的 `packageRoot`；如果省略，捕获默认使用检出目录根。仅在需要选择非常规 Rstack 配置时，传入相对于检出目录的 `configPath`。省略 `configPath` 时，Rstack 会在所选包根目录中依次选择常规的 `rstack.config.ts`、`rstack.config.js`、`rstack.config.mts` 或 `rstack.config.mjs`。捕获会以该包作为工作目录，存储的上下文会记录包根目录、可用时的包名以及所选配置路径。
+
+它适用于仅使用 Rslib 的仓库、仅使用 Rsbuild 的仓库，以及同时使用两者的仓库。不需要 Turbo、Nx、守护进程、任务图或生产者到 MCP 的连接。
+
+## MCP 工具 \{#mcp-tools}
+
+### 构建上下文 \{#build-context}
+
+`project_status` 会为每个已记录的 Rstack `contextId` 返回一个当前条目，并从最新运行中确定性地选择该条目。只有当选中的运行具有已完成快照时，条目才为 `ready`；更早的已完成运行不会使较新的待处理运行变为 `ready`。
+
+### 产物范围内的模块分析 \{#artifact-scoped-module-analysis}
+
+四个模块分析工具都需要 `project_status` 返回的 `contextId` 和明确指定的 Rsdoctor `dataFile`。当产物包含有效的 Rsdoctor v1 元数据且标识匹配时，Rstack 可以将产物与所选构建观测绑定。没有该元数据的旧版产物仍使用 `artifactBinding: "explicit-unverified"`：所选构建观测可以提供有用的上下文，但 Rstack 不会声称指定产物来自该次运行。
+
+- `product_roots` 返回应用入口根、精确匹配的库包目标和保守的优化器根，同时包含图问题和分析边界。`rootLimit` 必须是 1 到 100 的整数，默认值为 50；`rootSummary` 会报告总数、返回数、截断状态和各类型计数，避免大型保守根集合淹没智能体响应。
+- `unused_candidates` 返回在该产物图中不存在从所选根出发的已观测路径的模块。可选的 `limit` 必须是 1 到 100 的整数，默认值为 50。项目自有模块排在依赖模块之前，`ownership` 会统计完整结果中的两类数量。只有在需要完整清单时才使用相同筛选条件继续传入 `nextCursor`；当 `ownership.project` 为零时，后续页面不会包含项目自有候选项。
+- `dead_code_explain` 接受非空的精确模块 ID、路径、名称或唯一的路径后缀。可选的 `maxDepth` 必须是 1 到 32 的整数，默认值为 32，与 `unused_candidates` 保持一致。它会报告模块是可达、被保守保留、不可达模块候选，还是因为证据不完整而处于未知状态。
+- `module_impact` 接受相同的模块选择器。`direction` 可为 `dependencies` 或 `dependents`，默认值为 `dependents`；它独立限制的 `maxDepth` 仍为 1 到 16，默认值为 8。它返回有界的已观测模块、到达的产品根、受影响的 chunk ID 和截断状态。
+
+这些结果只描述一个指定产物中的模块。不可达结果是需要复核的候选，而不是删除指令；它也不能证明某个局部函数、类、变量或导出未被使用。
+
+## 第 3 阶段开发智能 \{#phase-3-development-intelligence}
+
+开发工具复用同一个不可变的检出目录本地存储。`snapshot_list`、`diagnostics_list` 和 `test_results` 均为只读、非破坏性且封闭世界的工具。它们会在每次请求时读取存储，绝不会启动生产者。`snapshot_list` 返回的 lint 条目包含 `metadata.lint.fixPreviewCaptured`，因此客户端无需加载完整 lint facet 即可判断 `lint_fix_preview` 是否可用。可选的 `limit` 默认为 50，取值范围为 1 到 200；返回的 `nextCursor` 会按相同的确定性顺序继续读取。
+
+`lint_snapshot` 是明确执行操作。它会针对文件模式（默认为 `['.']`）或一个给定文本缓冲区运行一次 Rslint，然后记录诊断和可选的修复输出，但不会写入源文件。可选的 `packageRoot` 和 `configPath` 会按上述规则选择 monorepo 包和 Rstack 配置。其标注为 `readOnlyHint: false`、`destructiveHint: false` 和 `openWorldHint: true`，因为它会加载配置并运行 lint。调用前应先询问用户。
+
+只有当每个选定模式都是 Rslint 实际返回的明确文件时，文件模式 lint 的新鲜度才会是 `fresh`。目录、glob、未匹配模式和默认选择会是 `partial`，因为之后新增的匹配文件不在已记录的输入集合中。
+
+`test_snapshot` 也是明确执行操作。它会调用一次已安装的实验性 `runRstest()` API，可按文件或测试名称模式缩小范围，并记录结构化摘要，不启动 watch 模式，也不记录控制台流。它接受相同的可选检出目录相对路径 `packageRoot` 和 `configPath` 选择器。除了 `files`，还可以提供可选的 `related` 数组，其中可包含 1 到 200 个相对于 `packageRoot` 解析的源文件路径；Rstack 会调用 Rstest 支持的 `list --related` 命令查找匹配的测试文件，然后只运行这些文件。快照会记录请求的源文件和匹配的测试。若后续 `code_evidence` 需要将 `related` 或 `unrelated` 结果明确归因到一个源文件，每次捕获只应选择一个源文件。可选的 `execution` 对象会为这一次运行明确启用 Istanbul 聚合覆盖率；其中 `include` 和 `exclude` 数组最多各接受 200 个模式，`allowExternal` 默认为 false。省略 `execution` 时不会启用覆盖率。可选 peer `@rstest/coverage-istanbul` 只在该覆盖率模式下需要；普通测试捕获和所有非测试证据表面在缺少它时仍可使用。其标注为 `readOnlyHint: false`、`destructiveHint: true` 和 `openWorldHint: true`，因为它会执行项目配置和测试。调用前应先询问用户。
+
+新鲜度按生产者和快照分别判断：
+
+- `fresh`：所有完整记录的输入文件仍然匹配。
+- `stale`：一个或多个记录路径已缺失或发生变化；`changedPaths` 会列出这些路径。
+- `partial`：所有记录的输入仍然匹配，但生产者只记录了部分依赖范围。一次性测试快照最多只能是 partial，因为它只为测试文件生成指纹，而不是为所有导入的应用源码生成指纹。
+- `unknown`：快照没有可比较的输入集合。未保存的 lint 文本和较早的构建观测可能具有未知新鲜度。
+
+构建观测只会为已加载的 Rstack 配置文件及其已加载的配置依赖生成指纹。因此，当这些输入仍然匹配时，构建观测最多为 `partial`；任何已记录的配置输入发生变化或缺失时则变为 `stale`。它们不会声称覆盖应用依赖图。
+
+新鲜的构建结果并不会让 lint 或测试证据自动变得新鲜。只需列表时，请运行 `rs test list --related <files> --json`。需要运行匹配测试并保存关系时，请在获得许可后调用带有 `related: [path]` 的 `test_snapshot`。
+
+每个生产者都是可选的。仅构建应用或仅构建库的仓库可以在没有 Rstest 或 Rslint 观测的情况下使用构建和制品证据。缺失的测试、覆盖率、lint 或 Rsdoctor 数据会在对应轴上报告为不可用，不会阻塞已有的证据轴。
+
+### 代码证据 {#code-evidence}
+
+`code_evidence` 是只读的精确路径查询。给定相对于检出目录的源文件 `path` 和可选 `line` 后，它会组合包根目录包含该路径的最新 Rstest 与 Rslint 快照。也可以通过明确的 `testSnapshotId` 和 `lintSnapshotId` 选择某个时间点的证据。当制品中同一源路径对应多个模块变体时，可选的 `module` 选择器会保留 `unused_candidates` 或 `dead_code_explain` 返回的精确模块 ID 或名称。它分别报告五个独立表面：
+
+- 已捕获的静态 Rstest 关系：`related`、`unrelated`、`unknown` 或 `unavailable`；
+- 聚合执行覆盖率：`observed`、`not-observed`、`unknown` 或 `unavailable`；
+- 所选 Rstest facet 中该精确路径的结果：`failed`、`passed`、`not-run` 或 `unknown`；
+- 精确路径的 Rslint 与 Rstest 诊断；以及
+- 同时提供 `contextId` 和 `dataFile` 时的可选制品模块轴。
+
+测试关系来自 Rstest 构建图，而不是运行时执行。`related` 和 `unrelated` 要求每次捕获只选择一个源文件；多源选择只得到并集，因此对单个源文件仍为 `unknown`。`observed` 要求已存储的语句、函数或分支臂命中数为正，并且当前文件摘要精确匹配。`not-observed` 还要求已插桩全集完整、未截断，并存在命中数为零的相关位置。摘要过期、路径缺失、全集不完整或 provider 缺失时，结果仍是不确定的。测试结果只描述其自身路径与查询精确匹配的记录；没有精确记录时返回 `unknown` 和原因 `no-exact-test-record`，只有存在匹配的跳过或待办记录时才返回 `not-run`。诊断以 `{ total, returned, truncated, items }` 返回，最多包含 200 个条目。未提供 `module` 时，可选模块轴会先尝试完整工作区路径，再回退到包相对路径；提供 `module` 时，它会解析该精确制品选择器，同时仍使用 `path` 查询运行时、测试和诊断证据。它分别保留生产可达性、公共契约状态、是否进入产物以及优化器保留状态，并报告制品绑定，而不会组合不匹配的证据。
+
+## 第 4 阶段变更复核 \{#phase-4-change-review}
+
+`snapshot_diff` 是只读、非破坏性且封闭世界的工具。只有两个快照的 schema 版本、生产者、上下文、捕获选择和请求的 facet 均相同时，它才会比较标准化的诊断或测试。测试差异包括文件错误、测试用例错误和运行级未处理错误。对于不兼容的比较，它会返回原因，而不会推断差异。兼容结果包含两侧各自的新鲜度，以及确定性排序的新增、移除和变更项。
+
+`lint_fix_preview` 具有相同的只读标注。它会返回启用 `includeFixPreview` 时由 `lint_snapshot` 已存储的修复文本。它不会重新读取或写入源文件，也没有 apply 工具；仅在你选择应用修复时明确运行 `rs lint --fix <path>`。
+
+Rslint 类型检查和计时收集仍是明确的 CLI 工作流，例如 `rs lint --type-check --timing`。Rstest watch 会话、自动捕获和源文件修改均明确推迟实现。MCP 服务器没有守护进程、watcher 或生产者连接。
+
+### Rsdoctor 分析 \{#rsdoctor-analysis}
+
+`rsdoctor_analyze` 接受明确的 `dataFile`、`toolName` 和可选的工具输入。数据文件必须包含 JSON，且其中的 `data` 字段必须是对象；输入必须符合所选 Rsdoctor 工具的 schema。紧凑文本会报告结果的数据状态以及任何不可用的必需 section；完整结果位于 `structuredContent` 中。
+
+当存在有效的 Rsdoctor v1 元数据时，`structuredContent.sectionEvidence` 会将所选工具所需的每个 section 报告为 `collected` 或 `omitted`。被省略的条目会包含原因，并表示该 section 对此次分析不可用，因此不能将空结果或零值形态的结果解释为确认的零。旧版产物仍会被接受，但未经验证；它们返回空的 `sectionEvidence` 数组，并且不提供 section 可用性状态。
+
+支持的工具名称如下：
+
+- `build_summary`
+- `bundle_optimize`
+- `chunks_list`
+- `errors_list`
+- `packages_direct_dependencies`
+- `packages_duplicates`
+- `packages_similar`
+- `tree_shaking_retained_modules`
+- `tree_shaking_side_effects`
+- `tree_shaking_summary`
+
+### 报告链接 \{#report-links}
+
+`report_link` 接受明确的 `dataFile`；当它找到同目录下的常规 `report-rsdoctor.html`、唯一且无歧义的同目录 HTML 文件，或检出目录中的 `.rsdoctor/manifest.json` 时，会返回 `file:` URI。GUI 链接是可选的。此工具不会启动报告服务器、运行命令或创建报告。
+
+## 限制 \{#limitations}
+
+构建观测、lint 诊断、测试结果和产物图可能不完整或已过时。未进入打包器图的源文件（例如完全未被导入的文件）无法从产物中发现。导出级和局部符号级的死代码分析目前也不可用，因为当前 Rsdoctor 产物契约没有提供受支持的导出使用情况 schema。watch 查询、变更工具、自动捕获和自动报告生成也不包含在内。
+
+构建上下文是已观测构建的证据，不能证明未观测到的代码已经死亡或未被使用。

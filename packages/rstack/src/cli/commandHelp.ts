@@ -43,6 +43,7 @@ export type HelpTopic =
   | 'lib inspect'
   | 'lib mf-dev'
   | 'lint'
+  | 'mcp'
   | 'fmt'
   | 'staged'
   | 'setup';
@@ -131,6 +132,7 @@ const HELP_DEFINITIONS = {
           ['lint', 'Lint code'],
           ['check', 'Run static checks, including lint and format'],
           ['test', 'Run tests'],
+          ['mcp', 'Start the local Rstack MCP server over stdio'],
           ['staged', 'Run tasks on staged Git files'],
           ['setup', 'Install Git hooks'],
         ],
@@ -428,6 +430,10 @@ const HELP_DEFINITIONS = {
         ],
       },
     ],
+  },
+  mcp: {
+    usage: 'rs mcp',
+    description: 'Start the local Rstack MCP server over stdio',
   },
   fmt: {
     usage: 'rs fmt [options] [files/globs...]',

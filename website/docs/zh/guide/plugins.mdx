@@ -1,0 +1,206 @@
+# 插件 \{#plugins}
+
+Rstack 插件用于扩展整个 Rstack CLI。插件可以注册新的 `rs` 命令，也可以转换 Rstack 所编排工具的原生配置。
+
+该 API 是底层工具扩展机制的补充。构建生命周期请使用 Rsbuild 或 Rslib 插件，测试结果请使用 Rstest reporter，代码检查行为请使用 Rslint 插件或其编程式 API，文档生命周期请使用 Rspress 插件。当一个包需要从统一的 Rstack 配置中注册命令，或同时为多个工具提供配置时，请使用 Rstack 插件。
+
+## 注册插件 \{#registering-plugins}
+
+在 `rstack.config.ts` 中通过 `define.plugins()` 显式注册插件：
+
+```ts title="rstack.config.ts"
+import { pluginAcme } from '@acme/rstack-plugin';
+import { define } from 'rstack';
+
+define.plugins([pluginAcme()]);
+```
+
+Rstack 不会扫描依赖，也不会根据包名自动发现插件。插件条目支持嵌套、异步和条件形式；假值条目会被忽略：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.plugins([
+  import('@acme/rstack-plugin').then(({ pluginAcme }) => pluginAcme()),
+  process.env.CI
+    ? import('@acme/rstack-ci').then(({ pluginCI }) => pluginCI())
+    : false,
+]);
+```
+
+与其他 `define.*()` API 相同，每份配置文件最多调用一次 `define.plugins()`。
+
+## 创建插件 \{#creating-a-plugin}
+
+插件包含唯一名称和一个 `setup` 函数。setup 函数会接收 Rstack 插件 API：
+
+```ts title="src/pluginAcme.ts"
+import type { RstackPlugin } from 'rstack';
+
+export const pluginAcme = (): RstackPlugin => ({
+  name: 'acme',
+  setup(api) {
+    api.addCommand({
+      name: 'acme-info',
+      async handler(args) {
+        await printWorkspaceInfo(api.context.cwd, args);
+      },
+    });
+
+    api.modifyConfig('app', (config) => ({
+      ...config,
+      source: {
+        ...config.source,
+        define: {
+          ...config.source?.define,
+          ACME_CHANNEL: JSON.stringify('stable'),
+        },
+      },
+    }));
+
+    api.modifyConfig('test', (config) => ({
+      ...config,
+      reporters: [...(config.reporters ?? []), createAcmeReporter()],
+    }));
+  },
+});
+```
+
+`printWorkspaceInfo` 和 `createAcmeReporter` 由插件包自身实现；Rstack 只负责注册与配置组合。`RstackPlugin`、`RstackPluginAPI`、`RstackPluginContext`、`RstackConfigMap`、`FmtConfig`、`StagedConfig` 及其他相关类型均从 `rstack` 导出。
+
+## 插件生命周期 \{#plugin-lifecycle}
+
+对于需要加载项目配置的命令，Rstack 按以下顺序执行：
+
+1. 加载 `rstack.config.*`，并捕获已注册的工具配置和插件。
+2. 按声明顺序展开插件条目。
+3. 验证全部插件，然后依次执行每个 `setup` 函数。
+4. 解析当前命令所需的原生配置函数。
+5. 依次执行匹配的配置修改器。
+6. 应用 Rstack 内部配置，并启动底层工具。
+
+修改器可以修改输入对象、返回替换值，也可以返回 Promise。返回 `undefined` 时，Rstack 会保留当前配置。setup、命令处理器或修改器抛出的错误都会终止本次调用。
+
+Rstack 会在用户插件之后注册内置 Context 插件。因此，它的 `app` 和 `lib` 修改器会在工具启动前观测经过用户组合的最终原生配置。
+
+根帮助和版本输出不会加载项目配置。其他命令仅在加载配置时初始化插件。
+
+## 注册命令 \{#registering-commands}
+
+使用 `addCommand()` 添加顶层 `rs` 命令：
+
+```ts
+import type { RstackPlugin } from 'rstack';
+
+export const pluginInspect = (): RstackPlugin => ({
+  name: 'inspect',
+  setup({ addCommand, context, logger }) {
+    addCommand({
+      name: 'inspect-workspace',
+      async handler(args) {
+        logger.info(`Inspecting ${context.cwd}`);
+        await inspectWorkspace(args);
+      },
+    });
+  },
+});
+```
+
+命令名使用小写 kebab-case。插件不能替换内置命令或别名，重复的命令名也会被拒绝。
+
+命令处理器接收命令名之后的参数。Rstack 会先移除已经解析的全局 `--config` 或 `-c` 选项。插件负责命令专属的参数解析和帮助输出。
+
+只读的 `context` 提供：
+
+- `cwd`：调用 Rstack 时的工作目录。
+- `command`：当前选中的命令名。
+- `args`：setup 阶段可用的同一组命令参数。
+- `configFilePath`：解析后的 Rstack 配置路径；未找到配置文件时为 `null`。
+
+## 修改工具配置 \{#modifying-tool-configurations}
+
+使用 `modifyConfig()` 直接贡献底层工具的原生配置。`kind` 用于选择配置类型，并为处理器保留对应的类型信息。
+
+当底层工具提供原生调用数据时，处理器的第二个参数会携带这些数据。`app`、`lib` 和 `test` 修改器会收到 `{ params }`，其中包含本次调用的 Rsbuild 或 Rslib 配置参数。
+
+### 配置类型 \{#configuration-kinds}
+
+| Kind     | 原生配置        | 初始化命令                         |
+| -------- | --------------- | ---------------------------------- |
+| `app`    | Rsbuild         | `rs dev`、`rs build`、`rs preview` |
+| `lib`    | Rslib           | `rs lib`                           |
+| `doc`    | Rspress         | `rs doc`                           |
+| `test`   | Rstest          | `rs test`                          |
+| `lint`   | Rslint          | `rs lint`                          |
+| `fmt`    | Rstack/Prettier | `rs fmt`                           |
+| `staged` | lint-staged     | `rs staged`                        |
+
+匹配的工具配置函数会先解析，再执行对应的修改器。底层工具现有的命令行覆盖仍会在之后执行，因此显式 CLI 选项保持原有优先级。
+
+### 修改与替换 \{#mutation-and-replacement}
+
+修改器按注册顺序执行，同时支持修改和替换：
+
+```ts
+setup({ modifyConfig }) {
+  modifyConfig('app', (config) => {
+    config.plugins ??= [];
+    config.plugins.push(createRsbuildPlugin());
+  });
+
+  modifyConfig('lint', async (config) => [
+    ...config,
+    await createRslintConfig(),
+  ]);
+}
+```
+
+未定义对应的 `define.*()` 值时，修改器会收到原生的空配置：`lint` 为一个空数组，其他类型为空对象。`staged` 仍会保留缺少配置的错误，除非注册了 staged 修改器。
+
+### Rstest 继承 \{#rstest-inheritance}
+
+当 Rstest 使用 Rstack 的应用或库自动继承时，Rstack 会先应用匹配的 `app` 或 `lib` 修改器，再构造 Rstest 的 `extends` 值，最后在自动继承之后应用 `test` 修改器。因此，同一个插件既可以贡献原生构建配置，也可以贡献 Rstest reporter，而不会重复应用任一配置。
+
+显式设置 Rstest `extends` 时，仍会退出应用或库的自动继承。
+
+## 底层工具扩展 \{#underlying-tool-extensions}
+
+配置修改器不会替代原生扩展 API。它们只是在工具启动前贡献原生配置值：
+
+- 通过 `plugins` 字段添加 Rsbuild 或 Rslib 插件，并使用其 hook API 处理构建生命周期。
+- 通过 `reporters` 添加 Rstest reporter；独立进程需要结构化测试结果时，请使用 Rstest 编程式 API。
+- 通过 `lint` 添加 Rslint flat config 条目和插件；需要直接执行代码检查时，请使用 Rslint 编程式 API。
+- 通过 Rspress 配置添加 Rspress 插件。
+- 通过 `fmt` 添加 Prettier 插件，通过 `staged` 添加 lint-staged 任务。
+
+构建 hook、测试结果、代码检查结果和文档生命周期事件仍由底层工具负责。Rstack 不会将这些结果规范化为跨工具生命周期。
+
+## 内置 Context 插件 {#built-in-context-plugin}
+
+Rstack 将 `@rstackjs/context/rstack` 用作内置插件。用户通过 [`define.context()`](./configuration#define-context) 启用或调整它，无需在 `define.plugins()` 中重复注册。该插件为 `rs dev`、`rs build` 和 `rs lib` 提供被动的 Rsbuild 与 Rslib 观测器。`rs mcp` 仍是内置宿主命令，因此它可以为 MCP 协议保留 stdout，并且无需加载项目配置即可启动。
+
+独立集成可以从 `@rstackjs/context/rsbuild`、`@rstackjs/context/rslib`、`@rstackjs/context/rslint`、`@rstackjs/context/rstest`、`@rstackjs/context/rsdoctor` 和 `@rstackjs/context/mcp` 等聚焦入口导入。Context 通过 `@rsdoctor/agent-cli` 消费明确指定的 Rsdoctor 产物；Rsdoctor 不会加载 Context 插件，也不依赖 `@rstackjs/context`。
+
+## 配置加载与重载 \{#configuration-loading-and-reloads}
+
+每次加载 Rstack 配置时，插件只初始化一次。Rsbuild 的配置监听条目会在插件修改器之后添加；Rsbuild 因配置变更而重载时，Rstack 会重新加载配置并初始化一组新的插件。
+
+注册只作用于当前选中的配置文件。Rstack 不会合并其他 workspace 根目录或父级配置中的插件。
+
+## 兼容性 \{#compatibility}
+
+导出的 Rstack 插件类型和 setup 契约遵循 Rstack 的语义化版本策略。插件包应为其支持的 Rstack 版本声明 peer dependency 范围。
+
+配置值仍是集成工具版本的原生类型。插件使用特定 Rsbuild、Rslib、Rstest、Rslint、Rspress、Prettier 或 lint-staged 功能时，也应遵循对应工具的兼容性说明。
+
+## 非目标 \{#non-goals}
+
+初始 SPI 刻意不提供：
+
+- 自动发现或扫描依赖包；
+- 替换内置命令；
+- 全局命令前后 hook 或中间件；
+- 插件排序描述符或插件间服务注册表；
+- 跨工具的结果或事件抽象。
+
+领域专属的生命周期和结果处理应使用底层工具的原生 API。

@@ -29,7 +29,7 @@ define.fmt({
 });
 ```
 
-The configuration file does not require a default export. Each `define.*()` API can be called at most once; defining the same configuration type more than once throws an error.
+The configuration file does not require a default export. Each `define.*()` API can be called at most once; defining the same configuration type more than once throws an error. Use [`define.plugins()`](./plugins#registering-plugins) when an external package needs to extend Rstack itself or contribute to several tool configurations.
 
 By default, Rstack CLI looks for a file with one of the following names:
 
@@ -38,7 +38,7 @@ By default, Rstack CLI looks for a file with one of the following names:
 - `rstack.config.mts`
 - `rstack.config.mjs`
 
-All `rs` commands accept the global `-c, --config` option for loading a file with a different name or location:
+Commands that consume Rstack configuration accept the global `-c, --config` option for loading a file with a different name or location:
 
 ```bash
 rs build --config ./configs/rstack.config.ts
@@ -46,7 +46,9 @@ rs build --config ./configs/rstack.config.ts
 
 ## Loading dependencies on demand
 
-Every `rs` command loads and executes the Rstack configuration file, then resolves only the configuration functions needed by that command.
+Commands that consume Rstack configuration load and execute the Rstack configuration file, then resolve only the configuration functions needed by that command.
+
+> The query tools exposed by [`rs mcp`](./cli/mcp) read completed records without loading or executing `rstack.config.*`. The explicit `lint_snapshot` and `test_snapshot` tools instead load the selected project's configuration and run their lint or test producer. Enable build-context capture on [`rs dev`](./cli/dev), [`rs build`](./cli/build), and [`rs lib`](./cli/lib).
 
 When a configuration needs to import plugins or other tool-specific dependencies, use an async configuration function and load those dependencies with dynamic `import()` inside it. This ensures that they are loaded only when the configuration is resolved.
 
@@ -65,15 +67,21 @@ define.app(async () => {
 
 Configuration options follow the formats of the underlying tools. When using APIs and helpers that Rstack CLI re-exports, prefer the `rstack/app`, `rstack/lib`, `rstack/test`, and `rstack/lint` entry points.
 
-| API                                 | Tool                                                                    | Commands                                                                        |
-| ----------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| [`define.app()`](#define-app)       | [Rsbuild](https://rsbuild.rs/config/)                                   | [`rs dev`](./cli/dev), [`rs build`](./cli/build), [`rs preview`](./cli/preview) |
-| [`define.lib()`](#define-lib)       | [Rslib](https://rslib.rs/config/)                                       | [`rs lib`](./cli/lib)                                                           |
-| [`define.doc()`](#define-doc)       | [Rspress](https://rspress.rs/api/config/config-basic)                   | [`rs doc`](./cli/doc)                                                           |
-| [`define.test()`](#define-test)     | [Rstest](https://rstest.rs/config/)                                     | [`rs test`](./cli/test)                                                         |
-| [`define.lint()`](#define-lint)     | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
-| [`define.fmt()`](#define-fmt)       | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
-| [`define.staged()`](#define-staged) | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
+| API                                   | Tool                                                                    | Commands                                                                        |
+| ------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [`define.app()`](#define-app)         | [Rsbuild](https://rsbuild.rs/config/)                                   | [`rs dev`](./cli/dev), [`rs build`](./cli/build), [`rs preview`](./cli/preview) |
+| [`define.lib()`](#define-lib)         | [Rslib](https://rslib.rs/config/)                                       | [`rs lib`](./cli/lib)                                                           |
+| [`define.context()`](#define-context) | Rstack build-context capture                                            | [`rs dev`](./cli/dev), [`rs build`](./cli/build), [`rs lib`](./cli/lib)         |
+| [`define.doc()`](#define-doc)         | [Rspress](https://rspress.rs/api/config/config-basic)                   | [`rs doc`](./cli/doc)                                                           |
+| [`define.test()`](#define-test)       | [Rstest](https://rstest.rs/config/)                                     | [`rs test`](./cli/test)                                                         |
+| [`define.lint()`](#define-lint)       | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
+| [`define.fmt()`](#define-fmt)         | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
+| [`define.staged()`](#define-staged)   | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
+| [`define.plugins()`](#define-plugins) | Rstack CLI                                                              | Plugin commands and configured tool commands                                    |
+
+### `define.plugins()` \{#define-plugins}
+
+Registers explicit Rstack CLI plugins. Plugins can add top-level commands and transform the native configurations listed below. See [Plugins](./plugins) for the API, lifecycle, and examples.
 
 ### `define.app()` \{#define-app}
 
@@ -106,6 +114,28 @@ define.lib({
   format: 'esm',
 });
 ```
+
+### `define.context()` \{#define-context}
+
+Configures checkout-local Rstack build-context capture for `rs dev`, `rs build`, and `rs lib`. This Rstack-owned configuration is not forwarded to Rsbuild or Rslib.
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.context({
+  enabled: true,
+  capture: 'metadata',
+  variant: 'firefox_v3',
+});
+```
+
+Capture is disabled unless `enabled` is `true` or `RSTACK_CONTEXT=1` is set. `RSTACK_CONTEXT=0` always disables capture, and `capture: 'off'` disables it even when it is enabled. When capture is enabled and omitted, it defaults to `metadata`; `deep` still captures metadata and records deep capture as unsupported in Phase 1A.
+
+Use the optional `variant` string when separate builds need distinct context identities beyond their package, environment, mode, target, and output directory. For example, `firefox_v3` and `chrome_v3` remain separate even if they write to the same directory. Rstack does not guess variants from arbitrary environment variables. The checkout-relative Rsbuild/Rslib `distPath` is also recorded and participates in context identity automatically.
+
+Build snapshots fingerprint the loaded Rstack config file and its loaded config dependencies. An unchanged fingerprint is reported as `partial`, not `fresh`, because Rstack does not collect the complete application dependency graph. A changed or missing recorded config input makes the snapshot `stale`.
+
+Use the query tools exposed by [`rs mcp`](./cli/mcp) to read completed observations. Its explicit `lint_snapshot` and `test_snapshot` tools load the selected project's configuration and run their lint or test producer.
 
 ### `define.doc()` \{#define-doc}
 

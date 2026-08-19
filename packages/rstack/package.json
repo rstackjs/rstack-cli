@@ -38,6 +38,10 @@
       "types": "./dist/lint.d.ts",
       "default": "./dist/lint.js"
     },
+    "./context": {
+      "types": "./dist/context.d.ts",
+      "default": "./dist/context.js"
+    },
     "./types": {
       "types": "./types/index.d.ts"
     },
@@ -73,9 +77,12 @@
     "test": "rs test"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "catalog:",
     "@rsbuild/core": "catalog:",
+    "@rsdoctor/agent-cli": "https://pkg.pr.new/@rsdoctor/agent-cli@8926633c",
     "@rslib/core": "catalog:",
     "@rslint/core": "catalog:",
+    "@rstackjs/context": "https://pkg.pr.new/rstackjs/context/@rstackjs/context@b52259e",
     "@rstest/core": "catalog:",
     "prettier": "catalog:",
     "tinypool": "catalog:",
@@ -88,6 +95,7 @@
     "@rstackjs/test-utils": "catalog:",
     "@rstest/adapter-rsbuild": "catalog:",
     "@rstest/adapter-rslib": "catalog:",
+    "@rstest/coverage-istanbul": "catalog:",
     "@types/micromatch": "catalog:",
     "@types/node": "catalog:",
     "fast-json-stable-stringify": "catalog:",
@@ -105,10 +113,14 @@
     "vscode-languageserver-textdocument": "catalog:"
   },
   "peerDependencies": {
-    "@rspress/core": "^2.0.17"
+    "@rspress/core": "^2.0.17",
+    "@rstest/coverage-istanbul": "0.11.6"
   },
   "peerDependenciesMeta": {
     "@rspress/core": {
+      "optional": true
+    },
+    "@rstest/coverage-istanbul": {
       "optional": true
     }
   },
