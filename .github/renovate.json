@@ -3,6 +3,11 @@
   "extends": ["github>rstackjs/renovate"],
   "packageRules": [
     {
+      "description": "Disable Rust toolchain updates",
+      "matchManagers": ["rust-toolchain"],
+      "enabled": false
+    },
+    {
       "description": "Disable TypeScript updates in Svelte and Vue templates until svelte-check, svelte2tsx, and vue-tsc support TypeScript 7",
       "matchManagers": ["npm"],
       "matchPackageNames": ["typescript"],
