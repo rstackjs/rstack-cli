@@ -27,7 +27,7 @@
     "@solidjs/testing-library": "^0.8.10",
     "@testing-library/jest-dom": "^7.0.1",
     "happy-dom": "^20.11.2",
-    "rstack": "^0.6.1",
+    "rstack": "^0.6.2",
     "solid-js": "^1.9.15"
   },
   "peerDependencies": {
