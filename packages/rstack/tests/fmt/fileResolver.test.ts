@@ -21,7 +21,10 @@ test('applies matching overrides before resolving plugins', async () => {
     writeProjectFile(
       rootPath,
       'node_modules/prettier-plugin-fixture/package.json',
-      JSON.stringify({ name: 'prettier-plugin-fixture', exports: './index.mjs' }),
+      JSON.stringify({
+        name: 'prettier-plugin-fixture',
+        exports: './index.mjs',
+      }),
     );
     const config = normalizeFmtConfig(
       {

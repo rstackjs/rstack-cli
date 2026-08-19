@@ -30,7 +30,9 @@ const readValue = (args, index, flag) => {
 const parseInteger = (value, flag, minimum) => {
   const result = Number(value);
   if (!Number.isSafeInteger(result) || result < minimum) {
-    throw new Error(`${flag} must be an integer greater than or equal to ${minimum}.`);
+    throw new Error(
+      `${flag} must be an integer greater than or equal to ${minimum}.`,
+    );
   }
   return result;
 };
@@ -58,7 +60,11 @@ const parseArgs = (args) => {
         index++;
         break;
       case '--explicit-count':
-        options.explicitCount = parseInteger(readValue(args, index, arg), arg, 1);
+        options.explicitCount = parseInteger(
+          readValue(args, index, arg),
+          arg,
+          1,
+        );
         index++;
         break;
       case '--runs':

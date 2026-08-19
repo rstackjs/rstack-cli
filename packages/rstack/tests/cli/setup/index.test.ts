@@ -1,5 +1,11 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach } from 'rstack/test';
 import { normalizeHelpOutput, RSTACK_BIN_PATH, test } from '#test-helpers';
@@ -61,7 +67,9 @@ test('reports missing and repeated hooks directory options', ({ expect }) => {
 
   const repeated = runSetup(['--hooks-dir', 'first', '--hooks-dir', 'second']);
   expect(repeated.status).toBe(1);
-  expect(repeated.stderr).toContain('The --hooks-dir option cannot be specified more than once.');
+  expect(repeated.stderr).toContain(
+    'The --hooks-dir option cannot be specified more than once.',
+  );
 });
 
 test('rejects invalid hooks directory options', ({ expect }) => {
@@ -80,27 +88,42 @@ test('rejects invalid hooks directory options', ({ expect }) => {
   expect(parent.stderr).toContain('Git hooks directory must not contain "..".');
 });
 
-test('installs hooks silently without loading Rstack config', ({ execCli, expect }) => {
+test('installs hooks silently without loading Rstack config', ({
+  execCli,
+  expect,
+}) => {
   initRepository();
-  writeFileSync(path.join(cwd, 'rstack.config.ts'), 'throw new Error("must not load");\n');
+  writeFileSync(
+    path.join(cwd, 'rstack.config.ts'),
+    'throw new Error("must not load");\n',
+  );
 
   expect(execCli('setup', { cwd, env })).toBe('');
   expect(git(['config', '--local', '--get', 'core.hooksPath'])).toBe(hooksPath);
   expect(existsSync(path.join(cwd, hooksPath, 'runner'))).toBe(true);
-  expect(existsSync(path.join(cwd, '.rstack', 'hooks', 'pre-commit'))).toBe(false);
+  expect(existsSync(path.join(cwd, '.rstack', 'hooks', 'pre-commit'))).toBe(
+    false,
+  );
 
   expect(execCli('setup', { cwd, env })).toBe('');
 });
 
-test('installs root-relative hooks and reports owner conflicts', ({ execCli, expect }) => {
+test('installs root-relative hooks and reports owner conflicts', ({
+  execCli,
+  expect,
+}) => {
   initRepository();
   const frontend = path.join(cwd, 'frontend');
   const docs = path.join(cwd, 'docs');
   mkdirSync(frontend);
   mkdirSync(docs);
 
-  expect(execCli('setup --hooks-dir "custom hooks"', { cwd: frontend, env })).toBe('');
-  expect(git(['config', '--local', '--get', 'core.hooksPath'])).toBe('custom hooks/_');
+  expect(
+    execCli('setup --hooks-dir "custom hooks"', { cwd: frontend, env }),
+  ).toBe('');
+  expect(git(['config', '--local', '--get', 'core.hooksPath'])).toBe(
+    'custom hooks/_',
+  );
   expect(existsSync(path.join(cwd, 'custom hooks', '_', 'runner'))).toBe(true);
 
   const conflict = runSetup(['--hooks-dir', 'custom hooks'], docs);
@@ -110,7 +133,10 @@ test('installs root-relative hooks and reports owner conflicts', ({ execCli, exp
   );
 });
 
-test('skips non-Git directories without creating files', ({ execCli, expect }) => {
+test('skips non-Git directories without creating files', ({
+  execCli,
+  expect,
+}) => {
   expect(execCli('setup', { cwd, env })).toContain(
     'info    Git hooks setup skipped: not a Git repository.',
   );
@@ -120,7 +146,9 @@ test('skips non-Git directories without creating files', ({ execCli, expect }) =
 test('skips setup when hooks are disabled', ({ execCli, expect }) => {
   const output = execCli('setup', { cwd, env: { ...env, RSTACK_HOOKS: '0' } });
 
-  expect(output).toContain('info    Git hooks setup skipped: disabled by RSTACK_HOOKS.');
+  expect(output).toContain(
+    'info    Git hooks setup skipped: disabled by RSTACK_HOOKS.',
+  );
   expect(existsSync(path.join(cwd, '.rstack'))).toBe(false);
 });
 

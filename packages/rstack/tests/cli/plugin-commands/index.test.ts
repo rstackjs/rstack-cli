@@ -34,7 +34,9 @@ test('preserves plugin command failures', ({ execCli, expect }) => {
   try {
     execCli('throws-command');
   } catch (error) {
-    expect((error as { stderr?: Buffer }).stderr?.toString()).toContain('plugin command failure');
+    expect((error as { stderr?: Buffer }).stderr?.toString()).toContain(
+      'plugin command failure',
+    );
     return;
   }
 

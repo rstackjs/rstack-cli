@@ -1,4 +1,10 @@
-import { chmodSync, readFileSync, statSync, utimesSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  readFileSync,
+  statSync,
+  utimesSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { runFmtFiles } from '../../src/fmt/runner.ts';
@@ -46,17 +52,20 @@ test('writes changed files', async () => {
   });
 });
 
-test.runIf(process.platform !== 'win32')('preserves file mode when writing', async () => {
-  await withTempProject(async (rootPath) => {
-    const filePath = path.join(rootPath, 'executable.ts');
-    writeFileSync(filePath, 'const value=1');
-    chmodSync(filePath, 0o744);
+test.runIf(process.platform !== 'win32')(
+  'preserves file mode when writing',
+  async () => {
+    await withTempProject(async (rootPath) => {
+      const filePath = path.join(rootPath, 'executable.ts');
+      writeFileSync(filePath, 'const value=1');
+      chmodSync(filePath, 0o744);
 
-    await run([createFmtRequest(filePath)]);
+      await run([createFmtRequest(filePath)]);
 
-    expect(statSync(filePath).mode & 0o777).toBe(0o744);
-  });
-});
+      expect(statSync(filePath).mode & 0o777).toBe(0o744);
+    });
+  },
+);
 
 for (const mode of ['check', 'list-different'] as const) {
   test(`${mode} reports differences without writing`, async () => {
@@ -84,7 +93,10 @@ test('continues after a file fails and gives errors exit-code precedence', async
     writeFileSync(invalidPath, 'const value = ;');
     writeFileSync(validPath, 'const value=1');
 
-    const result = await run([createFmtRequest(invalidPath), createFmtRequest(validPath)], 'check');
+    const result = await run(
+      [createFmtRequest(invalidPath), createFmtRequest(validPath)],
+      'check',
+    );
 
     expect(result).toMatchObject({
       exitCode: 2,
@@ -110,7 +122,11 @@ test('omits unsupported files from the result', async () => {
       },
     ]);
 
-    expect(result).toMatchObject({ exitCode: 2, files: [], processedFileCount: 0 });
+    expect(result).toMatchObject({
+      exitCode: 2,
+      files: [],
+      processedFileCount: 0,
+    });
     expect(readFileSync(filePath, 'utf8')).toBe('plain text');
   });
 });

@@ -14,7 +14,10 @@ Read this reference when the project uses `@rslint/core`, `rslint.config.*`, `rs
 ```ts
 import { define } from 'rstack';
 
-define.lint(({ js, ts }) => [js.configs.recommended, ts.configs.recommendedTypeChecked]);
+define.lint(({ js, ts }) => [
+  js.configs.recommended,
+  ts.configs.recommendedTypeChecked,
+]);
 ```
 
 Preserve existing presets and rules during migration.

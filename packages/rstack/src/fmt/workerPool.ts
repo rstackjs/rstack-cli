@@ -22,7 +22,10 @@ interface FmtWorkerPool {
  * scheduling and memory pressure.
  */
 const getWorkerCount = (fileCount: number, maxWorkers?: number): number =>
-  Math.min(fileCount, maxWorkers ?? Math.min(8, Math.max(1, availableParallelism() - 1)));
+  Math.min(
+    fileCount,
+    maxWorkers ?? Math.min(8, Math.max(1, availableParallelism() - 1)),
+  );
 
 const getWorkerUrl = (): URL => {
   // Source tests run after build and exercise the same worker artifact as the CLI.
@@ -33,7 +36,10 @@ const getWorkerUrl = (): URL => {
 };
 
 /** Creates and starts every worker before formatting can begin. */
-const createWorkerPool = async (fileCount: number, maxWorkers?: number): Promise<FmtWorkerPool> => {
+const createWorkerPool = async (
+  fileCount: number,
+  maxWorkers?: number,
+): Promise<FmtWorkerPool> => {
   const workerCount = getWorkerCount(fileCount, maxWorkers);
   const pool = new Tinypool({
     filename: getWorkerUrl().href,

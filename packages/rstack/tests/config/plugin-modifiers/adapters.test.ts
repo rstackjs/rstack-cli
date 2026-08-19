@@ -16,8 +16,14 @@ const loadAppConfig = loadRsbuildConfig as (params: never) => Promise<unknown>;
 const loadLibConfig = loadRslibConfig as (params: never) => Promise<unknown>;
 const loadTestConfig = loadRstestConfig as (params: never) => Promise<unknown>;
 const configPath = path.join(import.meta.dirname, 'rstack.config.ts');
-const factoryOrderConfigPath = path.join(import.meta.dirname, 'factory-order-rstack.config.ts');
-const explicitConfigPath = path.join(import.meta.dirname, 'explicit-rstack.config.ts');
+const factoryOrderConfigPath = path.join(
+  import.meta.dirname,
+  'factory-order-rstack.config.ts',
+);
+const explicitConfigPath = path.join(
+  import.meta.dirname,
+  'explicit-rstack.config.ts',
+);
 const projectsExplicitConfigPath = path.join(
   import.meta.dirname,
   'projects-explicit-rstack.config.ts',
@@ -49,11 +55,14 @@ test.each([
   ['lib', () => loadLibConfig({} as never)],
   ['doc', () => loadRspressConfig()],
   ['test', () => loadTestConfig({} as never)],
-])('initializes plugins before resolving the %s config factory', async (_kind, loadConfig) => {
-  state.configPath = factoryOrderConfigPath;
+])(
+  'initializes plugins before resolving the %s config factory',
+  async (_kind, loadConfig) => {
+    state.configPath = factoryOrderConfigPath;
 
-  await expect(loadConfig()).resolves.toBeDefined();
-});
+    await expect(loadConfig()).resolves.toBeDefined();
+  },
+);
 
 test('does not apply app modifiers when all Rstest projects explicitly extend configs', async () => {
   state.configPath = projectsExplicitConfigPath;
@@ -62,7 +71,9 @@ test('does not apply app modifiers when all Rstest projects explicitly extend co
     reporters: ['dot'],
     projects: [{ name: 'explicit', extends: {} }],
   });
-  expect(globalThis.__rstackAllProjectsExplicitAppModifierCalls).toBeUndefined();
+  expect(
+    globalThis.__rstackAllProjectsExplicitAppModifierCalls,
+  ).toBeUndefined();
 });
 
 test('does not apply app modifiers for explicit Rstest extends', async () => {
@@ -78,8 +89,12 @@ test('does not apply app modifiers for explicit Rstest extends', async () => {
 test('uses app, lib, and doc modifiers when their user configs are absent', async () => {
   state.configPath = configPath;
 
-  await expect(loadAppConfig({} as never)).resolves.toMatchObject({ root: 'app-1' });
-  await expect(loadLibConfig({} as never)).resolves.toMatchObject({ root: 'lib-2' });
+  await expect(loadAppConfig({} as never)).resolves.toMatchObject({
+    root: 'app-1',
+  });
+  await expect(loadLibConfig({} as never)).resolves.toMatchObject({
+    root: 'lib-2',
+  });
   await expect(loadRspressConfig()).resolves.toMatchObject({ root: 'doc-3' });
 });
 

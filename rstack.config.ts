@@ -1,7 +1,7 @@
-// Rstack configuration guide: https://rstack.rs/config
+// Configuration guide: https://rstack.rs/config
 import { define } from 'rstack';
 
-define.lint(async ({ js, ts }) => {
+define.lint(async ({ js, ts, rstestPlugin }) => {
   const { default: globals } = await import('globals');
   return [
     js.configs.recommended,
@@ -17,6 +17,10 @@ define.lint(async ({ js, ts }) => {
           DEFINE_VALUE: 'readonly',
         },
       },
+    },
+    {
+      files: ['**/*.test.{ts,tsx}'],
+      ...rstestPlugin.configs.recommended,
     },
     // Source imports use .ts for Node.js native TypeScript execution; builds rewrite them to .js.
     {
@@ -52,16 +56,10 @@ define.lint(async ({ js, ts }) => {
 });
 
 define.fmt({
-  ignorePatterns: ['packages/rstack/binding.cjs', 'packages/rstack/binding.d.cts'],
-  overrides: [
-    {
-      files: 'packages/create-rstack/template-*/**/*',
-      options: {
-        printWidth: 80,
-      },
-    },
+  ignorePatterns: [
+    'packages/rstack/binding.cjs',
+    'packages/rstack/binding.d.cts',
   ],
-  printWidth: 100,
   singleQuote: true,
   sortPackageJson: true,
 });

@@ -1,5 +1,9 @@
 import { join, resolve } from 'node:path';
-import { getConfigState, getRstackPluginRuntime, loadRstackConfig } from '../config.ts';
+import {
+  getConfigState,
+  getRstackPluginRuntime,
+  loadRstackConfig,
+} from '../config.ts';
 import { insertConfigArg, parseArgs, parseCliArgs } from './args.ts';
 import { hasHelpFlag, printCommandHelp } from './help.ts';
 
@@ -18,7 +22,11 @@ async function runRsbuildCLI(args: string[]): Promise<void> {
   const argv = [
     process.execPath,
     'rsbuild',
-    ...insertConfigArg(args, '--config', join(import.meta.dirname, 'rsbuildConfig.js')),
+    ...insertConfigArg(
+      args,
+      '--config',
+      join(import.meta.dirname, 'rsbuildConfig.js'),
+    ),
   ];
 
   const { runCLI } = await import('@rsbuild/core');
@@ -46,7 +54,11 @@ async function runRstestCLI(args: string[]): Promise<void> {
   const argv = [
     process.execPath,
     'rstest',
-    ...insertConfigArg(args, '--config', join(import.meta.dirname, 'rstestConfig.js')),
+    ...insertConfigArg(
+      args,
+      '--config',
+      join(import.meta.dirname, 'rstestConfig.js'),
+    ),
   ];
 
   const { runCLI } = await import('@rstest/core');
@@ -70,7 +82,11 @@ async function runRslibCLI(args: string[]): Promise<void> {
   const argv = [
     process.execPath,
     'rslib',
-    ...insertConfigArg(args, '--config', join(import.meta.dirname, 'rslibConfig.js')),
+    ...insertConfigArg(
+      args,
+      '--config',
+      join(import.meta.dirname, 'rslibConfig.js'),
+    ),
   ];
 
   const { runCLI } = await import('@rslib/core');
@@ -83,7 +99,9 @@ const isMissingRspressCoreError = (error: unknown): boolean => {
   }
 
   const code = 'code' in error ? error.code : undefined;
-  return code === 'ERR_MODULE_NOT_FOUND' && error.message.includes('@rspress/core');
+  return (
+    code === 'ERR_MODULE_NOT_FOUND' && error.message.includes('@rspress/core')
+  );
 };
 
 async function runRspressCLI(args: string[]): Promise<void> {
@@ -103,7 +121,11 @@ async function runRspressCLI(args: string[]): Promise<void> {
   const argv = [
     process.execPath,
     'rspress',
-    ...insertConfigArg(args, '--config', join(import.meta.dirname, 'rspressConfig.js')),
+    ...insertConfigArg(
+      args,
+      '--config',
+      join(import.meta.dirname, 'rspressConfig.js'),
+    ),
   ];
 
   try {
@@ -128,7 +150,11 @@ async function runRslintCLI(args: string[]): Promise<void> {
   const argv = [
     process.execPath,
     'rslint',
-    ...insertConfigArg(args, '--config', join(import.meta.dirname, 'rslintConfig.js')),
+    ...insertConfigArg(
+      args,
+      '--config',
+      join(import.meta.dirname, 'rslintConfig.js'),
+    ),
   ];
 
   const { runCLI } = await import('@rslint/core');

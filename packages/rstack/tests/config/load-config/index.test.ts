@@ -1,6 +1,10 @@
 import path from 'node:path';
 import { afterEach, expect, test } from 'rstack/test';
-import { define, getConfigState, loadRstackConfig } from '../../../src/config.ts';
+import {
+  define,
+  getConfigState,
+  loadRstackConfig,
+} from '../../../src/config.ts';
 
 type Deferred = ReturnType<typeof Promise.withResolvers<void>>;
 
@@ -15,7 +19,8 @@ declare global {
 }
 
 const state = getConfigState();
-const configPath = (fileName: string): string => path.join(import.meta.dirname, fileName);
+const configPath = (fileName: string): string =>
+  path.join(import.meta.dirname, fileName);
 const loadConfigFile = (fileName: string) =>
   loadRstackConfig({ configFilePath: configPath(fileName) });
 
@@ -63,7 +68,9 @@ test('should resolve a relative explicit config path from cwd', async () => {
 });
 
 test('should search for the config file in cwd', async () => {
-  await expect(loadRstackConfig({ cwd: import.meta.dirname })).rejects.toThrow('test config error');
+  await expect(loadRstackConfig({ cwd: import.meta.dirname })).rejects.toThrow(
+    'test config error',
+  );
 });
 
 test('should isolate parallel config sessions across top-level await', async () => {
@@ -118,7 +125,10 @@ test('should capture nested and asynchronous plugin definitions', async () => {
   expect(plugins).toHaveLength(3);
   expect(plugins[0]).toMatchObject({ name: 'first' });
   await expect(plugins[1]).resolves.toMatchObject({ name: 'second' });
-  await expect(plugins[2]).resolves.toEqual([false, expect.objectContaining({ name: 'third' })]);
+  await expect(plugins[2]).resolves.toEqual([
+    false,
+    expect.objectContaining({ name: 'third' }),
+  ]);
 });
 
 test('should reject duplicate plugin definitions within the same session', async () => {

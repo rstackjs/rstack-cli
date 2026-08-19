@@ -1,19 +1,38 @@
-import { chmodSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { createHookFiles } from '../../src/setup/hooks.ts';
 import { installHooks } from '../../src/setup/install.ts';
-import { git, hooksPath, restoreEnv, runGit, withRepository } from './helpers.ts';
+import {
+  git,
+  hooksPath,
+  restoreEnv,
+  runGit,
+  withRepository,
+} from './helpers.ts';
 
 test('installs generated hooks and configures the repository', () => {
   withRepository((cwd) => {
     expect(installHooks({ cwd })).toEqual({ status: 'installed', hooksPath });
-    expect(runGit(cwd, ['config', '--local', '--get', 'core.hooksPath'])).toBe(hooksPath);
+    expect(runGit(cwd, ['config', '--local', '--get', 'core.hooksPath'])).toBe(
+      hooksPath,
+    );
 
     const directory = path.join(cwd, hooksPath);
-    expect(readFileSync(path.join(directory, '.gitignore'), 'utf8')).toBe('*\n');
+    expect(readFileSync(path.join(directory, '.gitignore'), 'utf8')).toBe(
+      '*\n',
+    );
     expect(readFileSync(path.join(directory, '.owner'), 'utf8')).toBe('.\n');
-    expect(runGit(cwd, ['status', '--short', '--untracked-files=all'])).toBe('');
+    expect(runGit(cwd, ['status', '--short', '--untracked-files=all'])).toBe(
+      '',
+    );
 
     for (const [name, content] of Object.entries(createHookFiles())) {
       const filePath = path.join(directory, name);
@@ -40,16 +59,19 @@ test('is idempotent and preserves user hooks', () => {
   });
 });
 
-test.runIf(process.platform !== 'win32')('restores executable mode on existing shims', () => {
-  withRepository((cwd) => {
-    expect(installHooks({ cwd }).status).toBe('installed');
-    const shim = path.join(cwd, hooksPath, 'pre-commit');
-    chmodSync(shim, 0o644);
+test.runIf(process.platform !== 'win32')(
+  'restores executable mode on existing shims',
+  () => {
+    withRepository((cwd) => {
+      expect(installHooks({ cwd }).status).toBe('installed');
+      const shim = path.join(cwd, hooksPath, 'pre-commit');
+      chmodSync(shim, 0o644);
 
-    expect(installHooks({ cwd }).status).toBe('installed');
-    expect(statSync(shim).mode & 0o777).toBe(0o755);
-  });
-});
+      expect(installHooks({ cwd }).status).toBe('installed');
+      expect(statSync(shim).mode & 0o777).toBe(0o755);
+    });
+  },
+);
 
 test('repairs generated files without rewriting an unchanged hooksPath', () => {
   withRepository((cwd) => {
@@ -94,7 +116,9 @@ test('does not configure Git when writing generated files fails', () => {
       status: 'failed',
       reason: 'write-failed',
     });
-    expect(git(cwd, ['config', '--local', '--get', 'core.hooksPath']).status).toBe(1);
+    expect(
+      git(cwd, ['config', '--local', '--get', 'core.hooksPath']).status,
+    ).toBe(1);
   });
 });
 
@@ -106,7 +130,9 @@ test('reports Git configuration failures without changing hooksPath', () => {
       status: 'failed',
       reason: 'git-config-failed',
     });
-    expect(git(cwd, ['config', '--local', '--get', 'core.hooksPath']).status).toBe(1);
+    expect(
+      git(cwd, ['config', '--local', '--get', 'core.hooksPath']).status,
+    ).toBe(1);
     expect(existsSync(path.join(cwd, hooksPath, 'runner'))).toBe(true);
   });
 });
@@ -119,7 +145,9 @@ test('does not replace another Git hooks path', () => {
       status: 'skipped',
       reason: 'hooks-path-conflict',
     });
-    expect(runGit(cwd, ['config', '--local', '--get', 'core.hooksPath'])).toBe('.husky/_');
+    expect(runGit(cwd, ['config', '--local', '--get', 'core.hooksPath'])).toBe(
+      '.husky/_',
+    );
     expect(existsSync(path.join(cwd, hooksPath))).toBe(false);
   });
 });
@@ -134,7 +162,9 @@ test('does not bypass existing Git hooks', () => {
       reason: 'existing-git-hooks',
       message: 'existing Git hooks were found: pre-commit',
     });
-    expect(git(cwd, ['config', '--local', '--get', 'core.hooksPath']).status).toBe(1);
+    expect(
+      git(cwd, ['config', '--local', '--get', 'core.hooksPath']).status,
+    ).toBe(1);
     expect(readFileSync(existingHook, 'utf8')).toBe('#!/usr/bin/env sh\n');
   });
 });

@@ -5,7 +5,12 @@ declare global {
   var __rstackPluginModifierSetups: number | undefined;
   // rslint-disable-next-line no-var
   var __rstackPluginModifierContext:
-    | { cwd: string; command: string; args: readonly string[]; configFilePath: string | null }
+    | {
+        cwd: string;
+        command: string;
+        args: readonly string[];
+        configFilePath: string | null;
+      }
     | undefined;
   // rslint-disable-next-line no-var
   var __rstackPluginModifierError: boolean | undefined;
@@ -15,7 +20,8 @@ define.plugins([
   {
     name: 'config-modifiers',
     setup({ context, modifyConfig }) {
-      globalThis.__rstackPluginModifierSetups = (globalThis.__rstackPluginModifierSetups ?? 0) + 1;
+      globalThis.__rstackPluginModifierSetups =
+        (globalThis.__rstackPluginModifierSetups ?? 0) + 1;
       globalThis.__rstackPluginModifierContext = context;
       const setup = globalThis.__rstackPluginModifierSetups;
 
@@ -43,7 +49,9 @@ define.plugins([
       }));
       modifyConfig('lint', () => [{ name: `lint-${setup}` }] as never);
       modifyConfig('fmt', (config) => ({ ...config, singleQuote: true }));
-      modifyConfig('staged', () => Promise.resolve({ '*.ts': `echo staged-${setup}` }));
+      modifyConfig('staged', () =>
+        Promise.resolve({ '*.ts': `echo staged-${setup}` }),
+      );
     },
   },
 ]);

@@ -1,22 +1,41 @@
-import { useI18n, useNavigate } from '@rspress/core/runtime';
-import { Hero as BaseHero } from '@rstack-dev/doc-ui/hero';
+import { useI18n } from '@rspress/core/runtime';
+import { Link } from '@rspress/core/theme-original';
 import { useI18nUrl } from './utils';
-import './Hero.module.scss';
+import styles from './Hero.module.scss';
+
+const githubUrl = 'https://github.com/rstackjs/rstack-cli';
 
 export function Hero() {
-  const navigate = useNavigate();
   const tUrl = useI18nUrl();
   const t = useI18n<typeof import('i18n')>();
 
   return (
-    <BaseHero
-      showStars
-      onClickGetStarted={() => navigate(tUrl('/guide/quick-start'))}
-      title="Rstack CLI"
-      subTitle={t('subtitle')}
-      description={t('slogan')}
-      getStartedButtonText={t('quickStart')}
-      githubURL="https://github.com/rstackjs/rstack-cli"
-    />
+    <section className={styles.hero} aria-labelledby="home-hero-title">
+      <div className={styles.inner}>
+        <h1 id="home-hero-title" className={styles.title}>
+          <span>{t('title')}</span>
+          <span className={styles.subtitle}>{t('subtitle')}</span>
+        </h1>
+
+        <p className={styles.description}>{t('slogan')}</p>
+
+        <div className={styles.links}>
+          <Link
+            className={`${styles.link} ${styles.primaryLink}`}
+            href={tUrl('/guide/quick-start')}
+          >
+            {t('getStarted')}
+          </Link>
+          <a
+            className={`${styles.link} ${styles.secondaryLink}`}
+            href={githubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t('github')}
+          </a>
+        </div>
+      </div>
+    </section>
   );
 }

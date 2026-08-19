@@ -1,5 +1,13 @@
-import type { ConfigParams, RsbuildConfigDefinition, WatchFiles } from '@rsbuild/core';
-import { applyRstackConfigModifiers, loadRstackConfig, type Configs } from './config.ts';
+import type {
+  ConfigParams,
+  RsbuildConfigDefinition,
+  WatchFiles,
+} from '@rsbuild/core';
+import {
+  applyRstackConfigModifiers,
+  loadRstackConfig,
+  type Configs,
+} from './config.ts';
 
 const resolveRsbuildConfig = async (configs: Configs, params: ConfigParams) => {
   const appConfig = configs.app;
@@ -36,7 +44,11 @@ const loadRsbuildConfig: RsbuildConfigDefinition = async (params) => {
     dev: {
       ...config.dev,
       watchFiles: [
-        ...(watchFiles ? (Array.isArray(watchFiles) ? watchFiles : [watchFiles]) : []),
+        ...(watchFiles
+          ? Array.isArray(watchFiles)
+            ? watchFiles
+            : [watchFiles]
+          : []),
         watchConfig,
       ],
     },

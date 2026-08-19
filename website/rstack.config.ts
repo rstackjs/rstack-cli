@@ -1,18 +1,23 @@
-// Rstack configuration guide: https://rstack.rs/config
+// Configuration guide: https://rstack.rs/config
 import path from 'node:path';
 import { define } from 'rstack';
 
 const title = 'Rstack CLI';
 const description =
   'Rstack CLI brings the Rstack toolchain together with one CLI, one configuration, and one consistent workflow.';
-const descriptionZh = 'Rstack CLI 通过统一的命令行、配置和工作流整合 Rstack 工具链。';
+const descriptionZh =
+  'Rstack CLI 通过统一的命令行、配置和工作流整合 Rstack 工具链。';
 const injectLlmsHint = process.env.RSPRESS_INJECT_LLMS_HINT !== 'false';
 
 define.doc(async () => {
   const { pluginSass } = await import('@rsbuild/plugin-sass');
-  const { transformerNotationDiff, transformerNotationFocus, transformerNotationHighlight } =
-    await import('@shikijs/transformers');
-  const { pluginClientRedirects } = await import('@rspress/plugin-client-redirects');
+  const {
+    transformerNotationDiff,
+    transformerNotationFocus,
+    transformerNotationHighlight,
+  } = await import('@shikijs/transformers');
+  const { pluginClientRedirects } =
+    await import('@rspress/plugin-client-redirects');
   const { pluginSitemap } = await import('@rspress/plugin-sitemap');
   const { pluginOpenGraph } = await import('rsbuild-plugin-open-graph');
   const { pluginFontOpenSans } = await import('rspress-plugin-font-open-sans');
@@ -88,7 +93,8 @@ define.doc(async () => {
         },
       ],
       editLink: {
-        docRepoBaseUrl: 'https://github.com/rstackjs/rstack-cli/tree/main/website/docs',
+        docRepoBaseUrl:
+          'https://github.com/rstackjs/rstack-cli/tree/main/website/docs',
       },
     },
     builderConfig: {

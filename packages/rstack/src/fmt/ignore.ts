@@ -29,10 +29,14 @@ const createDefaultMatcher = (): IgnorePredicate => {
 
 const createSourceMatcher = (sources: IgnoreSource[]): IgnorePredicate => {
   const matcher = new (loadNativeBinding().IgnoreMatcher)(sources);
-  return (filePath, isDirectory = false) => matcher.isIgnored(filePath, isDirectory);
+  return (filePath, isDirectory = false) =>
+    matcher.isIgnored(filePath, isDirectory);
 };
 
-const loadIgnoreSource = async (cwd: string, ignorePath: string): Promise<IgnoreSource> => {
+const loadIgnoreSource = async (
+  cwd: string,
+  ignorePath: string,
+): Promise<IgnoreSource> => {
   const filePath = path.resolve(cwd, ignorePath);
   let patterns: string;
 

@@ -1,10 +1,17 @@
 import { expect, test } from 'rstack/test';
-import { packageJsonSource, setupFmtTest, sortedPackageJson } from './helpers.ts';
+import {
+  packageJsonSource,
+  setupFmtTest,
+  sortedPackageJson,
+} from './helpers.ts';
 
 const { projectFileExists, runFmtStdin, writeProjectFile } = setupFmtTest();
 
 test('formats stdin for the given filepath', () => {
-  const result = runFmtStdin(['--stdin-filepath', 'src/index.ts'], 'const message="hello"');
+  const result = runFmtStdin(
+    ['--stdin-filepath', 'src/index.ts'],
+    'const message="hello"',
+  );
 
   expect(result.status).toBe(0);
   expect(result.stdout).toBe('const message = "hello";\n');
@@ -31,7 +38,10 @@ define.fmt({
 `,
   );
 
-  const result = runFmtStdin(['--stdin-filepath', 'src/index.test.ts'], 'const test="test"');
+  const result = runFmtStdin(
+    ['--stdin-filepath', 'src/index.test.ts'],
+    'const test="test"',
+  );
 
   expect(result.status).toBe(0);
   expect(result.stdout).toBe("const test = 'test'\n");
@@ -47,7 +57,10 @@ define.fmt({ sortPackageJson: true });
 `,
   );
 
-  const result = runFmtStdin(['--stdin-filepath', 'package.json'], packageJsonSource);
+  const result = runFmtStdin(
+    ['--stdin-filepath', 'package.json'],
+    packageJsonSource,
+  );
 
   expect(result.status).toBe(0);
   expect(result.stdout).toBe(sortedPackageJson);
@@ -99,11 +112,16 @@ test('returns exit code 2 when no parser can be inferred for stdin', () => {
 
   expect(result.status).toBe(2);
   expect(result.stdout).toBe('');
-  expect(result.stderr).toContain('No parser could be inferred for "data.unknown".');
+  expect(result.stderr).toContain(
+    'No parser could be inferred for "data.unknown".',
+  );
 });
 
 test('ignores stdin when no parser can be inferred with --ignore-unknown', () => {
-  const result = runFmtStdin(['--stdin-filepath', 'data.unknown', '--ignore-unknown'], 'value');
+  const result = runFmtStdin(
+    ['--stdin-filepath', 'data.unknown', '--ignore-unknown'],
+    'value',
+  );
 
   expect(result.status).toBe(0);
   expect(result.stdout).toBe('');
@@ -111,7 +129,10 @@ test('ignores stdin when no parser can be inferred with --ignore-unknown', () =>
 });
 
 test('returns exit code 2 for stdin parse errors', () => {
-  const result = runFmtStdin(['--stdin-filepath', 'index.ts'], 'const value = ;');
+  const result = runFmtStdin(
+    ['--stdin-filepath', 'index.ts'],
+    'const value = ;',
+  );
 
   expect(result.status).toBe(2);
   expect(result.stdout).toBe('');
@@ -121,7 +142,10 @@ test('returns exit code 2 for stdin parse errors', () => {
 test.each(['--write', '--check', '--list-different'])(
   'returns exit code 2 for %s with --stdin-filepath',
   (option) => {
-    const result = runFmtStdin(['--stdin-filepath', 'index.ts', option], 'const value=1');
+    const result = runFmtStdin(
+      ['--stdin-filepath', 'index.ts', option],
+      'const value=1',
+    );
 
     expect(result.status).toBe(2);
     expect(result.stdout).toBe('');
@@ -132,7 +156,10 @@ test.each(['--write', '--check', '--list-different'])(
 );
 
 test('returns exit code 2 for file arguments with --stdin-filepath', () => {
-  const result = runFmtStdin(['--stdin-filepath', 'index.ts', 'src/other.ts'], 'const value=1');
+  const result = runFmtStdin(
+    ['--stdin-filepath', 'index.ts', 'src/other.ts'],
+    'const value=1',
+  );
 
   expect(result.status).toBe(2);
   expect(result.stdout).toBe('');

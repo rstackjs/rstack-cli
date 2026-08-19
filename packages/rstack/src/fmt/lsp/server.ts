@@ -9,7 +9,10 @@ import {
   type InitializeParams,
   type TextEdit,
 } from 'vscode-languageserver/node';
-import { createFmtFileResolver, type FmtFileResolver } from '../fileResolver.ts';
+import {
+  createFmtFileResolver,
+  type FmtFileResolver,
+} from '../fileResolver.ts';
 import { formatFmtSource } from '../format.ts';
 import { createIgnoreMatcher, type IgnorePredicate } from '../ignore.ts';
 import type { ResolvedFmtConfig } from '../types.ts';
@@ -67,7 +70,8 @@ const redirectConsoleToConnection = (connection: Connection): void => {
     connection.console.log(serializeConsoleArguments(args));
   console.trace = (...args: unknown[]): void => {
     const stack = new Error().stack?.replace(/(.+\n){2}/, '') ?? '';
-    const message = args.length === 0 ? 'Trace' : `Trace: ${serializeConsoleArguments(args)}`;
+    const message =
+      args.length === 0 ? 'Trace' : `Trace: ${serializeConsoleArguments(args)}`;
     connection.console.log(`${message}\n${stack}`);
   };
   console.assert = (assertion?: unknown, ...args: unknown[]): void => {
@@ -99,7 +103,9 @@ const redirectConsoleToConnection = (connection: Connection): void => {
 const resolveWorkspaceRoot = (params: InitializeParams): string | undefined => {
   const rootUri = params.workspaceFolders?.[0]?.uri ?? params.rootUri;
 
-  return (rootUri ? toFilePath(rootUri) : undefined) ?? params.rootPath ?? undefined;
+  return (
+    (rootUri ? toFilePath(rootUri) : undefined) ?? params.rootPath ?? undefined
+  );
 };
 
 /** Loads everything a formatting request needs, once per server lifetime. */
@@ -155,7 +161,10 @@ const createDocumentEdits = async (
     return [];
   }
 
-  const edit = formatted === undefined ? undefined : computeMinimalTextEdit(source, formatted);
+  const edit =
+    formatted === undefined
+      ? undefined
+      : computeMinimalTextEdit(source, formatted);
 
   return edit ? [edit] : [];
 };
@@ -198,25 +207,27 @@ const startFmtLsp = (options: RunFmtLspOptions, onExit: () => void): void => {
 
   // TODO: watch the config file and reset the session when it changes.
   const getSession = (): Promise<FmtLspSession> =>
-    (sessionPromise ??= createFmtLspSession({ ...options, root }).catch((error: unknown) => {
-      // Retry on the next request rather than caching the failure forever.
-      sessionPromise = undefined;
-      // A workspace that cannot be set up returns no edits for every document,
-      // which looks like "nothing to format" in editors that hide the server
-      // log, so it is shown to the user instead of only being logged. Repeats
-      // of the same failure stay silent so saving a file cannot spam the editor.
-      const message = `rs fmt cannot format this workspace: ${String(error)}`;
-      if (reportedSessionError !== message) {
-        reportedSessionError = message;
-        // A notification rather than `window.showErrorMessage`, which sends a
-        // request the server would then wait on for a response it does not need.
-        void connection.sendNotification(ShowMessageNotification.type, {
-          type: MessageType.Error,
-          message,
-        });
-      }
-      throw error;
-    }));
+    (sessionPromise ??= createFmtLspSession({ ...options, root }).catch(
+      (error: unknown) => {
+        // Retry on the next request rather than caching the failure forever.
+        sessionPromise = undefined;
+        // A workspace that cannot be set up returns no edits for every document,
+        // which looks like "nothing to format" in editors that hide the server
+        // log, so it is shown to the user instead of only being logged. Repeats
+        // of the same failure stay silent so saving a file cannot spam the editor.
+        const message = `rs fmt cannot format this workspace: ${String(error)}`;
+        if (reportedSessionError !== message) {
+          reportedSessionError = message;
+          // A notification rather than `window.showErrorMessage`, which sends a
+          // request the server would then wait on for a response it does not need.
+          void connection.sendNotification(ShowMessageNotification.type, {
+            type: MessageType.Error,
+            message,
+          });
+        }
+        throw error;
+      },
+    ));
 
   connection.onExit(onExit);
 
@@ -234,26 +245,30 @@ const startFmtLsp = (options: RunFmtLspOptions, onExit: () => void): void => {
     };
   });
 
-  connection.onDocumentFormatting(async ({ textDocument }): Promise<TextEdit[]> => {
-    const filePath = toFilePath(textDocument.uri);
-    if (!filePath) {
-      return [];
-    }
+  connection.onDocumentFormatting(
+    async ({ textDocument }): Promise<TextEdit[]> => {
+      const filePath = toFilePath(textDocument.uri);
+      if (!filePath) {
+        return [];
+      }
 
-    // A formatting failure must never disrupt editing; unsupported, ignored,
-    // and unparsable documents all resolve to "no edits".
-    try {
-      const session = await getSession();
+      // A formatting failure must never disrupt editing; unsupported, ignored,
+      // and unparsable documents all resolve to "no edits".
+      try {
+        const session = await getSession();
 
-      return await createDocumentEdits(
-        () => documents.get(textDocument.uri),
-        (source) => formatDocumentSource(session, filePath, source),
-      );
-    } catch (error) {
-      connection.console.error(`Failed to format "${filePath}": ${String(error)}`);
-      return [];
-    }
-  });
+        return await createDocumentEdits(
+          () => documents.get(textDocument.uri),
+          (source) => formatDocumentSource(session, filePath, source),
+        );
+      } catch (error) {
+        connection.console.error(
+          `Failed to format "${filePath}": ${String(error)}`,
+        );
+        return [];
+      }
+    },
+  );
 
   connection.listen();
 };

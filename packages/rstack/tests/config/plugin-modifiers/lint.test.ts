@@ -9,7 +9,10 @@ afterEach(() => {
 });
 
 test('initializes plugins before resolving the lint config factory', async () => {
-  state.configPath = path.join(import.meta.dirname, 'factory-order-rstack.config.ts');
+  state.configPath = path.join(
+    import.meta.dirname,
+    'factory-order-rstack.config.ts',
+  );
 
   await expect(import('../../../src/rslintConfig.ts')).resolves.toMatchObject({
     default: [{}],

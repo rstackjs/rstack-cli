@@ -21,7 +21,11 @@ const fmtCacheStateIds = {
 } as const satisfies Record<FmtCacheState, FmtCacheStateId>;
 
 type FmtCacheFileValue = string | number;
-type FmtCacheEntry = readonly [contentHash: string, optionsHash: string, state: FmtCacheState];
+type FmtCacheEntry = readonly [
+  contentHash: string,
+  optionsHash: string,
+  state: FmtCacheState,
+];
 
 interface FmtCacheFile {
   version: typeof fmtCacheVersion;
@@ -106,7 +110,8 @@ const parseCacheFile = (
   };
 };
 
-const serializeCache = (cache: FmtCacheFile): string => `${JSON.stringify(cache)}\n`;
+const serializeCache = (cache: FmtCacheFile): string =>
+  `${JSON.stringify(cache)}\n`;
 
 const isFileNotFoundError = (error: unknown): error is NodeJS.ErrnoException =>
   error instanceof Error && 'code' in error && error.code === 'ENOENT';
@@ -150,7 +155,8 @@ class FmtCacheStoreImpl implements FmtCacheStore {
     const { files, options } = this.#cache;
     const contentHash = files[offset + contentHashOffset] as string;
     const optionsHash = options[files[offset + optionsIndexOffset] as number];
-    const state = fmtCacheStates[files[offset + stateOffset] as FmtCacheStateId];
+    const state =
+      fmtCacheStates[files[offset + stateOffset] as FmtCacheStateId];
     return [contentHash, optionsHash, state];
   }
 
@@ -261,7 +267,10 @@ class FmtCacheStoreImpl implements FmtCacheStore {
   }
 }
 
-const loadFmtCacheStore = async (filePath: string, namespace: string): Promise<FmtCacheStore> => {
+const loadFmtCacheStore = async (
+  filePath: string,
+  namespace: string,
+): Promise<FmtCacheStore> => {
   const emptyCache = createEmptyCache(namespace);
 
   try {

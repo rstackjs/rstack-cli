@@ -1,6 +1,10 @@
 import type { WatchFiles } from '@rsbuild/core';
 import type { UserConfig } from '@rspress/core';
-import { applyRstackConfigModifiers, loadRstackConfig, type Configs } from './config.ts';
+import {
+  applyRstackConfigModifiers,
+  loadRstackConfig,
+  type Configs,
+} from './config.ts';
 
 const resolveRspressConfig = async (configs: Configs): Promise<UserConfig> => {
   const docConfig = configs.doc;
@@ -38,7 +42,11 @@ export default async (): Promise<UserConfig> => {
       dev: {
         ...config.builderConfig?.dev,
         watchFiles: [
-          ...(watchFiles ? (Array.isArray(watchFiles) ? watchFiles : [watchFiles]) : []),
+          ...(watchFiles
+            ? Array.isArray(watchFiles)
+              ? watchFiles
+              : [watchFiles]
+            : []),
           watchConfig,
         ],
       },

@@ -1,5 +1,5 @@
 // @ts-check
-// Rstack configuration guide: https://rstack.rs/config
+// Configuration guide: https://rstack.rs/config
 import { define } from 'rstack';
 
 define.app({
@@ -13,7 +13,13 @@ define.app({
   },
 });
 
-define.lint(({ js }) => [js.configs.recommended]);
+define.lint(({ js, rstestPlugin }) => [
+  js.configs.recommended,
+  {
+    files: ['**/*.{test,spec}.?(c|m)[jt]s?(x)'],
+    ...rstestPlugin.configs.recommended,
+  },
+]);
 
 define.fmt({
   singleQuote: true,

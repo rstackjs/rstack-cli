@@ -4,7 +4,11 @@ import { test } from '#test-helpers';
 
 const expectedText = 'define.app works';
 
-test('should build app with define.app config', async ({ prepareDist, execCli, expect }) => {
+test('should build app with define.app config', async ({
+  prepareDist,
+  execCli,
+  expect,
+}) => {
   const distPath = await prepareDist();
 
   try {

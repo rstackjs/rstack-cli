@@ -17,7 +17,11 @@ const createCacheHash = (content: string | Uint8Array): string =>
   createDigest('sha256', content, 'base64url').slice(0, cacheHashLength);
 
 /** Identifies formatter behavior shared by all cache entries in this process. */
-const cacheNamespace: string = JSON.stringify([fmtCacheVersion, RSTACK_VERSION, PRETTIER_VERSION]);
+const cacheNamespace: string = JSON.stringify([
+  fmtCacheVersion,
+  RSTACK_VERSION,
+  PRETTIER_VERSION,
+]);
 
 /** Creates project-relative POSIX cache keys without repeating path setup. */
 const createCacheKeyResolver = (rootPath: string): CacheKeyResolver => {
@@ -30,7 +34,9 @@ const createCacheKeyResolver = (rootPath: string): CacheKeyResolver => {
 };
 
 /** Hashes final per-file options and memoizes option objects shared by many files. */
-const createOptionsHasher = (pluginFingerprints?: PluginFingerprints): OptionsHasher => {
+const createOptionsHasher = (
+  pluginFingerprints?: PluginFingerprints,
+): OptionsHasher => {
   const hashes = new WeakMap<ResolvedFmtOptions, string | null>();
 
   return (options) => {
@@ -47,8 +53,13 @@ const createOptionsHasher = (pluginFingerprints?: PluginFingerprints): OptionsHa
         const fingerprints: string[] = [];
         for (const plugin of plugins) {
           const key =
-            plugin instanceof URL ? plugin.href : typeof plugin === 'string' ? plugin : undefined;
-          const fingerprint = key === undefined ? undefined : pluginFingerprints?.get(key);
+            plugin instanceof URL
+              ? plugin.href
+              : typeof plugin === 'string'
+                ? plugin
+                : undefined;
+          const fingerprint =
+            key === undefined ? undefined : pluginFingerprints?.get(key);
           if (fingerprint === undefined) {
             hashes.set(options, null);
             return undefined;

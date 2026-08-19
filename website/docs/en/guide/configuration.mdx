@@ -9,7 +9,7 @@ Rstack CLI centralizes the configuration for your project's tools in a single fi
 Create `rstack.config.ts` in the project root and call the relevant `define.*()` APIs:
 
 ```ts title="rstack.config.ts"
-// Rstack configuration guide: https://rstack.rs/config
+// Configuration guide: https://rstack.rs/config
 import { define } from 'rstack';
 
 define.app({
@@ -159,7 +159,10 @@ Defines the [Rslint configuration](https://rslint.rs/config/). Pass the configur
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
 
-define.lint(({ js, ts }) => [js.configs.recommended, ts.configs.recommendedTypeChecked]);
+define.lint(({ js, ts }) => [
+  js.configs.recommended,
+  ts.configs.recommendedTypeChecked,
+]);
 ```
 
 ### `define.fmt()` \{#define-fmt}

@@ -10,7 +10,8 @@ export const git = (
   cwd: string,
   args: string[],
   env: NodeJS.ProcessEnv = process.env,
-): SpawnSyncReturns<string> => spawnSync('git', args, { cwd, encoding: 'utf8', env });
+): SpawnSyncReturns<string> =>
+  spawnSync('git', args, { cwd, encoding: 'utf8', env });
 
 export const runGit = (cwd: string, args: string[]): string => {
   const result = git(cwd, args);
@@ -21,7 +22,9 @@ export const runGit = (cwd: string, args: string[]): string => {
 };
 
 export const withDirectory = (callback: (cwd: string) => void): void => {
-  const cwd = mkdtempSync(path.join(import.meta.dirname, 'test-temp-rstack hooks '));
+  const cwd = mkdtempSync(
+    path.join(import.meta.dirname, 'test-temp-rstack hooks '),
+  );
   const gitCeilingDirectories = process.env.GIT_CEILING_DIRECTORIES;
   // Keep Git from treating the temporary directory as part of this repository.
   process.env.GIT_CEILING_DIRECTORIES = import.meta.dirname;
@@ -55,7 +58,11 @@ const hookEnv = (cwd: string, value?: string): NodeJS.ProcessEnv => {
   return env;
 };
 
-export const writeHook = (cwd: string, content: string, directory: string = hooksDir): void => {
+export const writeHook = (
+  cwd: string,
+  content: string,
+  directory: string = hooksDir,
+): void => {
   const filePath = path.join(cwd, directory, 'pre-commit');
   mkdirSync(path.dirname(filePath), { recursive: true });
   writeFileSync(filePath, content);
@@ -67,10 +74,17 @@ export const writeInit = (cwd: string, content: string): void => {
   writeFileSync(filePath, content);
 };
 
-export const runHook = (cwd: string, value?: string): SpawnSyncReturns<string> =>
+export const runHook = (
+  cwd: string,
+  value?: string,
+): SpawnSyncReturns<string> =>
   git(cwd, ['hook', 'run', 'pre-commit'], hookEnv(cwd, value));
 
-export const runGitHook = (cwd: string, name: string, args: string[]): SpawnSyncReturns<string> =>
+export const runGitHook = (
+  cwd: string,
+  name: string,
+  args: string[],
+): SpawnSyncReturns<string> =>
   git(cwd, ['hook', 'run', name, '--', ...args], hookEnv(cwd));
 
 export const withRepository = (callback: (cwd: string) => void): void =>

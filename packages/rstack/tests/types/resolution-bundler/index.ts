@@ -24,7 +24,9 @@ import { expect as importedExpect, test as importedTest } from 'rstack/test';
 const appConfig = defineAppConfig({});
 const libConfig = defineLibConfig({});
 const lintConfig = defineLintConfig([]);
-const loadOptions: LoadRstackConfigOptions = { configFilePath: 'rstack.config.ts' };
+const loadOptions: LoadRstackConfigOptions = {
+  configFilePath: 'rstack.config.ts',
+};
 const loadedConfig: Promise<LoadedRstackConfig> = loadRstackConfig(loadOptions);
 const configs: Configs = {};
 const plugin: RstackPlugin = {
@@ -36,7 +38,11 @@ const plugin: RstackPlugin = {
     api.logger.info(api.context.command);
   },
 };
-const plugins: RstackPlugins = [plugin, false, Promise.resolve([undefined, plugin])];
+const plugins: RstackPlugins = [
+  plugin,
+  false,
+  Promise.resolve([undefined, plugin]),
+];
 const fmtConfig: FmtConfig = {};
 const stagedConfig: StagedConfig = {};
 const appConfigFromMap: RstackConfigMap['app'] = appConfig;
@@ -51,7 +57,10 @@ void createRsbuild({ config: appConfig });
 define.app(appConfig);
 define.lib(libConfig);
 define.lint(lintConfig);
-define.lint(({ js, ts }) => [js.configs.recommended, ts.configs.recommendedTypeChecked]);
+define.lint(({ js, ts }) => [
+  js.configs.recommended,
+  ts.configs.recommendedTypeChecked,
+]);
 define.doc({});
 define.test({});
 define.staged({});

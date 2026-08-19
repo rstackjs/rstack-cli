@@ -50,9 +50,14 @@ const builtInCommandNames = [
 ];
 
 const hasValidName = (name: unknown): name is string =>
-  typeof name === 'string' && name.length > 0 && name.trim() === name && !/\s/u.test(name);
+  typeof name === 'string' &&
+  name.length > 0 &&
+  name.trim() === name &&
+  !/\s/u.test(name);
 
-const flattenPlugins = async (plugins: RstackPlugins): Promise<RstackPlugin[]> => {
+const flattenPlugins = async (
+  plugins: RstackPlugins,
+): Promise<RstackPlugin[]> => {
   if (!Array.isArray(plugins)) {
     throw new Error('Invalid Rstack plugins. Expected an array.');
   }
@@ -95,7 +100,9 @@ const assertPlugin = (plugin: RstackPlugin): void => {
   }
 
   if (typeof plugin.setup !== 'function') {
-    throw new Error(`Invalid Rstack plugin "${plugin.name}". Expected a setup function.`);
+    throw new Error(
+      `Invalid Rstack plugin "${plugin.name}". Expected a setup function.`,
+    );
   }
 };
 
@@ -132,11 +139,15 @@ export const createPluginRuntime = async ({
     }
 
     if (typeof command.handler !== 'function') {
-      throw new Error(`Invalid Rstack command "${command.name}". Expected a handler function.`);
+      throw new Error(
+        `Invalid Rstack command "${command.name}". Expected a handler function.`,
+      );
     }
 
     if (reservedCommandNames.has(command.name)) {
-      throw new Error(`Rstack command "${command.name}" conflicts with a built-in command.`);
+      throw new Error(
+        `Rstack command "${command.name}" conflicts with a built-in command.`,
+      );
     }
 
     if (commands.has(command.name)) {
@@ -161,7 +172,9 @@ export const createPluginRuntime = async ({
     },
     async applyConfigModifiers(kind, config) {
       let current = config;
-      for (const modifier of configModifiers[kind] as RstackConfigModifier<typeof kind>[]) {
+      for (const modifier of configModifiers[kind] as RstackConfigModifier<
+        typeof kind
+      >[]) {
         const result = await modifier(current);
         if (result !== undefined) {
           current = result;
@@ -191,9 +204,13 @@ export const createPluginRuntime = async ({
           throw new Error(`Invalid Rstack config kind: "${String(kind)}".`);
         }
         if (typeof handler !== 'function') {
-          throw new Error(`Invalid Rstack ${kind} config modifier. Expected a function.`);
+          throw new Error(
+            `Invalid Rstack ${kind} config modifier. Expected a function.`,
+          );
         }
-        (configModifiers[kind] as RstackConfigModifier<typeof kind>[]).push(handler);
+        (configModifiers[kind] as RstackConfigModifier<typeof kind>[]).push(
+          handler,
+        );
       },
     });
   }

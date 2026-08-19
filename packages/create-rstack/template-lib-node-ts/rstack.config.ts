@@ -1,4 +1,4 @@
-// Rstack configuration guide: https://rstack.rs/config
+// Configuration guide: https://rstack.rs/config
 import { define } from 'rstack';
 
 define.lib({
@@ -6,9 +6,13 @@ define.lib({
   dts: true,
 });
 
-define.lint(({ js, ts }) => [
+define.lint(({ js, ts, rstestPlugin }) => [
   js.configs.recommended,
   ts.configs.recommendedTypeChecked,
+  {
+    files: ['**/*.{test,spec}.?(c|m)[jt]s?(x)'],
+    ...rstestPlugin.configs.recommended,
+  },
 ]);
 
 define.fmt({

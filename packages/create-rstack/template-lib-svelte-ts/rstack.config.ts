@@ -1,4 +1,4 @@
-// Rstack configuration guide: https://rstack.rs/config
+// Configuration guide: https://rstack.rs/config
 import { define } from 'rstack';
 import { svelteDtsPlugin } from './scripts/rslib-plugin-svelte-dts.ts';
 
@@ -18,9 +18,13 @@ define.lib(async () => {
   };
 });
 
-define.lint(({ js, ts }) => [
+define.lint(({ js, ts, rstestPlugin }) => [
   js.configs.recommended,
   ts.configs.recommendedTypeChecked,
+  {
+    files: ['**/*.{test,spec}.?(c|m)[jt]s?(x)'],
+    ...rstestPlugin.configs.recommended,
+  },
 ]);
 
 define.fmt({

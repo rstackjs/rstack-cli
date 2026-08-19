@@ -43,17 +43,21 @@ test('applies typed modifiers to native defaults in registration order', async (
   await expect(applyRstackConfigModifiers(loaded, 'doc', {})).resolves.toEqual({
     root: 'doc-1',
   });
-  await expect(applyRstackConfigModifiers(loaded, 'test', {})).resolves.toEqual({
-    name: 'test-1',
-    reporters: ['dot'],
-  });
-  await expect(applyRstackConfigModifiers(loaded, 'lint', [])).resolves.toEqual([
-    { name: 'lint-1' },
-  ]);
+  await expect(applyRstackConfigModifiers(loaded, 'test', {})).resolves.toEqual(
+    {
+      name: 'test-1',
+      reporters: ['dot'],
+    },
+  );
+  await expect(applyRstackConfigModifiers(loaded, 'lint', [])).resolves.toEqual(
+    [{ name: 'lint-1' }],
+  );
   await expect(applyRstackConfigModifiers(loaded, 'fmt', {})).resolves.toEqual({
     singleQuote: true,
   });
-  await expect(applyRstackConfigModifiers(loaded, 'staged', {})).resolves.toEqual({
+  await expect(
+    applyRstackConfigModifiers(loaded, 'staged', {}),
+  ).resolves.toEqual({
     '*.ts': 'echo staged-1',
   });
 });
@@ -69,10 +73,14 @@ test('initializes plugins again for each fresh config load', async () => {
   const first = await loadRstackConfig({ configFilePath });
   const second = await loadRstackConfig({ configFilePath });
 
-  await expect(applyRstackConfigModifiers(first, 'app', {})).resolves.toMatchObject({
+  await expect(
+    applyRstackConfigModifiers(first, 'app', {}),
+  ).resolves.toMatchObject({
     root: 'app-1',
   });
-  await expect(applyRstackConfigModifiers(second, 'app', {})).resolves.toMatchObject({
+  await expect(
+    applyRstackConfigModifiers(second, 'app', {}),
+  ).resolves.toMatchObject({
     root: 'app-2',
   });
   expect(globalThis.__rstackPluginModifierContext).toEqual({

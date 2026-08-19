@@ -3,13 +3,25 @@
     "en": "Quick start",
     "zh": "快速上手"
   },
+  "getStarted": {
+    "en": "Get Started",
+    "zh": "开始使用"
+  },
+  "github": {
+    "en": "GitHub",
+    "zh": "GitHub"
+  },
+  "title": {
+    "en": "Unified Toolchain for",
+    "zh": "统一工具链"
+  },
   "subtitle": {
-    "en": "The Unified JavaScript Toolchain",
-    "zh": "统一的 JavaScript 工具链"
+    "en": "Shipping JavaScript Faster",
+    "zh": "加速 JavaScript 开发"
   },
   "slogan": {
-    "en": "One CLI, one configuration, one consistent workflow",
-    "zh": "一个命令行、一份配置、一致的工作流"
+    "en": "One CLI unifies development, builds, testing, linting, and formatting across all your JavaScript projects. Powered by the Rspack ecosystem.",
+    "zh": "只需一个 CLI，即可统一所有 JavaScript 项目的开发、构建、测试、代码检查与格式化。由 Rspack 生态驱动。"
   },
   "unifiedCli": {
     "en": "One CLI",
