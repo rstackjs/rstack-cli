@@ -4,21 +4,39 @@ description: '使用推荐的迁移 Skill，将现有项目迁移到 Rstack CLI�
 
 # 迁移到 Rstack CLI \{#migrate-to-rstack-cli}
 
-迁移现有项目时，推荐使用 `migrate-to-rstack-cli` Skill。该 Skill 会分析项目，并自动将仓库中使用的 Rstack 工具及 Prettier、Husky 等受支持工具迁移到 Rstack CLI。
+迁移现有项目时，推荐使用 `migrate-to-rstack-cli` Skill。该 Skill 会分析仓库，并将其中受支持的工具（包括 Rstack 工具链、Prettier 和 Husky 等）迁移到 Rstack CLI。
 
 ## 使用迁移 Skill \{#use-the-migration-skill}
 
-首先安装该 Skill：
+### 一次性迁移 \{#migrate-in-one-pass}
+
+如需一次性迁移所有受支持的工具，请向 Coding Agent 发送以下 Prompt：
+
+```text
+运行 `npx --yes skills@latest use rstackjs/rstack-cli@migrate-to-rstack-cli`，然后按照生成的 Skill 指令将当前项目迁移到 Rstack CLI。
+```
+
+### 分批迁移 \{#migrate-in-stages}
+
+如果希望每次改动更小、更便于审查，可以按工具分批迁移。首先，将 Skill 安装到当前仓库：
 
 ```bash
 npx skills add rstackjs/rstack-cli --skill migrate-to-rstack-cli
 ```
 
-安装完成后，向 Coding Agent 发送以下 Prompt：
+然后让 Coding Agent 每次只迁移一种工具。例如，可以先迁移 Rslint：
 
 ```text
-使用 migrate-to-rstack-cli Skill 将当前项目迁移到 Rstack CLI。
+使用 migrate-to-rstack-cli Skill 将当前项目中的 Rslint 迁移到 Rstack CLI，并保持其他工具不变。
 ```
+
+审查并验证本次改动后，再迁移 Rstest：
+
+```text
+使用 migrate-to-rstack-cli Skill 将当前项目中的 Rstest 迁移到 Rstack CLI，并保持其他工具不变。
+```
+
+其余工具也可以按此方式依次迁移。
 
 ## 支持的工具 \{#supported-tools}
 
