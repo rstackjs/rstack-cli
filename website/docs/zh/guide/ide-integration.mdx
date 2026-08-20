@@ -24,23 +24,27 @@ Rstack 目前通过 [Rstack 扩展](https://github.com/rstackjs/rstack-editor) �
 ```json title=".vscode/settings.json"
 {
   "editor.defaultFormatter": "rstack.rstack",
-  "[javascript]": {
-    "editor.defaultFormatter": "rstack.rstack"
-  },
-  "[javascriptreact]": {
-    "editor.defaultFormatter": "rstack.rstack"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "rstack.rstack"
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "rstack.rstack"
-  },
   "editor.formatOnSave": true
 }
 ```
 
-其中，针对 JavaScript 和 TypeScript 的语言级配置可以避免开发者已有的格式化设置覆盖工作区默认值。
+以下语言级配置是可选的，可避免开发者已有的语言级格式化设置覆盖工作区默认值。你可以根据项目需要，只为所需的语言添加配置：
+
+```json title=".vscode/settings.json"
+{
+  "[javascript]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[javascriptreact]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[json]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[json5]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[jsonc]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[markdown]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[mdx]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[toml]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[typescript]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[typescriptreact]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[yaml]": { "editor.defaultFormatter": "rstack.rstack" }
+}
+```
 
 如需在手动保存文件时同时修复代码检查问题，可以添加：
 

@@ -24,23 +24,27 @@ To use Rstack as the default formatter and format files on save, add the followi
 ```json title=".vscode/settings.json"
 {
   "editor.defaultFormatter": "rstack.rstack",
-  "[javascript]": {
-    "editor.defaultFormatter": "rstack.rstack"
-  },
-  "[javascriptreact]": {
-    "editor.defaultFormatter": "rstack.rstack"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "rstack.rstack"
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "rstack.rstack"
-  },
   "editor.formatOnSave": true
 }
 ```
 
-The language-specific JavaScript and TypeScript settings prevent existing formatter preferences from overriding the workspace default.
+The following language-specific settings are optional. They prevent existing language-specific formatter preferences from overriding the workspace default. Add settings only for the languages your project needs:
+
+```json title=".vscode/settings.json"
+{
+  "[javascript]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[javascriptreact]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[json]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[json5]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[jsonc]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[markdown]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[mdx]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[toml]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[typescript]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[typescriptreact]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[yaml]": { "editor.defaultFormatter": "rstack.rstack" }
+}
+```
 
 To apply lint fixes when you save a file manually, add:
 
