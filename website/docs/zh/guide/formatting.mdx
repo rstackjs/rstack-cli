@@ -54,6 +54,19 @@ define.fmt({
 
 :::
 
+## 支持的语言 \{#supported-languages}
+
+`rs fmt` 支持与 [Prettier](https://prettier.io/docs/) 相同的内置语言，通常会根据文件名自动推断语言：
+
+- [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)、[JSX](https://react.github.io/jsx/)、[Flow](https://flow.org/) 和 [TypeScript](https://www.typescriptlang.org/)
+- [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)、[Less](https://lesscss.org/) 和 [SCSS](https://sass-lang.com/)
+- [HTML](https://en.wikipedia.org/wiki/HTML)、[Angular](https://angular.dev/)、[Vue](https://vuejs.org/)、[Ember/Handlebars](https://emberjs.com/)、[Lightning Web Components（LWC）](https://developer.salesforce.com/developer-centers/lightning-web-components) 和 [MJML](https://mjml.io/)
+- [JSON](https://json.org/) 和 [YAML](https://yaml.org/)
+- [GraphQL](https://graphql.org/)
+- [Markdown](https://commonmark.org/)，包括 [GFM](https://github.github.com/gfm/) 和 [MDX v1](https://mdxjs.com/)
+
+你可以通过 [Prettier 插件](#prettier-plugins)支持其他语言。
+
 ## 格式化范围 \{#formatting-scope}
 
 `rs fmt` 根据命令行中传入的路径确定格式化范围。以下输入可以组合使用：

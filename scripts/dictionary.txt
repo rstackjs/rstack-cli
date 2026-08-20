@@ -12,6 +12,7 @@ huskyrc
 indentable
 jsonline
 llms
+MJML
 napi
 noformat
 noprettier

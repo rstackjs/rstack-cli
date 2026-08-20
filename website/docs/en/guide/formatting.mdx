@@ -54,6 +54,19 @@ In addition to Prettier options and `overrides`, Rstack CLI provides two options
 
 :::
 
+## Supported languages
+
+`rs fmt` supports the same built-in languages as [Prettier](https://prettier.io/docs/) and normally infers the language from the file name:
+
+- [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript), [JSX](https://react.github.io/jsx/), [Flow](https://flow.org/), and [TypeScript](https://www.typescriptlang.org/)
+- [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS), [Less](https://lesscss.org/), and [SCSS](https://sass-lang.com/)
+- [HTML](https://en.wikipedia.org/wiki/HTML), [Angular](https://angular.dev/), [Vue](https://vuejs.org/), [Ember/Handlebars](https://emberjs.com/), [Lightning Web Components (LWC)](https://developer.salesforce.com/developer-centers/lightning-web-components), and [MJML](https://mjml.io/)
+- [JSON](https://json.org/) and [YAML](https://yaml.org/)
+- [GraphQL](https://graphql.org/)
+- [Markdown](https://commonmark.org/), including [GFM](https://github.github.com/gfm/) and [MDX v1](https://mdxjs.com/)
+
+You can add support for other languages with [Prettier plugins](#prettier-plugins).
+
 ## Formatting scope
 
 `rs fmt` determines the formatting scope from the paths passed on the command line. You can combine the following inputs:
