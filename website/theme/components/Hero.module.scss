@@ -1,7 +1,6 @@
 .hero {
   --hero-title: #111214;
-  --hero-title-muted: #747474;
-  --hero-text: #707174;
+  --hero-text: #848484;
   --hero-primary-bg: #111214;
   --hero-primary-bg-hover: #383838;
   --hero-primary-text: #fff;
@@ -23,8 +22,7 @@
 
 :global(.dark) .hero {
   --hero-title: #f5f5f5;
-  --hero-title-muted: #9a9a9a;
-  --hero-text: #a1a3a6;
+  --hero-text: #9a9a9a;
   --hero-primary-bg: #f2f2f2;
   --hero-primary-bg-hover: #fff;
   --hero-primary-text: #111214;
@@ -86,7 +84,7 @@
 }
 
 .subtitle {
-  color: var(--hero-title-muted);
+  color: var(--hero-text);
 }
 
 .description {
@@ -152,7 +150,7 @@
 
   &:hover {
     color: var(--hero-secondary-text);
-    border-color: var(--hero-title-muted);
+    border-color: var(--hero-text);
     background: var(--hero-secondary-bg-hover);
   }
 }
