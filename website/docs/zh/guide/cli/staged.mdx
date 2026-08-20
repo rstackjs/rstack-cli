@@ -96,7 +96,7 @@ rs staged --help
 import { define } from 'rstack';
 
 define.staged({
-  '*.{js,jsx,ts,tsx}': ['rs lint', 'rs fmt'],
-  '*.{json,md,mdx,css,html}': 'rs fmt',
+  '*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}': ['rs lint --fix', 'rs fmt'],
+  '*.{json,md,mdx,css,scss,less,html,yml,yaml}': 'rs fmt',
 });
 ```
