@@ -8,6 +8,7 @@ Read this reference when the project uses `@rslint/core`, `rslint.config.*`, `rs
 2. Move the old config into `define.lint`, replacing Rslint's `defineConfig()` wrapper and import. Receive `@rslint/core` exports from the factory parameter.
 3. Replace custom `--config` paths with the migrated `rstack.config.*` path.
 4. Remove `@rslint/core` only when no uncovered direct runtime API remains. Delete `rslint.config.*`.
+5. If tracked VS Code configuration recommends `rstack.rslint`, replace it with the unified `rstack.rstack` extension. Move relevant `rslint.*` settings to their current `rstack.rslint.*` equivalents according to the [Rstack extension documentation](https://github.com/rstackjs/rstack-editor/blob/main/packages/vscode/README.md). Keep `source.fixAll.rslint` unchanged.
 
 ## Config Pattern
 

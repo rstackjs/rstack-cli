@@ -14,6 +14,7 @@ Read this reference when the project uses `@rstest/core`, `@rstest/adapter-rsbui
    - `@rstest/core/importMeta` to `rstack/test/importMeta`
 6. Search for remaining direct core or adapter imports. Remove `@rstest/core` and adapter dependencies only when no direct use remains.
 7. Delete `rstest.config.*` after all behavior is represented or intentionally supplied by automatic app/library extension.
+8. If tracked VS Code configuration recommends `rstack.rstest`, replace it with the unified `rstack.rstack` extension. Move supported `rstest.*` settings to `rstack.rstest.*` according to the [Rstack extension documentation](https://github.com/rstackjs/rstack-editor/blob/main/packages/vscode/README.md); `rstest.nodeExecutable` instead becomes the shared `rstack.nodeExecutable` setting.
 
 ## Config Pattern
 
