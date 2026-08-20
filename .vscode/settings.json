@@ -15,19 +15,15 @@
   "mdx.validate.validateFileLinks": "ignore",
   "editor.defaultFormatter": "rstack.rstack",
   "js/ts.tsdk.path": "node_modules/typescript/lib",
-  "[typescript]": {
-    "editor.defaultFormatter": "rstack.rstack"
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "rstack.rstack"
-  },
-  "[mdx]": {
-    "editor.defaultFormatter": "rstack.rstack"
-  },
-  "[json]": {
-    "editor.defaultFormatter": "rstack.rstack"
-  },
-  "[jsonc]": {
-    "editor.defaultFormatter": "rstack.rstack"
-  }
+  "[javascript]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[javascriptreact]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[json]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[json5]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[jsonc]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[markdown]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[mdx]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[toml]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[typescript]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[typescriptreact]": { "editor.defaultFormatter": "rstack.rstack" },
+  "[yaml]": { "editor.defaultFormatter": "rstack.rstack" }
 }
