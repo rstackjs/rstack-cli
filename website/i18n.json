@@ -11,6 +11,10 @@
     "en": "GitHub",
     "zh": "GitHub"
   },
+  "latestRelease": {
+    "en": "Latest release",
+    "zh": "最新版本"
+  },
   "title": {
     "en": "Unified Toolchain for",
     "zh": "统一工具链"

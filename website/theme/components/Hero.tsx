@@ -7,7 +7,7 @@ import styles from './Hero.module.scss';
 const githubUrl = 'https://github.com/rstackjs/rstack-cli';
 const releasesUrl = `${githubUrl}/releases`;
 
-function ReleaseLink() {
+function ReleaseLink({ label }: { label: string }) {
   return (
     <a
       className={styles.releaseLink}
@@ -15,7 +15,7 @@ function ReleaseLink() {
       target="_blank"
       rel="noopener noreferrer"
     >
-      Latest release v{rstackPackage.version}
+      {label} v{rstackPackage.version}
     </a>
   );
 }
@@ -27,7 +27,7 @@ export function Hero() {
   return (
     <section className={styles.hero} aria-labelledby="home-hero-title">
       <div className={styles.inner}>
-        <ReleaseLink />
+        <ReleaseLink label={t('latestRelease')} />
 
         <h1 id="home-hero-title" className={styles.title}>
           <span>{t('title')}</span>
