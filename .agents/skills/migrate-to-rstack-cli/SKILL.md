@@ -34,7 +34,11 @@ Read every matching reference before editing. Load only the tools present in the
 
 Rsbuild, Rslib, Rstest, Rslint, and Prettier remain transitive `rstack` dependencies. Remove obsolete direct dependencies and imports from the migrated scope; do not expect their names to disappear from the lockfile.
 
-## Configuration Rules
+## Configuration
+
+### Config Files
+
+Treat each workspace or config root independently. A monorepo may need multiple Rstack config files when commands run from different package directories; validate config discovery from each directory.
 
 Use one of the default names: `rstack.config.ts`, `.js`, `.mts`, or `.mjs`.
 
@@ -52,6 +56,8 @@ define.test({
   // Rstest config
 });
 ```
+
+### Modules and Imports
 
 Use dynamic imports in async config functions only for external plugins, presets, and other dependencies:
 
