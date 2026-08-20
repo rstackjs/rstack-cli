@@ -4,7 +4,11 @@ import type {
   RslibConfig,
   RslibConfigDefinition,
 } from '@rslib/core';
-import { loadRstackConfig, type Configs } from './config.ts';
+import {
+  applyRstackConfigModifiers,
+  loadRstackConfig,
+  type Configs,
+} from './config.ts';
 
 const resolveRslibConfig = async (
   configs: Configs,
@@ -21,16 +25,20 @@ const resolveRslibConfig = async (
 };
 
 const loadRslibConfig = (async (params: ConfigParams) => {
-  const { configs, filePath, dependencies } = await loadRstackConfig();
-  const config = await resolveRslibConfig(configs, params);
+  const loaded = await loadRstackConfig();
+  const config = await applyRstackConfigModifiers(
+    loaded,
+    'lib',
+    await resolveRslibConfig(loaded.configs, params),
+  );
 
-  if (!filePath) {
+  if (!loaded.filePath) {
     return config;
   }
 
   const watchFiles = config.dev?.watchFiles;
   const watchConfig: WatchFiles = {
-    paths: [filePath, ...dependencies],
+    paths: [loaded.filePath, ...loaded.dependencies],
     type: 'restart',
   };
 

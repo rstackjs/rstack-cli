@@ -1,6 +1,10 @@
 import type { WatchFiles } from '@rsbuild/core';
 import type { UserConfig } from '@rspress/core';
-import { loadRstackConfig, type Configs } from './config.ts';
+import {
+  applyRstackConfigModifiers,
+  loadRstackConfig,
+  type Configs,
+} from './config.ts';
 
 const resolveRspressConfig = async (configs: Configs): Promise<UserConfig> => {
   const docConfig = configs.doc;
@@ -14,16 +18,20 @@ const resolveRspressConfig = async (configs: Configs): Promise<UserConfig> => {
 };
 
 export default async (): Promise<UserConfig> => {
-  const { configs, filePath, dependencies } = await loadRstackConfig();
-  const config = await resolveRspressConfig(configs);
+  const loaded = await loadRstackConfig();
+  const config = await applyRstackConfigModifiers(
+    loaded,
+    'doc',
+    await resolveRspressConfig(loaded.configs),
+  );
 
-  if (!filePath) {
+  if (!loaded.filePath) {
     return config;
   }
 
   const watchFiles = config.builderConfig?.dev?.watchFiles;
   const watchConfig: WatchFiles = {
-    paths: [filePath, ...dependencies],
+    paths: [loaded.filePath, ...loaded.dependencies],
     type: 'restart',
   };
 

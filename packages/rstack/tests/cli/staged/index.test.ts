@@ -1,7 +1,10 @@
 import lintStaged from 'lint-staged';
-import { afterEach, beforeEach, rs } from 'rstack/test';
+import { afterEach, beforeEach, expect, rs } from 'rstack/test';
 import { normalizeHelpOutput, test } from '#test-helpers';
-import { loadRstackConfig } from '../../../src/config.ts';
+import {
+  getRstackPluginRuntime,
+  loadRstackConfig,
+} from '../../../src/config.ts';
 import { runStagedCLI, type StagedConfig } from '../../../src/staged.ts';
 
 rs.mock('lint-staged');
@@ -9,6 +12,7 @@ rs.mock('../../../src/config.ts');
 
 const mocks = {
   lintStaged: rs.mocked(lintStaged),
+  getRstackPluginRuntime: rs.mocked(getRstackPluginRuntime),
   loadRstackConfig: rs.mocked(loadRstackConfig),
 };
 
@@ -16,15 +20,58 @@ const stagedConfig: StagedConfig = {
   '*.txt': 'echo test',
 };
 
+const noStagedModifiers = {
+  hasConfigModifier: () => false,
+  applyConfigModifiers: (_kind: 'staged', config: StagedConfig) =>
+    Promise.resolve(config),
+};
+
 beforeEach(() => {
   delete process.env.RSTACK_STAGED;
   rs.resetAllMocks();
   mocks.lintStaged.mockResolvedValue(true);
+  mocks.getRstackPluginRuntime.mockResolvedValue(noStagedModifiers as never);
   mocks.loadRstackConfig.mockResolvedValue({
     configs: { staged: stagedConfig },
+    plugins: [],
     filePath: null,
     dependencies: [],
   });
+});
+
+test('should preserve the missing staged config error when no plugin contributes one', async () => {
+  mocks.loadRstackConfig.mockResolvedValue({
+    configs: {},
+    plugins: [],
+    filePath: null,
+    dependencies: [],
+  });
+
+  await expect(runStagedCLI([])).rejects.toThrow(
+    'No define.staged config found',
+  );
+});
+
+test('should accept a staged config supplied only by a plugin modifier', async ({
+  expect,
+}) => {
+  const modifierConfig: StagedConfig = { '*.ts': 'echo plugin' };
+  mocks.loadRstackConfig.mockResolvedValue({
+    configs: {},
+    plugins: [],
+    filePath: null,
+    dependencies: [],
+  });
+  mocks.getRstackPluginRuntime.mockResolvedValue({
+    hasConfigModifier: () => true,
+    applyConfigModifiers: () => Promise.resolve(modifierConfig),
+  } as never);
+
+  await runStagedCLI([]);
+
+  expect(mocks.lintStaged).toHaveBeenCalledWith(
+    expect.objectContaining({ config: modifierConfig }),
+  );
 });
 
 afterEach(() => {
