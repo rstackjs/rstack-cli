@@ -6,6 +6,7 @@ dirents
 editmsg
 errexit
 esac
+esbenp
 extglob
 fnames
 huskyrc

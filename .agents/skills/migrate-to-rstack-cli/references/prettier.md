@@ -6,14 +6,15 @@ Read this reference when the project uses the `prettier` CLI or API, `package.js
 
 ## Steps
 
-1. Inventory formatting commands and inputs, Prettier options and overrides, ignore rules, `.editorconfig`, plugins, package.json sorting, and programmatic API calls.
+1. Inventory formatting commands and inputs, Prettier options and overrides, ignore rules, `.editorconfig`, plugins, package.json sorting, programmatic API calls, and tracked VS Code settings.
 2. Move Prettier options and overrides into `define.fmt` in `rstack.config.*`.
 3. Move `.prettierignore` or custom `--ignore-path` rules into `ignorePatterns`. Rebase patterns from each ignore file's directory to the Rstack configuration directory when they differ, preserving rule order and negations. Translate relevant `.editorconfig` values into explicit formatting options.
 4. Replace Prettier CLI commands with the matching `rs fmt` commands and preserve their file or glob arguments.
 5. Reference plugins by package name, file path, or URL. Do not pass imported plugin objects, and keep each plugin package as a direct dependency.
 6. When replacing `prettier-plugin-packagejson`, enable `sortPackageJson` and preserve the original manifest paths.
-7. Delete old config and ignore files only after their behavior is represented in `define.fmt`.
-8. Remove direct dependencies only when no script, config, API call, plugin peer requirement, or other tool still needs them.
+7. If tracked VS Code configuration recommends `esbenp.prettier-vscode` or selects it with `editor.defaultFormatter`, replace it with `rstack.rstack` for scopes migrated to `rs fmt`, and move supported `prettier.*` formatting options into `define.fmt`. Preserve `editor.formatOnSave`, remove `source.fixAll.prettier` when no remaining scope uses it, and keep the Prettier extension for any scope that still does.
+8. Delete old config and ignore files only after their behavior is represented in `define.fmt`.
+9. Remove direct dependencies only when no script, config, API call, plugin peer requirement, or other tool still needs them.
 
 `rs fmt` ignores `package-lock.json` and `pnpm-lock.yaml` by default. Drop redundant ignore entries during migration, but keep intentional negations.
 
