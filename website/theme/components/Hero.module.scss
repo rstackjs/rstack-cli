@@ -47,7 +47,7 @@
 .title {
   margin: 0;
   color: var(--hero-title);
-  font-size: clamp(3rem, 4.5vw, 4rem);
+  font-size: clamp(3rem, 7vw, 4rem);
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.055em;
@@ -66,7 +66,7 @@
   max-width: 42rem;
   margin: clamp(2.5rem, 5vh, 3.75rem) 0 0;
   color: var(--hero-text);
-  font-size: clamp(1rem, 1.25vw, 1.25rem);
+  font-size: clamp(1rem, 2vw, 1.25rem);
   font-weight: 400;
   line-height: 1.5;
   letter-spacing: -0.02em;
@@ -143,7 +143,7 @@
   }
 
   .description {
-    max-width: 28rem;
+    max-width: 30rem;
     margin-top: 2rem;
     font-size: 0.9375rem;
     line-height: 1.55;
