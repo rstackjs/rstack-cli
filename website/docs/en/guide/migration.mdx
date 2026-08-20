@@ -4,21 +4,39 @@ description: 'Migrate an existing project to Rstack CLI with the recommended mig
 
 # Migrate to Rstack CLI
 
-To migrate an existing project, we recommend using the `migrate-to-rstack-cli` Skill. It inspects the project and automatically migrates supported tools used in the repository—including Rstack tools, Prettier, and Husky—to Rstack CLI.
+To migrate an existing project, we recommend using the `migrate-to-rstack-cli` Skill. It inspects the repository and migrates supported tooling—including the Rstack toolchain, Prettier, and Husky—to Rstack CLI.
 
 ## Use the migration skill
 
-First, install the Skill:
+### Migrate in one pass
+
+To migrate all supported tools in one pass, send this prompt to your coding agent:
+
+```text
+Run `npx --yes skills@latest use rstackjs/rstack-cli@migrate-to-rstack-cli` and follow the generated Skill instructions to migrate this project to Rstack CLI.
+```
+
+### Migrate in stages
+
+If you want to keep each set of changes small and easy to review, migrate one tool at a time. Start by installing the Skill in your repository:
 
 ```bash
 npx skills add rstackjs/rstack-cli --skill migrate-to-rstack-cli
 ```
 
-Then ask your coding agent to perform the migration with this prompt:
+Then ask your coding agent to migrate a single tool. For example, start with Rslint:
 
 ```text
-Use the migrate-to-rstack-cli Skill to migrate this project to Rstack CLI.
+Use the migrate-to-rstack-cli Skill to migrate Rslint in this project to Rstack CLI, leaving all other tools unchanged.
 ```
+
+Once you have reviewed and validated the changes, move on to Rstest:
+
+```text
+Use the migrate-to-rstack-cli Skill to migrate Rstest in this project to Rstack CLI, leaving all other tools unchanged.
+```
+
+Repeat this process for each remaining tool.
 
 ## Supported tools
 
