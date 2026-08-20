@@ -6,7 +6,6 @@ resolver = "2"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/rstackjs/rstack-cli"
-rust-version = "1.88"
 
 [workspace.dependencies]
 ignore = { version = "0.4.33", default-features = false }
