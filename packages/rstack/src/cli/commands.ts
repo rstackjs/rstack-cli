@@ -1,5 +1,6 @@
 import { join, resolve } from 'node:path';
-import { getConfigState } from '../config.ts';
+import { pathToFileURL } from 'node:url';
+import { getConfigState, type LoadedRstackConfig } from '../config.ts';
 import { insertConfigArg, parseArgs, parseCliArgs } from './args.ts';
 import { hasHelpFlag, printCommandHelp } from './help.ts';
 
@@ -138,6 +139,8 @@ async function runRspressCLI(args: string[]): Promise<void> {
   }
 }
 
+const RSLINT_CONFIG_PATH = join(import.meta.dirname, 'rslintConfig.js');
+
 async function runRslintCLI(args: string[]): Promise<void> {
   if (hasHelpFlag(args)) {
     return printCommandHelp('lint');
@@ -146,16 +149,22 @@ async function runRslintCLI(args: string[]): Promise<void> {
   const argv = [
     process.execPath,
     'rslint',
-    ...insertConfigArg(
-      args,
-      '--config',
-      join(import.meta.dirname, 'rslintConfig.js'),
-    ),
+    ...insertConfigArg(args, '--config', RSLINT_CONFIG_PATH),
   ];
 
   const { runCLI } = await import('@rslint/core');
   await runCLI({ argv });
 }
+
+const getLoadedRslintRstackConfig = async (): Promise<LoadedRstackConfig> => {
+  // Rslint loads its one-shot config through Node's module cache. Import the
+  // same URL to read the Rstack config exported for the following fmt phase.
+  const configModule = (await import(
+    pathToFileURL(RSLINT_CONFIG_PATH).href
+  )) as typeof import('../rslintConfig.ts');
+
+  return configModule.loadedConfig;
+};
 
 async function runCheckCLI(args: string[]): Promise<void> {
   const { values } = parseArgs({
@@ -177,11 +186,12 @@ async function runCheckCLI(args: string[]): Promise<void> {
     return;
   }
 
+  const loadedConfig = await getLoadedRslintRstackConfig();
   const { runFmtCLI } = await import(
     /* rspackChunkName: 'fmt' */
     '../fmt/cli.ts'
   );
-  await runFmtCLI(['--check']);
+  await runFmtCLI(['--check'], { loadedConfig });
 }
 
 export async function setupCommands(): Promise<void> {
