@@ -12,7 +12,7 @@ description: '使用推荐的迁移 Skill，将现有项目迁移到 Rstack CLI�
 
 如需一次性迁移所有受支持的工具，请向 Coding Agent 发送以下 Prompt：
 
-```text
+```text wrapCode
 运行 `npx --yes skills@latest use rstackjs/rstack-cli@migrate-to-rstack-cli`，然后按照生成的 Skill 指令将当前项目迁移到 Rstack CLI。
 ```
 
@@ -26,14 +26,14 @@ npx skills add rstackjs/rstack-cli --skill migrate-to-rstack-cli
 
 然后让 Coding Agent 每次只迁移一种工具。例如，可以先迁移 Rslint：
 
-```text
-使用 migrate-to-rstack-cli Skill 将当前项目中的 Rslint 迁移到 Rstack CLI，并保持其他工具不变。
+```text wrapCode
+使用 migrate-to-rstack-cli Skill 将 Rslint 迁移到 Rstack CLI，并保持其他工具不变。
 ```
 
 审查并验证本次改动后，再迁移 Rstest：
 
-```text
-使用 migrate-to-rstack-cli Skill 将当前项目中的 Rstest 迁移到 Rstack CLI，并保持其他工具不变。
+```text wrapCode
+使用 migrate-to-rstack-cli Skill 将 Rstest 迁移到 Rstack CLI，并保持其他工具不变。
 ```
 
 其余工具也可以按此方式依次迁移。
