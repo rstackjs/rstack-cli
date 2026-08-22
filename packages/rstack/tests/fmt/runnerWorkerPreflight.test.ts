@@ -68,12 +68,13 @@ test('does not start the worker pool when every parser result is cached as unsup
   });
 });
 
-test('does not start the worker pool when only one file remains pending', async () => {
+test('rechecks a path-only unsupported entry on the main thread', async () => {
   await withTempProject(async (rootPath) => {
     const { cache, file } = await createCachedUnsupportedFile(
       rootPath,
       'script',
     );
+    writeProjectFile(rootPath, 'script', '#!/usr/bin/env node\nconst value=1');
 
     await expect(
       runFmtFiles({
@@ -82,9 +83,9 @@ test('does not start the worker pool when only one file remains pending', async 
         cache,
       }),
     ).resolves.toEqual({
-      exitCode: 2,
-      files: [],
-      processedFileCount: 0,
+      exitCode: 1,
+      files: [{ path: file.path, status: 'different' }],
+      processedFileCount: 1,
     });
     expect(mocks.workerPoolCalls).toEqual([]);
   });
