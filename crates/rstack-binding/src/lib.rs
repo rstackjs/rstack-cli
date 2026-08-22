@@ -44,6 +44,75 @@ impl IgnoreMatcher {
     pub fn is_ignored(&mut self, file_path: String, is_directory: bool) -> bool {
         self.inner.is_ignored(Path::new(&file_path), is_directory)
     }
+
+    /// Matches children with nonzero candidate flags and returns one byte per input name.
+    #[napi]
+    pub fn is_ignored_batch(
+        &mut self,
+        parent_path: String,
+        names: Vec<String>,
+        directory_flags: Uint8Array,
+        candidate_flags: Uint8Array,
+    ) -> napi::Result<Uint8Array> {
+        if names.len() != directory_flags.len() {
+            return Err(Error::new(
+                Status::InvalidArg,
+                "Name and directory flag counts must match.",
+            ));
+        }
+        if names.len() != candidate_flags.len() {
+            return Err(Error::new(
+                Status::InvalidArg,
+                "Name and candidate flag counts must match.",
+            ));
+        }
+
+        Ok(self
+            .inner
+            .is_ignored_batch(
+                Path::new(&parent_path),
+                &names,
+                directory_flags.as_ref(),
+                candidate_flags.as_ref(),
+            )
+            .into())
+    }
+
+    /// Matches up to 32 candidate-selected children and returns an ignored-entry bit mask.
+    #[napi]
+    pub fn is_ignored_batch_mask(
+        &mut self,
+        parent_path: String,
+        names: Vec<String>,
+        directory_mask: u32,
+        candidate_mask: u32,
+    ) -> napi::Result<u32> {
+        if names.len() > u32::BITS as usize {
+            return Err(Error::new(
+                Status::InvalidArg,
+                "A bit-mask batch cannot contain more than 32 names.",
+            ));
+        }
+
+        Ok(self.inner.is_ignored_batch_mask(
+            Path::new(&parent_path),
+            &names,
+            directory_mask,
+            candidate_mask,
+        ))
+    }
+
+    /// Matches a single child without constructing an intermediate names array.
+    #[napi]
+    pub fn is_ignored_child(
+        &mut self,
+        parent_path: String,
+        name: String,
+        is_directory: bool,
+    ) -> bool {
+        self.inner
+            .is_ignored_child(Path::new(&parent_path), &name, is_directory)
+    }
 }
 
 /// JavaScript-facing hierarchy for repository `.gitignore` files.
