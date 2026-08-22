@@ -260,6 +260,29 @@ const isTypeCastComment = (comment: PrettierComment): boolean =>
   comment.value.startsWith('*') &&
   /@(?:type|satisfies)\b/.test(comment.value);
 
+/**
+ * Returns the greatest value less than or equal to `target` from an ascending
+ * array, or `undefined` when no such value exists.
+ */
+const findLastAtOrBefore = (
+  sortedValues: number[],
+  target: number,
+): number | undefined => {
+  let lower = 0;
+  let upper = sortedValues.length;
+
+  while (lower < upper) {
+    const middle = lower + Math.floor((upper - lower) / 2);
+    if (sortedValues[middle] <= target) {
+      lower = middle + 1;
+    } else {
+      upper = middle;
+    }
+  }
+
+  return sortedValues[lower - 1];
+};
+
 type VisitOptions = {
   onEnter?: (node: AstNode) => AstNode | undefined;
   onLeave?: (node: AstNode) => AstNode | undefined;
@@ -362,12 +385,14 @@ const postprocess = (
           const expression = asAstNode(node.expression);
           const start = locStart(node);
 
+          // Yuku comments are in source order, so these end offsets are sorted.
           typeCastCommentEnds ??= comments
             .filter(isTypeCastComment)
             .map((comment) => locEnd(comment));
 
-          const previousCommentEnd = typeCastCommentEnds.findLast(
-            (end) => end <= start,
+          const previousCommentEnd = findLastAtOrBefore(
+            typeCastCommentEnds,
+            start,
           );
           const shouldKeepParentheses =
             previousCommentEnd !== undefined &&
