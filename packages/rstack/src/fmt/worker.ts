@@ -16,8 +16,8 @@ const hashContent = (content: string | Uint8Array): string =>
   hash('sha256', content, 'base64url').slice(0, 16);
 
 /**
- * Use synchronous direct I/O inside the dedicated worker to avoid libuv
- * scheduling overhead. This prioritizes throughput over crash-safe replacement.
+ * Use synchronous direct I/O in workers and the one-file main-thread path to avoid
+ * libuv scheduling overhead. This prioritizes throughput over crash-safe replacement.
  */
 const formatFile = async ({
   file,

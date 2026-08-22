@@ -68,7 +68,7 @@ test('does not start the worker pool when every parser result is cached as unsup
   });
 });
 
-test('starts the worker pool for a path-only unsupported entry without an extension', async () => {
+test('does not start the worker pool when only one file remains pending', async () => {
   await withTempProject(async (rootPath) => {
     const { cache, file } = await createCachedUnsupportedFile(
       rootPath,
@@ -81,7 +81,11 @@ test('starts the worker pool for a path-only unsupported entry without an extens
         mode: 'check',
         cache,
       }),
-    ).rejects.toThrow('worker startup failed');
-    expect(mocks.workerPoolCalls).toEqual([[1, undefined]]);
+    ).resolves.toEqual({
+      exitCode: 2,
+      files: [],
+      processedFileCount: 0,
+    });
+    expect(mocks.workerPoolCalls).toEqual([]);
   });
 });
