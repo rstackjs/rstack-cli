@@ -3,7 +3,7 @@ import { performance } from 'node:perf_hooks';
 import { color, logger } from 'rslog';
 import { parseArgs } from '../cli/args.ts';
 import { printCommandHelp } from '../cli/help.ts';
-import { loadRstackConfig } from '../config.ts';
+import { loadRstackConfig, type LoadedRstackConfig } from '../config.ts';
 import { ensureProjectCacheDir } from '../projectCache.ts';
 import { fmtCacheFileName } from './cacheStore.ts';
 import { resolveFmtConfig } from './config.ts';
@@ -28,6 +28,11 @@ interface ParsedFmtCLIArgs {
   /** Serve formatting over the Language Server Protocol instead of exiting. */
   lsp: boolean;
 }
+
+type RunFmtCLIOptions = {
+  /** Rstack config already loaded by the lint phase of `rs check`. */
+  loadedConfig?: LoadedRstackConfig;
+};
 
 const parseMaxWorkers = (value: string | undefined): number | undefined => {
   if (value === undefined) {
@@ -255,8 +260,12 @@ const logFmtResult = (
   }
 };
 
-const loadFmtConfig = async (cwd: string): Promise<ResolvedFmtConfig> => {
-  const { configs, filePath } = await loadRstackConfig({ cwd });
+const loadFmtConfig = async (
+  cwd: string,
+  loadedConfig?: LoadedRstackConfig,
+): Promise<ResolvedFmtConfig> => {
+  const { configs, filePath } =
+    loadedConfig ?? (await loadRstackConfig({ cwd }));
 
   return resolveFmtConfig({
     definition: configs.fmt,
@@ -265,7 +274,10 @@ const loadFmtConfig = async (cwd: string): Promise<ResolvedFmtConfig> => {
   });
 };
 
-const runFmtCLI = async (args: string[]): Promise<void> => {
+const runFmtCLI = async (
+  args: string[],
+  { loadedConfig }: RunFmtCLIOptions = {},
+): Promise<void> => {
   const cwd = process.cwd();
   const startTime = performance.now();
 
@@ -337,7 +349,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       }
     }
 
-    const config = await loadFmtConfig(cwd);
+    const config = await loadFmtConfig(cwd, loadedConfig);
     const files = await discoverFmtFiles({
       cwd,
       patterns,
