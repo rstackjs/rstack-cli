@@ -22,6 +22,12 @@ export declare class IgnoreMatcher {
   constructor(sources: Array<IgnoreSource>)
   /** Returns whether a file or directory is ignored by any source. */
   isIgnored(filePath: string, isDirectory: boolean): boolean
+  /** Matches children with nonzero candidate flags and returns one byte per input name. */
+  isIgnoredBatch(parentPath: string, names: Array<string>, directoryFlags: Uint8Array, candidateFlags: Uint8Array): Uint8Array
+  /** Matches up to 32 candidate-selected children and returns an ignored-entry bit mask. */
+  isIgnoredBatchMask(parentPath: string, names: Array<string>, directoryMask: number, candidateMask: number): number
+  /** Matches a single child without constructing an intermediate names array. */
+  isIgnoredChild(parentPath: string, name: string, isDirectory: boolean): boolean
 }
 
 /** A Gitignore-compatible pattern source received from JavaScript. */

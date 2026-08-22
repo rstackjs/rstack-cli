@@ -66,6 +66,73 @@ impl IgnoreMatcher {
             .iter_mut()
             .any(|source| source.is_ignored(file_path, is_directory))
     }
+
+    /// Matches children with nonzero candidate flags and returns one byte per input name.
+    pub fn is_ignored_batch(
+        &mut self,
+        parent_path: &Path,
+        names: &[String],
+        directory_flags: &[u8],
+        candidate_flags: &[u8],
+    ) -> Vec<u8> {
+        debug_assert_eq!(names.len(), directory_flags.len());
+        debug_assert_eq!(names.len(), candidate_flags.len());
+
+        let mut ignored = vec![0; names.len()];
+        let mut remaining = candidate_flags.iter().filter(|flag| **flag != 0).count();
+
+        for source in &mut self.sources {
+            if remaining == 0 {
+                break;
+            }
+
+            remaining -= source.mark_ignored_batch(
+                parent_path,
+                names,
+                directory_flags,
+                candidate_flags,
+                &mut ignored,
+            );
+        }
+
+        ignored
+    }
+
+    /// Matches up to 32 candidate-selected children and returns an ignored-entry bit mask.
+    pub fn is_ignored_batch_mask(
+        &mut self,
+        parent_path: &Path,
+        names: &[String],
+        directory_mask: u32,
+        candidate_mask: u32,
+    ) -> u32 {
+        debug_assert!(names.len() <= u32::BITS as usize);
+
+        let valid_mask = if names.len() == u32::BITS as usize {
+            u32::MAX
+        } else {
+            (1 << names.len()) - 1
+        };
+        let candidate_mask = candidate_mask & valid_mask;
+        let mut ignored_mask = 0;
+
+        for source in &mut self.sources {
+            let remaining_mask = candidate_mask & !ignored_mask;
+            if remaining_mask == 0 {
+                break;
+            }
+
+            ignored_mask |=
+                source.ignored_batch_mask(parent_path, names, directory_mask, remaining_mask);
+        }
+
+        ignored_mask
+    }
+
+    /// Matches one child without constructing an intermediate names array.
+    pub fn is_ignored_child(&mut self, parent_path: &Path, name: &str, is_directory: bool) -> bool {
+        self.is_ignored(&parent_path.join(name), is_directory)
+    }
 }
 
 /// A hierarchy of repository `.gitignore` files keyed by their root-relative directories.
@@ -328,11 +395,84 @@ impl SourceMatcher {
 
     fn is_ignored(&mut self, file_path: &Path, is_directory: bool) -> bool {
         let relative_path = self.relative_path(file_path);
+        self.is_relative_path_ignored(relative_path.as_ref(), is_directory)
+    }
+
+    fn mark_ignored_batch(
+        &mut self,
+        parent_path: &Path,
+        names: &[String],
+        directory_flags: &[u8],
+        candidate_flags: &[u8],
+        ignored: &mut [u8],
+    ) -> usize {
+        let relative_parent = self.relative_path(parent_path);
+        let name_capacity = names.iter().map(String::len).max().unwrap_or(0);
+        let mut relative_path = PathBuf::with_capacity(
+            relative_parent.as_os_str().len()
+                + usize::from(!relative_parent.as_os_str().is_empty())
+                + name_capacity,
+        );
+        let mut matched = 0;
+
+        for (index, name) in names.iter().enumerate() {
+            if candidate_flags[index] == 0 || ignored[index] != 0 {
+                continue;
+            }
+
+            relative_path.clear();
+            relative_path.push(relative_parent.as_ref());
+            relative_path.push(name);
+            if self.is_relative_path_ignored(&relative_path, directory_flags[index] != 0) {
+                ignored[index] = 1;
+                matched += 1;
+            }
+        }
+
+        matched
+    }
+
+    fn ignored_batch_mask(
+        &mut self,
+        parent_path: &Path,
+        names: &[String],
+        directory_mask: u32,
+        candidate_mask: u32,
+    ) -> u32 {
+        debug_assert_ne!(candidate_mask, 0);
+
+        let relative_parent = self.relative_path(parent_path);
+        let name_capacity = names[candidate_mask.trailing_zeros() as usize].len();
+        let mut relative_path = PathBuf::with_capacity(
+            relative_parent.as_os_str().len()
+                + usize::from(!relative_parent.as_os_str().is_empty())
+                + name_capacity,
+        );
+        let mut ignored_mask = 0;
+        let mut remaining_mask = candidate_mask;
+
+        while remaining_mask != 0 {
+            let index = remaining_mask.trailing_zeros() as usize;
+            let entry_mask = 1_u32 << index;
+            remaining_mask &= remaining_mask - 1;
+
+            relative_path.clear();
+            relative_path.push(relative_parent.as_ref());
+            relative_path.push(&names[index]);
+            if self.is_relative_path_ignored(&relative_path, directory_mask & entry_mask != 0) {
+                ignored_mask |= entry_mask;
+            }
+        }
+
+        ignored_mask
+    }
+
+    fn is_relative_path_ignored(&mut self, relative_path: &Path, is_directory: bool) -> bool {
         if relative_path.as_os_str().is_empty() {
             return false;
         }
 
-        let relative_path = to_posix_path(&relative_path);
+        let relative_path = to_posix_path(relative_path);
         if is_directory {
             return self.is_directory_ignored(&relative_path);
         }
@@ -421,6 +561,73 @@ mod tests {
         assert!(matcher.is_ignored(Path::new("project/keep.js"), false));
         assert!(matcher.is_ignored(Path::new("project/drop.js"), false));
         assert!(!matcher.is_ignored(Path::new("project/keep.ts"), false));
+    }
+
+    #[test]
+    fn matches_config_batches_with_independent_sources_and_candidates() {
+        let mut matcher = IgnoreMatcher::new([
+            IgnoreSource::new("project", "*.js\n!keep.js\ndist/"),
+            IgnoreSource::new("project", "keep.js"),
+        ])
+        .unwrap();
+        let names = vec![
+            "drop.js".into(),
+            "keep.js".into(),
+            "keep.ts".into(),
+            "dist".into(),
+            "skipped.js".into(),
+        ];
+
+        assert_eq!(
+            matcher.is_ignored_batch(
+                Path::new("project"),
+                &names,
+                &[0, 0, 0, 1, 0],
+                &[1, 1, 1, 1, 0],
+            ),
+            vec![1, 1, 0, 1, 0]
+        );
+        assert_eq!(
+            matcher.is_ignored_batch_mask(Path::new("project"), &names, 0b01000, 0b01111),
+            0b01011
+        );
+        assert!(matcher.is_ignored_child(Path::new("project"), "drop.js", false));
+        assert!(!matcher.is_ignored_child(Path::new("project"), "keep.ts", false));
+    }
+
+    #[test]
+    fn matches_config_batches_outside_a_source_root() {
+        let mut matcher =
+            IgnoreMatcher::new([IgnoreSource::new("project/config", "../generated/*.js")]).unwrap();
+        let names = vec!["output.js".into(), "output.ts".into()];
+
+        assert_eq!(
+            matcher.is_ignored_batch(Path::new("project/generated"), &names, &[0, 0], &[1, 1],),
+            vec![1, 0]
+        );
+        assert_eq!(
+            matcher.is_ignored_batch_mask(Path::new("project/generated"), &names, 0, 0b11,),
+            0b01
+        );
+    }
+
+    #[test]
+    fn matches_sparse_config_batch_masks_and_supports_the_high_bit() {
+        let mut matcher = IgnoreMatcher::new([
+            IgnoreSource::new("project", "*.js"),
+            IgnoreSource::new("project", "*.css"),
+        ])
+        .unwrap();
+        let mut names = vec!["skipped.js".into(); 32];
+        names[3] = "keep.ts".into();
+        names[17] = "drop.js".into();
+        names[31] = "drop.css".into();
+        let candidate_mask = (1_u32 << 3) | (1_u32 << 17) | (1_u32 << 31);
+
+        assert_eq!(
+            matcher.is_ignored_batch_mask(Path::new("project"), &names, 0, candidate_mask),
+            (1_u32 << 17) | (1_u32 << 31)
+        );
     }
 
     #[test]
