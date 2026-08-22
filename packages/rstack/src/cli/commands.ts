@@ -156,7 +156,7 @@ async function runRslintCLI(args: string[]): Promise<void> {
   await runCLI({ argv });
 }
 
-const getLoadedRslintRstackConfig = async (): Promise<LoadedRstackConfig> => {
+const getLoadedConfig = async (): Promise<LoadedRstackConfig> => {
   // Rslint loads its one-shot config through Node's module cache. Import the
   // same URL to read the Rstack config exported for the following fmt phase.
   const configModule = (await import(
@@ -186,7 +186,7 @@ async function runCheckCLI(args: string[]): Promise<void> {
     return;
   }
 
-  const loadedConfig = await getLoadedRslintRstackConfig();
+  const loadedConfig = await getLoadedConfig();
   const { runFmtCLI } = await import(
     /* rspackChunkName: 'fmt' */
     '../fmt/cli.ts'
