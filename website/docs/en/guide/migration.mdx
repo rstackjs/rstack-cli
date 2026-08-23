@@ -12,7 +12,7 @@ To migrate an existing project, we recommend using the `migrate-to-rstack-cli` S
 
 To migrate all supported tools in one pass, send this prompt to your coding agent:
 
-```text
+```text wrapCode
 Run `npx --yes skills@latest use rstackjs/rstack-cli@migrate-to-rstack-cli` and follow the generated Skill instructions to migrate this project to Rstack CLI.
 ```
 
@@ -26,14 +26,14 @@ npx skills add rstackjs/rstack-cli --skill migrate-to-rstack-cli
 
 Then ask your coding agent to migrate a single tool. For example, start with Rslint:
 
-```text
-Use the migrate-to-rstack-cli Skill to migrate Rslint in this project to Rstack CLI, leaving all other tools unchanged.
+```text wrapCode
+Use the migrate-to-rstack-cli Skill to migrate Rslint to Rstack CLI, leaving all other tools unchanged.
 ```
 
 Once you have reviewed and validated the changes, move on to Rstest:
 
-```text
-Use the migrate-to-rstack-cli Skill to migrate Rstest in this project to Rstack CLI, leaving all other tools unchanged.
+```text wrapCode
+Use the migrate-to-rstack-cli Skill to migrate Rstest to Rstack CLI, leaving all other tools unchanged.
 ```
 
 Repeat this process for each remaining tool.
