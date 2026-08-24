@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import {
+  chmodSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -33,6 +34,16 @@ const runSetup = (args: string[], runCwd: string = cwd) =>
     encoding: 'utf8',
     env,
   });
+
+const runSetupSuccessfully = (args: string[], runCwd: string = cwd): string => {
+  const result = runSetup(args, runCwd);
+  if (result.status !== 0) {
+    throw new Error(
+      result.stderr || result.error?.message || `Exited with ${result.status}`,
+    );
+  }
+  return `${result.stdout}${result.stderr}`;
+};
 
 beforeEach(() => {
   cwd = mkdtempSync(path.join(import.meta.dirname, 'test-temp-rstack setup '));
@@ -108,6 +119,65 @@ test('installs hooks silently without loading Rstack config', ({
   expect(execCli('setup', { cwd, env })).toBe('');
 });
 
+test('guides and forces setup while preserving existing hooks', ({
+  expect,
+}) => {
+  initRepository();
+  const existingHook = path.join(cwd, '.git', 'hooks', 'pre-commit');
+  writeFileSync(
+    existingHook,
+    "#!/usr/bin/env sh\nprintf 'ran\\n' > old-hook-ran\n",
+  );
+  chmodSync(existingHook, 0o755);
+
+  const skippedOutput = runSetupSuccessfully([]);
+  expect(skippedOutput).toContain(
+    'Git hooks setup skipped: existing Git hooks were found: pre-commit.',
+  );
+  expect(skippedOutput).toContain(
+    'To continue, run rs setup --force. Existing hook files will be preserved but become inactive.',
+  );
+
+  const forcedOutput = runSetupSuccessfully(['--force']);
+  expect(forcedOutput).toContain(
+    'The previous Git hooks path ".git/hooks" is now inactive: pre-commit.',
+  );
+  expect(forcedOutput).toContain(
+    'The existing files were preserved and will become active again if core.hooksPath is unset.',
+  );
+  expect(git(['config', '--local', '--get', 'core.hooksPath'])).toBe(hooksPath);
+
+  git(['hook', 'run', 'pre-commit']);
+  expect(existsSync(path.join(cwd, 'old-hook-ran'))).toBe(false);
+
+  git(['config', '--local', '--unset', 'core.hooksPath']);
+  git(['hook', 'run', 'pre-commit']);
+  expect(existsSync(path.join(cwd, 'old-hook-ran'))).toBe(true);
+
+  expect(runSetupSuccessfully(['-f'])).toContain(
+    'The previous Git hooks path ".git/hooks" is now inactive: pre-commit.',
+  );
+});
+
+test('reports how to restore a replaced hooks path', ({ expect }) => {
+  initRepository();
+  const existingDirectory = path.join(cwd, '.husky', '_');
+  mkdirSync(existingDirectory, { recursive: true });
+  writeFileSync(
+    path.join(existingDirectory, 'pre-commit'),
+    '#!/usr/bin/env sh\n',
+  );
+  git(['config', '--local', 'core.hooksPath', '.husky/_']);
+
+  const output = runSetupSuccessfully(['--force']);
+  expect(output).toContain(
+    'The previous Git hooks path ".husky/_" is now inactive: pre-commit.',
+  );
+  expect(output).toContain(
+    'The existing files were preserved. Set core.hooksPath back to this path to use them again.',
+  );
+});
+
 test('installs root-relative hooks and reports owner conflicts', ({
   execCli,
   expect,
@@ -126,9 +196,7 @@ test('installs root-relative hooks and reports owner conflicts', ({
   );
   expect(existsSync(path.join(cwd, 'custom hooks', '_', 'runner'))).toBe(true);
 
-  const conflict = runSetup(['--hooks-dir', 'custom hooks'], docs);
-  expect(conflict.status).toBe(0);
-  expect(`${conflict.stdout}${conflict.stderr}`).toContain(
+  expect(runSetupSuccessfully(['--hooks-dir', 'custom hooks'], docs)).toContain(
     'Git hooks are already managed by Rstack project "frontend"',
   );
 });

@@ -137,8 +137,12 @@ test('reports Git configuration failures without changing hooksPath', () => {
   });
 });
 
-test('does not replace another Git hooks path', () => {
+test('requires force to replace another Git hooks path', () => {
   withRepository((cwd) => {
+    const existingDirectory = path.join(cwd, '.husky', '_');
+    const existingHook = path.join(existingDirectory, 'pre-commit');
+    mkdirSync(existingDirectory, { recursive: true });
+    writeFileSync(existingHook, '#!/usr/bin/env sh\n');
     runGit(cwd, ['config', '--local', 'core.hooksPath', '.husky/_']);
 
     expect(installHooks({ cwd })).toMatchObject({
@@ -149,10 +153,24 @@ test('does not replace another Git hooks path', () => {
       '.husky/_',
     );
     expect(existsSync(path.join(cwd, hooksPath))).toBe(false);
+
+    expect(installHooks({ cwd, force: true })).toEqual({
+      status: 'installed',
+      hooksPath,
+      inactiveHooks: {
+        hooks: ['pre-commit'],
+        path: '.husky/_',
+        restore: 'configure',
+      },
+    });
+    expect(runGit(cwd, ['config', '--local', '--get', 'core.hooksPath'])).toBe(
+      hooksPath,
+    );
+    expect(readFileSync(existingHook, 'utf8')).toBe('#!/usr/bin/env sh\n');
   });
 });
 
-test('does not bypass existing Git hooks', () => {
+test('requires force to bypass existing Git hooks', () => {
   withRepository((cwd) => {
     const existingHook = path.join(cwd, '.git', 'hooks', 'pre-commit');
     writeFileSync(existingHook, '#!/usr/bin/env sh\n');
@@ -165,6 +183,54 @@ test('does not bypass existing Git hooks', () => {
     expect(
       git(cwd, ['config', '--local', '--get', 'core.hooksPath']).status,
     ).toBe(1);
+
+    expect(installHooks({ cwd, force: true })).toEqual({
+      status: 'installed',
+      hooksPath,
+      inactiveHooks: {
+        hooks: ['pre-commit'],
+        path: '.git/hooks',
+        restore: 'unset',
+      },
+    });
+    expect(runGit(cwd, ['config', '--local', '--get', 'core.hooksPath'])).toBe(
+      hooksPath,
+    );
     expect(readFileSync(existingHook, 'utf8')).toBe('#!/usr/bin/env sh\n');
+  });
+});
+
+test('force does not replace hooks owned by another Rstack project', () => {
+  withRepository((cwd) => {
+    const frontend = path.join(cwd, 'frontend');
+    const docs = path.join(cwd, 'docs');
+    mkdirSync(frontend);
+    mkdirSync(docs);
+
+    expect(installHooks({ cwd: frontend }).status).toBe('installed');
+    expect(installHooks({ cwd: docs, force: true })).toMatchObject({
+      status: 'skipped',
+      reason: 'owned-by-another-project',
+    });
+    expect(readFileSync(path.join(cwd, hooksPath, '.owner'), 'utf8')).toBe(
+      'frontend\n',
+    );
+  });
+});
+
+test('force does not replace an invalid Rstack hooks directory', () => {
+  withRepository((cwd) => {
+    const directory = path.join(cwd, hooksPath);
+    mkdirSync(directory, { recursive: true });
+    writeFileSync(path.join(directory, '.owner'), 'invalid');
+
+    expect(installHooks({ cwd, force: true })).toMatchObject({
+      status: 'skipped',
+      reason: 'hooks-directory-conflict',
+    });
+    expect(
+      git(cwd, ['config', '--local', '--get', 'core.hooksPath']).status,
+    ).toBe(1);
+    expect(existsSync(path.join(directory, 'runner'))).toBe(false);
   });
 });
