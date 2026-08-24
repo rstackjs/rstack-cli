@@ -21,6 +21,7 @@
     "@types/node": "catalog:",
     "cspell-ban-words": "catalog:",
     "heading-case": "catalog:",
+    "pkg-pr-new": "catalog:",
     "prettier": "catalog:",
     "rstack": "workspace:*",
     "typescript": "catalog:"
