@@ -17,7 +17,14 @@ const gitignore = '*\n';
 
 type InstallHooksOptions = {
   cwd?: string;
+  force?: boolean;
   hooksDir?: string;
+};
+
+type InactiveHooks = {
+  hooks: string[];
+  path: string;
+  restore: 'configure' | 'unset';
 };
 
 type FailedInstallResult = {
@@ -33,7 +40,7 @@ type SkippedInstallResult = {
 };
 
 type InstallResult =
-  | { status: 'installed'; hooksPath: string }
+  | { status: 'installed'; hooksPath: string; inactiveHooks?: InactiveHooks }
   | { status: 'unchanged'; hooksPath: string }
   | SkippedInstallResult
   | FailedInstallResult;
@@ -252,6 +259,7 @@ const findExistingHooks = (directory: string): string[] =>
 
 export const installHooks = ({
   cwd = process.cwd(),
+  force = false,
   hooksDir = defaultHooksDir,
 }: InstallHooksOptions = {}): InstallResult => {
   if (process.env.RSTACK_HOOKS === '0') {
@@ -282,16 +290,24 @@ export const installHooks = ({
     effectiveHooksDirectory,
     defaultHooksDirectory,
   );
+  let inactiveHooks: InactiveHooks | undefined;
 
   if (!hooksPathMatches && !usesDefaultHooks) {
     const activeOwner = readOwner(effectiveHooksDirectory);
     if (!activeOwner) {
-      return skip(
-        'hooks-path-conflict',
-        `Git hooks are already configured at "${displayPath(gitRoot, effectiveHooksDirectory)}"`,
-      );
-    }
-    if (activeOwner !== projectPath) {
+      if (!force) {
+        return skip(
+          'hooks-path-conflict',
+          `Git hooks are already configured at "${displayPath(gitRoot, effectiveHooksDirectory)}"`,
+        );
+      }
+
+      inactiveHooks = {
+        hooks: findExistingHooks(effectiveHooksDirectory),
+        path: displayPath(gitRoot, effectiveHooksDirectory),
+        restore: 'configure',
+      };
+    } else if (activeOwner !== projectPath) {
       return ownerConflict(activeOwner);
     }
   }
@@ -299,10 +315,18 @@ export const installHooks = ({
   if (usesDefaultHooks) {
     const existingHooks = findExistingHooks(defaultHooksDirectory);
     if (existingHooks.length > 0) {
-      return skip(
-        'existing-git-hooks',
-        `existing Git hooks were found: ${existingHooks.join(', ')}`,
-      );
+      if (!force) {
+        return skip(
+          'existing-git-hooks',
+          `existing Git hooks were found: ${existingHooks.join(', ')}`,
+        );
+      }
+
+      inactiveHooks = {
+        hooks: existingHooks,
+        path: displayPath(gitRoot, defaultHooksDirectory),
+        restore: 'unset',
+      };
     }
   }
 
@@ -360,5 +384,9 @@ export const installHooks = ({
     );
   }
 
-  return { status: 'installed', hooksPath };
+  return {
+    status: 'installed',
+    hooksPath,
+    ...(inactiveHooks ? { inactiveHooks } : {}),
+  };
 };

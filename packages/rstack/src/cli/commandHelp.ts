@@ -498,6 +498,7 @@ const HELP_DEFINITIONS = {
       {
         title: 'Options',
         items: [
+          ['-f, --force', 'Install despite an existing Git hooks setup'],
           [
             '--hooks-dir <path>',
             'Specify hooks directory relative to the Git repository root',

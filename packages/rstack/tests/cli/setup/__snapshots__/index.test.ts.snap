@@ -9,6 +9,7 @@ Usage:
 Install Git hooks in the current repository
 
 Options:
+  -f, --force         Install despite an existing Git hooks setup
   --hooks-dir <path>  Specify hooks directory relative to the Git repository root
   -h, --help          Display this help message
 "
