@@ -19,6 +19,7 @@ noformat
 noprettier
 nosystem
 oxfmt
+precheck
 quasis
 rsbuild
 rslib

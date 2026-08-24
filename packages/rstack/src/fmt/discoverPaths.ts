@@ -5,6 +5,11 @@ import micromatch from 'micromatch';
 import readdir, { type Dirent, type DirentLike } from 'tiny-readdir';
 import type { GitIgnoreMatcher as NativeGitIgnoreMatcher } from '../../binding.cjs';
 import { loadNativeBinding } from '../native/index.ts';
+import type {
+  BatchIgnoreContext,
+  IgnoreMatcher,
+  IgnorePredicate,
+} from './ignore.ts';
 import {
   createRelativePathResolver,
   toPosixPath,
@@ -21,8 +26,18 @@ const defaultIgnoredDirNames = new Set([
   'node_modules',
 ]);
 
-const gitIgnored = Symbol('gitIgnored');
-type GitIgnoreDirent = Dirent & { [gitIgnored]?: true };
+const ignored = Symbol('ignored');
+type IgnoredDirent = Dirent & { [ignored]?: true };
+type TraversalIgnorePredicate = ((
+  filePath: string,
+  isDirectory: boolean,
+) => boolean) &
+  Pick<IgnoreMatcher, 'batch'>;
+
+interface GitIgnoreBatchContext {
+  readonly matcher: NativeGitIgnoreMatcher;
+  readonly relativeParent: string;
+}
 
 interface DiscoverFmtPathsOptions {
   /** Absolute directory used to resolve input paths. */
@@ -31,7 +46,7 @@ interface DiscoverFmtPathsOptions {
   /** Whether files inside node_modules may be discovered. */
   withNodeModules?: boolean;
   /** Returns whether a candidate path should be excluded. */
-  isIgnored?: (filePath: string, isDirectory: boolean) => boolean;
+  isIgnored?: TraversalIgnorePredicate;
 }
 
 const isErrnoException = (error: unknown): error is NodeJS.ErrnoException =>
@@ -141,55 +156,20 @@ class GitIgnoreFiles {
     return this.#matcher!.isIgnored(toPosixPath(relativePath), isDirectory);
   }
 
-  /** Matches one directory's entries in a single native call. */
-  matchDirents(
-    parentPath: string,
-    dirents: Dirent[],
-  ): boolean | number | Uint8Array | undefined {
-    if (!this.#hasRules || dirents.length === 0) {
+  resolveBatchContext(parentPath: string): GitIgnoreBatchContext | undefined {
+    if (!this.#hasRules) {
       return;
     }
 
-    const relativeParentPath = this.#resolveRelativePath(parentPath);
-    if (!isRelativePathInside(relativeParentPath)) {
+    const relativeParent = this.#resolveRelativePath(parentPath);
+    if (!isRelativePathInside(relativeParent)) {
       return;
     }
 
-    const relativeParent = toPosixPath(relativeParentPath);
-
-    if (dirents.length === 1) {
-      const dirent = dirents[0];
-      return this.#matcher!.isIgnoredChild(
-        relativeParent,
-        dirent.name,
-        dirent.isDirectory(),
-      );
-    }
-
-    const names = new Array<string>(dirents.length);
-
-    if (dirents.length <= 32) {
-      let directoryMask = 0;
-      for (let index = 0; index < dirents.length; index++) {
-        const dirent = dirents[index];
-        names[index] = dirent.name;
-        directoryMask |= Number(dirent.isDirectory()) << index;
-      }
-      return this.#matcher!.isIgnoredBatchMask(
-        relativeParent,
-        names,
-        directoryMask >>> 0,
-      );
-    }
-
-    const directoryFlags = new Uint8Array(dirents.length);
-    for (let index = 0; index < dirents.length; index++) {
-      const dirent = dirents[index];
-      names[index] = dirent.name;
-      directoryFlags[index] = Number(dirent.isDirectory());
-    }
-
-    return this.#matcher!.isIgnoredBatch(relativeParent, names, directoryFlags);
+    return {
+      matcher: this.#matcher!,
+      relativeParent: toPosixPath(relativeParent),
+    };
   }
 
   #load(directoryPath: string): Promise<void> {
@@ -218,29 +198,219 @@ class GitIgnoreFiles {
   }
 }
 
+const isIgnoredBeforeNative = (
+  parentPath: string,
+  dirent: Dirent,
+  ignoredDirNames: ReadonlySet<string>,
+  isIncluded: ((filePath: string) => boolean) | undefined,
+  precheck: IgnorePredicate | undefined,
+): boolean => {
+  if (ignoredDirNames.has(dirent.name)) {
+    return true;
+  }
+
+  const isDirectory = dirent.isDirectory();
+  let targetPath: string | undefined;
+  if (!isDirectory && isIncluded) {
+    targetPath = path.join(parentPath, dirent.name);
+    if (!isIncluded(targetPath)) {
+      return true;
+    }
+  }
+  if (!isDirectory && isBinaryPath(dirent.name)) {
+    return true;
+  }
+
+  return (
+    precheck?.(
+      targetPath ?? path.join(parentPath, dirent.name),
+      isDirectory,
+    ) === true
+  );
+};
+
+/** Matches one directory after earlier traversal rules have removed candidates. */
+const markIgnoredDirents = (
+  parentPath: string,
+  dirents: Dirent[],
+  gitIgnore: GitIgnoreFiles,
+  ignoredDirNames: ReadonlySet<string>,
+  isIncluded: ((filePath: string) => boolean) | undefined,
+  batchIgnore?: BatchIgnoreContext,
+): void => {
+  const gitIgnoreContext = gitIgnore.resolveBatchContext(parentPath);
+
+  if (dirents.length === 1) {
+    const dirent = dirents[0];
+    if (
+      gitIgnoreContext?.matcher.isIgnoredChild(
+        gitIgnoreContext.relativeParent,
+        dirent.name,
+        dirent.isDirectory(),
+      ) === true ||
+      isIgnoredBeforeNative(
+        parentPath,
+        dirent,
+        ignoredDirNames,
+        isIncluded,
+        batchIgnore?.precheck,
+      ) ||
+      batchIgnore?.matcher.isIgnoredChild(
+        parentPath,
+        dirent.name,
+        dirent.isDirectory(),
+      ) === true
+    ) {
+      (dirent as IgnoredDirent)[ignored] = true;
+    }
+    return;
+  }
+
+  const names = new Array<string>(dirents.length);
+
+  if (dirents.length <= 32) {
+    let directoryMask = 0;
+    for (let index = 0; index < dirents.length; index++) {
+      const dirent = dirents[index];
+      names[index] = dirent.name;
+      directoryMask |= Number(dirent.isDirectory()) << index;
+    }
+
+    let ignoredMask = gitIgnoreContext
+      ? gitIgnoreContext.matcher.isIgnoredBatchMask(
+          gitIgnoreContext.relativeParent,
+          names,
+          directoryMask >>> 0,
+        )
+      : 0;
+
+    if (batchIgnore) {
+      for (let index = 0; index < dirents.length; index++) {
+        const entryMask = 1 << index;
+        if (
+          (ignoredMask & entryMask) === 0 &&
+          isIgnoredBeforeNative(
+            parentPath,
+            dirents[index],
+            ignoredDirNames,
+            isIncluded,
+            batchIgnore.precheck,
+          )
+        ) {
+          ignoredMask |= entryMask;
+        }
+      }
+
+      const validMask = 0xffffffff >>> (32 - dirents.length);
+      const candidateMask = (validMask & ~ignoredMask) >>> 0;
+      if (candidateMask !== 0) {
+        ignoredMask =
+          (ignoredMask |
+            batchIgnore.matcher.isIgnoredBatchMask(
+              parentPath,
+              names,
+              directoryMask >>> 0,
+              candidateMask,
+            )) >>>
+          0;
+      }
+    }
+
+    for (let index = 0; index < dirents.length; index++) {
+      if ((ignoredMask & (1 << index)) !== 0) {
+        (dirents[index] as IgnoredDirent)[ignored] = true;
+      }
+    }
+    return;
+  }
+
+  const directoryFlags = new Uint8Array(dirents.length);
+  for (let index = 0; index < dirents.length; index++) {
+    const dirent = dirents[index];
+    names[index] = dirent.name;
+    directoryFlags[index] = Number(dirent.isDirectory());
+  }
+
+  const ignoredFlags = gitIgnoreContext
+    ? gitIgnoreContext.matcher.isIgnoredBatch(
+        gitIgnoreContext.relativeParent,
+        names,
+        directoryFlags,
+      )
+    : new Uint8Array(dirents.length);
+
+  if (batchIgnore) {
+    const candidateFlags = new Uint8Array(dirents.length);
+    let candidateCount = 0;
+    for (let index = 0; index < dirents.length; index++) {
+      if (ignoredFlags[index] === 0) {
+        if (
+          isIgnoredBeforeNative(
+            parentPath,
+            dirents[index],
+            ignoredDirNames,
+            isIncluded,
+            batchIgnore.precheck,
+          )
+        ) {
+          ignoredFlags[index] = 1;
+        } else {
+          candidateFlags[index] = 1;
+          candidateCount++;
+        }
+      }
+    }
+
+    if (candidateCount !== 0) {
+      const nextIgnored = batchIgnore.matcher.isIgnoredBatch(
+        parentPath,
+        names,
+        directoryFlags,
+        candidateFlags,
+      );
+      for (let index = 0; index < dirents.length; index++) {
+        ignoredFlags[index] |= nextIgnored[index];
+      }
+    }
+  }
+
+  for (let index = 0; index < dirents.length; index++) {
+    if (ignoredFlags[index] !== 0) {
+      (dirents[index] as IgnoredDirent)[ignored] = true;
+    }
+  }
+};
+
 const createTraversalOptions = (
   gitIgnore: GitIgnoreFiles,
   ignoredDirNames: ReadonlySet<string>,
   signal: { aborted: boolean },
   onError: (error: unknown) => void,
   isIncluded?: (filePath: string) => boolean,
-  isIgnored?: (filePath: string, isDirectory: boolean) => boolean,
+  isIgnored?: TraversalIgnorePredicate,
 ) => {
+  const batchIgnore = isIgnored?.batch;
+  const scalarIgnore = batchIgnore ? undefined : isIgnored;
+
   return {
     followSymlinks: false,
     signal,
     ignore: (targetPath: string, targetContext: DirentLike) => {
       // With symlink following disabled, tiny-readdir always provides a Dirent here.
       const dirent = targetContext as Dirent;
-      if (ignoredDirNames.has(dirent.name)) {
+      if (
+        (dirent as IgnoredDirent)[ignored] === true ||
+        ignoredDirNames.has(dirent.name)
+      ) {
         return true;
       }
 
+      if (batchIgnore) {
+        return false;
+      }
+
       if (dirent.isDirectory()) {
-        return (
-          (dirent as GitIgnoreDirent)[gitIgnored] === true ||
-          isIgnored?.(targetPath, true) === true
-        );
+        return scalarIgnore?.(targetPath, true) === true;
       }
 
       if (isIncluded !== undefined && !isIncluded(targetPath)) {
@@ -248,9 +418,7 @@ const createTraversalOptions = (
       }
 
       return (
-        isIgnored?.(targetPath, false) === true ||
-        isBinaryPath(targetPath) ||
-        (dirent as GitIgnoreDirent)[gitIgnored] === true
+        scalarIgnore?.(targetPath, false) === true || isBinaryPath(targetPath)
       );
     },
     onDirents: async (dirents: Dirent[]) => {
@@ -268,24 +436,14 @@ const createTraversalOptions = (
           await gitIgnore.load(parentPath);
         }
 
-        const ignored = gitIgnore.matchDirents(parentPath, dirents);
-        if (typeof ignored === 'boolean') {
-          if (ignored) {
-            (dirents[0] as GitIgnoreDirent)[gitIgnored] = true;
-          }
-        } else if (typeof ignored === 'number') {
-          for (let index = 0; index < dirents.length; index++) {
-            if (ignored & (1 << index)) {
-              (dirents[index] as GitIgnoreDirent)[gitIgnored] = true;
-            }
-          }
-        } else if (ignored) {
-          for (let index = 0; index < ignored.length; index++) {
-            if (ignored[index] === 1) {
-              (dirents[index] as GitIgnoreDirent)[gitIgnored] = true;
-            }
-          }
-        }
+        markIgnoredDirents(
+          parentPath,
+          dirents,
+          gitIgnore,
+          ignoredDirNames,
+          isIncluded,
+          batchIgnore,
+        );
       } catch (error) {
         onError(error);
       }
@@ -300,7 +458,7 @@ const discoverDirectoryFiles = async (
   gitIgnore: GitIgnoreFiles,
   ignoredDirNames: ReadonlySet<string>,
   isIncluded?: (filePath: string) => boolean,
-  isIgnored?: (filePath: string, isDirectory: boolean) => boolean,
+  isIgnored?: TraversalIgnorePredicate,
 ): Promise<string[]> => {
   let failed = false;
   let failure: unknown;
