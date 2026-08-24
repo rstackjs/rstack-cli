@@ -36,14 +36,14 @@ Run the script once to install the hooks:
 `rs setup` sets the repository's `core.hooksPath` to `.rstack/hooks/_`. Verify the installation with:
 
 ```bash
-git config --local --get core.hooksPath
+git config --get core.hooksPath
 # .rstack/hooks/_
 ```
 
 :::tip
 
 - The `_` directory is generated dynamically and ignored by Git by default.
-- If `rs setup` detects another hooks path or existing Git hooks, it skips installation. Migrate any hooks you want to keep, remove the existing configuration, and then try again. See the [`rs setup` guide](./cli/setup#hook-files) for details.
+- If `rs setup` detects another hooks path or existing Git hooks, it skips installation. Run `rs setup --force` to install Rstack hooks anyway. See the [`rs setup` guide](./cli/setup) for details.
 
 :::
 

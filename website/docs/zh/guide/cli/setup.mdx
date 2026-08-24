@@ -41,11 +41,25 @@ rs staged
 
 :::warning 已有 Git hook 管理工具
 
-`rs setup` 会更新仓库的 [`core.hooksPath`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath)。检测到其他 hooks 路径或已有 Git hook 时，命令会跳过安装。请先迁移所需的 hooks 并移除已有 hooks 配置，再运行该命令。
+`rs setup` 会更新仓库的 [`core.hooksPath`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath)。检测到其他 hooks 路径或已有 Git hook 时，命令会跳过安装。可运行 `rs setup --force` 强制安装 Rstack hooks。
 
 :::
 
 ## 选项 \{#options}
+
+### `--force`
+
+检测到已有 Git hooks 配置时，可使用 `--force`（或 `-f`）强制安装 Rstack hooks：
+
+```bash
+rs setup --force
+```
+
+Rstack 会保留原有 hook 文件，并将 `core.hooksPath` 指向 Rstack 生成的 hooks 目录。该配置生效期间，Git 不再执行原路径下的 hooks。
+
+:::tip
+`rs setup --force` 只需运行一次。`prepare` 脚本中应使用不带 `--force` 的 `rs setup`。
+:::
 
 ### `--hooks-dir`
 
@@ -171,23 +185,37 @@ rs staged
 如需移除由 Rstack CLI 管理的 hooks：
 
 1. 从 `prepare` 脚本中移除 `rs setup`。
-2. 删除仓库的 hooks 路径配置：
+2. 检查当前生效的 hooks 路径来自哪个 Git 配置作用域：
+
+   ```bash
+   git config --show-scope --get core.hooksPath
+   ```
+
+3. 根据输出，在对应作用域中取消 hooks 路径配置。作用域为 `local` 时运行：
 
    ```bash
    git config --local --unset core.hooksPath
    ```
 
-3. 删除 `.rstack/hooks/` 或通过 `--hooks-dir` 指定的目录。
+   作用域为 `worktree` 时运行：
+
+   ```bash
+   git config --worktree --unset core.hooksPath
+   ```
+
+   如果之前通过 `--force` 保留了 `.git/hooks` 下的 hooks，取消路径配置会重新启用这些文件。如果不希望它们运行，请先删除不再需要的文件。
+
+4. 删除 `.rstack/hooks/` 或通过 `--hooks-dir` 指定的目录。
 
 ## 故障排查 \{#troubleshooting}
 
 ### Hook 未运行 \{#hook-does-not-run}
 
 - 确认 hook 脚本使用[支持的名称](#supported-hooks)，并与 `_` 目录同级。
-- 运行 `git config --local --get core.hooksPath`，检查配置的路径。
+- 运行 `git config --show-scope --get core.hooksPath`，检查当前生效的配置作用域和路径。
 - 重新运行 `rs setup`，恢复生成文件及其可执行权限。
 - 检查环境变量或初始化文件中是否设置了 `RSTACK_HOOKS=0`。
-- 如果命令提示存在其他 hooks 配置，请先迁移或移除冲突配置，再重新运行该命令。
+- 如果命令提示存在其他 hooks 配置，请运行 `rs setup --force`。
 - 如果命令提示其他项目是 hooks owner，请按照 [Monorepo](#monorepo) 中的步骤转移 owner。
 
 hook 脚本不需要可执行权限，因为 Rstack CLI 会使用 `sh` 运行它。
