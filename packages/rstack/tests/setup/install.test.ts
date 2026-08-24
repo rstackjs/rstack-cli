@@ -170,6 +170,56 @@ test('requires force to replace another Git hooks path', () => {
   });
 });
 
+test('replaces a worktree-scoped hooks path at the same scope', () => {
+  withRepository((cwd) => {
+    runGit(cwd, ['config', '--local', 'extensions.worktreeConfig', 'true']);
+    runGit(cwd, ['config', '--worktree', 'core.hooksPath', '.husky/_']);
+
+    expect(installHooks({ cwd, force: true }).status).toBe('installed');
+    expect(
+      runGit(cwd, ['config', '--show-scope', '--get', 'core.hooksPath']),
+    ).toBe(`worktree\t${hooksPath}`);
+    expect(
+      git(cwd, ['config', '--local', '--get', 'core.hooksPath']).status,
+    ).toBe(1);
+  });
+});
+
+test('rejects a command-scoped hooks path override', () => {
+  withRepository((cwd) => {
+    const originalCount = process.env.GIT_CONFIG_COUNT;
+    const originalKey = process.env.GIT_CONFIG_KEY_0;
+    const originalValue = process.env.GIT_CONFIG_VALUE_0;
+    process.env.GIT_CONFIG_COUNT = '1';
+    process.env.GIT_CONFIG_KEY_0 = 'core.hooksPath';
+    process.env.GIT_CONFIG_VALUE_0 = '.husky/_';
+
+    try {
+      expect(installHooks({ cwd, force: true })).toMatchObject({
+        status: 'failed',
+        reason: 'hooks-path-command-scope',
+      });
+    } finally {
+      restoreEnv('GIT_CONFIG_COUNT', originalCount);
+      restoreEnv('GIT_CONFIG_KEY_0', originalKey);
+      restoreEnv('GIT_CONFIG_VALUE_0', originalValue);
+    }
+  });
+});
+
+test('verifies the effective hooks path after configuring Git', () => {
+  withRepository((cwd) => {
+    const includedConfig = path.join(cwd, 'included.gitconfig');
+    writeFileSync(includedConfig, '[core]\n\thooksPath = .husky/_\n');
+    runGit(cwd, ['config', '--local', 'include.path', includedConfig]);
+
+    expect(installHooks({ cwd, force: true })).toMatchObject({
+      status: 'failed',
+      reason: 'git-config-failed',
+    });
+  });
+});
+
 test('requires force to bypass existing Git hooks', () => {
   withRepository((cwd) => {
     const existingHook = path.join(cwd, '.git', 'hooks', 'pre-commit');

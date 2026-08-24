@@ -52,6 +52,8 @@ type GitContext = {
   projectPath: string;
 };
 
+type GitConfigScopeOption = '--local' | '--worktree';
+
 const fail = (reason: string, message: string): FailedInstallResult => ({
   status: 'failed',
   reason,
@@ -111,9 +113,78 @@ const gitFailure = (
   );
 };
 
+const resolveHooksPathScope = (
+  cwd: string,
+): GitConfigScopeOption | FailedInstallResult => {
+  const configured = runGit(cwd, [
+    'config',
+    '--show-scope',
+    '--get',
+    'core.hooksPath',
+  ]);
+  if (configured.error || configured.status === null) {
+    return gitFailure(configured.error, configured.stderr);
+  }
+
+  // Exit status 1 means core.hooksPath is not configured yet.
+  if (configured.status === 1) {
+    return '--local';
+  }
+  if (configured.status !== 0) {
+    return fail(
+      'git-config-failed',
+      `Failed to resolve the core.hooksPath scope: ${configured.stderr.trim()}`,
+    );
+  }
+
+  const separator = configured.stdout.indexOf('\t');
+  const scope = separator === -1 ? '' : configured.stdout.slice(0, separator);
+  if (scope === 'worktree') {
+    return '--worktree';
+  }
+  if (scope === 'command') {
+    return fail(
+      'hooks-path-command-scope',
+      "Cannot configure core.hooksPath because it is set in Git's command scope. Remove the command-scoped override and rerun rs setup.",
+    );
+  }
+  if (scope === 'system' || scope === 'global' || scope === 'local') {
+    return '--local';
+  }
+
+  return fail(
+    'git-config-failed',
+    'Failed to resolve the core.hooksPath scope.',
+  );
+};
+
+const resolveGitHooksPath = (cwd: string): string | FailedInstallResult => {
+  const hooksDirectory = runGit(cwd, [
+    'rev-parse',
+    '--path-format=absolute',
+    '--git-path',
+    'hooks',
+  ]);
+  if (hooksDirectory.error || hooksDirectory.status === null) {
+    return gitFailure(hooksDirectory.error, hooksDirectory.stderr);
+  }
+  if (hooksDirectory.status !== 0) {
+    return fail(
+      'git-command-failed',
+      `Failed to resolve the Git hooks path: ${hooksDirectory.stderr.trim()}`,
+    );
+  }
+
+  const resolvedDirectory = removeLineEnding(hooksDirectory.stdout);
+  if (!resolvedDirectory) {
+    return fail('git-command-failed', 'Failed to resolve the Git hooks path.');
+  }
+  return resolvedDirectory;
+};
+
 const resolveGitContext = (cwd: string): GitContext | InstallResult => {
   // Resolve every repository path in one Git process. `--git-path hooks`
-  // accounts for an existing local or global core.hooksPath configuration.
+  // accounts for the effective core.hooksPath configuration across Git scopes.
   const repository = runGit(cwd, [
     'rev-parse',
     '--is-inside-work-tree',
@@ -330,6 +401,12 @@ export const installHooks = ({
     }
   }
 
+  // Preserve a worktree-scoped override instead of writing a shadowed local value.
+  const configScope = hooksPathMatches ? '--local' : resolveHooksPathScope(cwd);
+  if (typeof configScope !== 'string') {
+    return configScope;
+  }
+
   const files = Object.entries(createHookFiles());
   try {
     mkdirSync(directory, { recursive: true });
@@ -370,7 +447,7 @@ export const installHooks = ({
   // Point Git at the generated directory only after every runtime file is ready.
   const configured = runGit(cwd, [
     'config',
-    '--local',
+    configScope,
     'core.hooksPath',
     hooksPath,
   ]);
@@ -381,6 +458,17 @@ export const installHooks = ({
     return fail(
       'git-config-failed',
       `Failed to configure core.hooksPath: ${configured.stderr.trim()}`,
+    );
+  }
+
+  const configuredHooksPath = resolveGitHooksPath(cwd);
+  if (typeof configuredHooksPath !== 'string') {
+    return configuredHooksPath;
+  }
+  if (!isSamePath(configuredHooksPath, directory)) {
+    return fail(
+      'git-config-failed',
+      `Failed to activate Rstack Git hooks: core.hooksPath resolves to "${displayPath(gitRoot, configuredHooksPath)}" instead of "${hooksPath}".`,
     );
   }
 
