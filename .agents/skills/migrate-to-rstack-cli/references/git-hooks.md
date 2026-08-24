@@ -4,11 +4,12 @@ Migrate [Husky](https://typicode.github.io/husky/) or [simple-git-hooks](https:/
 
 ## Shared Steps
 
-1. Inspect the hook manager configuration, hook scripts, lifecycle scripts, custom paths, environment overrides, and `git config --local --get core.hooksPath`.
+1. Inspect the hook manager configuration, hook scripts, lifecycle scripts, custom paths, environment overrides, and `git config --show-scope --get core.hooksPath`.
 2. Inventory every active hook before editing. Confirm each hook is [supported by `rs setup`](https://rstack.rs/guide/cli/setup#supported-hooks); stop or design an explicit alternative for unsupported hooks.
 3. Create each migrated hook in the selected hooks directory, `.rstack/hooks` by default, before running `rs setup`, because the command changes the repository's `core.hooksPath`. Preserve commands and any explicit directory changes.
 4. Ensure the `prepare` script in the root `package.json` runs `rs setup`, adding it if necessary. Remove the old installer invocation from any lifecycle script while preserving other commands. Use `--hooks-dir` consistently when choosing a custom directory.
-5. Run the updated lifecycle script, exercise the migrated hooks, and remove the old dependency and configuration only after behavior matches.
+5. If the previous manager's hooks or `core.hooksPath` block installation, run `rs setup --force` once after migrating every required hook. The command preserves the previous files but makes them inactive. Do not add `--force` to the lifecycle script.
+6. Exercise the migrated hooks, then remove the old dependency, configuration, and generated hook files only after behavior matches and their ownership and paths are confirmed.
 
 `rs setup` creates `.rstack/hooks/_/.gitignore`. Do not list `.rstack/hooks/_` in the root `.gitignore`.
 
@@ -44,7 +45,7 @@ pnpm test
 3. Replace the simple-git-hooks lifecycle command with `rs setup`, preserving other chained commands.
 4. Replace `SKIP_INSTALL_SIMPLE_GIT_HOOKS=1` and `SKIP_SIMPLE_GIT_HOOKS=1` usage with `RSTACK_HOOKS=0`. Move required commands from the file referenced by `SIMPLE_GIT_HOOKS_RC` to the Rstack user initialization file, with user permission.
 5. Do not run the simple-git-hooks uninstall script after `rs setup`; it follows the current `core.hooksPath` and can delete Rstack's generated hook shims.
-6. After validation, remove the simple-git-hooks dependency, config, installer, and stale package-manager metadata such as pnpm `allowBuilds`. Remove old generated hook files only after confirming their ownership and paths.
+6. After validation, remove the simple-git-hooks dependency, config, installer, old generated hook files, and stale package-manager metadata such as pnpm `allowBuilds`. Confirm the generated files' ownership and paths before removing them.
 
 For example, migrate:
 
@@ -72,6 +73,7 @@ pnpm test
 
 ## Validate
 
-- Confirm `git config --local --get core.hooksPath` points to the expected Rstack-generated directory.
+- Confirm `git config --show-scope --get core.hooksPath` reports the expected Rstack-generated directory and whether it is configured in the local or worktree scope.
 - Test each migrated hook and confirm that its commands run as expected.
+- Remove previous generated hooks after validation so they cannot become active again if `core.hooksPath` is later unset or changed.
 - Search for old manager commands, configuration, environment variables, and user instructions before removing dependencies.
