@@ -32,23 +32,24 @@ export const runSetupCLI = async (args: string[]): Promise<void> => {
   const result = installHooks({ force: values.force, hooksDir });
 
   if (result.status === 'installed') {
-    // Warn when `--force` preserves an existing hooks setup but makes it inactive.
+    // Explain the result when `--force` preserves an existing hooks setup but makes it inactive.
     if (result.inactiveHooks) {
       const { hooks, path, restore } = result.inactiveHooks;
       const hooksMessage = hooks.length
         ? `: ${color.yellow(hooks.join(', '))}`
         : '';
-      logger.warn(
-        `The previous Git hooks path "${color.yellow(path)}" is now inactive${hooksMessage}.`,
+      logger.info(
+        `Rstack now manages Git hooks at "${color.yellow(result.hooksPath)}".`,
+      );
+      logger.info(
+        `Existing hooks in "${color.yellow(path)}" were preserved but will no longer run${hooksMessage}.`,
       );
 
       if (restore === 'unset') {
-        logger.info(
-          `The existing files were preserved and will become active again if ${color.yellow('core.hooksPath')} is unset.`,
-        );
+        logger.info(`Unset ${color.yellow('core.hooksPath')} to restore them.`);
       } else {
         logger.info(
-          `The existing files were preserved. Set ${color.yellow('core.hooksPath')} back to this path to use them again.`,
+          `Set ${color.yellow('core.hooksPath')} back to "${color.yellow(path)}" to restore them.`,
         );
       }
     }
