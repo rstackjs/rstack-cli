@@ -26,11 +26,35 @@ rs staged --allow-empty
 
 ### `--concurrent`
 
-`--concurrent` (or `-p`) sets how many tasks run concurrently; use `false` to run them serially.
+`--concurrent` controls how many tasks may run at the same time. It accepts `true`, `false`, or a positive integer.
+
+When the option is omitted, it defaults to `true`, so `rs staged` runs tasks concurrently without a fixed limit. Set it to `false` to run one task at a time, or use a positive integer to limit the number of concurrent tasks.
 
 ```bash
+# Use the default: run tasks concurrently without a fixed limit
+rs staged
+rs staged --concurrent true
+
+# Run one task at a time
 rs staged --concurrent false
+
+# Run at most four tasks at a time
+rs staged --concurrent 4
+
+# -p is shorthand for --concurrent
+rs staged -p 4
 ```
+
+For example:
+
+```ts
+define.staged({
+  '*.ts': ['rs lint --fix', 'rs fmt'],
+  '*.md': 'rs fmt',
+});
+```
+
+With concurrency enabled, `rs fmt` for Markdown files may run while TypeScript files are being linted. For TypeScript files, `rs fmt` starts only after `rs lint --fix` finishes.
 
 ### `--cwd`
 

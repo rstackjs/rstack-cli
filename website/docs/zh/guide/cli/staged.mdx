@@ -26,11 +26,35 @@ rs staged --allow-empty
 
 ### `--concurrent`
 
-`--concurrent`（或 `-p`）用于设置并发运行的任务数量；设为 `false` 时串行运行。
+`--concurrent` 用于控制同时运行的任务数量，可设置为 `true`、`false` 或正整数。
+
+省略该选项时，默认值为 `true`，`rs staged` 会并发运行任务且不设置固定的并发上限。设为 `false` 时会逐个运行任务；设为正整数时，会限制同时运行的任务数量。
 
 ```bash
+# 使用默认行为：并发运行任务，不设置固定的并发上限
+rs staged
+rs staged --concurrent true
+
+# 每次运行一个任务
 rs staged --concurrent false
+
+# 最多同时运行四个任务
+rs staged --concurrent 4
+
+# -p 是 --concurrent 的缩写
+rs staged -p 4
 ```
+
+例如：
+
+```ts
+define.staged({
+  '*.ts': ['rs lint --fix', 'rs fmt'],
+  '*.md': 'rs fmt',
+});
+```
+
+启用并发时，Markdown 文件的 `rs fmt` 可以在 TypeScript 文件执行 `rs lint --fix` 的同时运行；对于 TypeScript 文件，只有 `rs lint --fix` 完成后才会运行 `rs fmt`。
 
 ### `--cwd`
 
