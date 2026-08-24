@@ -140,11 +140,12 @@ test('guides and forces setup while preserving existing hooks', ({
 
   const forcedOutput = runSetupSuccessfully(['--force']);
   expect(forcedOutput).toContain(
-    'The previous Git hooks path ".git/hooks" is now inactive: pre-commit.',
+    'info    Rstack now manages Git hooks at ".rstack/hooks/_".',
   );
   expect(forcedOutput).toContain(
-    'The existing files were preserved and will become active again if core.hooksPath is unset.',
+    'Existing hooks in ".git/hooks" were preserved but will no longer run: pre-commit.',
   );
+  expect(forcedOutput).toContain('Unset core.hooksPath to restore them.');
   expect(git(['config', '--local', '--get', 'core.hooksPath'])).toBe(hooksPath);
 
   git(['hook', 'run', 'pre-commit']);
@@ -155,7 +156,7 @@ test('guides and forces setup while preserving existing hooks', ({
   expect(existsSync(path.join(cwd, 'old-hook-ran'))).toBe(true);
 
   expect(runSetupSuccessfully(['-f'])).toContain(
-    'The previous Git hooks path ".git/hooks" is now inactive: pre-commit.',
+    'Existing hooks in ".git/hooks" were preserved but will no longer run: pre-commit.',
   );
 });
 
@@ -171,10 +172,13 @@ test('reports how to restore a replaced hooks path', ({ expect }) => {
 
   const output = runSetupSuccessfully(['--force']);
   expect(output).toContain(
-    'The previous Git hooks path ".husky/_" is now inactive: pre-commit.',
+    'info    Rstack now manages Git hooks at ".rstack/hooks/_".',
   );
   expect(output).toContain(
-    'The existing files were preserved. Set core.hooksPath back to this path to use them again.',
+    'Existing hooks in ".husky/_" were preserved but will no longer run: pre-commit.',
+  );
+  expect(output).toContain(
+    'Set core.hooksPath back to ".husky/_" to restore them.',
   );
 });
 
