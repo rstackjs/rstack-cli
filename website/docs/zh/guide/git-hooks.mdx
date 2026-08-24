@@ -36,14 +36,14 @@ import { PackageManagerTabs } from '@rspress/core/theme';
 `rs setup` 会将仓库的 `core.hooksPath` 设为 `.rstack/hooks/_`，可以通过以下命令确认是否安装成功：
 
 ```bash
-git config --local --get core.hooksPath
+git config --get core.hooksPath
 # .rstack/hooks/_
 ```
 
 :::tip
 
 - `_` 目录由命令动态生成，且默认被 Git 忽略。
-- 如果检测到其他 hooks 路径或已有 Git hooks，`rs setup` 会跳过安装。请先迁移需要保留的 hooks，移除原有配置，然后重试。详细说明请参考 [`rs setup` 指南](./cli/setup#hook-files)。
+- 如果检测到其他 hooks 路径或已有 Git hooks，`rs setup` 会跳过安装。可运行 `rs setup --force` 强制安装 Rstack hooks。详细说明请参考 [`rs setup` 指南](./cli/setup)。
 
 :::
 

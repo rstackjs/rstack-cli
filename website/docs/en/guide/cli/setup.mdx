@@ -41,11 +41,25 @@ rs staged
 
 :::warning Existing Git hook managers
 
-`rs setup` updates the repository's [`core.hooksPath`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath). It skips installation when another hooks path or existing Git hook is detected. Migrate the required hooks and remove the existing hooks configuration before running the command.
+`rs setup` updates the repository's [`core.hooksPath`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath). It skips installation when another hooks path or existing Git hook is detected. Run `rs setup --force` to install Rstack hooks anyway.
 
 :::
 
 ## Options
+
+### `--force`
+
+`--force` (or `-f`) installs Rstack hooks even when an existing Git hooks setup is detected:
+
+```bash
+rs setup --force
+```
+
+Rstack preserves the existing hook files and sets `core.hooksPath` to its generated hooks directory. While this setting is active, Git no longer runs hooks from the previous location.
+
+:::tip
+Run `rs setup --force` only once. Use `rs setup` without `--force` in the `prepare` script.
+:::
 
 ### `--hooks-dir`
 
@@ -171,23 +185,37 @@ To change the owner, remove `rs setup` from the previous project's `prepare` scr
 To remove hooks managed by Rstack CLI:
 
 1. Remove `rs setup` from the `prepare` script.
-2. Unset the repository's hooks path:
+2. Check which Git configuration scope defines the active hooks path:
+
+   ```bash
+   git config --show-scope --get core.hooksPath
+   ```
+
+3. Unset the hooks path in the reported scope. For `local`, run:
 
    ```bash
    git config --local --unset core.hooksPath
    ```
 
-3. Delete `.rstack/hooks/`, or the directory passed to `--hooks-dir`.
+   For `worktree`, run:
+
+   ```bash
+   git config --worktree --unset core.hooksPath
+   ```
+
+   If `--force` previously preserved hooks under `.git/hooks`, unsetting the path reactivates those files. Delete any obsolete files first if you do not want them to run.
+
+4. Delete `.rstack/hooks/`, or the directory passed to `--hooks-dir`.
 
 ## Troubleshooting
 
 ### Hook does not run
 
 - Check that the hook script has a [supported name](#supported-hooks) and is next to the `_` directory.
-- Run `git config --local --get core.hooksPath` and verify the configured path.
+- Run `git config --show-scope --get core.hooksPath` and verify the effective scope and path.
 - Rerun `rs setup` to restore generated files and executable permissions.
 - Check that `RSTACK_HOOKS` is not set to `0` in the environment or initialization file.
-- If another hooks setup is reported, migrate or remove the conflicting setup before rerunning the command.
+- If another hooks setup is reported, run `rs setup --force`.
 - If another project is reported as the hooks owner, follow the ownership transfer steps in [Monorepo](#monorepo).
 
 Hook scripts do not need to be executable because Rstack CLI runs them with `sh`.
