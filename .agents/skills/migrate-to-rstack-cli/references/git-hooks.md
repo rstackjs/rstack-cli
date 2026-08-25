@@ -1,17 +1,17 @@
 # Git Hook Migration
 
-Migrate [Husky](https://typicode.github.io/husky/) or [simple-git-hooks](https://github.com/toplenboren/simple-git-hooks#readme) to [`rs setup`](https://rstack.rs/guide/cli/setup). If a hook calls lint-staged or nano-staged, also read [lint-staged.md](lint-staged.md).
+Migrate [Husky](https://typicode.github.io/husky/) or [simple-git-hooks](https://github.com/toplenboren/simple-git-hooks#readme) to [`rs hooks`](https://rstack.rs/guide/cli/hooks). If a hook calls lint-staged or nano-staged, also read [lint-staged.md](lint-staged.md).
 
 ## Shared Steps
 
 1. Inspect the hook manager configuration, hook scripts, lifecycle scripts, custom paths, environment overrides, and `git config --show-scope --get core.hooksPath`.
-2. Inventory every active hook before editing. Confirm each hook is [supported by `rs setup`](https://rstack.rs/guide/cli/setup#supported-hooks); stop or design an explicit alternative for unsupported hooks.
-3. Create each migrated hook in the selected hooks directory, `.rstack/hooks` by default, before running `rs setup`, because the command changes the repository's `core.hooksPath`. Preserve commands and any explicit directory changes.
-4. Ensure the `prepare` script in the root `package.json` runs `rs setup`, adding it if necessary. Remove the old installer invocation from any lifecycle script while preserving other commands. Use `--hooks-dir` consistently when choosing a custom directory.
-5. If the previous manager's hooks or `core.hooksPath` block installation, run `rs setup --force` once after migrating every required hook. The command preserves the previous files but makes them inactive. Do not add `--force` to the lifecycle script.
+2. Inventory every active hook before editing. Confirm each hook is [supported by `rs hooks`](https://rstack.rs/guide/cli/hooks#supported-hooks); stop or design an explicit alternative for unsupported hooks.
+3. Create each migrated hook in the selected hooks directory, `.rstack/hooks` by default, before running `rs hooks`, because the command changes the repository's `core.hooksPath`. Preserve commands and any explicit directory changes.
+4. Ensure the `prepare` script in the root `package.json` runs `rs hooks`, adding it if necessary. Remove the old installer invocation from any lifecycle script while preserving other commands. Use `--hooks-dir` consistently when choosing a custom directory.
+5. If the previous manager's hooks or `core.hooksPath` block installation, run `rs hooks --force` once after migrating every required hook. The command preserves the previous files but makes them inactive. Do not add `--force` to the lifecycle script.
 6. Exercise the migrated hooks, then remove the old dependency, configuration, and generated hook files only after behavior matches and their ownership and paths are confirmed.
 
-`rs setup` creates `.rstack/hooks/_/.gitignore`. Do not list `.rstack/hooks/_` in the root `.gitignore`.
+`rs hooks` creates `.rstack/hooks/_/.gitignore`. Do not list `.rstack/hooks/_` in the root `.gitignore`.
 
 ## Husky
 
@@ -19,7 +19,7 @@ Migrate [Husky](https://typicode.github.io/husky/) or [simple-git-hooks](https:/
    - Husky v5 and newer: files such as `.husky/pre-commit`; exclude the generated `.husky/_` directory.
    - Husky v4: `package.json#husky.hooks` or `.huskyrc*` configuration.
 2. Move each hook body to the corresponding file in the selected hooks directory. Remove lines that source `.husky/_/husky.sh`; keep the reusable POSIX shell commands.
-3. Replace Husky lifecycle invocations such as `husky`, `husky install`, or a custom Husky directory command with `rs setup` or `rs setup --hooks-dir <path>`.
+3. Replace Husky lifecycle invocations such as `husky`, `husky install`, or a custom Husky directory command with `rs hooks` or `rs hooks --hooks-dir <path>`.
 4. Replace `HUSKY=0`, `HUSKY_SKIP_HOOKS`, and `HUSKY_SKIP_INSTALL` usage with `RSTACK_HOOKS=0`. Replace `HUSKY_GIT_PARAMS` with the positional arguments expected by each hook. For example, change `commitlint -E HUSKY_GIT_PARAMS` to `commitlint --edit "$1"`.
 5. Tell users who rely on `$XDG_CONFIG_HOME/husky/init.sh`, `~/.config/husky/init.sh`, or the deprecated `~/.huskyrc` to move the required shell setup to `$XDG_CONFIG_HOME/rstack/hooks-init.sh` or `~/.config/rstack/hooks-init.sh`. Do not edit user-level files without permission.
 6. After validation, remove the Husky dependency and old hook directory.
@@ -42,9 +42,9 @@ pnpm test
 
 1. Load the active configuration from `package.json#simple-git-hooks`, a `.simple-git-hooks.{js,cjs,mjs,json}` or `simple-git-hooks.{js,cjs,mjs,json}` file, or the custom path passed to its CLI. Use the configuration values instead of copying generated files from the Git hooks directory.
 2. Create one file in the selected hooks directory for each configured command, using the hook name as the file name. Ignore `preserveUnused` as a command, but inspect and migrate any existing hooks that it preserves.
-3. Replace the simple-git-hooks lifecycle command with `rs setup`, preserving other chained commands.
+3. Replace the simple-git-hooks lifecycle command with `rs hooks`, preserving other chained commands.
 4. Replace `SKIP_INSTALL_SIMPLE_GIT_HOOKS=1` and `SKIP_SIMPLE_GIT_HOOKS=1` usage with `RSTACK_HOOKS=0`. Move required commands from the file referenced by `SIMPLE_GIT_HOOKS_RC` to the Rstack user initialization file, with user permission.
-5. Do not run the simple-git-hooks uninstall script after `rs setup`; it follows the current `core.hooksPath` and can delete Rstack's generated hook shims.
+5. Do not run the simple-git-hooks uninstall script after `rs hooks`; it follows the current `core.hooksPath` and can delete Rstack's generated hook shims.
 6. After validation, remove the simple-git-hooks dependency, config, installer, old generated hook files, and stale package-manager metadata such as pnpm `allowBuilds`. Confirm the generated files' ownership and paths before removing them.
 
 For example, migrate:
@@ -61,7 +61,7 @@ For example, migrate:
 }
 ```
 
-to `"prepare": "existing-command && rs setup"` and these hook files:
+to `"prepare": "existing-command && rs hooks"` and these hook files:
 
 ```sh title=".rstack/hooks/pre-commit"
 pnpm lint
