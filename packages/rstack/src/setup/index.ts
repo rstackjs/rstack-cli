@@ -3,7 +3,10 @@ import { parseArgs } from '../cli/args.ts';
 import { printCommandHelp } from '../cli/help.ts';
 import { installHooks } from './install.ts';
 
-export const runSetupCLI = async (args: string[]): Promise<void> => {
+export const runHooksCLI = async (
+  args: string[],
+  command: 'hooks' | 'setup' = 'hooks',
+): Promise<void> => {
   const { values } = parseArgs({
     args,
     options: {
@@ -25,7 +28,7 @@ export const runSetupCLI = async (args: string[]): Promise<void> => {
   const hooksDir = hooksDirs?.[0];
 
   if (values.help) {
-    await printCommandHelp('setup');
+    await printCommandHelp(command);
     return;
   }
 
@@ -68,7 +71,7 @@ export const runSetupCLI = async (args: string[]): Promise<void> => {
         result.reason === 'hooks-path-conflict'
       ) {
         logger.info(
-          `To continue, run ${color.yellow('rs setup --force')}. Existing hook files will be preserved but become inactive.`,
+          `To continue, run ${color.yellow('rs hooks --force')}. Existing hook files will be preserved but become inactive.`,
         );
       }
       return;

@@ -252,12 +252,12 @@ export async function setupCommands(): Promise<void> {
     return;
   }
 
-  if (command === 'setup') {
-    const { runSetupCLI } = await import(
-      /* rspackChunkName: 'setup' */
+  if (command === 'hooks' || command === 'setup') {
+    const { runHooksCLI } = await import(
+      /* rspackChunkName: 'hooks' */
       '../setup/index.ts'
     );
-    await runSetupCLI(args.slice(1));
+    await runHooksCLI(args.slice(1), command);
     return;
   }
 

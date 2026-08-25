@@ -1,10 +1,10 @@
 // Rstest Snapshot v1
 
-exports[`displays setup help 1`] = `
+exports[`displays hooks help without installing hooks 1`] = `
 "Rstack v<version>
 
 Usage:
-  $ rs setup [options]
+  $ rs hooks [options]
 
 Install Git hooks in the current repository
 

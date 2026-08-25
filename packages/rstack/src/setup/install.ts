@@ -145,7 +145,7 @@ const resolveHooksPathScope = (
   if (scope === 'command') {
     return fail(
       'hooks-path-command-scope',
-      "Cannot configure core.hooksPath because it is set in Git's command scope. Remove the command-scoped override and rerun rs setup.",
+      "Cannot configure core.hooksPath because it is set in Git's command scope. Remove the command-scoped override and rerun rs hooks.",
     );
   }
   if (scope === 'system' || scope === 'global' || scope === 'local') {
