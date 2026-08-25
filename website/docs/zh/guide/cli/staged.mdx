@@ -1,10 +1,14 @@
+---
+description: '使用 rs staged 命令对 Git 暂存文件运行 lint-staged 任务。'
+---
+
 # staged
 
 `rs staged` 命令使用 [lint-staged](https://github.com/lint-staged/lint-staged) 对 Git 暂存文件运行任务。
 
 `rs staged` 可用于在提交代码前，对暂存文件运行 linter、格式化工具或其他检查。
 
-常见做法是将 `rs staged` 与 [`rs setup`](./setup) 配合使用，通过 `pre-commit` hook 运行暂存文件任务。
+常见做法是将 `rs staged` 与 [`rs hooks`](./hooks) 配合使用，通过 `pre-commit` hook 运行暂存文件任务。
 
 ## 用法 \{#usage}
 
