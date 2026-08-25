@@ -137,7 +137,7 @@ const expectStagedSetup = async (
   configExtension: string,
   scripts: Record<string, string>,
 ): Promise<void> => {
-  expect(scripts.prepare).toBe('rs setup');
+  expect(scripts.prepare).toBe('rs hooks');
   expect(
     await readFile(
       path.join(projectDirectory, '.rstack', 'hooks', 'pre-commit'),
