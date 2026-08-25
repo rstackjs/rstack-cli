@@ -352,7 +352,7 @@ Commands:
   check        Run static checks, including lint and format
   test         Run tests
   staged       Run tasks on staged Git files
-  setup        Install Git hooks
+  hooks        Install Git hooks
 
 For command-specific options, run:
   $ rs <command> -h

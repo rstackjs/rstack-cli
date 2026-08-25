@@ -45,6 +45,7 @@ export type HelpTopic =
   | 'lint'
   | 'fmt'
   | 'staged'
+  | 'hooks'
   | 'setup';
 
 const CONFIG_OPTION: HelpItem = [
@@ -132,7 +133,7 @@ const HELP_DEFINITIONS = {
           ['check', 'Run static checks, including lint and format'],
           ['test', 'Run tests'],
           ['staged', 'Run tasks on staged Git files'],
-          ['setup', 'Install Git hooks'],
+          ['hooks', 'Install Git hooks'],
         ],
       },
       {
@@ -487,6 +488,23 @@ const HELP_DEFINITIONS = {
             'Show task output even when tasks succeed; by default only failed output is shown',
           ],
           ...CONFIG_HELP_OPTIONS,
+        ],
+      },
+    ],
+  },
+  hooks: {
+    usage: 'rs hooks [options]',
+    description: 'Install Git hooks in the current repository',
+    sections: [
+      {
+        title: 'Options',
+        items: [
+          ['-f, --force', 'Install despite an existing Git hooks setup'],
+          [
+            '--hooks-dir <path>',
+            'Specify hooks directory relative to the Git repository root',
+          ],
+          HELP_OPTION,
         ],
       },
     ],
