@@ -198,7 +198,7 @@ const injectStagedSetup = async ({
   };
 
   packageJson.scripts = Object.fromEntries(
-    Object.entries({ ...packageJson.scripts, prepare: 'rs setup' }).sort(
+    Object.entries({ ...packageJson.scripts, prepare: 'rs hooks' }).sort(
       ([left], [right]) => left.localeCompare(right),
     ),
   );

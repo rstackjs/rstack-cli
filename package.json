@@ -12,7 +12,7 @@
     "doc:build": "node --run build && pnpm --dir website build",
     "format": "rs fmt && heading-case --write",
     "lint": "rs lint --type-check",
-    "prepare": "node scripts/rs.js setup",
+    "prepare": "node scripts/rs.js hooks",
     "release:prepare": "node scripts/prepare-release.js",
     "test": "pnpm --parallel --filter \"./packages/**\" test"
   },
