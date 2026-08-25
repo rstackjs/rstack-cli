@@ -71,10 +71,26 @@ test('displays hooks help without installing hooks', ({ execCli, expect }) => {
 
 test('rejects unknown hooks positionals and options', ({ execCli, expect }) => {
   expect(() => execCli('hooks install', { cwd })).toThrow();
-  expect(() => execCli('hooks uninstall', { cwd })).toThrow();
   expect(() => execCli('hooks --unknown', { cwd })).toThrow();
   expect(() => execCli('hooks --dir custom-hooks', { cwd })).toThrow();
   expect(() => execCli('hooks -d custom-hooks', { cwd })).toThrow();
+});
+
+test('displays uninstall help', ({ execCli, expect }) => {
+  const output = execCli('hooks uninstall --help', { cwd });
+
+  expect(execCli('hooks uninstall -h', { cwd })).toBe(output);
+  expect(normalizeHelpOutput(output)).toMatchSnapshot();
+});
+
+test('rejects unsupported uninstall arguments', ({ expect }) => {
+  for (const args of [
+    ['extra'],
+    ['--force'],
+    ['--hooks-dir', 'custom-hooks'],
+  ]) {
+    expect(runHooks(['uninstall', ...args]).status).toBe(1);
+  }
 });
 
 test('reports missing and repeated hooks directory options', ({ expect }) => {
@@ -123,6 +139,23 @@ test('installs hooks silently without loading Rstack config', ({
   );
 
   expect(execCli('hooks', { cwd, env })).toBe('');
+});
+
+test('uninstalls hooks and prints the prepare reminder', ({
+  execCli,
+  expect,
+}) => {
+  initRepository();
+  expect(execCli('hooks', { cwd, env })).toBe('');
+
+  const output = execCli('hooks uninstall', { cwd, env });
+  expect(output).toContain(
+    'info    Rstack Git hooks uninstalled from ".rstack/hooks/_".',
+  );
+  expect(output).toContain(
+    'info    Remove rs hooks from the prepare script in package.json to keep hooks uninstalled.',
+  );
+  expect(existsSync(path.join(cwd, hooksPath))).toBe(false);
 });
 
 test('guides and forces installation while preserving existing hooks', ({

@@ -2,10 +2,11 @@ import { color, logger } from 'rslog';
 import { parseArgs } from '../cli/args.ts';
 import { printCommandHelp } from '../cli/help.ts';
 import { installHooks } from './install.ts';
+import { uninstallHooks } from './uninstall.ts';
 
-export const runHooksCLI = async (
+const runInstallCLI = async (
   args: string[],
-  command: 'hooks' | 'setup' = 'hooks',
+  command: 'hooks' | 'setup',
 ): Promise<void> => {
   const { values } = parseArgs({
     args,
@@ -86,4 +87,49 @@ export const runHooksCLI = async (
   }
 
   throw new Error(result.message);
+};
+
+const runUninstallCLI = async (args: string[]): Promise<void> => {
+  const { values } = parseArgs({
+    args,
+    options: {
+      help: { type: 'boolean', short: 'h' },
+    },
+    allowPositionals: false,
+    strict: true,
+  });
+
+  if (values.help) {
+    await printCommandHelp('hooks uninstall');
+    return;
+  }
+
+  const result = uninstallHooks();
+  if (result.status === 'uninstalled') {
+    logger.info(
+      `Rstack Git hooks uninstalled from "${color.yellow(result.hooksPath)}".`,
+    );
+    logger.info(
+      `Remove ${color.yellow('rs hooks')} from the ${color.yellow('prepare')} script in package.json to keep hooks uninstalled.`,
+    );
+    return;
+  }
+
+  if (result.status === 'unchanged') {
+    return;
+  }
+
+  throw new Error(result.message);
+};
+
+export const runHooksCLI = async (
+  args: string[],
+  command: 'hooks' | 'setup' = 'hooks',
+): Promise<void> => {
+  if (command === 'hooks' && args[0] === 'uninstall') {
+    await runUninstallCLI(args.slice(1));
+    return;
+  }
+
+  await runInstallCLI(args, command);
 };

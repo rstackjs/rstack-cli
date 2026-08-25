@@ -4,13 +4,33 @@ exports[`displays hooks help without installing hooks 1`] = `
 "Rstack v<version>
 
 Usage:
-  $ rs hooks [options]
+  $ rs hooks [command] [options]
 
-Install Git hooks in the current repository
+Manage Git hooks in the current repository
+
+Commands:
+  [options]  Install or update Git hooks (default)
+  uninstall  Uninstall Git hooks
+
+For command-specific options, run:
+  $ rs hooks <command> -h
 
 Options:
   -f, --force         Install despite an existing Git hooks setup
   --hooks-dir <path>  Specify hooks directory relative to the Git repository root
   -h, --help          Display this help message
+"
+`;
+
+exports[`displays uninstall help 1`] = `
+"Rstack v<version>
+
+Usage:
+  $ rs hooks uninstall [options]
+
+Uninstall Git hooks from the current repository
+
+Options:
+  -h, --help  Display this help message
 "
 `;
