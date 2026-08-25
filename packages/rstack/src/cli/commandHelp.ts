@@ -46,6 +46,7 @@ export type HelpTopic =
   | 'fmt'
   | 'staged'
   | 'hooks'
+  | 'hooks uninstall'
   | 'setup';
 
 const CONFIG_OPTION: HelpItem = [
@@ -133,7 +134,7 @@ const HELP_DEFINITIONS = {
           ['check', 'Run static checks, including lint and format'],
           ['test', 'Run tests'],
           ['staged', 'Run tasks on staged Git files'],
-          ['hooks', 'Install Git hooks'],
+          ['hooks', 'Manage Git hooks'],
         ],
       },
       {
@@ -493,9 +494,17 @@ const HELP_DEFINITIONS = {
     ],
   },
   hooks: {
-    usage: 'rs hooks [options]',
-    description: 'Install Git hooks in the current repository',
+    usage: 'rs hooks [command] [options]',
+    description: 'Manage Git hooks in the current repository',
     sections: [
+      {
+        title: 'Commands',
+        items: [
+          ['[options]', 'Install or update Git hooks (default)'],
+          ['uninstall', 'Uninstall Git hooks'],
+        ],
+      },
+      commandHint('hooks'),
       {
         title: 'Options',
         items: [
@@ -506,6 +515,16 @@ const HELP_DEFINITIONS = {
           ],
           HELP_OPTION,
         ],
+      },
+    ],
+  },
+  'hooks uninstall': {
+    usage: 'rs hooks uninstall [options]',
+    description: 'Uninstall Git hooks from the current repository',
+    sections: [
+      {
+        title: 'Options',
+        items: [HELP_OPTION],
       },
     ],
   },
