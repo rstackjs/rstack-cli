@@ -6,18 +6,18 @@ description: 'Set up repository Git hooks with Rstack CLI and automatically lint
 
 import { PackageManagerTabs } from '@rspress/core/theme';
 
-Use [`rs setup`](./cli/setup) to manage repository-level Git hooks that run project commands. By default, hook scripts live in `.rstack/hooks`. You can use them to validate commit messages, check code before pushing, or format files before committing.
+Use [`rs hooks`](./cli/hooks) to manage repository-level Git hooks that run project commands. By default, hook scripts live in `.rstack/hooks`. You can use them to validate commit messages, check code before pushing, or format files before committing.
 
-This page uses `pre-commit` as an example: first install Git hooks with `rs setup`, then run [`rs staged`](./cli/staged) from the `pre-commit` hook to lint and format the files staged for the commit.
+This page uses `pre-commit` as an example: first install Git hooks with `rs hooks`, then run [`rs staged`](./cli/staged) from the `pre-commit` hook to lint and format the files staged for the commit.
 
 ## Set up hooks
 
-Add `rs setup` to the `prepare` script of the project that owns the repository hooks:
+Add `rs hooks` to the `prepare` script of the project that owns the repository hooks:
 
 ```json title="package.json"
 {
   "scripts": {
-    "prepare": "rs setup"
+    "prepare": "rs hooks"
   }
 }
 ```
@@ -33,7 +33,7 @@ Run the script once to install the hooks:
   }}
 />
 
-`rs setup` sets the repository's `core.hooksPath` to `.rstack/hooks/_`. Verify the installation with:
+`rs hooks` sets the repository's `core.hooksPath` to `.rstack/hooks/_`. Verify the installation with:
 
 ```bash
 git config --get core.hooksPath
@@ -43,7 +43,7 @@ git config --get core.hooksPath
 :::tip
 
 - The `_` directory is generated dynamically and ignored by Git by default.
-- If `rs setup` detects another hooks path or existing Git hooks, it skips installation. Run `rs setup --force` to install Rstack hooks anyway. See the [`rs setup` guide](./cli/setup) for details.
+- If `rs hooks` detects another hooks path or existing Git hooks, it skips installation. Run `rs hooks --force` to install Rstack hooks anyway. See the [`rs hooks` guide](./cli/hooks) for details.
 
 :::
 
@@ -74,7 +74,7 @@ rs staged
 
 ### How it works
 
-When you run `git commit`, Git invokes the hook installed by `rs setup`. The hook executes `.rstack/hooks/pre-commit`, and `rs staged` then runs the configured tasks on the staged files.
+When you run `git commit`, Git invokes the hook installed by `rs hooks`. The hook executes `.rstack/hooks/pre-commit`, and `rs staged` then runs the configured tasks on the staged files.
 
 `rs staged` passes matching staged files to each command. Commands in an array run in order: [`rs lint --fix`](./cli/lint) first applies available fixes, then [`rs fmt`](./cli/fmt) formats the result. Remove `--fix` if lint errors should block the commit without changing files.
 
