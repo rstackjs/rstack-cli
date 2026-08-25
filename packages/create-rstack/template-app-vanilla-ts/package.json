@@ -18,7 +18,7 @@
     "@testing-library/jest-dom": "^7.0.1",
     "@types/node": "^24.13.3",
     "happy-dom": "^20.11.2",
-    "rstack": "^0.6.3",
+    "rstack": "^0.6.4",
     "typescript": "^7.0.2"
   }
 }
