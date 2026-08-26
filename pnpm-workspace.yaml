@@ -21,7 +21,7 @@ catalog:
   '@rspress/core': '^2.0.20'
   '@rspress/plugin-client-redirects': '^2.0.20'
   '@rspress/plugin-sitemap': '^2.0.20'
-  '@rstack-dev/doc-ui': '1.14.8'
+  '@rstackjs/doc-ui': '1.14.8'
   '@rstackjs/create-toolkit': '2.2.4'
   '@rstackjs/load-config': ^0.1.2
   '@rstackjs/test-utils': ^0.2.0
@@ -94,7 +94,6 @@ minimumReleaseAgeExclude:
   - '@rslint/*'
   - '@rstackjs/*'
   - 'rslog'
-  - '@rstack-dev/doc-ui'
   - 'rsbuild-plugin-*'
   - '@swc/*'
   - 'heading-case'

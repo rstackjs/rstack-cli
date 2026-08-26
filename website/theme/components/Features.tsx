@@ -3,11 +3,11 @@ import { Link } from '@rspress/core/theme-original';
 import {
   containerStyle,
   innerContainerStyle,
-} from '@rstack-dev/doc-ui/section-style';
+} from '@rstackjs/doc-ui/section-style';
 import {
   type Feature,
   WhyRspack as BaseFeatures,
-} from '@rstack-dev/doc-ui/why-rspack';
+} from '@rstackjs/doc-ui/why-rspack';
 import { memo, useMemo } from 'react';
 import CompatibleJson from './Features/assets/Compatible.json';
 import Compatible from './Features/assets/Compatible.svg';
