@@ -1,10 +1,4 @@
-:root {
-  --rp-c-text-code: var(--rp-c-text-1);
-}
-
-.dark {
-  --rp-c-link: var(--rp-c-brand-light);
-}
+@import './theme.scss';
 
 /* Keep document content visually centered when a page has no sidebar. */
 @media (min-width: 1280px) {
@@ -19,32 +13,4 @@ body:has(#home-hero-title) .rp-nav {
 
 .rspress-logo {
   height: 1.8rem;
-}
-
-.rp-doc {
-  .rp-link,
-  .rp-link code {
-    color: inherit;
-    text-decoration-line: underline;
-    text-underline-offset: 2px;
-    text-decoration-color: rgba(0, 0, 0, 0.25);
-
-    &:hover {
-      opacity: 1;
-      text-decoration-color: currentColor;
-      border-bottom: none !important;
-    }
-  }
-}
-
-.dark {
-  .rp-doc {
-    .rp-link {
-      text-decoration-color: rgba(255, 255, 255, 0.5);
-
-      &:hover {
-        text-decoration-color: currentColor;
-      }
-    }
-  }
 }
