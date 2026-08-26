@@ -34,7 +34,7 @@ catalogs:
     '@rspress/plugin-sitemap':
       specifier: ^2.0.20
       version: 2.0.20
-    '@rstack-dev/doc-ui':
+    '@rstackjs/doc-ui':
       specifier: 1.14.8
       version: 1.14.8
     '@rstackjs/create-toolkit':
@@ -458,7 +458,7 @@ importers:
       '@rspress/plugin-sitemap':
         specifier: 'catalog:'
         version: 2.0.20(@rspress/core@2.0.20)
-      '@rstack-dev/doc-ui':
+      '@rstackjs/doc-ui':
         specifier: 'catalog:'
         version: 1.14.8(@rspress/core@2.0.20)
       '@shikijs/transformers':
@@ -1580,8 +1580,8 @@ packages:
   '@rspress/shared@2.0.20':
     resolution: {integrity: sha512-+e55crMZom5BQLgebrT4Pz4Zg0P7JIsYnDz4Ey65CTloFhfan1rARQpgb74b2bf5kKv/sPbPw6pfD8Fu74mCPQ==}
 
-  '@rstack-dev/doc-ui@1.14.8':
-    resolution: {integrity: sha512-CAibkpvCnJEcxsypu3ZE9JjtQw+1+iJGv9X09Yg4//9FevHpfaHW+b2onFG+Z/xOlUXGg83rJTb7CO6YbToP0w==}
+  '@rstackjs/doc-ui@1.14.8':
+    resolution: {integrity: sha512-i8FB+NrnCVKIPz4cbXe/oOebcHuIUe2DQTpKxCXUBqgM9QL66+LZ5UtgZPExalTDpUPzhwOhsXKfkstGB0JkVg==}
     peerDependencies:
       '@rspress/core': '>=2.0.0'
     peerDependenciesMeta:
@@ -4174,7 +4174,7 @@ snapshots:
       - core-js
       - supports-color
 
-  '@rstack-dev/doc-ui@1.14.8(@rspress/core@2.0.20)':
+  '@rstackjs/doc-ui@1.14.8(@rspress/core@2.0.20)':
     optionalDependencies:
       '@rspress/core': 2.0.20(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
 
