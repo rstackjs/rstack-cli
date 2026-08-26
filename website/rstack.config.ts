@@ -78,6 +78,7 @@ define.doc(async () => {
     ],
     themeConfig: {
       llmsUI: {
+        placement: 'outline',
         injectLlmsHint,
       },
       socialLinks: [
