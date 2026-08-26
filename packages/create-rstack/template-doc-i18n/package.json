@@ -12,10 +12,10 @@
     "preview": "rs doc preview"
   },
   "devDependencies": {
-    "@rspress/core": "^2.0.19",
-    "@types/node": "^24.13.3",
+    "@rspress/core": "^2.0.20",
+    "@types/node": "^26.3.0",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
+    "@types/react-dom": "^19.2.5",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "rstack": "^0.6.4",

@@ -17,7 +17,7 @@
     "lit": "^3.3.3"
   },
   "devDependencies": {
-    "happy-dom": "^20.11.2",
+    "happy-dom": "^20.11.6",
     "rstack": "^0.6.4"
   }
 }

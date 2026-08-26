@@ -17,11 +17,11 @@
     "preact": "^10.29.8"
   },
   "devDependencies": {
-    "@rsbuild/plugin-preact": "^2.0.0",
+    "@rsbuild/plugin-preact": "^2.1.0",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/preact": "^3.2.4",
-    "@types/node": "^24.13.3",
-    "happy-dom": "^20.11.2",
+    "@types/node": "^26.3.0",
+    "happy-dom": "^20.11.6",
     "rstack": "^0.6.4",
     "typescript": "^7.0.2"
   }
