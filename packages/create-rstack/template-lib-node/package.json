@@ -18,7 +18,7 @@
     "test:watch": "rs test --watch"
   },
   "devDependencies": {
-    "rstack": "^0.6.4"
+    "rstack": "^0.6.5"
   },
   "engines": {
     "node": ">=22.12.0"
