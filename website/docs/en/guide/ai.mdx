@@ -27,20 +27,20 @@ This project uses Rstack CLI as its JavaScript toolchain.
 - If the local documentation is unavailable, use https://rstack.rs/llms.txt and `rs <command> -h`.
 ```
 
-This content serves a similar purpose to the [rstack-cli-best-practices](#rstack-cli-best-practices) Skill, helping coding agents use Rstack CLI and find relevant documentation. Add it to `AGENTS.md` or install the Skill; either is sufficient.
+This content serves a similar purpose to the [rstack-cli-docs](#rstack-cli-docs) Skill, helping coding agents use Rstack CLI and find relevant documentation. Add it to `AGENTS.md` or install the Skill; either is sufficient.
 
 ## Agent Skills
 
 Rstack CLI provides domain-specific Agent Skills that help coding agents give more accurate guidance and perform relevant tasks.
 
-### rstack-cli-best-practices
+### rstack-cli-docs
 
-The [rstack-cli-best-practices](https://github.com/rstackjs/rstack-cli/tree/main/.agents/skills/rstack-cli-best-practices) Skill provides guidance and best practices for using Rstack CLI.
+The [rstack-cli-docs](https://github.com/rstackjs/rstack-cli/tree/main/.agents/skills/rstack-cli-docs) Skill helps coding agents consult version-matched documentation for Rstack CLI commands, configuration, and public APIs.
 
 Install it with the [skills](https://www.npmjs.com/package/skills) package:
 
 <PackageManagerTabs
-  command="skills add rstackjs/rstack-cli --skill rstack-cli-best-practices"
+  command="skills add rstackjs/rstack-cli --skill rstack-cli-docs"
   dlx
 />
 
