@@ -18,7 +18,7 @@ Read every matching reference before editing. Load only the tools present in the
 - `prettier`, `package.json#prettier`, `.prettierrc*`, `prettier.config.*`, `.prettierignore`, `.editorconfig`, `sort-package-json`, Prettier plugins, or formatting scripts: [prettier.md](references/prettier.md)
 - `@rspress/core`, `rspress.config.*`, `rspress` commands, themes, or plugins: [rspress.md](references/rspress.md)
 - `lint-staged`, `nano-staged`, their configs: [lint-staged.md](references/lint-staged.md)
-- `husky`, `.husky/`, `package.json#husky`, `lefthook`, `lefthook*.{yml,yaml,json,jsonc,toml}`, `.lefthook*`, `simple-git-hooks`, `.simple-git-hooks.*`, or Git hook installer scripts: [git-hooks.md](references/git-hooks.md)
+- `husky`, `.husky/`, `package.json#husky`, `lefthook`, `simple-git-hooks`, `.simple-git-hooks.*`, or Git hook installer scripts: [git-hooks.md](references/git-hooks.md)
 
 ## Workflow
 
