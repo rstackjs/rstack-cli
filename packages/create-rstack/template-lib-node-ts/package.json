@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.3.0",
-    "rstack": "^0.7.0",
+    "rstack": "^0.7.1",
     "typescript": "^7.0.2"
   },
   "engines": {
