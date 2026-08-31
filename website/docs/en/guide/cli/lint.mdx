@@ -39,3 +39,7 @@ define.lint(({ js, ts }) => [
   ts.configs.recommendedTypeChecked,
 ]);
 ```
+
+## Typed linting
+
+Type-aware presets such as `ts.configs.recommendedTypeChecked` apply only to files included by a `tsconfig.json`. In a monorepo, list the project `tsconfig.json` files through Rslint's [`parserOptions.project`](https://rslint.rs/config/language-options#languageoptionsparseroptionsproject). See [Root configuration](../monorepo#root-configuration) for an example.
