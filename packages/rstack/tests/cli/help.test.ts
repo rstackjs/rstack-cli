@@ -12,10 +12,6 @@ test('displays top-level help', ({ execCli, expect }) => {
   expect(normalizeHelpOutput(execCli('--help'))).toMatchSnapshot();
 });
 
-test('rejects the removed setup command', ({ execCli, expect }) => {
-  expect(() => execCli('setup')).toThrow(/Unknown command: setup/u);
-});
-
 for (const command of ['dev', 'build', 'preview', 'lint']) {
   test(`displays ${command} help`, ({ execCli, expect }) => {
     const output = execCli(`${command} --help`);
