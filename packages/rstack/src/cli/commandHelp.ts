@@ -46,8 +46,7 @@ export type HelpTopic =
   | 'fmt'
   | 'staged'
   | 'hooks'
-  | 'hooks uninstall'
-  | 'setup';
+  | 'hooks uninstall';
 
 const CONFIG_OPTION: HelpItem = [
   '-c, --config <path>',
@@ -525,23 +524,6 @@ const HELP_DEFINITIONS = {
       {
         title: 'Options',
         items: [HELP_OPTION],
-      },
-    ],
-  },
-  setup: {
-    usage: 'rs setup [options]',
-    description: 'Install Git hooks in the current repository',
-    sections: [
-      {
-        title: 'Options',
-        items: [
-          ['-f, --force', 'Install despite an existing Git hooks setup'],
-          [
-            '--hooks-dir <path>',
-            'Specify hooks directory relative to the Git repository root',
-          ],
-          HELP_OPTION,
-        ],
       },
     ],
   },
