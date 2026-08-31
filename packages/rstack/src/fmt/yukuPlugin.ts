@@ -600,7 +600,29 @@ const createParser = (
   parse,
 });
 
+/** Match the AST root returned by Prettier's native Babel parser. */
+const parseBabel = (text: string, options: ParserOptions<AstNode>): AstNode => {
+  const program = parseJavaScript(text, options);
+  const comments = program.comments;
+  const start = locStart(program);
+  const end = locEndWithFullText(program);
+
+  // Babel stores comments on the File node rather than its Program child.
+  delete program.comments;
+
+  return {
+    type: 'File',
+    comments,
+    end,
+    errors: [],
+    program,
+    range: [start, end],
+    start,
+  };
+};
+
 const yukuParser = createParser(parseJavaScript);
+const yukuBabelParser = createParser(parseBabel);
 const yukuTypeScriptParser = createParser(parseTypeScript);
 
 const yukuPlugin: Plugin = {
@@ -608,7 +630,7 @@ const yukuPlugin: Plugin = {
   parsers: {
     // Prettier resolves parsers from the last plugin that provides the name.
     // Project plugins are loaded after this one, so parser wrappers take priority.
-    babel: yukuParser,
+    babel: yukuBabelParser,
     typescript: yukuTypeScriptParser,
     yuku: yukuParser,
     'yuku-ts': yukuTypeScriptParser,

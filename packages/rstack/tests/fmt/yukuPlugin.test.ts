@@ -21,7 +21,7 @@ const formatWithYuku = (
 
 test('overrides the default JavaScript and TypeScript parsers', async () => {
   expect(yukuPlugin.languages).toBeUndefined();
-  expect(yukuPlugin.parsers?.babel).toBe(yukuPlugin.parsers?.yuku);
+  expect(yukuPlugin.parsers?.babel).not.toBe(yukuPlugin.parsers?.yuku);
   expect(yukuPlugin.parsers?.typescript).toBe(yukuPlugin.parsers?.['yuku-ts']);
 
   await expect(
@@ -36,6 +36,23 @@ test('overrides the default JavaScript and TypeScript parsers', async () => {
     { ignored: false, inferredParser: 'typescript' },
     { ignored: false, inferredParser: 'typescript' },
   ]);
+});
+
+test('matches the native Babel AST root shape', async () => {
+  const parser = yukuPlugin.parsers?.babel;
+  if (!parser) {
+    throw new Error('The Babel-compatible Yuku parser is not registered.');
+  }
+
+  const ast = (await parser.parse('// comment\nconst value = 1', {
+    filepath: 'example.js',
+  } as ParserOptions)) as Record<string, unknown>;
+  const program = ast.program as Record<string, unknown>;
+
+  expect(ast.type).toBe('File');
+  expect(ast.comments).toHaveLength(1);
+  expect(program.type).toBe('Program');
+  expect(program.comments).toBeUndefined();
 });
 
 test.each(['babel', 'typescript'] as const)(
