@@ -49,6 +49,13 @@ import { define } from 'rstack';
 define.lint(({ js, ts }) => [
   js.configs.recommended,
   ts.configs.recommendedTypeChecked,
+  {
+    languageOptions: {
+      parserOptions: {
+        project: ['./apps/*/tsconfig.json', './packages/*/tsconfig.json'],
+      },
+    },
+  },
 ]);
 
 define.fmt({
@@ -61,6 +68,8 @@ define.staged({
   '*.{json,md,mdx,css,html,yml,yaml}': 'rs fmt',
 });
 ```
+
+`parserOptions.project` lists the `tsconfig.json` of each project for type-aware presets and `rs check --type-check`. See [Typed linting](./cli/lint#typed-linting).
 
 Expose these tasks through scripts in the root `package.json`:
 

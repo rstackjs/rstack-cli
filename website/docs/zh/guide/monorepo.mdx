@@ -49,6 +49,13 @@ import { define } from 'rstack';
 define.lint(({ js, ts }) => [
   js.configs.recommended,
   ts.configs.recommendedTypeChecked,
+  {
+    languageOptions: {
+      parserOptions: {
+        project: ['./apps/*/tsconfig.json', './packages/*/tsconfig.json'],
+      },
+    },
+  },
 ]);
 
 define.fmt({
@@ -61,6 +68,8 @@ define.staged({
   '*.{json,md,mdx,css,html,yml,yaml}': 'rs fmt',
 });
 ```
+
+`parserOptions.project` 列出各个子项目的 `tsconfig.json`，供类型感知预设和 `rs check --type-check` 使用。详见[类型感知检查](./cli/lint#typed-linting)。
 
 在根目录的 `package.json` 中提供对应脚本：
 

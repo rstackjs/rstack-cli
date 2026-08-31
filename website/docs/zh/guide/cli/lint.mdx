@@ -39,3 +39,7 @@ define.lint(({ js, ts }) => [
   ts.configs.recommendedTypeChecked,
 ]);
 ```
+
+## 类型感知检查 \{#typed-linting}
+
+`ts.configs.recommendedTypeChecked` 等类型感知预设只对 `tsconfig.json` 包含的文件生效。在 Monorepo 中，可以通过 Rslint 的 [`parserOptions.project`](https://rslint.rs/config/language-options#languageoptionsparseroptionsproject) 列出各个子项目的 `tsconfig.json`。示例请参考[根配置](../monorepo#root-configuration)。
