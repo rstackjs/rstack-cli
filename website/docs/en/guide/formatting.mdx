@@ -211,7 +211,9 @@ You can safely delete `.rstack/cache` to clear cached results. Do not treat the 
 
 To add formatting capabilities that are not built into Rstack CLI, install the corresponding [Prettier plugin](https://prettier.io/docs/plugins) and add it to `plugins`. Plugins can be referenced by package name, file path, or URL. Package names and relative paths are resolved from the directory containing the Rstack configuration file.
 
-Because `rs fmt` loads plugins in workers, plugin objects cannot be passed directly. Reference each plugin by package name, path, or URL instead. For example, install and enable [`prettier-plugin-tailwindcss`](https://github.com/tailwindlabs/prettier-plugin-tailwindcss):
+Because `rs fmt` loads plugins in workers, plugin objects cannot be passed directly. Reference each plugin by package name, path, or URL instead.
+
+For example, install and enable [`prettier-plugin-tailwindcss`](https://github.com/tailwindlabs/prettier-plugin-tailwindcss):
 
 <PackageManagerTabs command="install -D prettier-plugin-tailwindcss" />
 

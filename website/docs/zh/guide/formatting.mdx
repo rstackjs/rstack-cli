@@ -211,7 +211,9 @@ rs fmt --no-cache
 
 如果需要使用 Rstack CLI 未内置的格式化能力，可以安装相应的 [Prettier 插件](https://prettier.io/docs/plugins)，并添加到 `plugins` 中。插件支持通过包名、文件路径或 URL 引用，其中包名和相对路径基于 Rstack 配置文件所在的目录解析。
 
-由于 `rs fmt` 会在 worker 中加载插件，因此不支持直接传入插件对象。请通过包名、路径或 URL 引用插件。例如，安装并启用 [`prettier-plugin-tailwindcss`](https://github.com/tailwindlabs/prettier-plugin-tailwindcss)：
+由于 `rs fmt` 会在 worker 中加载插件，因此不支持直接传入插件对象。请通过包名、路径或 URL 引用插件。
+
+例如，安装并启用 [`prettier-plugin-tailwindcss`](https://github.com/tailwindlabs/prettier-plugin-tailwindcss)：
 
 <PackageManagerTabs command="install -D prettier-plugin-tailwindcss" />
 
