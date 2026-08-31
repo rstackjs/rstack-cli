@@ -1,5 +1,5 @@
 import * as prettierEstreePlugin from 'prettier/plugins/estree';
-import type { Parser, ParserOptions, Plugin, SupportLanguage } from 'prettier';
+import type { Parser, ParserOptions, Plugin } from 'prettier';
 import {
   langFromPath,
   parse as parseWithYuku,
@@ -43,7 +43,6 @@ type PrettierComment = Comment & {
 };
 
 type EstreePlugin = typeof prettierEstreePlugin & {
-  languages: SupportLanguage[];
   options: NonNullable<Plugin['options']>;
 };
 
@@ -601,31 +600,18 @@ const createParser = (
   parse,
 });
 
-const parserNames = new Map([
-  ['babel', 'yuku'],
-  ['typescript', 'yuku-ts'],
-]);
-
-const languages: SupportLanguage[] = estreePlugin.languages.flatMap(
-  (language) => {
-    const parsers = [
-      ...new Set(
-        language.parsers
-          .map((parser) => parserNames.get(parser))
-          .filter((parser): parser is string => parser !== undefined),
-      ),
-    ];
-
-    return parsers.length > 0 ? [{ ...language, parsers }] : [];
-  },
-);
+const yukuParser = createParser(parseJavaScript);
+const yukuTypeScriptParser = createParser(parseTypeScript);
 
 const yukuPlugin: Plugin = {
-  languages,
   options: estreePlugin.options,
   parsers: {
-    yuku: createParser(parseJavaScript),
-    'yuku-ts': createParser(parseTypeScript),
+    // Prettier resolves parsers from the last plugin that provides the name.
+    // Project plugins are loaded after this one, so parser wrappers take priority.
+    babel: yukuParser,
+    typescript: yukuTypeScriptParser,
+    yuku: yukuParser,
+    'yuku-ts': yukuTypeScriptParser,
   },
   printers: {
     [AST_FORMAT]: estreePrinter,

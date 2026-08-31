@@ -22,13 +22,18 @@ const getPrettierPlugins = async (
   options: ResolvedFmtOptions,
   filePath: string,
 ): Promise<PrettierPlugins> => {
+  // An explicit native parser is also the escape hatch for bypassing Yuku.
+  const defaultPlugins =
+    options.parser === 'babel' || options.parser === 'typescript'
+      ? [fmtOptionsPlugin]
+      : defaultFmtPlugins;
   const plugins =
     options.sortPackageJson === true && /(^|[/\\])package\.json$/.test(filePath)
       ? [
-          ...defaultFmtPlugins,
+          ...defaultPlugins,
           (await import('./sortPackageJsonPlugin.ts')).sortPackageJsonPlugin,
         ]
-      : defaultFmtPlugins;
+      : defaultPlugins;
 
   return options.plugins?.length ? [...plugins, ...options.plugins] : plugins;
 };

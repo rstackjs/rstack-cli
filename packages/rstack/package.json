@@ -96,6 +96,7 @@
     "lint-staged": "catalog:",
     "micromatch": "catalog:",
     "prettier-plugin-svelte": "catalog:",
+    "prettier-plugin-tailwindcss": "catalog:",
     "rslog": "catalog:",
     "sort-package-json": "catalog:",
     "svelte": "catalog:",

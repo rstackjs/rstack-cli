@@ -5,6 +5,7 @@ import {
   type ParserOptions,
 } from 'prettier';
 import { expect, test } from 'rstack/test';
+import { getPrettierPlugins } from '../../src/fmt/prettierPlugins.ts';
 import { yukuPlugin } from '../../src/fmt/yukuPlugin.ts';
 
 const formatWithYuku = (
@@ -18,15 +19,10 @@ const formatWithYuku = (
       options.filepath ?? `example.${options.parser === 'yuku' ? 'js' : 'ts'}`,
   });
 
-test('exposes the same JavaScript and TypeScript language mappings as the official plugin', async () => {
-  expect(
-    yukuPlugin.languages?.map(({ name, parsers }) => ({ name, parsers })),
-  ).toEqual([
-    { name: 'JavaScript', parsers: ['yuku', 'yuku-ts'] },
-    { name: 'JSX', parsers: ['yuku', 'yuku-ts'] },
-    { name: 'TypeScript', parsers: ['yuku-ts'] },
-    { name: 'TSX', parsers: ['yuku-ts'] },
-  ]);
+test('overrides the default JavaScript and TypeScript parsers', async () => {
+  expect(yukuPlugin.languages).toBeUndefined();
+  expect(yukuPlugin.parsers?.babel).toBe(yukuPlugin.parsers?.yuku);
+  expect(yukuPlugin.parsers?.typescript).toBe(yukuPlugin.parsers?.['yuku-ts']);
 
   await expect(
     Promise.all(
@@ -35,12 +31,24 @@ test('exposes the same JavaScript and TypeScript language mappings as the offici
       ),
     ),
   ).resolves.toEqual([
-    { ignored: false, inferredParser: 'yuku' },
-    { ignored: false, inferredParser: 'yuku' },
-    { ignored: false, inferredParser: 'yuku-ts' },
-    { ignored: false, inferredParser: 'yuku-ts' },
+    { ignored: false, inferredParser: 'babel' },
+    { ignored: false, inferredParser: 'babel' },
+    { ignored: false, inferredParser: 'typescript' },
+    { ignored: false, inferredParser: 'typescript' },
   ]);
 });
+
+test.each(['babel', 'typescript'] as const)(
+  'does not override an explicitly selected %s parser',
+  async (parser) => {
+    await expect(
+      getPrettierPlugins(
+        { parser },
+        `example.${parser === 'babel' ? 'js' : 'ts'}`,
+      ),
+    ).resolves.not.toContain(yukuPlugin);
+  },
+);
 
 test('parses JSX in JavaScript files', async () => {
   await expect(
