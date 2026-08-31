@@ -108,7 +108,7 @@ test('checks formatting without writing files', () => {
   );
   expect(result.stderr).toContain('error   index.ts');
   expect(normalizeDuration(result.stderr)).toContain(
-    'error   Formatting issues found in 1 file. Run without --check to fix.',
+    'error   Formatting issues found in 1 file. Run rs fmt to fix.',
   );
   expect(readProjectFile('index.ts')).toBe(source);
 

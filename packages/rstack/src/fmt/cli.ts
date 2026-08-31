@@ -248,9 +248,9 @@ const logFmtResult = (
   if (differentCount > 0) {
     const differentFiles = formatFileCount(differentCount, true);
     const processedFiles = formatFileCount(processedFileCount);
-    const checkOption = color.cyan('--check');
+    const fmtCommand = color.cyan('rs fmt');
     logger.error(
-      `Formatting issues found in ${differentFiles}. Run without ${checkOption} to fix.`,
+      `Formatting issues found in ${differentFiles}. Run ${fmtCommand} to fix.`,
     );
     logger.info(`Checked ${processedFiles} in ${prettyTime(durationSeconds)}.`);
   } else if (result.exitCode === 0) {

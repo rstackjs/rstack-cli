@@ -36,7 +36,9 @@ test('runs lint followed by a formatting check', () => {
 
   expect(unformatted.status).toBe(1);
   expect(unformatted.stdout).toContain('Checking formatting...');
-  expect(unformatted.stderr).toContain('Formatting issues found in 1 file.');
+  expect(unformatted.stderr).toContain(
+    'Formatting issues found in 1 file. Run rs fmt to fix.',
+  );
 
   writeProjectFile('src/index.ts', 'const value = true;\n');
   const formatted = runCheck();
