@@ -1,5 +1,6 @@
 // Configuration guide: https://rstack.rs/config
 import { define } from 'rstack';
+import skillsLock from './skills-lock.json' with { type: 'json' };
 
 define.lint(({ globals, js, ts, rstestPlugin }) => {
   return [
@@ -58,7 +59,10 @@ define.fmt({
   ignorePatterns: [
     'packages/rstack/binding.cjs',
     'packages/rstack/binding.d.cts',
+    // Ignore installed Skills because their formatting may differ from this repository.
+    ...Object.keys(skillsLock.skills).map((name) => `.agents/skills/${name}`),
   ],
+  plugins: ['heading-case'],
   singleQuote: true,
   sortPackageJson: true,
 });

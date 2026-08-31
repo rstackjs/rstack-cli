@@ -1,4 +1,4 @@
-# Rstest Migration
+# Rstest migration
 
 Read this reference when the project uses `@rstest/core`, `@rstest/adapter-rsbuild`, `@rstest/adapter-rslib`, `rstest.config.*`, `rstest` commands, or Rstest imports and types.
 
@@ -16,7 +16,7 @@ Read this reference when the project uses `@rstest/core`, `@rstest/adapter-rsbui
 7. Delete `rstest.config.*` after all behavior is represented or intentionally supplied by automatic app/library extension.
 8. If tracked VS Code configuration recommends `rstack.rstest`, replace it with the unified `rstack.rstack` extension. Move supported `rstest.*` settings to `rstack.rstest.*` according to the [Rstack extension documentation](https://github.com/rstackjs/rstack-editor/blob/main/packages/vscode/README.md); `rstest.nodeExecutable` instead becomes the shared `rstack.nodeExecutable` setting.
 
-## Config Pattern
+## Config pattern
 
 ```ts
 import { define } from 'rstack';

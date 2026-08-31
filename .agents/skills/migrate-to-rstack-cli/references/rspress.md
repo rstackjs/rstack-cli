@@ -1,4 +1,4 @@
-# Rspress Migration
+# Rspress migration
 
 Read this reference when the project uses `@rspress/core`, `rspress.config.*`, `rspress` commands, docs config, themes, or plugins.
 
@@ -11,7 +11,7 @@ Read this reference when the project uses `@rspress/core`, `rspress.config.*`, `
 5. Keep Rspress-specific type imports from `@rspress/core`; Rstack does not re-export them.
 6. Keep themes, plugins, and docs UI packages. Delete `rspress.config.*` only after the migrated docs commands load equivalent config.
 
-## Config Pattern
+## Config pattern
 
 ```ts
 import { define } from 'rstack';

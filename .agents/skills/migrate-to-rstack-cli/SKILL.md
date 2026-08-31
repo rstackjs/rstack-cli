@@ -7,7 +7,7 @@ description: Use when migrating projects from standalone Rsbuild, Rslib, Rstest,
 
 Rstack CLI is the `rstack` package, exposed through the `rs` binaries. It provides one CLI, one config file, and a consistent workflow for the Rstack JavaScript toolchain.
 
-## Tool References
+## Tool references
 
 Read every matching reference before editing. Load only the tools present in the project.
 
@@ -36,7 +36,7 @@ Rsbuild, Rslib, Rstest, Rslint, and Prettier remain transitive `rstack` dependen
 
 ## Configuration
 
-### Config Files
+### Config files
 
 Treat each workspace or config root independently. A monorepo may need multiple Rstack config files when commands run from different package directories; validate config discovery from each directory.
 
@@ -57,7 +57,7 @@ define.test({
 });
 ```
 
-### Modules and Imports
+### Modules and imports
 
 Use dynamic imports in async config functions only for external plugins, presets, and other dependencies:
 
