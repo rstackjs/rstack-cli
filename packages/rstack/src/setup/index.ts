@@ -4,10 +4,7 @@ import { printCommandHelp } from '../cli/help.ts';
 import { installHooks } from './install.ts';
 import { uninstallHooks } from './uninstall.ts';
 
-const runInstallCLI = async (
-  args: string[],
-  command: 'hooks' | 'setup',
-): Promise<void> => {
+const runInstallCLI = async (args: string[]): Promise<void> => {
   const { values } = parseArgs({
     args,
     options: {
@@ -29,7 +26,7 @@ const runInstallCLI = async (
   const hooksDir = hooksDirs?.[0];
 
   if (values.help) {
-    await printCommandHelp(command);
+    await printCommandHelp('hooks');
     return;
   }
 
@@ -122,14 +119,11 @@ const runUninstallCLI = async (args: string[]): Promise<void> => {
   throw new Error(result.message);
 };
 
-export const runHooksCLI = async (
-  args: string[],
-  command: 'hooks' | 'setup' = 'hooks',
-): Promise<void> => {
-  if (command === 'hooks' && args[0] === 'uninstall') {
+export const runHooksCLI = async (args: string[]): Promise<void> => {
+  if (args[0] === 'uninstall') {
     await runUninstallCLI(args.slice(1));
     return;
   }
 
-  await runInstallCLI(args, command);
+  await runInstallCLI(args);
 };
