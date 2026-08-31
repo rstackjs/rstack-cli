@@ -185,7 +185,7 @@ async function runCheckCLI(args: string[]): Promise<void> {
     /* rspackChunkName: 'fmt' */
     '../fmt/cli.ts'
   );
-  await runFmtCLI(['--check'], { loadedConfig });
+  await runFmtCLI(['--check'], { fixCommand: 'rs fmt', loadedConfig });
 }
 
 export async function setupCommands(): Promise<void> {
