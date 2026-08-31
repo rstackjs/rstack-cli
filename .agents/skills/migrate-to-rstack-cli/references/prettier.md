@@ -1,4 +1,4 @@
-# Prettier Migration
+# Prettier migration
 
 `rs fmt` is Rstack's faster, Prettier-based formatter. See the [formatting guide](https://rstack.rs/guide/formatting) for supported options, file discovery, overrides, plugins, and Rstack-specific capabilities.
 
@@ -24,7 +24,7 @@ Rstack creates `.rstack/cache/.gitignore` by default. Do not list `.rstack/cache
 
 Keep `.editorconfig` when editors or other tools use it. Keep Prettier when application code uses APIs such as `prettier.format()`; `rs fmt` is not a drop-in replacement for the programmatic API.
 
-## Command Mapping
+## Command mapping
 
 | Prettier                      | Rstack CLI                |
 | ----------------------------- | ------------------------- |

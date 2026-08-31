@@ -1,4 +1,4 @@
-# Rsbuild Migration
+# Rsbuild migration
 
 Read this reference when the project uses `@rsbuild/core`, `rsbuild.config.*`, `rsbuild` commands, Rsbuild client types, or `@rsbuild/core/types`.
 
@@ -15,7 +15,7 @@ Read this reference when the project uses `@rsbuild/core`, `rsbuild.config.*`, `
 6. Search for remaining direct `@rsbuild/core` imports. Remove the direct dependency when no source or runtime API still needs it.
 7. Delete `rsbuild.config.*` after the migrated app commands load equivalent config.
 
-## Config Pattern
+## Config pattern
 
 ```ts
 import { define } from 'rstack';

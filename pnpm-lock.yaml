@@ -89,8 +89,8 @@ catalogs:
       specifier: ^20.11.6
       version: 20.11.6
     heading-case:
-      specifier: ^1.1.8
-      version: 1.1.8
+      specifier: ^2.0.0
+      version: 2.0.0
     import-meta-resolve:
       specifier: 4.2.0
       version: 4.2.0
@@ -161,7 +161,7 @@ importers:
         version: 0.0.4
       heading-case:
         specifier: 'catalog:'
-        version: 1.1.8
+        version: 2.0.0(prettier@3.9.6)
       prettier:
         specifier: 'catalog:'
         version: 3.9.6
@@ -2304,9 +2304,11 @@ packages:
   hastscript@9.0.1:
     resolution: {integrity: sha512-g7df9rMFX/SPi34tyGCyUBREQoKkapwdY/T04Qn9TDWfHhAYt4/I0gMVirzK5wEzeUqIjEB+LXC/ypb7Aqno5w==}
 
-  heading-case@1.1.8:
-    resolution: {integrity: sha512-zGhfkYlKqTbkXyu6RluO4DFyD3fEGHOMl/16UZcXX315drkUa/sg8vlvQXm3trqpnoj8LhPsYCrg5R6oP9mtyQ==}
+  heading-case@2.0.0:
+    resolution: {integrity: sha512-yznMB5NlBOlCqGL68oRa9gvA8vINQB56D1rTQwCRNoh2aLjtEAK4UKYD5mZ4rXJ0GCuyRmzGCgP1/3To1Mj/vA==}
     hasBin: true
+    peerDependencies:
+      prettier: ^3.0.0
 
   hookable@6.1.1:
     resolution: {integrity: sha512-U9LYDy1CwhMCnprUfeAZWZGByVbhd54hwepegYTK7Pi5NvqEj63ifz5z+xukznehT7i6NIZRu89Ay1AZmRsLEQ==}
@@ -4843,7 +4845,9 @@ snapshots:
       property-information: 7.2.0
       space-separated-tokens: 2.0.2
 
-  heading-case@1.1.8: {}
+  heading-case@2.0.0(prettier@3.9.6):
+    dependencies:
+      prettier: 3.9.6
 
   hookable@6.1.1: {}
 

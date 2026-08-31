@@ -1,8 +1,8 @@
-# Git Hook Migration
+# Git hook migration
 
 Migrate [Husky](https://typicode.github.io/husky/), [Lefthook](https://lefthook.dev/), or [simple-git-hooks](https://github.com/toplenboren/simple-git-hooks#readme) to [`rs hooks`](https://rstack.rs/guide/cli/hooks). If a hook works with staged files, also read [lint-staged.md](lint-staged.md).
 
-## Shared Steps
+## Shared steps
 
 1. Inspect the hook manager configuration, hook scripts, lifecycle scripts, custom paths, environment overrides, and `git config --show-scope --get core.hooksPath`.
 2. Inventory every active hook before editing. Confirm each hook is [supported by `rs hooks`](https://rstack.rs/guide/cli/hooks#supported-hooks); stop or design an explicit alternative for unsupported hooks.

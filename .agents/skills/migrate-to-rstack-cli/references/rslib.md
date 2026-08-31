@@ -1,4 +1,4 @@
-# Rslib Migration
+# Rslib migration
 
 Read this reference when the project uses `@rslib/core`, `rslib.config.*`, `rslib` commands, library build config, or Rslib type imports.
 
@@ -12,7 +12,7 @@ Read this reference when the project uses `@rslib/core`, `rslib.config.*`, `rsli
 6. Search for remaining direct `@rslib/core` imports. Remove the direct dependency only when no source or runtime API still needs it.
 7. Delete `rslib.config.*` after the migrated library commands load equivalent config.
 
-## Config Pattern
+## Config pattern
 
 ```ts
 import { define } from 'rstack';

@@ -7,10 +7,10 @@
   "scripts": {
     "build": "pnpm --filter \"./packages/**\" build",
     "check": "rs check --type-check",
-    "check:spell": "pnpm dlx cspell && heading-case",
+    "check:spell": "pnpm dlx cspell",
     "doc": "pnpm --dir website dev",
     "doc:build": "node --run build && pnpm --dir website build",
-    "format": "rs fmt && heading-case --write",
+    "format": "rs fmt",
     "lint": "rs lint --type-check",
     "prepare": "node scripts/rs.js hooks",
     "release:prepare": "node scripts/prepare-release.js",
