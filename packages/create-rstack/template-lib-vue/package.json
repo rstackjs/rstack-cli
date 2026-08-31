@@ -19,10 +19,10 @@
   "devDependencies": {
     "@rsbuild/plugin-vue": "^2.0.1",
     "@testing-library/jest-dom": "^7.0.1",
-    "@vue/test-utils": "^2.4.11",
-    "happy-dom": "^20.11.6",
+    "@vue/test-utils": "^2.5.0",
+    "happy-dom": "^20.12.0",
     "rstack": "^0.7.0",
-    "vue": "^3.5.41"
+    "vue": "^3.5.42"
   },
   "peerDependencies": {
     "vue": ">=3.2.0"
