@@ -1,16 +1,4 @@
-const formatSeconds = (milliseconds: number): string => {
-  const seconds = Math.floor(milliseconds / 1000);
-  const remainder = milliseconds % 1000;
-
-  if (remainder === 0) {
-    return `${seconds}s`;
-  }
-
-  const fraction = remainder.toString().padStart(3, '0').replace(/0+$/, '');
-  return `${seconds}.${fraction}s`;
-};
-
-/** Formats a duration after rounding to millisecond precision. */
+/** Formats sub-second durations in milliseconds and preserves the existing longer-duration format. */
 const formatDuration = (milliseconds: number): string => {
   if (milliseconds < 1) {
     return '<1ms';
@@ -21,15 +9,26 @@ const formatDuration = (milliseconds: number): string => {
     return `${roundedMilliseconds}ms`;
   }
 
-  const hours = Math.floor(roundedMilliseconds / 3_600_000);
-  const minutes = Math.floor(roundedMilliseconds / 60_000) % 60;
-  const seconds = formatSeconds(roundedMilliseconds % 60_000);
-
-  if (hours > 0) {
-    return `${hours}h${minutes}m${seconds}`;
+  const seconds = milliseconds / 1000;
+  if (seconds < 10) {
+    return `${seconds.toFixed(2)}s`;
   }
 
-  return minutes > 0 ? `${minutes}m${seconds}` : seconds;
+  if (seconds < 60) {
+    return `${seconds.toFixed(1)}s`;
+  }
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  if (remainingSeconds === 0) {
+    return `${minutes}m`;
+  }
+
+  const secondsLabel = remainingSeconds.toFixed(
+    remainingSeconds % 1 === 0 ? 0 : 1,
+  );
+  return `${minutes}m ${secondsLabel}s`;
 };
 
 export { formatDuration };
