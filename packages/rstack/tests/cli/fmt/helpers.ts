@@ -53,11 +53,11 @@ export const expectWriteSummary = (
   writtenCount: number,
 ): void => {
   const files = matchedFileCount === 1 ? 'file' : 'files';
-  const message = writtenCount
-    ? `Formatted ${writtenCount} of ${matchedFileCount} ${files} in <duration>.`
-    : `Checked ${matchedFileCount} ${files} in <duration>. No changes needed.`;
+  const details = writtenCount
+    ? `${matchedFileCount} ${files}, ${writtenCount} formatted`
+    : `${matchedFileCount} ${files}, no changes`;
   expect(normalizeDuration(output)).toBe(
-    `start   Formatting...\nsuccess ${message}\n`,
+    `start   Formatting...\nsuccess Formatting completed in <duration> (${details})\n`,
   );
 };
 

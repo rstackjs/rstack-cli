@@ -212,12 +212,22 @@ const logFmtResult = (
       return;
     }
 
+    if (result.exitCode === 0) {
+      const files = `${processedFileCount} ${processedFileCount === 1 ? 'file' : 'files'}`;
+      const details =
+        writtenCount > 0
+          ? `${files}, ${writtenCount} formatted`
+          : `${files}, no changes`;
+      logger.success(
+        `Formatting completed in ${time} ${color.dim(`(${details})`)}`,
+      );
+      return;
+    }
+
     const processedFiles = formatFileCount(processedFileCount);
-    const message =
-      writtenCount > 0
-        ? `Formatted ${formatCount(writtenCount)} of ${processedFiles} in ${time}.`
-        : `Checked ${processedFiles} in ${time}. No changes needed.`;
-    logger[result.exitCode === 0 ? 'success' : 'info'](message);
+    logger.info(
+      `Formatted ${formatCount(writtenCount)} of ${processedFiles} in ${time}.`,
+    );
     return;
   }
 
