@@ -42,7 +42,10 @@ export const createCliEnv = (): NodeJS.ProcessEnv => {
 };
 
 export const normalizeDuration = (output: string): string =>
-  output.replace(/\d+m(?: \d+(?:\.\d+)?s)?|\d+(?:\.\d+)?s/g, '<duration>');
+  output.replace(
+    /<1ms|\d+ms|\d+h\d+m\d+(?:\.\d+)?s|\d+m\d+(?:\.\d+)?s|\d+(?:\.\d+)?s/g,
+    '<duration>',
+  );
 
 export const expectWriteSummary = (
   output: string,
