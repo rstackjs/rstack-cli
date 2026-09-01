@@ -44,7 +44,7 @@ test('runs lint followed by a formatting check', () => {
   const formatted = runCheck();
 
   expect(formatted.status).toBe(0);
-  expect(formatted.stdout).toContain('No issues found.');
+  expect(formatted.stdout).toContain('Format check passed in');
   expect(formatted.stderr).toBe('');
 });
 

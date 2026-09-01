@@ -205,7 +205,7 @@ const logFmtResult = (
     return;
   }
 
-  const time = color.bold(formatDuration(durationMilliseconds));
+  const time = formatDuration(durationMilliseconds);
 
   if (mode === 'write') {
     if (writtenCount === 0 && result.exitCode !== 0) {
@@ -230,9 +230,8 @@ const logFmtResult = (
     logger.error(`Formatting issues found in ${differentFiles}. ${fixHint}`);
     logger.info(`Checked ${processedFiles} in ${time}.`);
   } else if (result.exitCode === 0) {
-    logger.success(
-      `Checked ${formatFileCount(processedFileCount)} in ${time}. No issues found.`,
-    );
+    const files = `${processedFileCount} ${processedFileCount === 1 ? 'file' : 'files'}`;
+    logger.success(`Format check passed in ${time} ${color.dim(`(${files})`)}`);
   }
 };
 

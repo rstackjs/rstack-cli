@@ -117,7 +117,7 @@ test('checks formatting without writing files', () => {
 
   expect(formattedResult.status).toBe(0);
   expect(normalizeDuration(formattedResult.stdout)).toBe(
-    'start   Checking formatting...\nsuccess Checked 1 file in <duration>. No issues found.\n',
+    'start   Checking formatting...\nsuccess Format check passed in <duration> (1 file)\n',
   );
   expect(formattedResult.stderr).toBe('');
 });
