@@ -158,9 +158,6 @@ const createDisplayPathResolver = (
   return (filePath) => toPosixPath(resolveRelativePath(filePath));
 };
 
-const prettyTime = (milliseconds: number): string =>
-  color.bold(formatDuration(milliseconds));
-
 const formatCount = (count: number): string => color.bold(count);
 const formatFileCount = (count: number, isError = false): string => {
   const formattedCount = formatCount(count);
@@ -204,22 +201,23 @@ const logFmtResult = (
     }
   }
 
+  if (mode === 'list-different') {
+    return;
+  }
+
+  const time = color.bold(formatDuration(durationMilliseconds));
+
   if (mode === 'write') {
     if (writtenCount === 0 && result.exitCode !== 0) {
       return;
     }
 
     const processedFiles = formatFileCount(processedFileCount);
-    const time = prettyTime(durationMilliseconds);
     const message =
       writtenCount > 0
         ? `Formatted ${formatCount(writtenCount)} of ${processedFiles} in ${time}.`
         : `Checked ${processedFiles} in ${time}. No changes needed.`;
     logger[result.exitCode === 0 ? 'success' : 'info'](message);
-    return;
-  }
-
-  if (mode !== 'check') {
     return;
   }
 
@@ -230,12 +228,10 @@ const logFmtResult = (
       ? `Run ${color.cyan(fixCommand)} to fix.`
       : `Rerun this command without ${color.cyan('--check')} to fix.`;
     logger.error(`Formatting issues found in ${differentFiles}. ${fixHint}`);
-    logger.info(
-      `Checked ${processedFiles} in ${prettyTime(durationMilliseconds)}.`,
-    );
+    logger.info(`Checked ${processedFiles} in ${time}.`);
   } else if (result.exitCode === 0) {
     logger.success(
-      `Checked ${formatFileCount(processedFileCount)} in ${prettyTime(durationMilliseconds)}. No issues found.`,
+      `Checked ${formatFileCount(processedFileCount)} in ${time}. No issues found.`,
     );
   }
 };
