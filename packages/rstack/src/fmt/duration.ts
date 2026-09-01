@@ -10,8 +10,8 @@ const formatSeconds = (milliseconds: number): string => {
   return `${seconds}.${fraction}s`;
 };
 
-/** Formats elapsed milliseconds after rounding to millisecond precision. */
-const formatElapsed = (milliseconds: number): string => {
+/** Formats a duration after rounding to millisecond precision. */
+const formatDuration = (milliseconds: number): string => {
   if (milliseconds < 1) {
     return '<1ms';
   }
@@ -32,4 +32,4 @@ const formatElapsed = (milliseconds: number): string => {
   return minutes > 0 ? `${minutes}m${seconds}` : seconds;
 };
 
-export { formatElapsed };
+export { formatDuration };

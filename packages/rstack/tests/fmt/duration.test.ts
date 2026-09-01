@@ -1,5 +1,5 @@
 import { expect, test } from 'rstack/test';
-import { formatElapsed } from '../../src/fmt/elapsed.ts';
+import { formatDuration } from '../../src/fmt/duration.ts';
 
 test.each([
   [0, '<1ms'],
@@ -14,5 +14,5 @@ test.each([
   [60_123, '1m0.123s'],
   [3_661_234, '1h1m1.234s'],
 ] as const)('formats %sms as %s', (milliseconds, expected) => {
-  expect(formatElapsed(milliseconds)).toBe(expected);
+  expect(formatDuration(milliseconds)).toBe(expected);
 });

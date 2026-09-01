@@ -8,7 +8,7 @@ import { ensureProjectCacheDir } from '../projectCache.ts';
 import { fmtCacheFileName } from './cacheStore.ts';
 import { resolveFmtConfig } from './config.ts';
 import { discoverFmtFiles } from './discovery.ts';
-import { formatElapsed } from './elapsed.ts';
+import { formatDuration } from './duration.ts';
 import { createRelativePathResolver, toPosixPath } from './pathHelpers.ts';
 import { runFmtFiles } from './runner.ts';
 import type { FmtMode, FmtRunResult, ResolvedFmtConfig } from './types.ts';
@@ -159,7 +159,7 @@ const createDisplayPathResolver = (
 };
 
 const prettyTime = (milliseconds: number): string =>
-  color.bold(formatElapsed(milliseconds));
+  color.bold(formatDuration(milliseconds));
 
 const formatCount = (count: number): string => color.bold(count);
 const formatFileCount = (count: number, isError = false): string => {
