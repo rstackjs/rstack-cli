@@ -8,6 +8,7 @@ import { ensureProjectCacheDir } from '../projectCache.ts';
 import { fmtCacheFileName } from './cacheStore.ts';
 import { resolveFmtConfig } from './config.ts';
 import { discoverFmtFiles } from './discovery.ts';
+import { formatDuration } from './duration.ts';
 import { createRelativePathResolver, toPosixPath } from './pathHelpers.ts';
 import { runFmtFiles } from './runner.ts';
 import type { FmtMode, FmtRunResult, ResolvedFmtConfig } from './types.ts';
@@ -157,35 +158,6 @@ const createDisplayPathResolver = (
   return (filePath) => toPosixPath(resolveRelativePath(filePath));
 };
 
-const prettyTime = (seconds: number): string => {
-  const format = (time: string, unit: 'm' | 's') =>
-    color.bold(`${time}${unit}`);
-
-  if (seconds < 10) {
-    const digits = seconds >= 0.01 ? 2 : 3;
-    return format(seconds.toFixed(digits), 's');
-  }
-
-  if (seconds < 60) {
-    return format(seconds.toFixed(1), 's');
-  }
-
-  const minutes = Math.floor(seconds / 60);
-  const minutesLabel = format(minutes.toFixed(0), 'm');
-  const remainingSeconds = seconds % 60;
-
-  if (remainingSeconds === 0) {
-    return minutesLabel;
-  }
-
-  const secondsLabel = format(
-    remainingSeconds.toFixed(remainingSeconds % 1 === 0 ? 0 : 1),
-    's',
-  );
-
-  return `${minutesLabel} ${secondsLabel}`;
-};
-
 const formatCount = (count: number): string => color.bold(count);
 const formatFileCount = (count: number, isError = false): string => {
   const formattedCount = formatCount(count);
@@ -207,7 +179,7 @@ const logFmtResult = (
   mode: FmtMode,
   cwd: string,
   processedFileCount: number,
-  durationSeconds: number,
+  durationMilliseconds: number,
   fixCommand?: string,
 ): void => {
   let writtenCount = 0;
@@ -229,22 +201,23 @@ const logFmtResult = (
     }
   }
 
+  if (mode === 'list-different') {
+    return;
+  }
+
+  const time = color.bold(formatDuration(durationMilliseconds));
+
   if (mode === 'write') {
     if (writtenCount === 0 && result.exitCode !== 0) {
       return;
     }
 
     const processedFiles = formatFileCount(processedFileCount);
-    const time = prettyTime(durationSeconds);
     const message =
       writtenCount > 0
         ? `Formatted ${formatCount(writtenCount)} of ${processedFiles} in ${time}.`
         : `Checked ${processedFiles} in ${time}. No changes needed.`;
     logger[result.exitCode === 0 ? 'success' : 'info'](message);
-    return;
-  }
-
-  if (mode !== 'check') {
     return;
   }
 
@@ -255,10 +228,10 @@ const logFmtResult = (
       ? `Run ${color.cyan(fixCommand)} to fix.`
       : `Rerun this command without ${color.cyan('--check')} to fix.`;
     logger.error(`Formatting issues found in ${differentFiles}. ${fixHint}`);
-    logger.info(`Checked ${processedFiles} in ${prettyTime(durationSeconds)}.`);
+    logger.info(`Checked ${processedFiles} in ${time}.`);
   } else if (result.exitCode === 0) {
     logger.success(
-      `Checked ${formatFileCount(processedFileCount)} in ${prettyTime(durationSeconds)}. No issues found.`,
+      `Checked ${formatFileCount(processedFileCount)} in ${time}. No issues found.`,
     );
   }
 };
@@ -415,13 +388,13 @@ const runFmtCLI = async (
       return;
     }
 
-    const durationSeconds = (performance.now() - startTime) / 1000;
+    const durationMilliseconds = performance.now() - startTime;
     logFmtResult(
       result,
       mode,
       cwd,
       result.processedFileCount,
-      durationSeconds,
+      durationMilliseconds,
       fixCommand,
     );
     process.exitCode = result.exitCode;
