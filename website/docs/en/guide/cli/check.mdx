@@ -9,7 +9,19 @@ The `rs check` command combines linting, formatting, and optional TypeScript typ
 ## Usage
 
 ```bash
-rs check [options]
+rs check [options] [files...]
+```
+
+Pass files or directories to limit both linting and formatting to those paths:
+
+```bash
+rs check src/index.ts packages/utils
+```
+
+The same file arguments are passed to both commands, so the example above is equivalent to:
+
+```bash
+rs lint src/index.ts packages/utils && rs fmt --check src/index.ts packages/utils
 ```
 
 ## Checks

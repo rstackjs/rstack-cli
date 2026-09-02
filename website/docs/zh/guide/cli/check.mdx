@@ -9,7 +9,19 @@ description: '同时运行 lint 和格式检查，并可选启用 TypeScript 类
 ## 用法 \{#usage}
 
 ```bash
-rs check [options]
+rs check [options] [files...]
+```
+
+传入文件或目录，可以将 lint 和格式检查都限制在这些路径中：
+
+```bash
+rs check src/index.ts packages/utils
+```
+
+相同的文件参数会同时传给两个命令，因此上述示例等同于：
+
+```bash
+rs lint src/index.ts packages/utils && rs fmt --check src/index.ts packages/utils
 ```
 
 ## 检查内容 \{#checks}
