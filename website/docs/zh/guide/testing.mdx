@@ -1,3 +1,7 @@
+---
+description: '使用 Rstack CLI 运行测试，通过 Rstest 适配器继承应用或库配置，并配置多个测试项目。'
+---
+
 # 测试 \{#testing}
 
 Rstack CLI 使用 [Rstest](https://rstest.rs/zh/) 运行测试。
@@ -28,23 +32,80 @@ define.test({
 import { defineInlineProject, expect, test } from 'rstack/test';
 ```
 
-## 单项目 \{#single-project}
+## 配置继承 \{#configuration-inheritance}
 
-对于单个测试项目，直接将 Rstest 选项传给 `define.test()`：
+当 `define.test()` 未设置 Rstest 的 [`extends`](https://rstest.rs/zh/config/test/extends) 时，Rstack CLI 会自动将 `define.app()` 或 `define.lib()` 注册的配置转换为 Rstest 配置，再与直接传给 `define.test()` 的选项合并。
+
+### 继承应用配置 \{#inherit-the-application-configuration}
+
+注册 `define.app()` 后，Rstack CLI 会通过 [`@rstest/adapter-rsbuild`](https://rstest.rs/zh/guide/integration/rsbuild) 转换该配置，并将结果作为测试配置的 `extends`：
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
 
 define.app({
-  // 共享的应用配置
+  resolve: {
+    alias: {
+      '@': './src',
+    },
+  },
 });
 
 define.test({
+  // 继承 `define.app()` 中的 `resolve.alias`
   testEnvironment: 'happy-dom',
 });
 ```
 
-未设置 `extends` 时，Rstack CLI 会通过 Rsbuild 适配器让测试配置继承 `define.app()`。如果没有应用配置，则通过 Rslib 适配器回退到 `define.lib()`。同时定义两者时，`define.app()` 的优先级更高。
+### 继承库配置 \{#inherit-the-library-configuration}
+
+注册 `define.lib()` 后，Rstack CLI 会通过 [`@rstest/adapter-rslib`](https://rstest.rs/zh/guide/integration/rslib) 转换该配置：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.lib({
+  resolve: {
+    alias: {
+      '@': './src',
+    },
+  },
+});
+
+define.test({
+  // 继承 `define.lib()` 中的 `resolve.alias`
+  testEnvironment: 'node',
+});
+```
+
+:::tip
+
+同时注册两种配置时，Rstack CLI 会优先使用 `define.app()`。
+
+:::
+
+### 关闭自动继承 \{#disable-automatic-inheritance}
+
+如果测试配置需要保持独立，请显式设置 `extends`。将它设置为空对象可以关闭自动继承，且不会继承其他配置：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.app({
+  resolve: {
+    alias: {
+      '@': './src',
+    },
+  },
+});
+
+define.test({
+  extends: {},
+  testEnvironment: 'node',
+});
+```
+
+使用多项目配置时，在 `define.test()` 根配置中设置 `extends` 会关闭所有项目的自动继承；在某个内联项目中设置 `extends` 则只会关闭该项目的自动继承。
 
 ## 多项目 \{#multiple-projects}
 
@@ -101,25 +162,3 @@ define.test({
 ```
 
 Rstack CLI 会将字符串形式的项目原样传给 Rstest。外部项目会加载自己的配置，不会继承当前的 `define.app()` 或 `define.lib()` 配置。每个项目需要独立管理配置时，请使用外部项目。
-
-## 自定义继承 \{#customize-inheritance}
-
-项目不应继承当前应用或库配置时，请显式设置 Rstest 的 [`extends`](https://rstest.rs/zh/config/test/extends) 选项：
-
-```ts title="rstack.config.ts"
-import { define } from 'rstack';
-import { defineInlineProject } from 'rstack/test';
-
-define.test({
-  projects: [
-    defineInlineProject({
-      name: 'standalone',
-      extends: {
-        testEnvironment: 'node',
-      },
-    }),
-  ],
-});
-```
-
-在内联项目中设置 `extends`，只会关闭当前项目的自动继承。在 `define.test()` 的根配置中设置该选项，则会关闭整个测试配置的自动继承。
