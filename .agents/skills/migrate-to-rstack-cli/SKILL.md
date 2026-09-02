@@ -72,13 +72,15 @@ define.test({
 
 ### Modules and imports
 
-Use dynamic imports in async config functions only for external plugins, presets, and other dependencies:
+Keep type-only and Node.js built-in imports at the top level. In async config functions, use a separate `await import(...)` for each tool-specific runtime dependency.
 
 ```ts
 define.app(async () => {
   const { pluginReact } = await import('@rsbuild/plugin-react');
+  const { pluginSass } = await import('@rsbuild/plugin-sass');
+
   return {
-    plugins: [pluginReact()],
+    plugins: [pluginReact(), pluginSass()],
   };
 });
 ```
