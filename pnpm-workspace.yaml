@@ -13,7 +13,7 @@ cleanupUnusedCatalogs: true
 
 catalog:
   '@napi-rs/cli': '^3.8.6'
-  '@rsbuild/core': '~2.2.1'
+  '@rsbuild/core': '~2.2.2'
   '@rsbuild/plugin-react': '^2.1.0'
   '@rsbuild/plugin-sass': '^2.0.1'
   '@rslib/core': '~1.0.0-rc.2'
@@ -39,7 +39,7 @@ catalog:
   'cspell-ban-words': '^0.0.4'
   'fast-json-stable-stringify': '2.1.0'
   'happy-dom': '^20.12.0'
-  'heading-case': '^2.0.0'
+  'heading-case': '^2.0.1'
   'import-meta-resolve': '4.2.0'
   is-binary-path: 3.0.0
   'lint-staged': '^17.4.1'
