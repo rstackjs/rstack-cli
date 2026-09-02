@@ -18,17 +18,17 @@ Read this reference when the project uses `@rsbuild/core`, `rsbuild.config.*`, `
 ## Config pattern
 
 ```ts
+import { pluginReact } from '@rsbuild/plugin-react';
 import { define } from 'rstack';
 
-define.app(async () => {
-  const { pluginReact } = await import('@rsbuild/plugin-react');
-  return {
-    plugins: [pluginReact()],
-  };
+define.app({
+  plugins: [pluginReact()],
 });
 ```
 
 If tests also use Rstest, read [rstest.md](rstest.md). `rs test` derives an Rsbuild test extension from `define.app` unless `define.test` sets `extends`.
+
+Follow [Modules and imports](../SKILL.md#modules-and-imports) when the config imports plugins or themes.
 
 ## Validate
 

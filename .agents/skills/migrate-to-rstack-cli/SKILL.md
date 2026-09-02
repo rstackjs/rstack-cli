@@ -72,23 +72,22 @@ define.test({
 
 ### Modules and imports
 
-Keep type-only and Node.js built-in imports at the top level. In async config functions, use a separate `await import(...)` for each tool-specific runtime dependency.
+Rstack loads every top-level import when it reads `rstack.config.*`. Prefer static imports when a config is only for an application and its tests, a library and its tests, or a documentation site.
+
+If the same config also includes lint, formatting, or staged-file checks, dynamically import dependencies inside the relevant async config function to avoid loading them during checks. Keep type-only and Node.js built-in imports at the top level.
 
 ```ts
 define.app(async () => {
   const { pluginReact } = await import('@rsbuild/plugin-react');
-  const { pluginSass } = await import('@rsbuild/plugin-sass');
 
   return {
-    plugins: [pluginReact(), pluginSass()],
+    plugins: [pluginReact()],
   };
 });
-```
 
-`define.lint` provides `@rslint/core` APIs to its config factory, so no manual import is needed:
-
-```ts
 define.lint(({ js }) => [js.configs.recommended]);
 ```
+
+`define.lint` provides `@rslint/core` APIs to its config factory, so no manual import is needed.
 
 Rstack loads TypeScript configs as native ESM. Preserve runtime-resolvable file extensions, replace CommonJS globals such as `__dirname`.
