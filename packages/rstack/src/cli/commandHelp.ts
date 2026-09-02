@@ -154,6 +154,7 @@ const HELP_DEFINITIONS = {
       {
         title: 'Options',
         items: [
+          ['--fix', 'Automatically fix lint and formatting issues'],
           ['--type-check', 'Enable TypeScript type checking'],
           ...CONFIG_HELP_OPTIONS,
         ],

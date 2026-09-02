@@ -160,6 +160,7 @@ async function runCheckCLI(args: string[]): Promise<void> {
   const { values, positionals } = parseArgs({
     args,
     options: {
+      fix: { type: 'boolean' },
       'type-check': { type: 'boolean' },
       help: { type: 'boolean', short: 'h' },
     },
@@ -175,6 +176,7 @@ async function runCheckCLI(args: string[]): Promise<void> {
   // with a hyphen are not reinterpreted as child-command options.
   const fileArgs = positionals.length > 0 ? ['--', ...positionals] : [];
   await runRslintCLI([
+    ...(values.fix ? ['--fix'] : []),
     ...(values.typeCheck ? ['--type-check'] : []),
     ...fileArgs,
   ]);
@@ -191,8 +193,8 @@ async function runCheckCLI(args: string[]): Promise<void> {
     /* rspackChunkName: 'fmt' */
     '../fmt/cli.ts'
   );
-  await runFmtCLI(['--check', ...fileArgs], {
-    fixCommand: 'rs fmt',
+  await runFmtCLI([values.fix ? '--write' : '--check', ...fileArgs], {
+    fixOption: '--fix',
     loadedConfig,
   });
 }
