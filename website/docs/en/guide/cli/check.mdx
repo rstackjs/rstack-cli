@@ -36,6 +36,22 @@ Checks run sequentially. If linting fails, `rs check` stops without running the 
 
 ## Options
 
+### `--fix`
+
+Automatically fix linting and formatting issues:
+
+```bash
+rs check --fix
+```
+
+This is equivalent to:
+
+```bash
+rs lint --fix && rs fmt --write
+```
+
+If linting still fails after applying available fixes, `rs check` stops without running the formatter.
+
 ### `--type-check`
 
 Enable TypeScript type checking as part of linting:

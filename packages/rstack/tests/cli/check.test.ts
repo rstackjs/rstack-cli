@@ -2,7 +2,7 @@ import { expect, test } from 'rstack/test';
 import { normalizeHelpOutput } from '#test-helpers';
 import { setupFmtTest } from './fmt/helpers.ts';
 
-const { runCLI, writeProjectFile } = setupFmtTest();
+const { readProjectFile, runCLI, writeProjectFile } = setupFmtTest();
 const runCheck = (args: string[] = []) => runCLI(['check', ...args]);
 
 const writeLintConfig = (): void => {
@@ -37,8 +37,9 @@ test('runs lint followed by a formatting check', () => {
   expect(unformatted.status).toBe(1);
   expect(unformatted.stdout).toContain('Checking formatting...');
   expect(unformatted.stderr).toContain(
-    'Formatting issues found in 1 file. Run rs fmt to fix.',
+    'Formatting issues found in 1 file. Rerun this command with --fix to fix.',
   );
+  expect(readProjectFile('src/index.ts')).toBe('const value=true');
 
   writeProjectFile('src/index.ts', 'const value = true;\n');
   const formatted = runCheck();
@@ -61,6 +62,33 @@ test('passes file arguments to lint and the formatting check', () => {
   expect(result.stdout).toContain('Format check passed in');
   expect(result.stdout).toContain('(2 files)');
   expect(result.stderr).toBe('');
+});
+
+test('fixes lint and formatting issues in the selected files', () => {
+  writeProjectFile(
+    'rstack.config.ts',
+    `import { define } from "rstack";
+
+define.lint([
+  {
+    files: ["**/*.{js,ts}"],
+    rules: { curly: "error" },
+  },
+]);
+`,
+  );
+  writeProjectFile('src/selected.ts', 'let value=true;if(value) value++');
+  writeProjectFile('src/unselected.ts', 'const unselected=true');
+
+  const result = runCheck(['--fix', 'src/selected.ts']);
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toContain('Formatting completed in');
+  expect(result.stderr).toBe('');
+  expect(readProjectFile('src/selected.ts')).toBe(
+    'let value = true;\nif (value) {\n  value++;\n}\n',
+  );
+  expect(readProjectFile('src/unselected.ts')).toBe('const unselected=true');
 });
 
 test('supports file arguments after the option terminator', () => {

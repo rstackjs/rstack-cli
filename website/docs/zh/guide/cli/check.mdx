@@ -36,6 +36,22 @@ rs lint && rs fmt --check
 
 ## 选项 \{#options}
 
+### `--fix`
+
+自动修复 lint 和格式问题：
+
+```bash
+rs check --fix
+```
+
+该命令等同于：
+
+```bash
+rs lint --fix && rs fmt --write
+```
+
+如果应用可用的修复后 lint 仍然失败，`rs check` 会停止运行，不再执行格式化。
+
 ### `--type-check`
 
 在 lint 过程中启用 TypeScript 类型检查：

@@ -31,8 +31,8 @@ interface ParsedFmtCLIArgs {
 }
 
 type RunFmtCLIOptions = {
-  /** Command shown to fix formatting issues found in check mode. */
-  fixCommand?: string;
+  /** Option shown to fix issues by rerunning the current command. */
+  fixOption?: string;
   /** Rstack config already loaded by the lint phase of `rs check`. */
   loadedConfig?: LoadedRstackConfig;
 };
@@ -180,7 +180,7 @@ const logFmtResult = (
   cwd: string,
   processedFileCount: number,
   durationMilliseconds: number,
-  fixCommand?: string,
+  fixOption?: string,
 ): void => {
   let writtenCount = 0;
   let differentCount = 0;
@@ -234,8 +234,8 @@ const logFmtResult = (
   if (differentCount > 0) {
     const differentFiles = formatFileCount(differentCount, true);
     const processedFiles = formatFileCount(processedFileCount);
-    const fixHint = fixCommand
-      ? `Run ${color.cyan(fixCommand)} to fix.`
+    const fixHint = fixOption
+      ? `Rerun this command with ${color.cyan(fixOption)} to fix.`
       : `Rerun this command without ${color.cyan('--check')} to fix.`;
     logger.error(`Formatting issues found in ${differentFiles}. ${fixHint}`);
     logger.info(`Checked ${processedFiles} in ${time}.`);
@@ -261,7 +261,7 @@ const loadFmtConfig = async (
 
 const runFmtCLI = async (
   args: string[],
-  { fixCommand, loadedConfig }: RunFmtCLIOptions = {},
+  { fixOption, loadedConfig }: RunFmtCLIOptions = {},
 ): Promise<void> => {
   const cwd = process.cwd();
   const startTime = performance.now();
@@ -404,7 +404,7 @@ const runFmtCLI = async (
       cwd,
       result.processedFileCount,
       durationMilliseconds,
-      fixCommand,
+      fixOption,
     );
     process.exitCode = result.exitCode;
   } catch (error) {
