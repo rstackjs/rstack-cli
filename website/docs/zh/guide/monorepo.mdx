@@ -117,13 +117,11 @@ Rstack CLI 会加载当前工作目录中的配置，不会将子项目配置与
 Web 应用通常需要应用构建配置和可选的测试配置：
 
 ```ts title="apps/web/rstack.config.ts"
+import { pluginReact } from '@rsbuild/plugin-react';
 import { define } from 'rstack';
 
-define.app(async () => {
-  const { pluginReact } = await import('@rsbuild/plugin-react');
-  return {
-    plugins: [pluginReact()],
-  };
+define.app({
+  plugins: [pluginReact()],
 });
 
 define.test({

@@ -44,11 +44,14 @@ All `rs` commands accept the global `-c, --config` option for loading a file wit
 rs build --config ./configs/rstack.config.ts
 ```
 
-## Loading dependencies on demand
+## Importing dependencies \{#loading-dependencies-on-demand}
 
-Every `rs` command loads and executes the Rstack configuration file, then resolves only the configuration functions needed by that command.
+Rstack keeps a project's build, test, lint, formatting, and other settings in one `rstack.config.*` file. When a command loads the config file, it also loads every top-level import, even if it does not use the related configuration. Importing every tool and plugin at the top level can therefore add startup overhead to commands such as `rs lint` and `rs fmt`.
 
-When a configuration needs to import plugins or other tool-specific dependencies, use an async configuration function and load those dependencies with dynamic `import()` inside it. This ensures that they are loaded only when the configuration is resolved.
+Choose the import style based on the config contents:
+
+- Prefer simpler static imports when the config is only for an application and its tests, a library and its tests, or a documentation site.
+- If the same config also includes lint, formatting, or staged-file checks, consider dynamically importing dependencies inside the relevant async configuration function. This lets checks skip those dependencies.
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
@@ -58,6 +61,12 @@ define.app(async () => {
   return {
     plugins: [pluginReact()],
   };
+});
+
+define.lint(({ js }) => [js.configs.recommended]);
+
+define.fmt({
+  singleQuote: true,
 });
 ```
 
