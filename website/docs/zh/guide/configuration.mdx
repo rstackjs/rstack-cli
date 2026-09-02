@@ -44,11 +44,14 @@ Rstack CLI 默认会查找使用以下任一文件名的配置文件：
 rs build --config ./configs/rstack.config.ts
 ```
 
-## 按需加载依赖 \{#loading-dependencies-on-demand}
+## 导入依赖 \{#loading-dependencies-on-demand}
 
-每次执行 `rs` 命令时，Rstack CLI 都会加载并执行配置文件，然后只解析当前命令需要的配置函数。
+Rstack 将项目的构建、测试、代码检查、格式化等配置集中在一个 `rstack.config.*` 文件中。命令加载配置文件时，会同时加载所有顶层 `import`，即使当前命令用不到对应的配置。因此，在顶层导入所有工具和插件可能会增加 `rs lint`、`rs fmt` 等命令的启动开销。
 
-如果配置需要导入插件或其他工具专属依赖，请使用异步配置函数，并在函数内通过动态 `import()` 加载这些依赖。这样只有解析该配置时才会加载相关依赖。
+请根据配置内容选择导入方式：
+
+- 如果配置只用于一个应用及其测试、一个库及其测试或一个文档站点，优先使用更简洁的静态导入。
+- 如果同一配置还包含 lint、格式化或暂存文件检查，可在相应的异步配置函数中动态导入依赖，让检查命令跳过这些依赖。
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
@@ -58,6 +61,12 @@ define.app(async () => {
   return {
     plugins: [pluginReact()],
   };
+});
+
+define.lint(({ js }) => [js.configs.recommended]);
+
+define.fmt({
+  singleQuote: true,
 });
 ```
 
