@@ -48,6 +48,33 @@ test('runs lint followed by a formatting check', () => {
   expect(formatted.stderr).toBe('');
 });
 
+test('passes file arguments to lint and the formatting check', () => {
+  writeLintConfig();
+  writeProjectFile('src/selected-a.ts', 'const selectedA = true;\n');
+  writeProjectFile('src/selected-b.ts', 'const selectedB = true;\n');
+  writeProjectFile('src/unselected-lint-error.ts', 'debugger;\n');
+  writeProjectFile('src/unselected-format-error.ts', 'const value=true');
+
+  const result = runCheck(['src/selected-a.ts', 'src/selected-b.ts']);
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toContain('Format check passed in');
+  expect(result.stdout).toContain('(2 files)');
+  expect(result.stderr).toBe('');
+});
+
+test('supports file arguments after the option terminator', () => {
+  writeLintConfig();
+  writeProjectFile('--selected.ts', 'const selected = true;\n');
+
+  const result = runCheck(['--', '--selected.ts']);
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toContain('Format check passed in');
+  expect(result.stdout).toContain('(1 file)');
+  expect(result.stderr).toBe('');
+});
+
 test('enables type checking only with --type-check', () => {
   writeLintConfig();
   writeProjectFile(

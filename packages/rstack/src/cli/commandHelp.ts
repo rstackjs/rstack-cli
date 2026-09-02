@@ -148,7 +148,7 @@ const HELP_DEFINITIONS = {
     ],
   },
   check: {
-    usage: 'rs check [options]',
+    usage: 'rs check [options] [files...]',
     description: 'Run static checks, including lint and format',
     sections: [
       {

@@ -157,13 +157,13 @@ async function runRslintCLI(args: string[]): Promise<void> {
 }
 
 async function runCheckCLI(args: string[]): Promise<void> {
-  const { values } = parseArgs({
+  const { values, positionals } = parseArgs({
     args,
     options: {
       'type-check': { type: 'boolean' },
       help: { type: 'boolean', short: 'h' },
     },
-    allowPositionals: false,
+    allowPositionals: true,
     strict: true,
   });
 
@@ -171,7 +171,13 @@ async function runCheckCLI(args: string[]): Promise<void> {
     return printCommandHelp('check');
   }
 
-  await runRslintCLI(values.typeCheck ? ['--type-check'] : []);
+  // Keep file arguments after `--` when forwarding them so names beginning
+  // with a hyphen are not reinterpreted as child-command options.
+  const fileArgs = positionals.length > 0 ? ['--', ...positionals] : [];
+  await runRslintCLI([
+    ...(values.typeCheck ? ['--type-check'] : []),
+    ...fileArgs,
+  ]);
   if (process.exitCode) {
     return;
   }
@@ -185,7 +191,10 @@ async function runCheckCLI(args: string[]): Promise<void> {
     /* rspackChunkName: 'fmt' */
     '../fmt/cli.ts'
   );
-  await runFmtCLI(['--check'], { fixCommand: 'rs fmt', loadedConfig });
+  await runFmtCLI(['--check', ...fileArgs], {
+    fixCommand: 'rs fmt',
+    loadedConfig,
+  });
 }
 
 export async function setupCommands(): Promise<void> {
