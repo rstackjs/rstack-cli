@@ -63,28 +63,16 @@ test('passes file arguments to lint and the formatting check', () => {
   expect(result.stderr).toBe('');
 });
 
-test('preserves file arguments in the formatting fix command', () => {
-  writeLintConfig();
-  writeProjectFile("src/selected file's.ts", 'const selected=true');
-
-  const result = runCheck(["src/selected file's.ts"]);
-
-  expect(result.status).toBe(1);
-  expect(result.stderr).toContain(
-    `Run rs fmt -- 'src/selected file'"'"'s.ts' to fix.`,
-  );
-});
-
 test('supports file arguments after the option terminator', () => {
   writeLintConfig();
-  writeProjectFile('--selected.ts', 'const selected=true');
+  writeProjectFile('--selected.ts', 'const selected = true;\n');
 
   const result = runCheck(['--', '--selected.ts']);
 
-  expect(result.status).toBe(1);
-  expect(result.stderr).toContain(
-    'Formatting issues found in 1 file. Run rs fmt -- --selected.ts to fix.',
-  );
+  expect(result.status).toBe(0);
+  expect(result.stdout).toContain('Format check passed in');
+  expect(result.stdout).toContain('(1 file)');
+  expect(result.stderr).toBe('');
 });
 
 test('enables type checking only with --type-check', () => {

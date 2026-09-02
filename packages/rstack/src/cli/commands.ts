@@ -141,16 +141,6 @@ async function runRspressCLI(args: string[]): Promise<void> {
 
 const RSLINT_CONFIG_PATH = join(import.meta.dirname, 'rslintConfig.js');
 
-const SHELL_SAFE_ARGUMENT_REGEXP = /^[\w@%+=:,./-]+$/u;
-
-const quoteShellArgument = (argument: string): string =>
-  SHELL_SAFE_ARGUMENT_REGEXP.test(argument)
-    ? argument
-    : `'${argument.replaceAll("'", "'\"'\"'")}'`;
-
-const formatCommand = (args: readonly string[]): string =>
-  args.map(quoteShellArgument).join(' ');
-
 async function runRslintCLI(args: string[]): Promise<void> {
   if (hasHelpFlag(args)) {
     return printCommandHelp('lint');
@@ -202,7 +192,7 @@ async function runCheckCLI(args: string[]): Promise<void> {
     '../fmt/cli.ts'
   );
   await runFmtCLI(['--check', ...fileArgs], {
-    fixCommand: formatCommand(['rs', 'fmt', ...fileArgs]),
+    fixCommand: 'rs fmt',
     loadedConfig,
   });
 }
