@@ -39,16 +39,19 @@ define.lint(({ globals }) => [
 
 ## Script pattern
 
-If a script also runs Prettier, migrate its formatting command as described in [prettier.md](prettier.md).
+For example:
 
 ```json
 {
   "scripts": {
-    "lint": "rs lint && rs fmt --check",
-    "lint:write": "rs lint --fix && rs fmt"
+    "check": "rs check",
+    "format": "rs fmt",
+    "lint": "rs lint"
   }
 }
 ```
+
+Preserve existing script names unless renaming is requested. For scripts that also run Prettier, follow [prettier.md](prettier.md), then apply the [combined-check rules](../SKILL.md#combined-checks).
 
 ## Validate
 
