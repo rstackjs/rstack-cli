@@ -16,8 +16,6 @@ Read this reference when the project uses the `prettier` CLI or API, `package.js
 8. Delete old config and ignore files only after their behavior is represented in `define.fmt`.
 9. Remove direct dependencies only when no script, config, API call, plugin peer requirement, or other tool still needs them.
 
-`rs fmt` ignores `package-lock.json` and `pnpm-lock.yaml` by default. Drop redundant ignore entries during migration, but keep intentional negations.
-
 Rstack creates `.rstack/cache/.gitignore` by default. Do not list `.rstack/cache` in the root `.gitignore`; add explicit rules only for custom cache paths.
 
 `rs fmt` does not read Prettier configuration files, `.prettierignore`, or `.editorconfig`.
