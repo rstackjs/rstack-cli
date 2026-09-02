@@ -1,7 +1,13 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { loadConfig } from '@rstackjs/load-config';
-import type { RsbuildConfigDefinition } from '@rsbuild/core';
-import type { RslibConfigDefinition } from '@rslib/core';
+import type {
+  defineConfig as defineAppConfig,
+  RsbuildConfigDefinition,
+} from '@rsbuild/core';
+import type {
+  defineConfig as defineRslibConfig,
+  RslibConfigDefinition,
+} from '@rslib/core';
 import type { RslintConfig } from '@rslint/core';
 import type { UserConfig, UserConfigAsyncFn } from '@rspress/core';
 import type { RstestConfigExport } from '@rstest/core';
@@ -99,7 +105,7 @@ type Define = {
    *
    * @see {@link https://rstack.rs/config | Configuration guide}
    */
-  app: (config: RsbuildConfigDefinition) => void;
+  app: typeof defineAppConfig;
   /**
    * Defines the Rslib config for libraries.
    *
@@ -107,7 +113,7 @@ type Define = {
    *
    * @see {@link https://rstack.rs/config | Configuration guide}
    */
-  lib: (config: RslibConfigDefinition) => void;
+  lib: typeof defineRslibConfig;
   /**
    * Defines the Rspress config for documentation.
    *
@@ -174,8 +180,14 @@ const setConfig = <T extends keyof Configs>(
 };
 
 export const define: Define = {
-  app: (config) => setConfig('app', config),
-  lib: (config) => setConfig('lib', config),
+  app: ((config) => {
+    setConfig('app', config);
+    return config;
+  }) as typeof defineAppConfig,
+  lib: <Config extends RslibConfigDefinition>(config: Config) => {
+    setConfig('lib', config);
+    return config;
+  },
   doc: (config) => setConfig('doc', config),
   test: (config) => setConfig('test', config),
   lint: (config) =>
