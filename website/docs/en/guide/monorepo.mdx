@@ -117,13 +117,11 @@ Rstack CLI loads the configuration from the current working directory. It does n
 A web application usually needs application build configuration and optional test configuration:
 
 ```ts title="apps/web/rstack.config.ts"
+import { pluginReact } from '@rsbuild/plugin-react';
 import { define } from 'rstack';
 
-define.app(async () => {
-  const { pluginReact } = await import('@rsbuild/plugin-react');
-  return {
-    plugins: [pluginReact()],
-  };
+define.app({
+  plugins: [pluginReact()],
 });
 
 define.test({
