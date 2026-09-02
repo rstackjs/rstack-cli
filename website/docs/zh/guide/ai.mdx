@@ -20,11 +20,11 @@ import { PackageManagerTabs } from '@rspress/core/theme';
 你也可以将以下内容复制到自己的 `AGENTS.md` 中：
 
 ```markdown wrapCode title="AGENTS.md"
-This project uses Rstack CLI as its JavaScript toolchain.
+This project uses Rstack CLI as its JS toolchain:
 
-- Before working with `rs` commands, `rstack.config.*` files, or imports from `rstack`, start with `node_modules/rstack/docs/llms.txt`, then read only the linked pages relevant to the task.
-- For command details, use `rs -h` or `rs <command> -h`.
-- If the local documentation is unavailable, use https://rstack.rs/llms.txt and `rs <command> -h`.
+- Read the docs linked from `node_modules/rstack/docs/llms.txt` when needed
+- Online docs: [https://rstack.rs/llms.txt](https://rstack.rs/llms.txt)
+- Run `rs -h` for CLI help
 ```
 
 这段内容与 [rstack-cli-docs](#rstack-cli-docs) Skill 作用相似，都能指导 Coding Agent 使用 Rstack CLI 并查找相关文档。将其添加到 `AGENTS.md` 或安装该 Skill，任选其一即可。
