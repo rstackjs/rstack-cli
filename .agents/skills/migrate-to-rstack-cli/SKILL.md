@@ -34,6 +34,12 @@ Read every matching reference before editing. Load only the tools present in the
 
 Rsbuild, Rslib, Rstest, Rslint, and Prettier remain transitive `rstack` dependencies. Remove obsolete direct dependencies and imports from the migrated scope; do not expect their names to disappear from the lockfile.
 
+### Ignore cleanup
+
+After migrating lint or formatting, remove exclusions from lint `ignores` and fmt `ignorePatterns` when the same paths are already covered by effective `.gitignore` rules; both commands read `.gitignore` automatically. For fmt, also remove `package-lock.json` and `pnpm-lock.yaml` from `ignorePatterns`; `rs fmt` ignores them by default.
+
+Keep negations and fmt exclusions that must apply to explicitly passed files, which bypass `.gitignore`.
+
 ### Combined checks
 
 After migrating lint and formatting commands, prefer the shorter combined command when behavior is equivalent:
