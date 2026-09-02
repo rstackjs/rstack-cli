@@ -1,9 +1,8 @@
 // Configuration guide: https://rstack.rs/config
+import { withRslibConfig } from '@rstest/adapter-rslib';
 import { define } from 'rstack';
 
-define.test(async () => {
-  const { withRslibConfig } = await import('@rstest/adapter-rslib');
-
+define.test(() => {
   // Disable color in test
   process.env.NO_COLOR = '1';
 

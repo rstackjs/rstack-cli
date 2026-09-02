@@ -1,11 +1,9 @@
 // Configuration guide: https://rstack.rs/config
+import { pluginReact } from '@rsbuild/plugin-react';
 import { define } from 'rstack';
 
-define.app(async () => {
-  const { pluginReact } = await import('@rsbuild/plugin-react');
-  return {
-    plugins: [pluginReact()],
-  };
+define.app({
+  plugins: [pluginReact()],
 });
 
 define.test(async () => {
