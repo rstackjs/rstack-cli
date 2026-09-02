@@ -45,7 +45,7 @@ After migrating lint and formatting commands, prefer the shorter combined comman
 
 `rs check` preserves the order and short-circuit behavior of these `&&` chains.
 
-Combine only when both commands use the same working directory and Rstack config, with no positional inputs or command-specific options beyond those shown. Move a shared `-c` or `--config` to `rs check`. Keep the commands separate when their environment, wrappers, scope, execution order, concurrency, or output handling differs.
+Combine only commands that share the same working directory, config, scope, and execution behavior and have no extra inputs or command-specific options. Pass a shared `-c` or `--config` to `rs check`.
 
 ## Configuration
 
