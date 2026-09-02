@@ -34,6 +34,19 @@ Read every matching reference before editing. Load only the tools present in the
 
 Rsbuild, Rslib, Rstest, Rslint, and Prettier remain transitive `rstack` dependencies. Remove obsolete direct dependencies and imports from the migrated scope; do not expect their names to disappear from the lockfile.
 
+### Combined checks
+
+After migrating lint and formatting commands, prefer the shorter combined command when behavior is equivalent:
+
+| Separate commands                        | Preferred command       |
+| ---------------------------------------- | ----------------------- |
+| `rs lint && rs fmt --check`              | `rs check`              |
+| `rs lint --type-check && rs fmt --check` | `rs check --type-check` |
+
+`rs check` preserves the order and short-circuit behavior of these `&&` chains.
+
+Combine only when both commands use the same working directory and Rstack config, with no positional inputs or command-specific options beyond those shown. Move a shared `-c` or `--config` to `rs check`. Keep the commands separate when their environment, wrappers, scope, execution order, concurrency, or output handling differs.
+
 ## Configuration
 
 ### Config files
