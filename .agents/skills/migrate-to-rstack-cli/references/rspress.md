@@ -22,7 +22,7 @@ define.doc({
 });
 ```
 
-Use an async config and dynamic imports when plugins or themes require runtime imports.
+Follow [Modules and imports](../SKILL.md#modules-and-imports) when the config imports plugins or themes.
 
 ## Validate
 
