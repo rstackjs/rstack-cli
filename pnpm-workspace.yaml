@@ -16,7 +16,7 @@ catalog:
   '@rsbuild/core': '~2.2.2'
   '@rsbuild/plugin-react': '^2.1.0'
   '@rsbuild/plugin-sass': '^2.0.1'
-  '@rslib/core': '~1.0.0-rc.2'
+  '@rslib/core': '~1.0.0'
   '@rslint/core': '0.9.0'
   '@rspress/core': '^2.0.21'
   '@rspress/plugin-client-redirects': '^2.0.21'
