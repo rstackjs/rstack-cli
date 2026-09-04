@@ -37,12 +37,22 @@ test('installs generated hooks and configures the repository', () => {
     for (const [name, content] of Object.entries(createHookFiles())) {
       const filePath = path.join(directory, name);
       expect(readFileSync(filePath, 'utf8')).toBe(content);
-      if (process.platform !== 'win32') {
-        expect(statSync(filePath).mode & 0o777).toBe(0o755);
-      }
     }
   });
 });
+
+test.runIf(process.platform !== 'win32')(
+  'installs executable hook shims',
+  () => {
+    withRepository((cwd) => {
+      expect(installHooks({ cwd })).toEqual({ status: 'installed', hooksPath });
+      for (const name of Object.keys(createHookFiles())) {
+        const filePath = path.join(cwd, hooksPath, name);
+        expect(statSync(filePath).mode & 0o777).toBe(0o755);
+      }
+    });
+  },
+);
 
 test('is idempotent and preserves user hooks', () => {
   withRepository((cwd) => {

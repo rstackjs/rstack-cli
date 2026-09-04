@@ -21,6 +21,18 @@ define.lint(({ globals, js, ts, rstestPlugin }) => {
     {
       files: ['**/*.test.{ts,tsx}'],
       ...rstestPlugin.configs.recommended,
+      rules: {
+        ...rstestPlugin.configs.recommended.rules,
+        'rstest/expect-expect': [
+          'warn',
+          { assertFunctionNames: ['expect', 'assert', 'expect*'] },
+        ],
+        // CLI fixtures re-export an extended test from #test-helpers.
+        'rstest/no-standalone-expect': [
+          'error',
+          { additionalTestBlockFunctions: ['test'] },
+        ],
+      },
     },
     // Source imports use .ts for Node.js native TypeScript execution; builds rewrite them to .js.
     {

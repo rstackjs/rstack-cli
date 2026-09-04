@@ -558,12 +558,7 @@ const parseJavaScript = (
   );
   const { program, comments } = tryCombinations(combinations);
 
-  return postprocess(
-    program as unknown as AstNode,
-    comments as PrettierComment[],
-    text,
-    'yuku-js',
-  );
+  return postprocess(program as unknown as AstNode, comments, text, 'yuku-js');
 };
 
 const parseTypeScript = (
@@ -581,12 +576,7 @@ const parseTypeScript = (
   );
   const { program, comments } = tryCombinations(combinations);
 
-  return postprocess(
-    program as unknown as AstNode,
-    comments as PrettierComment[],
-    text,
-    'yuku-ts',
-  );
+  return postprocess(program as unknown as AstNode, comments, text, 'yuku-ts');
 };
 
 const createParser = (
