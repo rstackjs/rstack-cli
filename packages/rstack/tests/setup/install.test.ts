@@ -38,6 +38,8 @@ test('installs generated hooks and configures the repository', () => {
       const filePath = path.join(directory, name);
       expect(readFileSync(filePath, 'utf8')).toBe(content);
       if (process.platform !== 'win32') {
+        // The platform guard intentionally skips POSIX permissions on Windows.
+        // rslint-disable-next-line rstest/no-conditional-expect
         expect(statSync(filePath).mode & 0o777).toBe(0o755);
       }
     }

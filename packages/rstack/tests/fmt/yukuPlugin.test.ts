@@ -332,24 +332,20 @@ test('matches the official hashbang AST shape', async () => {
 });
 
 test('reports Yuku diagnostics with Prettier locations', async () => {
-  try {
-    await formatWithYuku('\n\nconst = 1', { parser: 'yuku-ts' });
-    throw new Error('Expected Yuku to report a syntax error.');
-  } catch (error) {
-    if (!(error instanceof SyntaxError)) {
-      throw error;
-    }
+  const error = await formatWithYuku('\n\nconst = 1', {
+    parser: 'yuku-ts',
+  }).catch((error: unknown) => error);
+  expect(error).toBeInstanceOf(SyntaxError);
 
-    const parseError = error as SyntaxError & {
-      loc: {
-        end: { column: number; line: number };
-        start: { column: number; line: number };
-      };
+  const parseError = error as SyntaxError & {
+    loc: {
+      end: { column: number; line: number };
+      start: { column: number; line: number };
     };
-    expect(Object.keys(parseError.loc)).toEqual(['start', 'end']);
-    expect(parseError.loc).toEqual({
-      start: { column: 7, line: 3 },
-      end: { column: 8, line: 3 },
-    });
-  }
+  };
+  expect(Object.keys(parseError.loc)).toEqual(['start', 'end']);
+  expect(parseError.loc).toEqual({
+    start: { column: 7, line: 3 },
+    end: { column: 8, line: 3 },
+  });
 });
