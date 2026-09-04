@@ -58,7 +58,14 @@ async function runRstestCLI(args: string[]): Promise<void> {
     ),
   ];
 
-  const { runCLI } = await import('@rstest/core');
+  type RunCLI = (options: { argv: string[] }) => void;
+  const rstestCore = (await import('@rstest/core')) as unknown as {
+    runCLI?: RunCLI;
+  };
+  const runCLI =
+    rstestCore.runCLI ??
+    ((await import('@rstest/core/api')) as unknown as { runCLI: RunCLI })
+      .runCLI;
   runCLI({ argv });
 }
 
