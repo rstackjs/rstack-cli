@@ -33,7 +33,7 @@
     "happy-dom": "^20.13.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "rstack": "^0.7.2",
+    "rstack": "^0.7.3",
     "typescript": "^7.0.2"
   },
   "peerDependencies": {
