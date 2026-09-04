@@ -21,6 +21,6 @@
     "@testing-library/jest-dom": "^7.0.1",
     "@vue/test-utils": "^2.5.0",
     "happy-dom": "^20.13.2",
-    "rstack": "^0.7.2"
+    "rstack": "^0.7.3"
   }
 }
