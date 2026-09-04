@@ -22,12 +22,7 @@ define.lint(({ globals, js, ts, rstestPlugin }) => {
       files: ['**/*.test.{ts,tsx}'],
       ...rstestPlugin.configs.recommended,
       rules: {
-        ...rstestPlugin.configs.recommended.rules,
-        'rstest/expect-expect': [
-          'warn',
-          { assertFunctionNames: ['expect', 'assert', 'expect*'] },
-        ],
-        // CLI fixtures re-export an extended test from #test-helpers.
+        'rstest/expect-expect': ['error', { assertFunctionNames: ['expect*'] }],
         'rstest/no-standalone-expect': [
           'error',
           { additionalTestBlockFunctions: ['test'] },
