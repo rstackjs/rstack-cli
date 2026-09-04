@@ -8,11 +8,11 @@ settings:
 catalogs:
   default:
     '@napi-rs/cli':
-      specifier: ^3.8.6
-      version: 3.8.6
+      specifier: ^3.9.0
+      version: 3.9.0
     '@rsbuild/core':
-      specifier: ~2.2.2
-      version: 2.2.2
+      specifier: ~2.2.3
+      version: 2.2.3
     '@rsbuild/plugin-react':
       specifier: ^2.1.0
       version: 2.1.0
@@ -47,14 +47,14 @@ catalogs:
       specifier: ^0.2.0
       version: 0.2.0
     '@rstest/adapter-rsbuild':
-      specifier: ~0.11.11
-      version: 0.11.11
+      specifier: ~0.11.12
+      version: 0.11.12
     '@rstest/adapter-rslib':
-      specifier: ~0.11.11
-      version: 0.11.11
+      specifier: ~0.11.12
+      version: 0.11.12
     '@rstest/core':
-      specifier: ~0.11.11
-      version: 0.11.11
+      specifier: ~0.11.12
+      version: 0.11.12
     '@shikijs/transformers':
       specifier: ^4.4.3
       version: 4.4.3
@@ -71,8 +71,8 @@ catalogs:
       specifier: ^4.0.10
       version: 4.0.10
     '@types/node':
-      specifier: ^26.4.0
-      version: 26.4.0
+      specifier: ^26.4.1
+      version: 26.4.1
     '@types/react':
       specifier: ^19.2.18
       version: 19.2.18
@@ -86,8 +86,8 @@ catalogs:
       specifier: 2.1.0
       version: 2.1.0
     happy-dom:
-      specifier: ^20.12.0
-      version: 20.12.0
+      specifier: ^20.13.2
+      version: 20.13.2
     heading-case:
       specifier: ^2.0.1
       version: 2.0.1
@@ -158,7 +158,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
-        version: 26.4.0
+        version: 26.4.1
       cspell-ban-words:
         specifier: 'catalog:'
         version: 0.0.4
@@ -204,7 +204,7 @@ importers:
         version: 19.2.5(@types/react@19.2.18)
       happy-dom:
         specifier: 'catalog:'
-        version: 20.12.0
+        version: 20.13.2
       rstack:
         specifier: workspace:*
         version: link:../../packages/rstack
@@ -222,10 +222,10 @@ importers:
         version: 7.0.1(@testing-library/dom@10.4.1)
       '@types/node':
         specifier: 'catalog:'
-        version: 26.4.0
+        version: 26.4.1
       happy-dom:
         specifier: 'catalog:'
-        version: 20.12.0
+        version: 20.13.2
       rstack:
         specifier: workspace:*
         version: link:../../packages/rstack
@@ -244,7 +244,7 @@ importers:
         version: 2.0.21(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
       '@types/node':
         specifier: 'catalog:'
-        version: 26.4.0
+        version: 26.4.1
       '@types/react':
         specifier: 'catalog:'
         version: 19.2.18
@@ -262,7 +262,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
-        version: 26.4.0
+        version: 26.4.1
       rstack:
         specifier: workspace:*
         version: link:../../packages/rstack
@@ -292,7 +292,7 @@ importers:
         version: 19.2.5(@types/react@19.2.18)
       happy-dom:
         specifier: 'catalog:'
-        version: 20.12.0
+        version: 20.13.2
       react:
         specifier: 'catalog:'
         version: 19.2.8
@@ -326,7 +326,7 @@ importers:
         version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.2.5)(@types/react@19.2.18)(react-dom@19.2.8)(react@19.2.8)
       '@types/node':
         specifier: 'catalog:'
-        version: 26.4.0
+        version: 26.4.1
       '@types/react':
         specifier: 'catalog:'
         version: 19.2.18
@@ -335,7 +335,7 @@ importers:
         version: 19.2.5(@types/react@19.2.18)
       happy-dom:
         specifier: 'catalog:'
-        version: 20.12.0
+        version: 20.13.2
       rstack:
         specifier: workspace:*
         version: link:../../packages/rstack
@@ -351,7 +351,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
-        version: 26.4.0
+        version: 26.4.1
       rstack:
         specifier: workspace:*
         version: link:../rstack
@@ -363,7 +363,7 @@ importers:
     dependencies:
       '@rsbuild/core':
         specifier: 'catalog:'
-        version: 2.2.2
+        version: 2.2.3
       '@rslib/core':
         specifier: 'catalog:'
         version: 1.0.0(typescript@7.0.2)
@@ -372,7 +372,7 @@ importers:
         version: 0.9.0
       '@rstest/core':
         specifier: 'catalog:'
-        version: 0.11.11(happy-dom@20.12.0)
+        version: 0.11.12(happy-dom@20.13.2)
       prettier:
         specifier: 'catalog:'
         version: 3.9.6
@@ -385,7 +385,7 @@ importers:
     devDependencies:
       '@napi-rs/cli':
         specifier: 'catalog:'
-        version: 3.8.6(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.4.0)(supports-color@8.1.1)
+        version: 3.9.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.4.1)(supports-color@8.1.1)
       '@rspress/core':
         specifier: 'catalog:'
         version: 2.0.21(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
@@ -397,16 +397,16 @@ importers:
         version: 0.2.0
       '@rstest/adapter-rsbuild':
         specifier: 'catalog:'
-        version: 0.11.11(@rsbuild/core@2.2.2)(@rstest/core@0.11.11)
+        version: 0.11.12(@rsbuild/core@2.2.3)(@rstest/core@0.11.12)
       '@rstest/adapter-rslib':
         specifier: 'catalog:'
-        version: 0.11.11(@rslib/core@1.0.0)(@rstest/core@0.11.11)(typescript@7.0.2)
+        version: 0.11.12(@rslib/core@1.0.0)(@rstest/core@0.11.12)(typescript@7.0.2)
       '@types/micromatch':
         specifier: 'catalog:'
         version: 4.0.10
       '@types/node':
         specifier: 'catalog:'
-        version: 26.4.0
+        version: 26.4.1
       fast-json-stable-stringify:
         specifier: 'catalog:'
         version: 2.1.0
@@ -472,7 +472,7 @@ importers:
         version: 4.4.3
       '@types/node':
         specifier: 'catalog:'
-        version: 26.4.0
+        version: 26.4.1
       '@types/react':
         specifier: 'catalog:'
         version: 19.2.18
@@ -766,8 +766,8 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  '@napi-rs/cli@3.8.6':
-    resolution: {integrity: sha512-FnJ9fghsV9Q4zh2aJGPSvQiUlJRC27B6KhzAXcIW2rlSD8keak3mhXw4tJYa3KJkP9whETfsPwqp/DJRnQg5ng==}
+  '@napi-rs/cli@3.9.0':
+    resolution: {integrity: sha512-ZlerYOCLgVdaqbVDt8+uQxmU9j8bKMVFcYo6zRHJJHTO9jN5060+y953aIVc/0zkVSKq+fHjDAtTGOrbxpeZCw==}
     engines: {node: ^20.17.0 || ^22.13.0 || >= 23.5.0}
     hasBin: true
     peerDependencies:
@@ -1281,6 +1281,16 @@ packages:
       core-js:
         optional: true
 
+  '@rsbuild/core@2.2.3':
+    resolution: {integrity: sha512-oJrYtYDhb7AMwY8HIda2hgMuuxHkYPYar4svdS5uTq0fXY0M1wLfllkTQz0d729pNJ4S//6GUM1WX5LsW2mFLw==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    hasBin: true
+    peerDependencies:
+      core-js: '>= 3.0.0'
+    peerDependenciesMeta:
+      core-js:
+        optional: true
+
   '@rsbuild/plugin-react@2.1.0':
     resolution: {integrity: sha512-RQTIAWB/CwPjoWt9iAl+8HixeQVgZ7kEIBrWPCixfITyHdiD84h0YpUTpEUuz6kGHw1KXT9mHZ3Rwy6WG7aRDA==}
     peerDependencies:
@@ -1507,14 +1517,14 @@ packages:
   '@rstackjs/test-utils@0.2.0':
     resolution: {integrity: sha512-P+LOo1WE3xYeGkHmEthyq2cIpN69k4LhiB/4UBSceD+nW9hDlhWv8MC0LTLWokZXccWl4ntcfOBjQFllkcBlPA==}
 
-  '@rstest/adapter-rsbuild@0.11.11':
-    resolution: {integrity: sha512-WQ9HGKKModXynrWjef5sUHtPFrjviw6bPXsljHb2AAxLC5qL3tZmsp71uQkIaPqpOzYhQ8sY7EhkKikMPv3cTw==}
+  '@rstest/adapter-rsbuild@0.11.12':
+    resolution: {integrity: sha512-0XXUMCSxAYK7zuBltAABSIIAcsCrvCywyRLIkicvJwIlvRGAwhRO5DSIZLo77y5lEYQAZl6uAHwczyZC9lZ1DA==}
     peerDependencies:
       '@rsbuild/core': ^1.0.0 || ^2.0.0
       '@rstest/core': ^0.11.0
 
-  '@rstest/adapter-rslib@0.11.11':
-    resolution: {integrity: sha512-tdApcpVuV29RPOzKftw7SLaMZr7yzlkcut+m56LsIW9WagQF2wjdhM4sdvMogVDT2ltPtKi+COMCATpNhq4Raw==}
+  '@rstest/adapter-rslib@0.11.12':
+    resolution: {integrity: sha512-YIJ+4uTmTYCPWtsoePZ9nTsA9j0OVa24sM0nvwWig4inhKJi50Aa7+yd//N9CtQ0Gc608BJ5S5fo9w/DfCSWYA==}
     peerDependencies:
       '@rslib/core': '>=0.18.6 || ^1.0.0-0'
       '@rstest/core': ^0.11.0
@@ -1523,8 +1533,8 @@ packages:
       typescript:
         optional: true
 
-  '@rstest/core@0.11.11':
-    resolution: {integrity: sha512-7Ii2/2/ex1Oa0Kg5Qk5RKx2+e0I83BHLwH0/gn1B7IDwXCh5msFCF7yTyVGFuMltlm3E8Cf4QD7jadOEaBfXfw==}
+  '@rstest/core@0.11.12':
+    resolution: {integrity: sha512-dklEYLtL1eip/11K+o3xEchEs2nCGua2u2W8Pycf6PS8TE0PDJH2Bn9y/txuQI4YVHyIQ88PISWtS6fVnxSyXQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -1665,6 +1675,9 @@ packages:
 
   '@types/node@26.4.0':
     resolution: {integrity: sha512-faiGnoIrLH/V8cibOMEAZ8pMw6oXqSukl29ra4mN8GdaB2ZewzeaLj+INpV5N+Z1eKWzY+IzaIZH2EIR6YZRNQ==}
+
+  '@types/node@26.4.1':
+    resolution: {integrity: sha512-k97ENvZWtvA6yqz5/FS6a7duDgOPEeOQOc2iKS/nY6mX6qJUKtLnWzQS+Xj6tXweyj6ZcTAK2Qecetnvi9nCLA==}
 
   '@types/react-dom@19.2.5':
     resolution: {integrity: sha512-fMPwH9v7r/pp43yUd2/Mbiex5KouJwwR3dzHkhLREUC6764VyDsqxhAxv6OFEYR1RhjOyD1naqba8ECDBe7ZQg==}
@@ -2158,8 +2171,8 @@ packages:
   git-hooks-list@4.2.1:
     resolution: {integrity: sha512-WNvqJjOxxs/8ZP9+DWdwWJ7cDsd60NHf39XnD82pDVrKO5q7xfPqpkK6hwEAmBa/ZSEE4IOoR75EzbbIuwGlMw==}
 
-  happy-dom@20.12.0:
-    resolution: {integrity: sha512-7uMYJu2SEwwL8vVcKp0C0lnt6d2LSGGe+T+oY79PiCJNNSgFpbxW8n5KuzpDQvrU4mt+fYiK1+Jy7Z2v39YR6g==}
+  happy-dom@20.13.2:
+    resolution: {integrity: sha512-VC9HoEaT3Jf3K/1g/GjMYGAZCCg+ULgGVcXJlAeSzdTj8mIoPJRp14KVclP5gpUcF/kauuaVB2ri2/WxXbl4vg==}
     engines: {node: '>=20.0.0'}
 
   has-flag@4.0.0:
@@ -3258,122 +3271,122 @@ snapshots:
 
   '@inquirer/ansi@2.0.7': {}
 
-  '@inquirer/checkbox@5.2.1(@types/node@26.4.0)':
+  '@inquirer/checkbox@5.2.1(@types/node@26.4.1)':
     dependencies:
       '@inquirer/ansi': 2.0.7
-      '@inquirer/core': 11.2.1(@types/node@26.4.0)
+      '@inquirer/core': 11.2.1(@types/node@26.4.1)
       '@inquirer/figures': 2.0.7
-      '@inquirer/type': 4.0.7(@types/node@26.4.0)
+      '@inquirer/type': 4.0.7(@types/node@26.4.1)
     optionalDependencies:
-      '@types/node': 26.4.0
+      '@types/node': 26.4.1
 
-  '@inquirer/confirm@6.1.1(@types/node@26.4.0)':
+  '@inquirer/confirm@6.1.1(@types/node@26.4.1)':
     dependencies:
-      '@inquirer/core': 11.2.1(@types/node@26.4.0)
-      '@inquirer/type': 4.0.7(@types/node@26.4.0)
+      '@inquirer/core': 11.2.1(@types/node@26.4.1)
+      '@inquirer/type': 4.0.7(@types/node@26.4.1)
     optionalDependencies:
-      '@types/node': 26.4.0
+      '@types/node': 26.4.1
 
-  '@inquirer/core@11.2.1(@types/node@26.4.0)':
+  '@inquirer/core@11.2.1(@types/node@26.4.1)':
     dependencies:
       '@inquirer/ansi': 2.0.7
       '@inquirer/figures': 2.0.7
-      '@inquirer/type': 4.0.7(@types/node@26.4.0)
+      '@inquirer/type': 4.0.7(@types/node@26.4.1)
       cli-width: 4.1.0
       fast-wrap-ansi: 0.2.2
       mute-stream: 3.0.0
       signal-exit: 4.1.0
     optionalDependencies:
-      '@types/node': 26.4.0
+      '@types/node': 26.4.1
 
-  '@inquirer/editor@5.2.2(@types/node@26.4.0)':
+  '@inquirer/editor@5.2.2(@types/node@26.4.1)':
     dependencies:
-      '@inquirer/core': 11.2.1(@types/node@26.4.0)
-      '@inquirer/external-editor': 3.0.3(@types/node@26.4.0)
-      '@inquirer/type': 4.0.7(@types/node@26.4.0)
+      '@inquirer/core': 11.2.1(@types/node@26.4.1)
+      '@inquirer/external-editor': 3.0.3(@types/node@26.4.1)
+      '@inquirer/type': 4.0.7(@types/node@26.4.1)
     optionalDependencies:
-      '@types/node': 26.4.0
+      '@types/node': 26.4.1
 
-  '@inquirer/expand@5.1.1(@types/node@26.4.0)':
+  '@inquirer/expand@5.1.1(@types/node@26.4.1)':
     dependencies:
-      '@inquirer/core': 11.2.1(@types/node@26.4.0)
-      '@inquirer/type': 4.0.7(@types/node@26.4.0)
+      '@inquirer/core': 11.2.1(@types/node@26.4.1)
+      '@inquirer/type': 4.0.7(@types/node@26.4.1)
     optionalDependencies:
-      '@types/node': 26.4.0
+      '@types/node': 26.4.1
 
-  '@inquirer/external-editor@3.0.3(@types/node@26.4.0)':
+  '@inquirer/external-editor@3.0.3(@types/node@26.4.1)':
     dependencies:
       chardet: 2.2.0
       iconv-lite: 0.7.3
     optionalDependencies:
-      '@types/node': 26.4.0
+      '@types/node': 26.4.1
 
   '@inquirer/figures@2.0.7': {}
 
-  '@inquirer/input@5.1.2(@types/node@26.4.0)':
+  '@inquirer/input@5.1.2(@types/node@26.4.1)':
     dependencies:
-      '@inquirer/core': 11.2.1(@types/node@26.4.0)
-      '@inquirer/type': 4.0.7(@types/node@26.4.0)
+      '@inquirer/core': 11.2.1(@types/node@26.4.1)
+      '@inquirer/type': 4.0.7(@types/node@26.4.1)
     optionalDependencies:
-      '@types/node': 26.4.0
+      '@types/node': 26.4.1
 
-  '@inquirer/number@4.1.1(@types/node@26.4.0)':
+  '@inquirer/number@4.1.1(@types/node@26.4.1)':
     dependencies:
-      '@inquirer/core': 11.2.1(@types/node@26.4.0)
-      '@inquirer/type': 4.0.7(@types/node@26.4.0)
+      '@inquirer/core': 11.2.1(@types/node@26.4.1)
+      '@inquirer/type': 4.0.7(@types/node@26.4.1)
     optionalDependencies:
-      '@types/node': 26.4.0
+      '@types/node': 26.4.1
 
-  '@inquirer/password@5.1.1(@types/node@26.4.0)':
-    dependencies:
-      '@inquirer/ansi': 2.0.7
-      '@inquirer/core': 11.2.1(@types/node@26.4.0)
-      '@inquirer/type': 4.0.7(@types/node@26.4.0)
-    optionalDependencies:
-      '@types/node': 26.4.0
-
-  '@inquirer/prompts@8.5.2(@types/node@26.4.0)':
-    dependencies:
-      '@inquirer/checkbox': 5.2.1(@types/node@26.4.0)
-      '@inquirer/confirm': 6.1.1(@types/node@26.4.0)
-      '@inquirer/editor': 5.2.2(@types/node@26.4.0)
-      '@inquirer/expand': 5.1.1(@types/node@26.4.0)
-      '@inquirer/input': 5.1.2(@types/node@26.4.0)
-      '@inquirer/number': 4.1.1(@types/node@26.4.0)
-      '@inquirer/password': 5.1.1(@types/node@26.4.0)
-      '@inquirer/rawlist': 5.3.1(@types/node@26.4.0)
-      '@inquirer/search': 4.2.1(@types/node@26.4.0)
-      '@inquirer/select': 5.2.1(@types/node@26.4.0)
-    optionalDependencies:
-      '@types/node': 26.4.0
-
-  '@inquirer/rawlist@5.3.1(@types/node@26.4.0)':
-    dependencies:
-      '@inquirer/core': 11.2.1(@types/node@26.4.0)
-      '@inquirer/type': 4.0.7(@types/node@26.4.0)
-    optionalDependencies:
-      '@types/node': 26.4.0
-
-  '@inquirer/search@4.2.1(@types/node@26.4.0)':
-    dependencies:
-      '@inquirer/core': 11.2.1(@types/node@26.4.0)
-      '@inquirer/figures': 2.0.7
-      '@inquirer/type': 4.0.7(@types/node@26.4.0)
-    optionalDependencies:
-      '@types/node': 26.4.0
-
-  '@inquirer/select@5.2.1(@types/node@26.4.0)':
+  '@inquirer/password@5.1.1(@types/node@26.4.1)':
     dependencies:
       '@inquirer/ansi': 2.0.7
-      '@inquirer/core': 11.2.1(@types/node@26.4.0)
-      '@inquirer/figures': 2.0.7
-      '@inquirer/type': 4.0.7(@types/node@26.4.0)
+      '@inquirer/core': 11.2.1(@types/node@26.4.1)
+      '@inquirer/type': 4.0.7(@types/node@26.4.1)
     optionalDependencies:
-      '@types/node': 26.4.0
+      '@types/node': 26.4.1
 
-  '@inquirer/type@4.0.7(@types/node@26.4.0)':
+  '@inquirer/prompts@8.5.2(@types/node@26.4.1)':
+    dependencies:
+      '@inquirer/checkbox': 5.2.1(@types/node@26.4.1)
+      '@inquirer/confirm': 6.1.1(@types/node@26.4.1)
+      '@inquirer/editor': 5.2.2(@types/node@26.4.1)
+      '@inquirer/expand': 5.1.1(@types/node@26.4.1)
+      '@inquirer/input': 5.1.2(@types/node@26.4.1)
+      '@inquirer/number': 4.1.1(@types/node@26.4.1)
+      '@inquirer/password': 5.1.1(@types/node@26.4.1)
+      '@inquirer/rawlist': 5.3.1(@types/node@26.4.1)
+      '@inquirer/search': 4.2.1(@types/node@26.4.1)
+      '@inquirer/select': 5.2.1(@types/node@26.4.1)
     optionalDependencies:
-      '@types/node': 26.4.0
+      '@types/node': 26.4.1
+
+  '@inquirer/rawlist@5.3.1(@types/node@26.4.1)':
+    dependencies:
+      '@inquirer/core': 11.2.1(@types/node@26.4.1)
+      '@inquirer/type': 4.0.7(@types/node@26.4.1)
+    optionalDependencies:
+      '@types/node': 26.4.1
+
+  '@inquirer/search@4.2.1(@types/node@26.4.1)':
+    dependencies:
+      '@inquirer/core': 11.2.1(@types/node@26.4.1)
+      '@inquirer/figures': 2.0.7
+      '@inquirer/type': 4.0.7(@types/node@26.4.1)
+    optionalDependencies:
+      '@types/node': 26.4.1
+
+  '@inquirer/select@5.2.1(@types/node@26.4.1)':
+    dependencies:
+      '@inquirer/ansi': 2.0.7
+      '@inquirer/core': 11.2.1(@types/node@26.4.1)
+      '@inquirer/figures': 2.0.7
+      '@inquirer/type': 4.0.7(@types/node@26.4.1)
+    optionalDependencies:
+      '@types/node': 26.4.1
+
+  '@inquirer/type@4.0.7(@types/node@26.4.1)':
+    optionalDependencies:
+      '@types/node': 26.4.1
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
@@ -3430,9 +3443,9 @@ snapshots:
       '@types/react': 19.2.18
       react: 19.2.8
 
-  '@napi-rs/cli@3.8.6(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.4.0)(supports-color@8.1.1)':
+  '@napi-rs/cli@3.9.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.4.1)(supports-color@8.1.1)':
     dependencies:
-      '@inquirer/prompts': 8.5.2(@types/node@26.4.0)
+      '@inquirer/prompts': 8.5.2(@types/node@26.4.1)
       '@napi-rs/cross-toolchain': 1.0.3(supports-color@8.1.1)
       '@napi-rs/wasm-tools': 1.1.0
       '@octokit/rest': 22.0.1
@@ -3832,6 +3845,13 @@ snapshots:
     transitivePeerDependencies:
       - '@module-federation/runtime-tools'
 
+  '@rsbuild/core@2.2.3':
+    dependencies:
+      '@rspack/core': 2.2.2(@swc/helpers@0.5.23)
+      '@swc/helpers': 0.5.23
+    transitivePeerDependencies:
+      - '@module-federation/runtime-tools'
+
   '@rsbuild/plugin-react@2.1.0(@rsbuild/core@2.2.2)(@rspack/core@2.2.2)':
     dependencies:
       '@rspack/plugin-react-refresh': 2.0.2(@rspack/core@2.2.2)(react-refresh@0.18.0)
@@ -3853,8 +3873,8 @@ snapshots:
 
   '@rslib/core@1.0.0(typescript@7.0.2)':
     dependencies:
-      '@rsbuild/core': 2.2.2
-      rsbuild-plugin-dts: 1.0.0(@rsbuild/core@2.2.2)(typescript@7.0.2)
+      '@rsbuild/core': 2.2.3
+      rsbuild-plugin-dts: 1.0.0(@rsbuild/core@2.2.3)(typescript@7.0.2)
     optionalDependencies:
       typescript: 7.0.2
     transitivePeerDependencies:
@@ -4051,24 +4071,24 @@ snapshots:
 
   '@rstackjs/test-utils@0.2.0': {}
 
-  '@rstest/adapter-rsbuild@0.11.11(@rsbuild/core@2.2.2)(@rstest/core@0.11.11)':
+  '@rstest/adapter-rsbuild@0.11.12(@rsbuild/core@2.2.3)(@rstest/core@0.11.12)':
     dependencies:
-      '@rsbuild/core': 2.2.2
-      '@rstest/core': 0.11.11(happy-dom@20.12.0)
+      '@rsbuild/core': 2.2.3
+      '@rstest/core': 0.11.12(happy-dom@20.13.2)
 
-  '@rstest/adapter-rslib@0.11.11(@rslib/core@1.0.0)(@rstest/core@0.11.11)(typescript@7.0.2)':
+  '@rstest/adapter-rslib@0.11.12(@rslib/core@1.0.0)(@rstest/core@0.11.12)(typescript@7.0.2)':
     dependencies:
       '@rslib/core': 1.0.0(typescript@7.0.2)
-      '@rstest/core': 0.11.11(happy-dom@20.12.0)
+      '@rstest/core': 0.11.12(happy-dom@20.13.2)
     optionalDependencies:
       typescript: 7.0.2
 
-  '@rstest/core@0.11.11(happy-dom@20.12.0)':
+  '@rstest/core@0.11.12(happy-dom@20.13.2)':
     dependencies:
       '@rsbuild/core': 2.2.2
       '@types/chai': 5.2.3
     optionalDependencies:
-      happy-dom: 20.12.0
+      happy-dom: 20.13.2
     transitivePeerDependencies:
       - '@module-federation/runtime-tools'
       - core-js
@@ -4228,6 +4248,10 @@ snapshots:
   '@types/ms@2.1.0': {}
 
   '@types/node@26.4.0':
+    dependencies:
+      undici-types: 8.3.0
+
+  '@types/node@26.4.1':
     dependencies:
       undici-types: 8.3.0
 
@@ -4569,7 +4593,7 @@ snapshots:
 
   git-hooks-list@4.2.1: {}
 
-  happy-dom@20.12.0:
+  happy-dom@20.13.2:
     dependencies:
       '@types/node': 26.4.0
       '@types/whatwg-mimetype': 3.0.2
@@ -5532,10 +5556,10 @@ snapshots:
       mdast-util-to-markdown: 2.1.2
       unified: 11.0.5
 
-  rsbuild-plugin-dts@1.0.0(@rsbuild/core@2.2.2)(typescript@7.0.2):
+  rsbuild-plugin-dts@1.0.0(@rsbuild/core@2.2.3)(typescript@7.0.2):
     dependencies:
       '@ast-grep/napi': 0.45.2
-      '@rsbuild/core': 2.2.2
+      '@rsbuild/core': 2.2.3
     optionalDependencies:
       typescript: 7.0.2
 
