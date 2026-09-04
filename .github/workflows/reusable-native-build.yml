@@ -35,7 +35,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: 24.19.0
+          node-version: 24.20.0
           package-manager-cache: false
 
       - name: Install Pnpm
@@ -55,7 +55,7 @@ jobs:
 
       - name: Install cargo-zigbuild
         if: contains(inputs.target, 'musl')
-        uses: taiki-e/install-action@b6ff580856c41316412a0b9b60540fbc6f8c82cc # v2.86.7
+        uses: taiki-e/install-action@37f7c5781271959fb65b6b35224e28652ff2b63d # v2.87.0
         with:
           tool: cargo-zigbuild@0.23.0
 
