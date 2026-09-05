@@ -62,11 +62,15 @@ async function runRstestCLI(args: string[]): Promise<void> {
   const rstestCore = (await import('@rstest/core')) as unknown as {
     runCLI?: RunCLI;
   };
-  const runCLI =
-    rstestCore.runCLI ??
-    ((await import('@rstest/core/api')) as unknown as { runCLI: RunCLI })
-      .runCLI;
-  runCLI({ argv });
+  if (rstestCore.runCLI) {
+    rstestCore.runCLI({ argv });
+    return;
+  }
+
+  const { runCLI } = (await import('@rstest/core/api')) as unknown as {
+    runCLI: RunCLI;
+  };
+  runCLI({ argv: argv.slice(2) });
 }
 
 async function runRslibCLI(args: string[]): Promise<void> {
