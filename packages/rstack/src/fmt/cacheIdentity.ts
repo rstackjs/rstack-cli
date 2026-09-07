@@ -21,6 +21,7 @@ const cacheNamespace: string = JSON.stringify([
   fmtCacheVersion,
   RSTACK_VERSION,
   PRETTIER_VERSION,
+  'swc-next@0.2.0:native',
 ]);
 
 /** Creates project-relative POSIX cache keys without repeating path setup. */

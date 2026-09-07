@@ -1,5 +1,9 @@
 #![deny(clippy::all)]
 
+mod parser;
+
+pub use parser::parse_swc_next;
+
 use std::path::Path;
 
 use napi::{bindgen_prelude::Uint8Array, Error, Status};

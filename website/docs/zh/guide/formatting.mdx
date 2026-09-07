@@ -6,10 +6,10 @@ description: '使用 Rstack CLI 格式化文件，支持与 Prettier 兼容的�
 
 import { PackageManagerTabs } from '@rspress/core/theme';
 
-Rstack CLI 提供了基于 [Prettier](https://prettier.io/) 的格式化工具。相比直接使用 Prettier，`rs fmt` 的性能更好，主要得益于以下两点：
+Rstack CLI 提供了基于 [Prettier](https://prettier.io/) 的格式化工具。相比直接使用 Prettier，`rs fmt` 提供了以下能力：
 
 - **并行格式化**：通过 worker 池并行格式化文件。
-- **Yuku 解析器**：默认使用高性能的 [Yuku](https://yuku.fyi/) 解析器处理 JavaScript、JSX 和 TypeScript 文件。
+- **SWC Next 解析器**：默认使用 [SWC Next](https://github.com/swc-project/swc-next) 解析器处理 JavaScript、JSX 和 TypeScript 文件。
 - **持久化缓存**：基于文件内容缓存结果，后续运行可以跳过未变化文件的格式化。
 
 `rs fmt` 兼容 Prettier 的选项和插件，并提供更多内置能力，例如支持[排序 package.json 字段](#sort-package-json)。

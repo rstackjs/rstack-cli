@@ -37,3 +37,59 @@ export interface IgnoreSource {
   /** Newline-delimited Gitignore patterns. */
   patterns: string
 }
+
+/**
+ * Returns the SWC Next 0.2.0 wire format consumed by @swc-next/decoder.
+ * Keep parsing and serialization in the upstream crate, not in the NAPI adapter.
+ */
+export declare function parseSwcNext(source: string, lang: string, sourceType: string): Buffer
+export declare const enum CommentMode {
+  None = 'none',
+  Flat = 'flat'
+}
+
+export declare const enum Lang {
+  Js = 'js',
+  Ts = 'ts',
+  Jsx = 'jsx',
+  Tsx = 'tsx',
+  Dts = 'dts'
+}
+
+export interface ParserOptions {
+  /**
+   * Determines how the source is parsed and evaluated.
+   *
+   * @default "module"
+   */
+  sourceType?: SourceType
+  /**
+   * Determines which syntax features are enabled.
+   *
+   * @default "js"
+   */
+  lang?: Lang
+  /**
+   * Preserve parenthesized expressions and TypeScript types as explicit
+   * parenthesized nodes.
+   *
+   * @default true
+   */
+  preserveParens?: boolean
+  /**
+   * Determines how comments are exposed.
+   *
+   * `"none"` disables comment collection. `"flat"` exposes a
+   * source-ordered comment list.
+   *
+   * @default "flat"
+   */
+  comments?: CommentMode
+}
+
+export declare const enum SourceType {
+  Module = 'module',
+  Script = 'script',
+  CommonJs = 'commonjs',
+  Unambiguous = 'unambiguous'
+}

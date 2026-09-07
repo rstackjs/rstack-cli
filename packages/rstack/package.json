@@ -77,9 +77,9 @@
     "@rslib/core": "catalog:",
     "@rslint/core": "catalog:",
     "@rstest/core": "catalog:",
+    "@swc-next/decoder": "catalog:",
     "prettier": "catalog:",
-    "tinypool": "catalog:",
-    "yuku-parser": "catalog:"
+    "tinypool": "catalog:"
   },
   "devDependencies": {
     "@napi-rs/cli": "catalog:",
