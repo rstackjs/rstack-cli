@@ -26,7 +26,7 @@ Rstack CLI 要求 Node.js 22.18.0+ 或 24.3.0+。
 
 ## 创建 Rstack 项目 \{#create-a-rstack-project}
 
-使用 [create-rstack](https://www.npmjs.com/package/create-rstack) 可以快速创建已配置好 Rstack 的应用、库或文档站点。推荐使用 [pnpm](https://pnpm.io/) 作为包管理器。
+使用 [create-rstack](https://www.npmjs.com/package/create-rstack) 可以快速创建已配置好 Rstack 的应用、库、文档站点或 monorepo。推荐使用 [pnpm](https://pnpm.io/) 作为包管理器。
 
 <PackageManagerTabs
   command={{
@@ -54,6 +54,7 @@ Rstack CLI 要求 Node.js 22.18.0+ 或 24.3.0+。
 | Web 应用 | 原生 JavaScript、React、Preact、Vue、Lit、Svelte、Solid |
 | 库       | Node.js、React、Vue、Svelte、Solid                      |
 | 文档站点 | 单语言、多语言                                          |
+| Monorepo | Turborepo                                               |
 
 所有应用和库模板均提供 JavaScript 和 TypeScript 版本。
 
@@ -101,7 +102,7 @@ Options:
   --package-name <name>     specify the package name
   --template-version <ver>  specify the npm template version
 
-Available templates: app-vanilla, app-vanilla-ts, app-react, app-react-ts, app-preact, app-preact-ts, app-vue, app-vue-ts, app-lit, app-lit-ts, app-svelte, app-svelte-ts, app-solid, app-solid-ts, lib-node, lib-node-ts, lib-react, lib-react-ts, lib-vue, lib-vue-ts, lib-svelte, lib-svelte-ts, lib-solid, lib-solid-ts, doc, doc-i18n
+Available templates: app-vanilla, app-vanilla-ts, app-react, app-react-ts, app-preact, app-preact-ts, app-vue, app-vue-ts, app-lit, app-lit-ts, app-svelte, app-svelte-ts, app-solid, app-solid-ts, lib-node, lib-node-ts, lib-react, lib-react-ts, lib-vue, lib-vue-ts, lib-svelte, lib-svelte-ts, lib-solid, lib-solid-ts, doc, doc-i18n, turborepo
 ```
 
 ## 安装 Rstack CLI \{#install-rstack}
