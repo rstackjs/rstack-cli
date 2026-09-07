@@ -21,6 +21,8 @@ const templatesWithoutTypeCheck = new Set([
 type ProjectPackage = {
   name: string;
   scripts: Record<string, string>;
+  packageManager?: string;
+  dependencies?: Record<string, string>;
 };
 
 type SourceTemplate = {
@@ -293,3 +295,31 @@ test.each(docTemplates)(
     await expectFiles(projectDirectory, files);
   },
 );
+
+test('creates the Turborepo template with pnpm', async () => {
+  const projectDirectory = await createProject('turborepo');
+  const packageJson = await readProjectPackage(projectDirectory);
+  const appPackage = await readProjectPackage(
+    path.join(projectDirectory, 'apps/web'),
+  );
+
+  await expectStagedSetup(projectDirectory, 'ts', packageJson.scripts);
+  expect(packageJson.packageManager).toMatch(/^pnpm@/u);
+  expect(appPackage.dependencies?.['@repo/ui']).toBe('workspace:^');
+  await expectFiles(projectDirectory, [
+    'pnpm-workspace.yaml',
+    'turbo.json',
+    'apps/web/src/index.tsx',
+    'packages/ui/src/button.tsx',
+  ]);
+});
+
+test('configures Turborepo when Git initialization is disabled', async () => {
+  const projectDirectory = await createProject('turborepo', {
+    args: ['--no-git'],
+  });
+  const packageJson = await readProjectPackage(projectDirectory);
+
+  expect(packageJson.packageManager).toMatch(/^pnpm@/u);
+  await expectNoStagedSetup(projectDirectory, 'ts', packageJson.scripts);
+});

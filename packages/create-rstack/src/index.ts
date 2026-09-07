@@ -8,6 +8,7 @@ import {
 import {
   access,
   appendFile,
+  copyFile,
   mkdir,
   readFile,
   writeFile,
@@ -43,6 +44,7 @@ const templateNames = [
   'lib-solid-ts',
   'doc',
   'doc-i18n',
+  'turborepo',
 ];
 
 const resolveTemplateName = (template: string): string => {
@@ -55,7 +57,7 @@ const resolveTemplateName = (template: string): string => {
 
 const getTemplateName = async ({ template }: Argv): Promise<string> => {
   if (typeof template === 'string') {
-    if (/^(?:app|lib|doc)(?:-|$)/u.test(template)) {
+    if (/^(?:app|lib|doc|turborepo)(?:-|$)/u.test(template)) {
       return resolveTemplateName(template);
     }
 
@@ -69,9 +71,21 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
         { value: 'app', label: 'Web Application' },
         { value: 'lib', label: 'Library' },
         { value: 'doc', label: 'Documentation' },
+        { value: 'monorepo', label: 'Monorepo' },
       ],
     }),
   );
+
+  if (projectType === 'monorepo') {
+    const monorepoType = checkCancel<string>(
+      await select({
+        message: 'Select monorepo tool',
+        options: [{ value: 'turborepo', label: 'Turborepo', hint: 'pnpm' }],
+      }),
+    );
+
+    return resolveTemplateName(monorepoType);
+  }
 
   if (projectType === 'doc') {
     const documentationType = checkCancel<string>(
@@ -215,11 +229,29 @@ const injectStagedSetup = async ({
   ]);
 };
 
+const configureTurborepo = async ({
+  templateName,
+  distFolder,
+}: GitResolvedContext): Promise<void> => {
+  if (templateName !== 'turborepo') {
+    return;
+  }
+
+  // The toolkit may skip this file based on the invoking package manager.
+  await copyFile(
+    path.join(packageRoot, 'template-turborepo/pnpm-workspace.yaml'),
+    path.join(distFolder, 'pnpm-workspace.yaml'),
+  );
+};
+
 await create({
   root: packageRoot,
   name: 'rstack',
   templates: templateNames,
   builtinTools: [],
   getTemplateName,
-  onGitResolved: injectStagedSetup,
+  onGitResolved: async (context) => {
+    await configureTurborepo(context);
+    await injectStagedSetup(context);
+  },
 });
