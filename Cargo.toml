@@ -14,6 +14,8 @@ napi-build = "2.4.1"
 napi-derive = "3.6.3"
 pathdiff = "0.2.3"
 rstack-ignore = { path = "crates/rstack-ignore" }
+# The wire format must match @swc-next/decoder exactly.
+swc_next_bridge = { version = "=0.2.0", features = ["parser"] }
 
 # Local development: 16 codegen units are sufficient for this small workspace while preserving
 # parallel compilation and full debugging support.

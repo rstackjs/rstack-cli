@@ -702,3 +702,7 @@ if (!nativeBinding) {
 module.exports = nativeBinding
 module.exports.GitIgnoreMatcher = nativeBinding.GitIgnoreMatcher
 module.exports.IgnoreMatcher = nativeBinding.IgnoreMatcher
+module.exports.parseSwcNext = nativeBinding.parseSwcNext
+module.exports.CommentMode = nativeBinding.CommentMode
+module.exports.Lang = nativeBinding.Lang
+module.exports.SourceType = nativeBinding.SourceType
