@@ -210,9 +210,11 @@ const createProject = async (
   {
     args = [],
     initializeGitIn,
+    userAgent = 'pnpm/11.20.0',
   }: {
     args?: string[];
     initializeGitIn?: 'parent' | 'project';
+    userAgent?: string;
   } = {},
 ) => {
   const tempDirectory = await mkdtemp(path.join(tmpdir(), 'create-rstack-'));
@@ -233,7 +235,7 @@ const createProject = async (
       cwd: tempDirectory,
       env: {
         ...process.env,
-        npm_config_user_agent: 'pnpm/11.20.0',
+        npm_config_user_agent: userAgent,
       },
     },
   );
@@ -296,8 +298,10 @@ test.each(docTemplates)(
   },
 );
 
-test('creates the Turborepo template with pnpm', async () => {
-  const projectDirectory = await createProject('turborepo');
+test('creates the Turborepo template with pnpm when invoked using npm', async () => {
+  const projectDirectory = await createProject('turborepo', {
+    userAgent: 'npm/11.0.0',
+  });
   const packageJson = await readProjectPackage(projectDirectory);
   const appPackage = await readProjectPackage(
     path.join(projectDirectory, 'apps/web'),

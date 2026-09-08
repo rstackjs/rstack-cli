@@ -8,7 +8,6 @@ import {
 import {
   access,
   appendFile,
-  copyFile,
   mkdir,
   readFile,
   writeFile,
@@ -229,29 +228,13 @@ const injectStagedSetup = async ({
   ]);
 };
 
-const configureTurborepo = async ({
-  templateName,
-  distFolder,
-}: GitResolvedContext): Promise<void> => {
-  if (templateName !== 'turborepo') {
-    return;
-  }
-
-  // The toolkit may skip this file based on the invoking package manager.
-  await copyFile(
-    path.join(packageRoot, 'template-turborepo/pnpm-workspace.yaml'),
-    path.join(distFolder, 'pnpm-workspace.yaml'),
-  );
-};
-
 await create({
   root: packageRoot,
   name: 'rstack',
   templates: templateNames,
   builtinTools: [],
   getTemplateName,
-  onGitResolved: async (context) => {
-    await configureTurborepo(context);
-    await injectStagedSetup(context);
-  },
+  getPackageManager: ({ templateName }) =>
+    templateName === 'turborepo' ? 'pnpm' : undefined,
+  onGitResolved: injectStagedSetup,
 });
