@@ -35,8 +35,8 @@ catalogs:
       specifier: ^2.0.21
       version: 2.0.21
     '@rstackjs/create-toolkit':
-      specifier: 2.2.4
-      version: 2.2.4
+      specifier: 2.2.6
+      version: 2.2.6
     '@rstackjs/doc-ui':
       specifier: 1.14.11
       version: 1.14.11
@@ -347,7 +347,7 @@ importers:
     dependencies:
       '@rstackjs/create-toolkit':
         specifier: 'catalog:'
-        version: 2.2.4
+        version: 2.2.6
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -1494,8 +1494,8 @@ packages:
   '@rspress/shared@2.0.21':
     resolution: {integrity: sha512-siCWkv1a4n6y7JdVRII+fwCRZGZtG5KGFfKi2w/Tt33UnIgh4XGqozZ5F/K0iZ/QUwg0wi93SoVdOQm2Q+wf8w==}
 
-  '@rstackjs/create-toolkit@2.2.4':
-    resolution: {integrity: sha512-YVnA9aTZKPTql8Hzyf9o5chWAICNJ46CYoPwADrSObyBxF1jlvB5gO5M+yXYoZT/VNWh1Abm0TvTtmAh4EeT3A==}
+  '@rstackjs/create-toolkit@2.2.6':
+    resolution: {integrity: sha512-kBJ6btUXKpJEqq1c6sSCfukjb2NK4zWpl3sKj4pk91cdI6L5If7NFaov6RRpTP/EuVW37wkVV5FlXJKZQPEC3Q==}
     engines: {node: ^20.19.0 || >=22.12.0}
 
   '@rstackjs/doc-ui@1.14.11':
@@ -4061,7 +4061,7 @@ snapshots:
       - core-js
       - supports-color
 
-  '@rstackjs/create-toolkit@2.2.4': {}
+  '@rstackjs/create-toolkit@2.2.6': {}
 
   '@rstackjs/doc-ui@1.14.11(@rspress/core@2.0.21)':
     optionalDependencies:
