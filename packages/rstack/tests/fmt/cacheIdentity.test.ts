@@ -88,6 +88,7 @@ test('includes formatter implementation versions in the namespace', () => {
     fmtCacheVersion,
     pkgJson.version,
     prettierPkgJson.version,
+    'swc-next@0.2.0:npm',
   ]);
 });
 

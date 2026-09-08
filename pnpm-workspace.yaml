@@ -59,7 +59,7 @@ catalog:
   'typescript': '^7.0.2'
   'vscode-languageserver': '10.1.1'
   'vscode-languageserver-textdocument': '1.0.14'
-  yuku-parser: '0.9.3'
+  '@swc-next/parser': '0.2.0'
 
 dedupePeers: true
 
@@ -72,6 +72,21 @@ hoistPattern: []
 # Reduce the risk of installing compromised packages
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
+  - '@swc-next/parser@0.2.0'
+  - '@swc-next/decoder@0.2.0'
+  - '@swc-next/parser-binding-darwin-x64@0.2.0'
+  - '@swc-next/parser-binding-darwin-arm64@0.2.0'
+  - '@swc-next/parser-binding-linux-x64-gnu@0.2.0'
+  - '@swc-next/parser-binding-linux-x64-musl@0.2.0'
+  - '@swc-next/parser-binding-win32-x64-msvc@0.2.0'
+  - '@swc-next/parser-binding-linux-arm64-gnu@0.2.0'
+  - '@swc-next/parser-binding-linux-ppc64-gnu@0.2.0'
+  - '@swc-next/parser-binding-linux-s390x-gnu@0.2.0'
+  - '@swc-next/parser-binding-win32-ia32-msvc@0.2.0'
+  - '@swc-next/parser-binding-linux-arm64-musl@0.2.0'
+  - '@swc-next/parser-binding-win32-arm64-msvc@0.2.0'
+  - '@swc-next/parser-binding-linux-riscv64-gnu@0.2.0'
+  - '@swc-next/parser-binding-linux-riscv64-musl@0.2.0'
   - '@yuku-parser/binding-android-arm64@0.8.3'
   - '@yuku-parser/binding-darwin-arm64@0.8.3'
   - '@yuku-parser/binding-darwin-x64@0.8.3'
