@@ -3,6 +3,7 @@ import type {
   RsbuildConfigDefinition,
   WatchFiles,
 } from '@rsbuild/core';
+import { withConfigMeta } from '@rstackjs/load-config';
 import { loadRstackConfig, type Configs } from './config.ts';
 
 const resolveRsbuildConfig = async (configs: Configs, params: ConfigParams) => {
@@ -30,20 +31,23 @@ const loadRsbuildConfig: RsbuildConfigDefinition = async (params) => {
     type: 'reload-server',
   };
 
-  return {
-    ...config,
-    dev: {
-      ...config.dev,
-      watchFiles: [
-        ...(watchFiles
-          ? Array.isArray(watchFiles)
-            ? watchFiles
-            : [watchFiles]
-          : []),
-        watchConfig,
-      ],
+  return withConfigMeta(
+    {
+      ...config,
+      dev: {
+        ...config.dev,
+        watchFiles: [
+          ...(watchFiles
+            ? Array.isArray(watchFiles)
+              ? watchFiles
+              : [watchFiles]
+            : []),
+          watchConfig,
+        ],
+      },
     },
-  };
+    { filePath, dependencies },
+  );
 };
 
 export default loadRsbuildConfig;
