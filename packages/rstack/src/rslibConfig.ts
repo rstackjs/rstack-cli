@@ -1,9 +1,9 @@
-import type { WatchFiles } from '@rsbuild/core';
 import type {
   ConfigParams,
   RslibConfig,
   RslibConfigDefinition,
 } from '@rslib/core';
+import { withConfigMeta } from '@rstackjs/load-config';
 import { loadRstackConfig, type Configs } from './config.ts';
 
 const resolveRslibConfig = async (
@@ -24,30 +24,7 @@ const loadRslibConfig = (async (params: ConfigParams) => {
   const { configs, filePath, dependencies } = await loadRstackConfig();
   const config = await resolveRslibConfig(configs, params);
 
-  if (!filePath) {
-    return config;
-  }
-
-  const watchFiles = config.dev?.watchFiles;
-  const watchConfig: WatchFiles = {
-    paths: [filePath, ...dependencies],
-    type: 'restart',
-  };
-
-  return {
-    ...config,
-    dev: {
-      ...config.dev,
-      watchFiles: [
-        ...(watchFiles
-          ? Array.isArray(watchFiles)
-            ? watchFiles
-            : [watchFiles]
-          : []),
-        watchConfig,
-      ],
-    },
-  };
+  return withConfigMeta(config, { filePath, dependencies });
 }) as RslibConfigDefinition;
 
 export default loadRslibConfig;
