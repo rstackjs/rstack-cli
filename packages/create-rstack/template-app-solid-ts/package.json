@@ -21,8 +21,8 @@
     "@rsbuild/plugin-solid": "^1.2.2",
     "@solidjs/testing-library": "^0.8.10",
     "@testing-library/jest-dom": "^7.0.1",
-    "@types/node": "^26.4.1",
-    "happy-dom": "^20.13.2",
+    "@types/node": "^26.5.0",
+    "happy-dom": "^20.14.0",
     "rstack": "^0.7.3",
     "typescript": "^7.0.2"
   }
