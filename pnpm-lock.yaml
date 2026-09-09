@@ -44,8 +44,8 @@ catalogs:
       specifier: ^0.1.2
       version: 0.1.2
     '@rstackjs/test-utils':
-      specifier: ^0.2.0
-      version: 0.2.0
+      specifier: ^1.0.0
+      version: 1.0.0
     '@rstest/adapter-rsbuild':
       specifier: ~0.11.12
       version: 0.11.12
@@ -394,7 +394,7 @@ importers:
         version: 0.1.2
       '@rstackjs/test-utils':
         specifier: 'catalog:'
-        version: 0.2.0
+        version: 1.0.0
       '@rstest/adapter-rsbuild':
         specifier: 'catalog:'
         version: 0.11.12(@rsbuild/core@2.2.3)(@rstest/core@0.11.12)
@@ -1514,8 +1514,8 @@ packages:
       jiti:
         optional: true
 
-  '@rstackjs/test-utils@0.2.0':
-    resolution: {integrity: sha512-P+LOo1WE3xYeGkHmEthyq2cIpN69k4LhiB/4UBSceD+nW9hDlhWv8MC0LTLWokZXccWl4ntcfOBjQFllkcBlPA==}
+  '@rstackjs/test-utils@1.0.0':
+    resolution: {integrity: sha512-g7oEZzqwke/pRVGAsvEpML+37PDOo9BwR8nKignbtXlKmW9Cb202pRRUSVEsWG//7pnyIi+q4P7b1H/h1ianGA==}
 
   '@rstest/adapter-rsbuild@0.11.12':
     resolution: {integrity: sha512-0XXUMCSxAYK7zuBltAABSIIAcsCrvCywyRLIkicvJwIlvRGAwhRO5DSIZLo77y5lEYQAZl6uAHwczyZC9lZ1DA==}
@@ -4069,7 +4069,7 @@ snapshots:
 
   '@rstackjs/load-config@0.1.2': {}
 
-  '@rstackjs/test-utils@0.2.0': {}
+  '@rstackjs/test-utils@1.0.0': {}
 
   '@rstest/adapter-rsbuild@0.11.12(@rsbuild/core@2.2.3)(@rstest/core@0.11.12)':
     dependencies:
