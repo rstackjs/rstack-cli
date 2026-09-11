@@ -8,12 +8,16 @@ import { loadNativeBinding } from '../native/index.ts';
 import type { ResolvedFmtConfig } from './types.ts';
 
 /**
- * Common lock files that Prettier can format but `rs fmt` leaves to package managers.
+ * Common lock files that Prettier can format but `rs fmt` leaves to their generating tools.
  *
  * Prettier already skips other generated lock files when it cannot infer a parser, so this list
  * contains only the additional defaults owned by `rs fmt`.
  */
-const defaultIgnoreNames = ['package-lock.json', 'pnpm-lock.yaml'];
+const defaultIgnoreNames = [
+  'package-lock.json',
+  'pnpm-lock.yaml',
+  'skills-lock.json',
+];
 
 type IgnorePredicate = (filePath: string, isDirectory?: boolean) => boolean;
 
