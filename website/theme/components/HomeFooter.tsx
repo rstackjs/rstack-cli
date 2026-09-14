@@ -1,6 +1,7 @@
 import { useI18n, useLang } from '@rspress/core/runtime';
 import { Link } from '@rspress/core/theme-original';
 import { memo } from 'react';
+import { CopyRight } from './Copyright';
 import styles from './HomeFooter.module.scss';
 
 function useFooterData() {
@@ -116,8 +117,8 @@ export const HomeFooter = memo(() => {
   const footerData = useFooterData();
 
   return (
-    <div className={styles.footer}>
-      <div className={styles.container}>
+    <footer className={styles.footer}>
+      <div className={styles.links}>
         {footerData.map((item) => (
           <div key={item.title} className={styles.column}>
             <h2>{item.title}</h2>
@@ -133,6 +134,7 @@ export const HomeFooter = memo(() => {
           </div>
         ))}
       </div>
-    </div>
+      <CopyRight />
+    </footer>
   );
 });

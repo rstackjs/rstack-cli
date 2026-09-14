@@ -1,23 +1,22 @@
 .footer {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-
-  @media (min-width: 640px) {
-    display: flex;
-  }
-}
-
-.container {
-  display: flex;
-  justify-content: space-between;
-  gap: 2rem;
   width: 100%;
   max-width: 72rem;
-  padding: 3rem 2rem 1rem;
+  margin: 0 auto;
+  padding: 5rem 2rem 3rem;
 
   @media (max-width: 640px) {
     padding-inline: 1.25rem;
+  }
+}
+
+.links {
+  display: none;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 5rem;
+
+  @media (min-width: 640px) {
+    display: flex;
   }
 }
 
@@ -27,7 +26,7 @@
   align-items: flex-start;
 
   h2 {
-    margin: 1rem 0;
+    margin: 0 0 1rem;
     font-size: 1.125rem;
     font-weight: 600;
     line-height: 1.75rem;
