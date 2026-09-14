@@ -1,4 +1,4 @@
-import { useI18n } from '@rspress/core/runtime';
+import { useLang } from '@rspress/core/runtime';
 import { Link } from '@rspress/core/theme-original';
 import type { ReactNode } from 'react';
 import { useI18nUrl } from './utils';
@@ -117,19 +117,65 @@ function OutputFiles({
 // Preserve the captured ANSI styles: uncolored numbers, bold build durations,
 // blue table headers, magenta totals, gray test metadata, and dim directories.
 export function Commands() {
-  const t = useI18n<typeof import('i18n')>();
+  const isZh = useLang() === 'zh';
 
   return (
     <div className={styles.commands}>
       <section className={styles.section} aria-labelledby="commands-app-title">
         <div className={styles.copy}>
           <CommandLinks commands={['dev', 'build']} />
-          <h2 id="commands-app-title">{t('appCommandTitle')}</h2>
-          <p className={styles.description}>{t('appCommandDesc')}</p>
+          <h2 id="commands-app-title">
+            {isZh ? '从开发到构建，快人一步' : 'From dev to production, fast'}
+          </h2>
+          <p className={`rp-doc ${styles.description}`}>
+            {isZh ? (
+              <>
+                {'基于 '}
+                <Link href="https://rspack.rs/">Rspack</Link>
+                {' 和 '}
+                <Link href="https://rsbuild.rs/">Rsbuild</Link>
+                {'，快速启动开发服务器，构建企业级 Web 应用'}
+              </>
+            ) : (
+              <>
+                {
+                  'Start dev servers quickly and build enterprise-grade web applications with '
+                }
+                <Link href="https://rspack.rs/">Rspack</Link>
+                {' and '}
+                <Link href="https://rsbuild.rs/">Rsbuild</Link>
+              </>
+            )}
+          </p>
           <ul className={styles.highlights}>
-            <li>{t('appCommandHmr')}</li>
-            <li>{t('appCommandProduction')}</li>
-            <li>{t('appCommandConfig')}</li>
+            <li className="rp-doc">
+              {isZh ? (
+                <>
+                  {'构建速度比 webpack '}
+                  <Link href="https://github.com/rstackjs/build-tools-performance">
+                    快 5–20 倍
+                  </Link>
+                </>
+              ) : (
+                <>
+                  {'Build '}
+                  <Link href="https://github.com/rstackjs/build-tools-performance">
+                    5–20× faster
+                  </Link>
+                  {' than webpack'}
+                </>
+              )}
+            </li>
+            <li>
+              {isZh
+                ? '全方位优化产物，运行更快'
+                : 'Optimize bundles for faster runtime performance'}
+            </li>
+            <li>
+              {isZh
+                ? '开发与生产采用一致的打包流程'
+                : 'A consistent bundling process for development and production'}
+            </li>
           </ul>
         </div>
         <Terminal>
@@ -157,12 +203,43 @@ export function Commands() {
       <section className={styles.section} aria-labelledby="commands-lib-title">
         <div className={styles.copy}>
           <CommandLinks commands={['lib']} />
-          <h2 id="commands-lib-title">{t('libCommandTitle')}</h2>
-          <p className={styles.description}>{t('libCommandDesc')}</p>
+          <h2 id="commands-lib-title">
+            {isZh ? '构建你的库，轻松交付' : 'Your library, ready to ship'}
+          </h2>
+          <p className={`rp-doc ${styles.description}`}>
+            {isZh ? (
+              <>
+                {'使用 '}
+                <Link href="https://rslib.rs/">Rslib</Link>
+                {
+                  ' 构建可复用的 JavaScript 库，满足公共库、命令行工具和组件库的开发需求'
+                }
+              </>
+            ) : (
+              <>
+                {
+                  'Build reusable JavaScript libraries, CLI tools, and UI components with '
+                }
+                <Link href="https://rslib.rs/">Rslib</Link>
+              </>
+            )}
+          </p>
           <ul className={styles.highlights}>
-            <li>{t('libCommandFormats')}</li>
-            <li>{t('libCommandModes')}</li>
-            <li>{t('libCommandTypes')}</li>
+            <li>
+              {isZh
+                ? '一份配置，输出 ESM、CJS 和模块联邦等多种格式'
+                : 'One configuration for ESM, CJS, Module Federation, and more'}
+            </li>
+            <li>
+              {isZh
+                ? '按需选择 bundle 或 bundleless 输出模式'
+                : 'Choose bundle or bundleless output to suit your needs'}
+            </li>
+            <li>
+              {isZh
+                ? '使用 TypeScript 7 快速生成类型声明'
+                : 'Generate type declarations quickly with TypeScript 7'}
+            </li>
           </ul>
         </div>
         <Terminal>
@@ -189,12 +266,38 @@ export function Commands() {
       <section className={styles.section} aria-labelledby="commands-test-title">
         <div className={styles.copy}>
           <CommandLinks commands={['test']} />
-          <h2 id="commands-test-title">{t('testCommandTitle')}</h2>
-          <p className={styles.description}>{t('testCommandDesc')}</p>
+          <h2 id="commands-test-title">
+            {isZh ? '更快测试，即时反馈' : 'Faster tests, instant feedback'}
+          </h2>
+          <p className={`rp-doc ${styles.description}`}>
+            {isZh ? (
+              <>
+                {'使用 '}
+                <Link href="https://rstest.rs/">Rstest</Link>
+                {' 测试 JavaScript 代码，从本地开发到 CI 都能及时获得反馈'}
+              </>
+            ) : (
+              <>
+                {'Test JavaScript with '}
+                <Link href="https://rstest.rs/">Rstest</Link>
+                {' for fast feedback from local development to CI'}
+              </>
+            )}
+          </p>
           <ul className={styles.highlights}>
-            <li>{t('testCommandApi')}</li>
-            <li>{t('testCommandPerformance')}</li>
-            <li>{t('testCommandConfig')}</li>
+            <li>
+              {isZh ? '熟悉的 Jest 风格 API' : 'Familiar Jest-style APIs'}
+            </li>
+            <li>
+              {isZh
+                ? '由 Rspack 加速测试，比 Jest 快 20%+'
+                : 'Tests accelerated by Rspack, 20%+ faster than Jest'}
+            </li>
+            <li>
+              {isZh
+                ? '自动复用已有构建配置，减少维护成本'
+                : 'Automatically reuse your build configuration to reduce maintenance overhead'}
+            </li>
           </ul>
         </div>
         <Terminal>
@@ -227,12 +330,30 @@ export function Commands() {
       >
         <div className={styles.copy}>
           <CommandLinks commands={['lint', 'fmt', 'check']} />
-          <h2 id="commands-check-title">{t('checkCommandTitle')}</h2>
-          <p className={styles.description}>{t('checkCommandDesc')}</p>
+          <h2 id="commands-check-title">
+            {isZh ? '统一规范，更快检查' : 'Fast checks, consistent code'}
+          </h2>
+          <p className={`rp-doc ${styles.description}`}>
+            {isZh
+              ? '一个命令完成代码检查、格式校验和类型检查，保持团队规范一致'
+              : "Keep your team's code consistent with one command for linting, formatting checks, and type checking"}
+          </p>
           <ul className={styles.highlights}>
-            <li>{t('checkCommandLint')}</li>
-            <li>{t('checkCommandFormat')}</li>
-            <li>{t('checkCommandCompatibility')}</li>
+            <li>
+              {isZh
+                ? '代码检查速度比 ESLint 快 20–40 倍'
+                : 'Lint 20–40× faster than ESLint'}
+            </li>
+            <li>
+              {isZh
+                ? '格式化速度比 Prettier 快 5–10 倍'
+                : 'Format 5–10× faster than Prettier'}
+            </li>
+            <li>
+              {isZh
+                ? '兼容 ESLint 和 Prettier 的配置项与插件'
+                : 'Compatible with ESLint and Prettier configuration and plugins'}
+            </li>
           </ul>
         </div>
         <Terminal>
@@ -259,12 +380,28 @@ export function Commands() {
       >
         <div className={styles.copy}>
           <CommandLinks commands={['hooks', 'staged']} />
-          <h2 id="commands-hooks-title">{t('hooksCommandTitle')}</h2>
-          <p className={styles.description}>{t('hooksCommandDesc')}</p>
+          <h2 id="commands-hooks-title">
+            {isZh ? '让检查融入每次提交' : 'Checks for every commit'}
+          </h2>
+          <p className={`rp-doc ${styles.description}`}>
+            {isZh
+              ? '将代码检查融入 Git 工作流，复用现有 lint-staged 配置，延续熟悉的 Husky 使用方式'
+              : 'Add code checks to your Git workflow with familiar lint-staged configuration and Husky-style hooks'}
+          </p>
           <ul className={styles.highlights}>
-            <li>{t('hooksCommandSetup')}</li>
-            <li>{t('hooksCommandStaged')}</li>
-            <li>{t('hooksCommandTasks')}</li>
+            <li>
+              {isZh
+                ? '统一管理仓库级 Git hooks'
+                : 'Manage repository-wide Git hooks in one place'}
+            </li>
+            <li>
+              {isZh ? '自动检查暂存区文件' : 'Automatically check staged files'}
+            </li>
+            <li>
+              {isZh
+                ? '灵活运行自定义命令'
+                : 'Run custom commands to suit your workflow'}
+            </li>
           </ul>
         </div>
         <Terminal>
@@ -287,12 +424,42 @@ export function Commands() {
       <section className={styles.section} aria-labelledby="commands-doc-title">
         <div className={styles.copy}>
           <CommandLinks commands={['doc']} />
-          <h2 id="commands-doc-title">{t('docCommandTitle')}</h2>
-          <p className={styles.description}>{t('docCommandDesc')}</p>
+          <h2 id="commands-doc-title">
+            {isZh ? '生成 AI 友好的文档站' : 'Build AI-friendly docs sites'}
+          </h2>
+          <p className={`rp-doc ${styles.description}`}>
+            {isZh ? (
+              <>
+                {'使用 '}
+                <Link href="https://rspress.rs/">Rspress</Link>
+                {' 打造美观、AI 友好的静态文档站，让文档与代码一同维护'}
+              </>
+            ) : (
+              <>
+                {
+                  'Build beautiful, AI-friendly static documentation sites with '
+                }
+                <Link href="https://rspress.rs/">Rspress</Link>
+                {' and maintain them alongside your code'}
+              </>
+            )}
+          </p>
           <ul className={styles.highlights}>
-            <li>{t('docCommandMarkdown')}</li>
-            <li>{t('docCommandFeatures')}</li>
-            <li>{t('docCommandWorkflow')}</li>
+            <li>
+              {isZh
+                ? '使用 Markdown 和 MDX 编写内容'
+                : 'Write content in Markdown and MDX'}
+            </li>
+            <li>
+              {isZh
+                ? '开箱即用的全文搜索与多语言支持'
+                : 'Full-text search and multilingual support out of the box'}
+            </li>
+            <li>
+              {isZh
+                ? '自动生成 llms.txt 与 Markdown 文件，供 AI Agent 使用'
+                : 'Automatically generate llms.txt and Markdown files for AI agents'}
+            </li>
           </ul>
         </div>
         <Terminal>
