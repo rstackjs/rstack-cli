@@ -40,8 +40,8 @@
     "zh": "构建速度比 webpack 快 5–20 倍"
   },
   "appCommandProduction": {
-    "en": "Built-in production optimizations for leaner bundles",
-    "zh": "内置多项生产优化能力，生成精简的产物"
+    "en": "Optimize bundles for faster runtime performance",
+    "zh": "全方位优化产物，运行更快"
   },
   "appCommandConfig": {
     "en": "A consistent bundling process for development and production",
