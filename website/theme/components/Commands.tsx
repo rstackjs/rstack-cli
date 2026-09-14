@@ -230,9 +230,9 @@ export function Commands() {
           <h2 id="commands-check-title">{t('checkCommandTitle')}</h2>
           <p className={styles.description}>{t('checkCommandDesc')}</p>
           <ul className={styles.highlights}>
-            <li>{t('checkCommandTypes')}</li>
+            <li>{t('checkCommandLint')}</li>
             <li>{t('checkCommandFormat')}</li>
-            <li>{t('checkCommandFix')}</li>
+            <li>{t('checkCommandCompatibility')}</li>
           </ul>
         </div>
         <Terminal>
