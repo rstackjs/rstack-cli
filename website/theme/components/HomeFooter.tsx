@@ -20,6 +20,18 @@ function useFooterData() {
           title: t('configuration'),
           link: getLink('/guide/configuration'),
         },
+        {
+          title: t('apiReference'),
+          link: getLink('/guide/api-reference'),
+        },
+        {
+          title: t('ideIntegration'),
+          link: getLink('/guide/ide-integration'),
+        },
+        {
+          title: t('migration'),
+          link: getLink('/guide/migration'),
+        },
       ],
     },
     {
@@ -86,6 +98,14 @@ function useFooterData() {
         {
           title: 'Discord',
           link: 'https://discord.gg/XsaKEEk4mW',
+        },
+        {
+          title: 'X',
+          link: 'https://x.com/rspack_dev',
+        },
+        {
+          title: 'Bluesky',
+          link: 'https://bsky.app/profile/rspack.dev',
         },
       ],
     },
