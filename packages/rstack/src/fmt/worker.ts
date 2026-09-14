@@ -94,14 +94,13 @@ const formatFile = async ({
     return { status };
   }
 
-  const cacheHash =
-    shouldWrite && !unchanged
-      ? hashContent(result.formatted)
-      : (contentHash ?? hashContent(result.source));
+  // Cache only the input we actually checked. Prettier or a plugin may produce
+  // non-idempotent output, so writing it does not prove that it is clean.
+  // Keeping the input hash makes the next run verify the newly written content.
   const cacheEntry: FmtCacheEntry = [
-    cacheHash,
+    contentHash ?? hashContent(result.source),
     cache.optionsHash,
-    shouldWrite || unchanged ? 'clean' : 'dirty',
+    unchanged ? 'clean' : 'dirty',
   ];
   return { status, cacheEntry };
 };
