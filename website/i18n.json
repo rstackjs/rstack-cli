@@ -40,8 +40,8 @@
     "zh": "构建速度比 webpack 快 5–20 倍"
   },
   "appCommandProduction": {
-    "en": "Built-in production optimizations for leaner bundles",
-    "zh": "内置多项生产优化能力，生成精简的产物"
+    "en": "Optimize bundles for faster runtime performance",
+    "zh": "全方位优化产物，运行更快"
   },
   "appCommandConfig": {
     "en": "A consistent bundling process for development and production",
@@ -84,68 +84,68 @@
     "zh": "熟悉的 Jest API"
   },
   "testCommandPerformance": {
-    "en": "Rspack-powered tests, over 20% faster than Jest",
-    "zh": "由 Rspack 加速测试，比 Jest 快 20% 以上"
+    "en": "Tests accelerated by Rspack, 20%+ faster than Jest",
+    "zh": "由 Rspack 加速测试，比 Jest 快 20%+"
   },
   "checkCommandTitle": {
-    "en": "Consistent code. One command",
-    "zh": "一个命令，保持代码一致"
+    "en": "Consistent standards, faster checks",
+    "zh": "统一规范，更快检查"
   },
   "checkCommandDesc": {
-    "en": "Unify linting and formatting checks while keeping your Prettier options and plugins",
-    "zh": "统一运行代码检查与格式校验，兼容 Prettier 选项与插件，延续团队代码规范"
+    "en": "One command for linting, formatting checks, and type checking to keep team standards consistent",
+    "zh": "一个命令完成代码检查、格式校验和类型检查，保持团队规范一致"
   },
-  "checkCommandTypes": {
-    "en": "Type-aware linting with optional TypeScript type checking",
-    "zh": "支持类型感知规则，按需启用 TypeScript 类型检查"
+  "checkCommandLint": {
+    "en": "Lint 20–40× faster than ESLint",
+    "zh": "代码检查速度比 ESLint 快 20–40 倍"
   },
   "checkCommandFormat": {
-    "en": "Parallel formatting and persistent caching for faster repeat runs",
-    "zh": "并行格式化与持久化缓存，加速重复检查"
+    "en": "Format 5–10× faster than Prettier",
+    "zh": "格式化速度比 Prettier 快 5–10 倍"
   },
-  "checkCommandFix": {
-    "en": "Fix lint and formatting issues with --fix",
-    "zh": "通过 --fix 自动修复代码与格式问题"
+  "checkCommandCompatibility": {
+    "en": "Compatible with ESLint and Prettier configuration and plugins",
+    "zh": "兼容 ESLint 和 Prettier 的配置项与插件"
   },
   "hooksCommandTitle": {
-    "en": "Better code in every commit",
-    "zh": "让每次提交，都经过检查"
+    "en": "Checks in every commit",
+    "zh": "让检查融入每次提交"
   },
   "hooksCommandDesc": {
-    "en": "Bring checks into your commit workflow, reuse lint-staged task configuration, and migrate existing Husky hooks",
-    "zh": "将代码检查融入提交流程，兼容 lint-staged 任务配置，支持迁移现有 Husky hooks"
+    "en": "Bring code checks into your Git workflow while keeping your existing lint-staged configuration and Husky workflow",
+    "zh": "将代码检查融入 Git 工作流，延续现有 lint-staged 配置与 Husky 工作流"
   },
   "hooksCommandSetup": {
     "en": "Manage repository-wide Git hooks in one place",
     "zh": "统一管理仓库级 Git hooks"
   },
   "hooksCommandStaged": {
-    "en": "Check and format staged files before each commit",
-    "zh": "仅检查和格式化暂存文件，聚焦本次提交"
+    "en": "Automatically check staged files",
+    "zh": "自动检查暂存区文件"
   },
   "hooksCommandTasks": {
-    "en": "Match files with glob patterns and run custom tasks",
-    "zh": "按文件模式匹配任务，灵活运行自定义命令"
+    "en": "Run custom commands to suit your workflow",
+    "zh": "灵活运行自定义命令"
   },
   "docCommandTitle": {
-    "en": "Great docs, built right in",
-    "zh": "让文档，融入开发流程"
+    "en": "Build AI-friendly docs sites",
+    "zh": "生成 AI 友好的文档站"
   },
   "docCommandDesc": {
-    "en": "Build documentation sites with Rspress and maintain docs alongside your code",
-    "zh": "使用 Rspress 构建文档站点，让项目文档与代码一同开发和维护"
+    "en": "Generate beautiful, AI-friendly static documentation sites with Rspress and maintain docs alongside your code",
+    "zh": "使用 Rspress 生成美观、AI 友好的静态文档站，让文档与代码一同维护"
   },
   "docCommandMarkdown": {
-    "en": "Write Markdown and embed React components with MDX",
-    "zh": "支持 Markdown 与 MDX，灵活嵌入 React 组件"
+    "en": "Write content with Markdown and MDX",
+    "zh": "使用 Markdown 和 MDX 编写内容"
   },
   "docCommandFeatures": {
-    "en": "Built-in search and multilingual documentation",
-    "zh": "内置全文搜索，支持多语言文档"
+    "en": "Full-text search and multilingual support out of the box",
+    "zh": "开箱即用的全文搜索与多语言支持"
   },
   "docCommandWorkflow": {
-    "en": "One CLI for development, production builds, and local previews",
-    "zh": "统一完成文档开发、生产构建与本地预览"
+    "en": "Automatically generate llms.txt and Markdown files for AI agents to read",
+    "zh": "自动生成 llms.txt 与 Markdown 文件，供 AI Agent 读取"
   },
   "guide": {
     "en": "Guide",
