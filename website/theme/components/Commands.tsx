@@ -161,8 +161,8 @@ export function Commands() {
           <p className={styles.description}>{t('libCommandDesc')}</p>
           <ul className={styles.highlights}>
             <li>{t('libCommandFormats')}</li>
+            <li>{t('libCommandModes')}</li>
             <li>{t('libCommandTypes')}</li>
-            <li>{t('libCommandWatch')}</li>
           </ul>
         </div>
         <Terminal>
@@ -192,9 +192,9 @@ export function Commands() {
           <h2 id="commands-test-title">{t('testCommandTitle')}</h2>
           <p className={styles.description}>{t('testCommandDesc')}</p>
           <ul className={styles.highlights}>
+            <li>{t('testCommandApi')}</li>
+            <li>{t('testCommandPerformance')}</li>
             <li>{t('testCommandConfig')}</li>
-            <li>{t('testCommandWatch')}</li>
-            <li>{t('testCommandCoverage')}</li>
           </ul>
         </div>
         <Terminal>
