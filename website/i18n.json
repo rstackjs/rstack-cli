@@ -159,6 +159,18 @@
     "en": "Configuration",
     "zh": "配置"
   },
+  "apiReference": {
+    "en": "API reference",
+    "zh": "API 参考"
+  },
+  "ideIntegration": {
+    "en": "IDE integration",
+    "zh": "IDE 集成"
+  },
+  "migration": {
+    "en": "Migration",
+    "zh": "迁移"
+  },
   "ecosystem": {
     "en": "Ecosystem",
     "zh": "生态"
