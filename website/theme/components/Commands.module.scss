@@ -19,7 +19,7 @@
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
   align-items: center;
   gap: clamp(2rem, 4vw, 3rem);
-  padding: 5.5rem 0;
+  padding: 7.5rem 0;
   border-top: 1px solid var(--command-border);
 }
 
@@ -42,7 +42,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem 0.75rem;
-  margin: 0 0 1.25rem;
+  margin: 0 0 0.5rem;
   color: var(--command-text);
   font-family: var(--rp-font-family-mono);
   font-size: 0.8125rem;
