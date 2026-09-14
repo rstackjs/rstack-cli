@@ -92,20 +92,20 @@ function useFooterData() {
           link: 'https://github.com/rstackjs/rstack-cli',
         },
         {
-          title: 'npm',
-          link: 'https://www.npmjs.com/package/rstack',
-        },
-        {
           title: 'Discord',
           link: 'https://discord.gg/XsaKEEk4mW',
         },
         {
-          title: 'X',
-          link: 'https://x.com/rspack_dev',
+          title: 'Reddit',
+          link: 'https://www.reddit.com/r/Rspack/',
         },
         {
           title: 'Bluesky',
           link: 'https://bsky.app/profile/rspack.dev',
+        },
+        {
+          title: 'X',
+          link: 'https://x.com/rspack_dev',
         },
       ],
     },
