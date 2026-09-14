@@ -27,37 +27,125 @@
     "en": "One CLI unifies development, builds, testing, linting, and formatting across all your JavaScript projects. Powered by the Rspack ecosystem.",
     "zh": "只需一个 CLI，即可统一所有 JavaScript 项目的开发、构建、测试、代码检查与格式化。由 Rspack 生态驱动。"
   },
-  "unifiedCli": {
-    "en": "One CLI",
-    "zh": "统一命令行"
+  "appCommandTitle": {
+    "en": "From dev to production, fast",
+    "zh": "从开发到构建，快人一步"
   },
-  "unifiedCliDesc": {
-    "en": "Develop, build, test, lint, format code, build libraries, and serve docs with the rs command.",
-    "zh": "通过 rs 命令完成开发、构建、测试、检查、格式化、库构建和文档开发。"
+  "appCommandDesc": {
+    "en": "Start a dev server in an instant and build your app for production. Powered by Rsbuild, with the speed of Rspack at every step.",
+    "zh": "快速启动开发服务器，轻松构建生产应用。基于 Rsbuild，让 Rspack 的速度贯穿整个开发流程。"
   },
-  "oneConfig": {
-    "en": "One Configuration",
-    "zh": "统一配置"
+  "appCommandHmr": {
+    "en": "Fast feedback with hot module replacement",
+    "zh": "热模块替换（HMR），即时反馈代码变更"
   },
-  "oneConfigDesc": {
-    "en": "Configure the whole toolchain from a single rstack.config.ts file.",
-    "zh": "在一份 rstack.config.ts 中配置完整工具链。"
+  "appCommandProduction": {
+    "en": "Optimized production builds powered by Rspack",
+    "zh": "由 Rspack 驱动，生成优化的生产产物"
   },
-  "ecosystemPowered": {
-    "en": "Rstack Powered",
-    "zh": "Rstack 驱动"
+  "appCommandConfig": {
+    "en": "One app configuration for development and builds",
+    "zh": "开发与构建，共用一份应用配置"
   },
-  "ecosystemPoweredDesc": {
-    "en": "Built on Rspack, Rsbuild, Rslib, Rstest, Rslint, and Rspress.",
-    "zh": "基于 Rspack、Rsbuild、Rslib、Rstest、Rslint 和 Rspress。"
+  "libCommandTitle": {
+    "en": "Your library, ready to ship",
+    "zh": "构建你的库，轻松交付"
   },
-  "workflowFriendly": {
-    "en": "Workflow Friendly",
-    "zh": "融入现有工作流"
+  "libCommandDesc": {
+    "en": "Build JavaScript and TypeScript libraries with Rslib. From reusable utilities to component libraries, bring your code to more projects.",
+    "zh": "使用 Rslib 构建 JavaScript 和 TypeScript 库。从通用工具到组件库，让你的代码在更多项目中复用。"
   },
-  "workflowFriendlyDesc": {
-    "en": "Keep using your preferred runtime, package manager, and task runner.",
-    "zh": "继续使用你熟悉的运行时、包管理器和任务编排工具。"
+  "libCommandFormats": {
+    "en": "Flexible output formats, including ESM and CommonJS",
+    "zh": "灵活的产物格式，支持 ESM 和 CommonJS"
+  },
+  "libCommandTypes": {
+    "en": "Generate TypeScript declarations with --dts",
+    "zh": "通过 --dts 生成 TypeScript 类型声明"
+  },
+  "libCommandWatch": {
+    "en": "Rebuild on every change with --watch",
+    "zh": "通过 --watch 监听变更，自动重新构建"
+  },
+  "testCommandTitle": {
+    "en": "Test as fast as you build",
+    "zh": "测试与开发，同样高效"
+  },
+  "testCommandDesc": {
+    "en": "Run your tests with Rstest and keep feedback close to your code. Share your build settings and move from local development to CI with ease.",
+    "zh": "使用 Rstest 运行测试，及时获得代码反馈。复用构建配置，让测试从本地开发顺畅延伸到 CI。"
+  },
+  "testCommandConfig": {
+    "en": "Automatically inherit app or library configuration",
+    "zh": "自动继承应用或库的配置"
+  },
+  "testCommandWatch": {
+    "en": "Rerun related tests as your code changes",
+    "zh": "代码变更时，自动重新运行相关测试"
+  },
+  "testCommandCoverage": {
+    "en": "Collect coverage locally or run once in CI",
+    "zh": "支持覆盖率收集和适用于 CI 的单次运行"
+  },
+  "checkCommandTitle": {
+    "en": "Consistent code. One command",
+    "zh": "一个命令，保持代码一致"
+  },
+  "checkCommandDesc": {
+    "en": "Run lint and formatting checks together, with optional TypeScript type checking. Keep your existing code style with support for Prettier options and plugins.",
+    "zh": "一次完成代码检查与格式校验，按需启用 TypeScript 类型检查。兼容 Prettier 的格式化选项与插件，延续现有代码风格。"
+  },
+  "checkCommandTypes": {
+    "en": "Type-aware linting, with optional type checking",
+    "zh": "支持类型感知的代码检查，按需启用类型检查"
+  },
+  "checkCommandFormat": {
+    "en": "Parallel formatting with a persistent cache",
+    "zh": "并行格式化与持久化缓存，加速重复运行"
+  },
+  "checkCommandFix": {
+    "en": "Apply lint and formatting fixes with rs check --fix",
+    "zh": "通过 rs check --fix 自动修复代码与格式问题"
+  },
+  "hooksCommandTitle": {
+    "en": "Better code in every commit",
+    "zh": "让每次提交，都经过检查"
+  },
+  "hooksCommandDesc": {
+    "en": "Automatically check and format staged files before committing. Reuse lint-staged task configuration and migrate your existing Git Hooks workflow from Husky.",
+    "zh": "在提交前自动检查和格式化暂存文件。支持 lint-staged 的任务配置，可从 Husky 迁移现有 Git Hooks 工作流。"
+  },
+  "hooksCommandSetup": {
+    "en": "Manage Git hooks for the whole repository",
+    "zh": "统一管理整个仓库的 Git Hooks"
+  },
+  "hooksCommandStaged": {
+    "en": "Run checks on staged files before committing",
+    "zh": "提交前，针对暂存文件运行检查"
+  },
+  "hooksCommandTasks": {
+    "en": "Configure lint, format, and custom tasks by file pattern",
+    "zh": "按文件模式配置检查、格式化及自定义任务"
+  },
+  "docCommandTitle": {
+    "en": "Great docs, built right in",
+    "zh": "让文档，融入开发流程"
+  },
+  "docCommandDesc": {
+    "en": "Turn your content into a documentation site with Rspress. Keep your docs alongside your code, with one configuration for the whole workflow.",
+    "zh": "使用 Rspress 将内容构建为文档站点。让文档与代码一同维护，通过统一配置串联完整工作流。"
+  },
+  "docCommandMarkdown": {
+    "en": "Write in Markdown and add React components with MDX",
+    "zh": "使用 Markdown 编写文档，通过 MDX 嵌入 React 组件"
+  },
+  "docCommandFeatures": {
+    "en": "Built-in search and multilingual documentation",
+    "zh": "内置全文搜索，支持多语言文档"
+  },
+  "docCommandWorkflow": {
+    "en": "Develop, build, and preview with one CLI",
+    "zh": "通过统一命令行完成开发、构建与预览"
   },
   "guide": {
     "en": "Guide",
