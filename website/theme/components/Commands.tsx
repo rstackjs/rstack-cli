@@ -249,7 +249,7 @@ export function Commands() {
           <LogLabel>success</LogLabel>
           {' Format check passed in '}
           {'25ms'}
-          <span className={styles.dim}> (7 files)</span>
+          <span className={styles.dim}> (99 files)</span>
         </Terminal>
       </section>
 
