@@ -3,6 +3,16 @@
   "extends": ["github>rstackjs/renovate"],
   "packageRules": [
     {
+      "description": "Show core version changes from the root catalog in scoped update titles",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@rsbuild/*", "@rslib/*", "@rslint/*", "@rstest/*"],
+      "groupSingleUpdates": true,
+      "commitMessageExtra": "",
+      "group": {
+        "commitMessageTopic": "{{{groupName}}}{{#each upgrades}}{{#if (and (equals packageFile \"pnpm-workspace.yaml\") (equals (lookup (split depName \"/\") 1) \"core\"))}} ({{{depName}}} {{#if currentVersion}}{{{currentVersion}}}{{else}}{{{currentValue}}}{{/if}} -> {{{newVersion}}}){{/if}}{{/each}}"
+      }
+    },
+    {
       "matchManagers": ["npm"],
       "matchPackageNames": ["@rsbuild/*"],
       "groupName": "@rsbuild packages",
