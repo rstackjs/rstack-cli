@@ -3,6 +3,42 @@
   "extends": ["github>rstackjs/renovate"],
   "packageRules": [
     {
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@rsbuild/*"],
+      "groupName": "@rsbuild packages",
+      "groupSlug": "rsbuild",
+      "automerge": true
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@rslib/*"],
+      "groupName": "@rslib packages",
+      "groupSlug": "rslib",
+      "automerge": true
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@rslint/*"],
+      "groupName": "@rslint packages",
+      "groupSlug": "rslint",
+      "automerge": true
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@rstest/*"],
+      "groupName": "@rstest packages",
+      "groupSlug": "rstest",
+      "automerge": true
+    },
+    {
+      "description": "Update unscoped rstack runtime dependencies individually",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["prettier", "tinypool", "yuku-parser"],
+      "groupName": null,
+      "groupSlug": null,
+      "automerge": true
+    },
+    {
       "description": "Disable Rust toolchain updates",
       "matchManagers": ["rust-toolchain"],
       "enabled": false
