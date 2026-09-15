@@ -166,8 +166,8 @@ settings:
 catalogs:
   default:
     '@napi-rs/cli':
-      specifier: ^3.9.1
-      version: 3.9.1
+      specifier: ^3.9.0
+      version: 3.9.0
     '@rsbuild/core':
       specifier: ~2.2.6
       version: 2.2.6
@@ -543,7 +543,7 @@ importers:
     devDependencies:
       '@napi-rs/cli':
         specifier: 'catalog:'
-        version: 3.9.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.5.1)(supports-color@8.1.1)
+        version: 3.9.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.5.1)(supports-color@8.1.1)
       '@rspress/core':
         specifier: 'catalog:'
         version: 2.0.21(@rspack/core@2.2.4)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
@@ -924,8 +924,8 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  '@napi-rs/cli@3.9.1':
-    resolution: {integrity: sha512-2DYBrM2j4n00L+O7fKAS38q19rVQK2HXz5RxSuJgFyZrd9TrdVQFmHOfqvqqsRIRBTZmqiMqBd/yzn4X1a23DQ==}
+  '@napi-rs/cli@3.9.0':
+    resolution: {integrity: sha512-ZlerYOCLgVdaqbVDt8+uQxmU9j8bKMVFcYo6zRHJJHTO9jN5060+y953aIVc/0zkVSKq+fHjDAtTGOrbxpeZCw==}
     engines: {node: ^20.17.0 || ^22.13.0 || >= 23.5.0}
     hasBin: true
     peerDependencies:
@@ -2642,8 +2642,8 @@ packages:
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
-  js-yaml@5.4.2:
-    resolution: {integrity: sha512-m+aqu+LwO1O6sIopafj8HUVl5aawITwZQe/yHpMCKjaWBaA/d07B/QdMb3529REftiU+RMMHL3Vlsw3hON7vWg==}
+  js-yaml@4.3.1:
+    resolution: {integrity: sha512-CY6crGq313MX8GkwvB7tzgp99vjQxY1++5y10/BKN/GUfHqWaOGQMNZkBvqSzsZKWk/ijwHlWzzkLulsGHhjWQ==}
     hasBin: true
 
   json-with-bigint@3.5.10:
@@ -3802,7 +3802,7 @@ snapshots:
       '@types/react': 19.3.0
       react: 19.3.0
 
-  '@napi-rs/cli@3.9.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.5.1)(supports-color@8.1.1)':
+  '@napi-rs/cli@3.9.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.5.1)(supports-color@8.1.1)':
     dependencies:
       '@inquirer/prompts': 8.5.2(@types/node@26.5.1)
       '@napi-rs/cross-toolchain': 1.0.3(supports-color@8.1.1)
@@ -3811,7 +3811,7 @@ snapshots:
       clipanion: 4.0.0-rc.4
       colorette: 2.0.20
       es-toolkit: 1.50.0
-      js-yaml: 5.4.2
+      js-yaml: 4.3.1
       obug: 2.1.4
       semver: 7.8.5
       typanion: 3.14.0
@@ -5375,7 +5375,7 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  js-yaml@5.4.2:
+  js-yaml@4.3.1:
     dependencies:
       argparse: 2.0.1
 
