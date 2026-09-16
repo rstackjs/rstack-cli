@@ -3,6 +3,21 @@
   "extends": ["github>rstackjs/renovate"],
   "packageRules": [
     {
+      "description": "Update rstack runtime dependencies individually",
+      "matchManagers": ["npm"],
+      "matchPackageNames": [
+        "@rsbuild/core",
+        "@rslib/core",
+        "@rslint/core",
+        "@rstest/core",
+        "prettier",
+        "yuku-parser"
+      ],
+      "groupName": null,
+      "groupSlug": null,
+      "automerge": true
+    },
+    {
       "description": "Disable Rust toolchain updates",
       "matchManagers": ["rust-toolchain"],
       "enabled": false
