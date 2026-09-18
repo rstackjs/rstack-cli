@@ -262,8 +262,8 @@ catalogs:
       specifier: 4.0.8
       version: 4.0.8
     prettier:
-      specifier: 3.9.6
-      version: 3.9.6
+      specifier: 3.9.7
+      version: 3.9.7
     prettier-plugin-svelte:
       specifier: ^4.1.1
       version: 4.1.1
@@ -322,10 +322,10 @@ importers:
         version: 0.0.4
       heading-case:
         specifier: 'catalog:'
-        version: 2.0.2(prettier@3.9.6)
+        version: 2.0.2(prettier@3.9.7)
       prettier:
         specifier: 'catalog:'
-        version: 3.9.6
+        version: 3.9.7
       rstack:
         specifier: workspace:*
         version: link:packages/rstack
@@ -533,7 +533,7 @@ importers:
         version: 0.12.0(happy-dom@20.14.5)
       prettier:
         specifier: 'catalog:'
-        version: 3.9.6
+        version: 3.9.7
       tinypool:
         specifier: 'catalog:'
         version: 2.2.0
@@ -582,10 +582,10 @@ importers:
         version: 4.0.8
       prettier-plugin-svelte:
         specifier: 'catalog:'
-        version: 4.1.1(prettier@3.9.6)(svelte@5.57.0)
+        version: 4.1.1(prettier@3.9.7)(svelte@5.57.0)
       prettier-plugin-tailwindcss:
         specifier: 'catalog:'
-        version: 0.8.1(prettier-plugin-svelte@4.1.1)(prettier@3.9.6)
+        version: 0.8.1(prettier-plugin-svelte@4.1.1)(prettier@3.9.7)
       rslog:
         specifier: 'catalog:'
         version: 2.3.0
@@ -3004,8 +3004,8 @@ packages:
       prettier-plugin-svelte:
         optional: true
 
-  prettier@3.9.6:
-    resolution: {integrity: sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g==}
+  prettier@3.9.7:
+    resolution: {integrity: sha512-T3mF5P7HFzZVLDQuCUNtJj6WK1pcpLMweMNUVwGb01bLNkH9AkKxtZvmInw8K6bnn2O3d6/5RHl6zSHiBAD0Og==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -5308,9 +5308,9 @@ snapshots:
       property-information: 7.2.0
       space-separated-tokens: 2.0.2
 
-  heading-case@2.0.2(prettier@3.9.6):
+  heading-case@2.0.2(prettier@3.9.7):
     dependencies:
-      prettier: 3.9.6
+      prettier: 3.9.7
 
   hookable@6.1.1: {}
 
@@ -5936,18 +5936,18 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  prettier-plugin-svelte@4.1.1(prettier@3.9.6)(svelte@5.57.0):
+  prettier-plugin-svelte@4.1.1(prettier@3.9.7)(svelte@5.57.0):
     dependencies:
-      prettier: 3.9.6
+      prettier: 3.9.7
       svelte: 5.57.0
 
-  prettier-plugin-tailwindcss@0.8.1(prettier-plugin-svelte@4.1.1)(prettier@3.9.6):
+  prettier-plugin-tailwindcss@0.8.1(prettier-plugin-svelte@4.1.1)(prettier@3.9.7):
     dependencies:
-      prettier: 3.9.6
+      prettier: 3.9.7
     optionalDependencies:
-      prettier-plugin-svelte: 4.1.1(prettier@3.9.6)(svelte@5.57.0)
+      prettier-plugin-svelte: 4.1.1(prettier@3.9.7)(svelte@5.57.0)
 
-  prettier@3.9.6: {}
+  prettier@3.9.7: {}
 
   pretty-format@27.5.1:
     dependencies:
