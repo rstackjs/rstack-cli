@@ -22,6 +22,8 @@ type RslintConfigFactory = (
   lint: typeof import('@rslint/core'),
 ) => RslintConfig | Promise<RslintConfig>;
 
+type RslintConfigInput = RslintConfig | RslintConfigFactory;
+
 export type Configs = {
   app?: RsbuildConfigDefinition;
   lib?: RslibConfigDefinition;
@@ -31,6 +33,29 @@ export type Configs = {
   fmt?: FmtConfigDefinition;
   staged?: StagedConfig;
 };
+
+/** Shared configuration input; lint factories receive the tool exports. */
+export type RstackConfig = Omit<Configs, 'lint'> & {
+  extends?: readonly RstackConfig[];
+  lint?: RslintConfigInput;
+};
+
+const normalizeLintConfig = (
+  config: RslintConfigInput,
+): RslintConfigDefinition =>
+  typeof config === 'function'
+    ? async () => config(await import('@rslint/core'))
+    : config;
+
+/** Normalize one shared configuration without resolving factories or inheritance. */
+export const normalizeRstackConfig = ({
+  extends: _extends,
+  lint,
+  ...configs
+}: RstackConfig): Configs =>
+  lint === undefined
+    ? configs
+    : { ...configs, lint: normalizeLintConfig(lint) };
 
 export type LoadedRstackConfig = {
   configs: Configs;
@@ -142,7 +167,7 @@ type Define = {
    *
    * @see {@link https://rstack.rs/config | Configuration guide}
    */
-  lint: (config: RslintConfig | RslintConfigFactory) => void;
+  lint: (config: RslintConfigInput) => void;
   /**
    * Defines the Prettier config for formatting.
    *
@@ -190,13 +215,7 @@ export const define: Define = {
   },
   doc: (config) => setConfig('doc', config),
   test: (config) => setConfig('test', config),
-  lint: (config) =>
-    setConfig(
-      'lint',
-      typeof config === 'function'
-        ? async () => config(await import('@rslint/core'))
-        : config,
-    ),
+  lint: (config) => setConfig('lint', normalizeLintConfig(config)),
   fmt: (config) => setConfig('fmt', config),
   staged: (config) => setConfig('staged', config),
 };
