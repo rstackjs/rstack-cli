@@ -9,7 +9,7 @@ import { PackageManagerTabs } from '@rspress/core/theme';
 Rstack CLI includes a formatter built on [Prettier](https://prettier.io/). Compared with running Prettier directly, `rs fmt` offers better performance in two ways:
 
 - **Parallel formatting**: Files are formatted concurrently in a worker pool.
-- **SWC Next parser**: The high-performance [SWC Next](https://github.com/swc-project/swc-next) parser is used by default for JavaScript, JSX, and TypeScript files.
+- **SWC Next parser**: The high-performance [SWC Next](https://www.npmjs.com/package/@swc-next/parser) parser is used by default for JavaScript, JSX, and TypeScript files.
 - **Persistent cache**: Content-based results let later runs skip formatting unchanged files.
 
 `rs fmt` supports Prettier options and plugins and adds built-in capabilities such as [sorting package.json fields](#sort-package-json).
