@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { findPackageJSON } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import prettierPkgJson from 'prettier/package.json' with { type: 'json' };
@@ -84,11 +86,15 @@ test('bypasses user plugins and unserializable options', () => {
 });
 
 test('includes formatter implementation versions in the namespace', () => {
+  const swcNextPkgJson = JSON.parse(
+    readFileSync(findPackageJSON('@swc-next/parser', import.meta.url)!, 'utf8'),
+  ) as { version: string };
+
   expect(JSON.parse(cacheNamespace)).toEqual([
     fmtCacheVersion,
     pkgJson.version,
     prettierPkgJson.version,
-    'swc-next@0.2.2:npm',
+    `swc-next@${swcNextPkgJson.version}:npm`,
   ]);
 });
 
