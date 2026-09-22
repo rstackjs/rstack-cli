@@ -23,7 +23,7 @@
     "@testing-library/jest-dom": "^7.0.1",
     "@types/node": "^26.6.1",
     "happy-dom": "^20.14.5",
-    "rstack": "^0.7.6",
+    "rstack": "^0.8.0",
     "typescript": "^7.0.2"
   }
 }

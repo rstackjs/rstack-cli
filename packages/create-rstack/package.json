@@ -1,6 +1,6 @@
 {
   "name": "create-rstack",
-  "version": "3.3.6",
+  "version": "3.4.0",
   "description": "Create a new Rstack project",
   "homepage": "https://rstack.rs",
   "bugs": {
