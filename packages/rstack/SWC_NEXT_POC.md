@@ -6,7 +6,7 @@ This branch replaces the default Yuku parser in `rs fmt` with SWC Next 0.2.2 whi
 
 Inferred JavaScript, JSX, TypeScript, TSX, and embedded script formatting use SWC Next. Explicit `babel` and `typescript` options still select Prettier's own parsers, and project plugins retain precedence. The experimental explicit parser names are `swc-next` and `swc-next-ts`, replacing `yuku` and `yuku-ts`.
 
-The cache namespace includes the parser version and integration route so switching between the original formatter and either PoC cannot reuse stale formatting results. The decoder and Rust serializer must be upgraded together; all SWC Next packages in this PoC are locked to 0.2.2.
+The cache namespace includes the installed parser version so parser upgrades invalidate existing formatting results. The decoder and Rust serializer must be upgraded together; all SWC Next packages in this PoC are locked to 0.2.2.
 
 ## Try it
 
