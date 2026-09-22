@@ -10,8 +10,8 @@
         "@rslib/core",
         "@rslint/core",
         "@rstest/core",
-        "prettier",
-        "yuku-parser"
+        "@swc-next/parser",
+        "prettier"
       ],
       "groupName": null,
       "groupSlug": null,

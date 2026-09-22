@@ -1,20 +1,26 @@
+// Adapted from @prettier/plugin-yuku to use SWC Next:
+// https://github.com/prettier/prettier/tree/main/packages/plugin-yuku
+
 import * as prettierEstreePlugin from 'prettier/plugins/estree';
 import type { Parser, ParserOptions, Plugin } from 'prettier';
 import {
+  CommentMode,
+  Lang,
+  SourceType,
   langFromPath,
-  parse as parseWithYuku,
+  parseSync as parseWithSwcNext,
   type Comment,
   type Diagnostic,
-  type ParseOptions,
   type ParseResult,
-  type SourceLang,
-  type SourceType,
-} from 'yuku-parser';
+} from '@swc-next/parser';
 
-const AST_FORMAT = 'estree-yuku';
+const AST_FORMAT = 'estree-swc-next';
 const JS_TS_FILE_REGEXP = /\.(?:js|mjs|cjs|jsx|ts|mts|cts|tsx)$/i;
 const JSX_REGEXP = /^[^"'`]*<\/|^[^/]{2}.*\/>/m;
-const SOURCE_TYPE_COMBINATIONS: SourceType[] = ['module', 'commonjs'];
+const SOURCE_TYPE_COMBINATIONS: SourceType[] = [
+  SourceType.Module,
+  SourceType.CommonJs,
+];
 
 type Range = [start: number, end: number];
 
@@ -158,7 +164,7 @@ const isAstNode = (value: unknown): value is AstNode =>
 
 const asAstNode = (value: unknown): AstNode => {
   if (!isAstNode(value)) {
-    throw new TypeError('Expected a Yuku AST node.');
+    throw new TypeError('Expected a SWC Next AST node.');
   }
   return value;
 };
@@ -220,7 +226,7 @@ const stripComments = (
   const chunks: string[] = [];
   let cursor = 0;
 
-  // Yuku returns comments in source order, so mask each range while copying the source only once.
+  // SWC Next returns comments in source order, so mask each range while copying the source only once.
   for (const comment of comments) {
     const start = locStart(comment);
     const end = locEnd(comment);
@@ -356,7 +362,7 @@ const postprocess = (
   ast: AstNode,
   comments: PrettierComment[],
   text: string,
-  astType: 'yuku-js' | 'yuku-ts',
+  astType: 'swc-next-js' | 'swc-next-ts',
 ): AstNode => {
   mergeNestedJsdocComments(comments);
 
@@ -384,7 +390,7 @@ const postprocess = (
           const expression = asAstNode(node.expression);
           const start = locStart(node);
 
-          // Yuku comments are in source order, so these end offsets are sorted.
+          // SWC Next comments are in source order, so these end offsets are sorted.
           typeCastCommentEnds ??= comments
             .filter(isTypeCastComment)
             .map((comment) => locEnd(comment));
@@ -415,7 +421,7 @@ const postprocess = (
         }
 
         case 'TemplateElement': {
-          if (astType === 'yuku-ts') {
+          if (astType === 'swc-next-ts') {
             const start = locStart(node) + 1;
             const end = locEnd(node) - (node.tail ? 1 : 2);
             node.range = [start, end];
@@ -482,11 +488,13 @@ const createParseError = (error: Diagnostic, text: string): SyntaxError => {
   );
 };
 
-const parseWithOptions = (text: string, options: ParseOptions): ParseResult => {
-  const result = parseWithYuku(text, {
+const parseWithOptions = (
+  text: string,
+  options: { sourceType: SourceType; lang: Lang },
+): ParseResult => {
+  const result = parseWithSwcNext(text, {
     preserveParens: true,
-    semanticErrors: false,
-    attachComments: false,
+    comments: CommentMode.Flat,
     ...options,
   });
 
@@ -499,20 +507,17 @@ const parseWithOptions = (text: string, options: ParseOptions): ParseResult => {
 
 const getSourceType = (filepath: string): SourceType | undefined => {
   if (/\.(?:mjs|mts)$/i.test(filepath)) {
-    return 'module';
+    return SourceType.Module;
   }
 
   if (/\.(?:cjs|cts)$/i.test(filepath)) {
-    return 'commonjs';
+    return SourceType.CommonJs;
   }
 
   return undefined;
 };
 
-const getLanguageCombinations = (
-  text: string,
-  filepath: string,
-): SourceLang[] => {
+const getLanguageCombinations = (text: string, filepath: string): Lang[] => {
   const normalizedPath = filepath.toLowerCase();
 
   if (JS_TS_FILE_REGEXP.test(normalizedPath)) {
@@ -520,7 +525,9 @@ const getLanguageCombinations = (
   }
 
   // Embedded code from Vue or Svelte keeps the host file path, so detect JSX from its content.
-  return JSX_REGEXP.test(text) ? ['tsx', 'ts', 'dts'] : ['ts', 'tsx', 'dts'];
+  return JSX_REGEXP.test(text)
+    ? [Lang.Tsx, Lang.Ts, Lang.Dts]
+    : [Lang.Ts, Lang.Tsx, Lang.Dts];
 };
 
 const tryCombinations = (combinations: (() => ParseResult)[]): ParseResult => {
@@ -542,7 +549,7 @@ const tryCombinations = (combinations: (() => ParseResult)[]): ParseResult => {
     throw firstError;
   }
 
-  throw new Error('No Yuku parser combinations were provided.');
+  throw new Error('No SWC Next parser combinations were provided.');
 };
 
 const parseJavaScript = (
@@ -554,11 +561,16 @@ const parseJavaScript = (
     sourceType ? [sourceType] : SOURCE_TYPE_COMBINATIONS
   ).map(
     (candidate) => () =>
-      parseWithOptions(text, { sourceType: candidate, lang: 'jsx' }),
+      parseWithOptions(text, { sourceType: candidate, lang: Lang.Jsx }),
   );
-  const { program, comments } = tryCombinations(combinations);
+  const result = tryCombinations(combinations);
 
-  return postprocess(program as unknown as AstNode, comments, text, 'yuku-js');
+  return postprocess(
+    asAstNode(result.program),
+    result.comments,
+    text,
+    'swc-next-js',
+  );
 };
 
 const parseTypeScript = (
@@ -574,9 +586,14 @@ const parseTypeScript = (
       (lang) => () => parseWithOptions(text, { sourceType: candidate, lang }),
     ),
   );
-  const { program, comments } = tryCombinations(combinations);
+  const result = tryCombinations(combinations);
 
-  return postprocess(program as unknown as AstNode, comments, text, 'yuku-ts');
+  return postprocess(
+    asAstNode(result.program),
+    result.comments,
+    text,
+    'swc-next-ts',
+  );
 };
 
 const createParser = (
@@ -611,23 +628,23 @@ const parseBabel = (text: string, options: ParserOptions<AstNode>): AstNode => {
   };
 };
 
-const yukuParser = createParser(parseJavaScript);
-const yukuBabelParser = createParser(parseBabel);
-const yukuTypeScriptParser = createParser(parseTypeScript);
+const swcNextParser = createParser(parseJavaScript);
+const swcNextBabelParser = createParser(parseBabel);
+const swcNextTypeScriptParser = createParser(parseTypeScript);
 
-const yukuPlugin: Plugin = {
+const swcNextPlugin: Plugin = {
   options: estreePlugin.options,
   parsers: {
     // Prettier resolves parsers from the last plugin that provides the name.
     // Project plugins are loaded after this one, so parser wrappers take priority.
-    babel: yukuBabelParser,
-    typescript: yukuTypeScriptParser,
-    yuku: yukuParser,
-    'yuku-ts': yukuTypeScriptParser,
+    babel: swcNextBabelParser,
+    typescript: swcNextTypeScriptParser,
+    'swc-next': swcNextParser,
+    'swc-next-ts': swcNextTypeScriptParser,
   },
   printers: {
     [AST_FORMAT]: estreePrinter,
   },
 };
 
-export { yukuPlugin };
+export { swcNextPlugin };
