@@ -4,23 +4,23 @@
 import * as prettierEstreePlugin from 'prettier/plugins/estree';
 import type { Parser, ParserOptions, Plugin } from 'prettier';
 import {
+  CommentMode,
+  Lang,
+  SourceType,
   langFromPath,
   parseSync as parseWithSwcNext,
   type Comment,
   type Diagnostic,
-  type ParserOptions as SwcParserOptions,
   type ParseResult,
-  type Lang as SwcLang,
 } from '@swc-next/parser';
-
-// Use string literals because the package's const enums have no runtime exports.
-type Lang = `${SwcLang}`;
-type SourceType = 'module' | 'commonjs';
 
 const AST_FORMAT = 'estree-swc-next';
 const JS_TS_FILE_REGEXP = /\.(?:js|mjs|cjs|jsx|ts|mts|cts|tsx)$/i;
 const JSX_REGEXP = /^[^"'`]*<\/|^[^/]{2}.*\/>/m;
-const SOURCE_TYPE_COMBINATIONS: SourceType[] = ['module', 'commonjs'];
+const SOURCE_TYPE_COMBINATIONS: SourceType[] = [
+  SourceType.Module,
+  SourceType.CommonJs,
+];
 
 type Range = [start: number, end: number];
 
@@ -494,9 +494,9 @@ const parseWithOptions = (
 ): ParseResult => {
   const result = parseWithSwcNext(text, {
     preserveParens: true,
-    comments: 'flat',
+    comments: CommentMode.Flat,
     ...options,
-  } as SwcParserOptions);
+  });
 
   if (result.diagnostics.length > 0) {
     throw createParseError(result.diagnostics[0], text);
@@ -507,11 +507,11 @@ const parseWithOptions = (
 
 const getSourceType = (filepath: string): SourceType | undefined => {
   if (/\.(?:mjs|mts)$/i.test(filepath)) {
-    return 'module';
+    return SourceType.Module;
   }
 
   if (/\.(?:cjs|cts)$/i.test(filepath)) {
-    return 'commonjs';
+    return SourceType.CommonJs;
   }
 
   return undefined;
@@ -525,7 +525,9 @@ const getLanguageCombinations = (text: string, filepath: string): Lang[] => {
   }
 
   // Embedded code from Vue or Svelte keeps the host file path, so detect JSX from its content.
-  return JSX_REGEXP.test(text) ? ['tsx', 'ts', 'dts'] : ['ts', 'tsx', 'dts'];
+  return JSX_REGEXP.test(text)
+    ? [Lang.Tsx, Lang.Ts, Lang.Dts]
+    : [Lang.Ts, Lang.Tsx, Lang.Dts];
 };
 
 const tryCombinations = (combinations: (() => ParseResult)[]): ParseResult => {
@@ -559,7 +561,7 @@ const parseJavaScript = (
     sourceType ? [sourceType] : SOURCE_TYPE_COMBINATIONS
   ).map(
     (candidate) => () =>
-      parseWithOptions(text, { sourceType: candidate, lang: 'jsx' }),
+      parseWithOptions(text, { sourceType: candidate, lang: Lang.Jsx }),
   );
   const result = tryCombinations(combinations);
 
