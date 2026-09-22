@@ -1,9 +1,9 @@
-import { readFileSync } from 'node:fs';
-import { findPackageJSON } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import prettierPkgJson from 'prettier/package.json' with { type: 'json' };
 import { expect, test } from 'rstack/test';
+// @swc-next/parser does not export its package.json.
+import swcNextPkgJson from '../../node_modules/@swc-next/parser/package.json' with { type: 'json' };
 import pkgJson from '../../package.json' with { type: 'json' };
 import {
   cacheHashLength,
@@ -86,10 +86,6 @@ test('bypasses user plugins and unserializable options', () => {
 });
 
 test('includes formatter implementation versions in the namespace', () => {
-  const swcNextPkgJson = JSON.parse(
-    readFileSync(findPackageJSON('@swc-next/parser', import.meta.url)!, 'utf8'),
-  ) as { version: string };
-
   expect(JSON.parse(cacheNamespace)).toEqual([
     fmtCacheVersion,
     pkgJson.version,

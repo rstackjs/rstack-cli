@@ -1,3 +1,6 @@
+// Adapted from @prettier/plugin-yuku to use SWC Next:
+// https://github.com/prettier/prettier/tree/main/packages/plugin-yuku
+
 import * as prettierEstreePlugin from 'prettier/plugins/estree';
 import type { Parser, ParserOptions, Plugin } from 'prettier';
 import {

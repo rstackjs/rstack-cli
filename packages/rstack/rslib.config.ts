@@ -1,13 +1,8 @@
-import { readFileSync } from 'node:fs';
-import { findPackageJSON } from 'node:module';
 import { defineConfig } from '@rslib/core';
 import prettierPkgJson from 'prettier/package.json' with { type: 'json' };
-import pkgJson from './package.json' with { type: 'json' };
-
 // @swc-next/parser does not export its package.json.
-const swcNextPkgJson = JSON.parse(
-  readFileSync(findPackageJSON('@swc-next/parser', import.meta.url)!, 'utf8'),
-) as { version: string };
+import swcNextPkgJson from './node_modules/@swc-next/parser/package.json' with { type: 'json' };
+import pkgJson from './package.json' with { type: 'json' };
 
 const fullyMinifiedChunks =
   /(?:fmt(?:Lsp|Plugins)?|sortPackageJsonPlugin|staged)\.js$/;
