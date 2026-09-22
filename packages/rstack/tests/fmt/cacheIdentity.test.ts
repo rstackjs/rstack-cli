@@ -2,8 +2,6 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import prettierPkgJson from 'prettier/package.json' with { type: 'json' };
 import { expect, test } from 'rstack/test';
-// @swc-next/parser does not export its package.json.
-import swcNextPkgJson from '../../node_modules/@swc-next/parser/package.json' with { type: 'json' };
 import pkgJson from '../../package.json' with { type: 'json' };
 import {
   cacheHashLength,
@@ -90,7 +88,6 @@ test('includes formatter implementation versions in the namespace', () => {
     fmtCacheVersion,
     pkgJson.version,
     prettierPkgJson.version,
-    swcNextPkgJson.version,
   ]);
 });
 

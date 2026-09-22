@@ -8,11 +8,14 @@ import {
   parseSync as parseWithSwcNext,
   type Comment,
   type Diagnostic,
-  type ParseOptions,
+  type ParserOptions as SwcParserOptions,
   type ParseResult,
-  type Lang,
-  type SourceType,
-} from './swcNextParser.ts';
+  type Lang as SwcLang,
+} from '@swc-next/parser';
+
+// Use string literals because the package's const enums have no runtime exports.
+type Lang = `${SwcLang}`;
+type SourceType = 'module' | 'commonjs';
 
 const AST_FORMAT = 'estree-swc-next';
 const JS_TS_FILE_REGEXP = /\.(?:js|mjs|cjs|jsx|ts|mts|cts|tsx)$/i;
@@ -487,13 +490,13 @@ const createParseError = (error: Diagnostic, text: string): SyntaxError => {
 
 const parseWithOptions = (
   text: string,
-  options: Pick<ParseOptions, 'sourceType' | 'lang'>,
+  options: { sourceType: SourceType; lang: Lang },
 ): ParseResult => {
   const result = parseWithSwcNext(text, {
     preserveParens: true,
     comments: 'flat',
     ...options,
-  });
+  } as SwcParserOptions);
 
   if (result.diagnostics.length > 0) {
     throw createParseError(result.diagnostics[0], text);
@@ -558,9 +561,14 @@ const parseJavaScript = (
     (candidate) => () =>
       parseWithOptions(text, { sourceType: candidate, lang: 'jsx' }),
   );
-  const { program, comments } = tryCombinations(combinations);
+  const result = tryCombinations(combinations);
 
-  return postprocess(asAstNode(program), comments, text, 'swc-next-js');
+  return postprocess(
+    asAstNode(result.program),
+    result.comments,
+    text,
+    'swc-next-js',
+  );
 };
 
 const parseTypeScript = (
@@ -576,9 +584,14 @@ const parseTypeScript = (
       (lang) => () => parseWithOptions(text, { sourceType: candidate, lang }),
     ),
   );
-  const { program, comments } = tryCombinations(combinations);
+  const result = tryCombinations(combinations);
 
-  return postprocess(asAstNode(program), comments, text, 'swc-next-ts');
+  return postprocess(
+    asAstNode(result.program),
+    result.comments,
+    text,
+    'swc-next-ts',
+  );
 };
 
 const createParser = (

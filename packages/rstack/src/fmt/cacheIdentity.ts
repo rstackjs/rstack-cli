@@ -7,7 +7,6 @@ import type { ResolvedFmtOptions } from './types.ts';
 
 declare const PRETTIER_VERSION: string;
 declare const RSTACK_VERSION: string;
-declare const SWC_NEXT_VERSION: string;
 
 type CacheKeyResolver = (filePath: string) => string | undefined;
 type OptionsHasher = (options: ResolvedFmtOptions) => string | undefined;
@@ -22,7 +21,6 @@ const cacheNamespace: string = JSON.stringify([
   fmtCacheVersion,
   RSTACK_VERSION,
   PRETTIER_VERSION,
-  SWC_NEXT_VERSION,
 ]);
 
 /** Creates project-relative POSIX cache keys without repeating path setup. */

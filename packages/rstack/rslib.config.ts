@@ -1,7 +1,5 @@
 import { defineConfig } from '@rslib/core';
 import prettierPkgJson from 'prettier/package.json' with { type: 'json' };
-// @swc-next/parser does not export its package.json.
-import swcNextPkgJson from './node_modules/@swc-next/parser/package.json' with { type: 'json' };
 import pkgJson from './package.json' with { type: 'json' };
 
 const fullyMinifiedChunks =
@@ -29,7 +27,6 @@ export default defineConfig({
     define: {
       PRETTIER_VERSION: JSON.stringify(prettierPkgJson.version),
       RSTACK_VERSION: JSON.stringify(pkgJson.version),
-      SWC_NEXT_VERSION: JSON.stringify(swcNextPkgJson.version),
     },
   },
   output: {
