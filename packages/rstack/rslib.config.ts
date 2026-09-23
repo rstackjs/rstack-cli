@@ -55,4 +55,11 @@ export default defineConfig({
       ],
     },
   },
+  tools: {
+    rspack: {
+      experiments: {
+        runtimeMode: 'rspack',
+      },
+    },
+  },
 });
