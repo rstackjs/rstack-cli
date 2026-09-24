@@ -1,6 +1,11 @@
 import type { ConfigParams } from '@rsbuild/core';
-import type { RstestConfig, RstestConfigExport } from '@rstest/core';
+import {
+  type RstestConfig,
+  type RstestConfigExport,
+  mergeRstestConfig,
+} from '@rstest/core';
 import { loadRstackConfig, type Configs } from './config.ts';
+import { resolveConfigLayers } from './configLayers.ts';
 
 const resolveAutomaticExtends = async (
   configs: Configs,
@@ -86,20 +91,18 @@ const extendsConfig = async (
   };
 };
 
-const resolveRstestConfig = async (configs: Configs) => {
-  const testConfig = configs.test;
-  if (!testConfig) {
-    return {};
-  }
-  if (typeof testConfig === 'function') {
-    return testConfig();
-  }
-  return testConfig;
+export const resolveRstestConfig = async (
+  layers: readonly Configs[],
+): Promise<RstestConfig> => {
+  const configs = await resolveConfigLayers(layers, 'test');
+  return configs.length > 1
+    ? mergeRstestConfig(...configs)
+    : (configs[0] ?? {});
 };
 
 const loadRstestConfig = (async (params: ConfigParams) => {
   const { configs } = await loadRstackConfig();
-  const testConfig = await resolveRstestConfig(configs);
+  const testConfig = await resolveRstestConfig([configs]);
   return extendsConfig(configs, testConfig, params);
 }) as RstestConfigExport;
 
