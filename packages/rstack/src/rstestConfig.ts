@@ -8,36 +8,38 @@ import { loadRstackConfig, type Configs } from './config.ts';
 import { resolveConfigLayers } from './configLayers.ts';
 
 const resolveAutomaticExtends = async (
-  configs: Configs,
+  layers: readonly Configs[],
   params: ConfigParams,
 ): Promise<RstestConfig['extends'] | undefined> => {
   // Prefer the app when both app and lib are defined. Merging both adapters can
   // introduce conflicting runtime, resolve, and source transform settings.
-  const appConfig = configs.app;
-  if (appConfig) {
-    const { withRsbuildConfig } = await import(
-      /* rspackChunkName: 'adapterRsbuild' */
-      '@rstest/adapter-rsbuild'
+  if (layers.some((layer) => layer.app !== undefined)) {
+    const [{ withRsbuildConfig }, { resolveRsbuildConfig }] = await Promise.all(
+      [
+        import(
+          /* rspackChunkName: 'adapterRsbuild' */
+          '@rstest/adapter-rsbuild'
+        ),
+        import('./rsbuildConfig.ts'),
+      ],
     );
-    const config =
-      typeof appConfig === 'function' ? await appConfig(params) : appConfig;
 
     return withRsbuildConfig({
-      config,
+      config: await resolveRsbuildConfig(layers, params),
     });
   }
 
-  const libConfig = configs.lib;
-  if (libConfig) {
-    const { withRslibConfig } = await import(
-      /* rspackChunkName: 'adapterRslib' */
-      '@rstest/adapter-rslib'
-    );
-    const config =
-      typeof libConfig === 'function' ? await libConfig(params) : libConfig;
+  if (layers.some((layer) => layer.lib !== undefined)) {
+    const [{ withRslibConfig }, { resolveRslibConfig }] = await Promise.all([
+      import(
+        /* rspackChunkName: 'adapterRslib' */
+        '@rstest/adapter-rslib'
+      ),
+      import('./rslibConfig.ts'),
+    ]);
 
     return withRslibConfig({
-      config,
+      config: await resolveRslibConfig(layers, params),
     });
   }
 
@@ -59,7 +61,7 @@ const injectExtends = <T extends RstestConfig>(
 };
 
 const extendsConfig = async (
-  configs: Configs,
+  layers: readonly Configs[],
   testConfig: RstestConfig,
   params: ConfigParams,
 ) => {
@@ -68,7 +70,7 @@ const extendsConfig = async (
   }
 
   if (testConfig.projects === undefined) {
-    const automaticExtends = await resolveAutomaticExtends(configs, params);
+    const automaticExtends = await resolveAutomaticExtends(layers, params);
     return injectExtends(testConfig, automaticExtends);
   }
 
@@ -79,7 +81,7 @@ const extendsConfig = async (
     return testConfig;
   }
 
-  const automaticExtends = await resolveAutomaticExtends(configs, params);
+  const automaticExtends = await resolveAutomaticExtends(layers, params);
 
   return {
     ...testConfig,
@@ -93,17 +95,17 @@ const extendsConfig = async (
 
 export const resolveRstestConfig = async (
   layers: readonly Configs[],
+  params: ConfigParams,
 ): Promise<RstestConfig> => {
   const configs = await resolveConfigLayers(layers, 'test');
-  return configs.length > 1
-    ? mergeRstestConfig(...configs)
-    : (configs[0] ?? {});
+  const testConfig =
+    configs.length > 1 ? mergeRstestConfig(...configs) : (configs[0] ?? {});
+  return extendsConfig(layers, testConfig, params);
 };
 
 const loadRstestConfig = (async (params: ConfigParams) => {
   const { configs } = await loadRstackConfig();
-  const testConfig = await resolveRstestConfig([configs]);
-  return extendsConfig(configs, testConfig, params);
+  return resolveRstestConfig([configs], params);
 }) as RstestConfigExport;
 
 export default loadRstestConfig;
