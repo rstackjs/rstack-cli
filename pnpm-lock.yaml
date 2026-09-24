@@ -211,8 +211,8 @@ catalogs:
       specifier: ~0.12.0
       version: 0.12.0
     '@rstest/core':
-      specifier: ~0.12.0
-      version: 0.12.0
+      specifier: ~0.12.1
+      version: 0.12.1
     '@shikijs/transformers':
       specifier: ^4.4.3
       version: 4.4.3
@@ -530,7 +530,7 @@ importers:
         version: 0.9.3
       '@rstest/core':
         specifier: 'catalog:'
-        version: 0.12.0(happy-dom@20.14.5)
+        version: 0.12.1(happy-dom@20.14.5)
       '@swc-next/parser':
         specifier: 'catalog:'
         version: 0.2.2
@@ -555,10 +555,10 @@ importers:
         version: 1.0.0
       '@rstest/adapter-rsbuild':
         specifier: 'catalog:'
-        version: 0.12.0(@rsbuild/core@2.2.9)(@rstest/core@0.12.0)
+        version: 0.12.0(@rsbuild/core@2.2.9)(@rstest/core@0.12.1)
       '@rstest/adapter-rslib':
         specifier: 'catalog:'
-        version: 0.12.0(@rslib/core@1.0.2)(@rstest/core@0.12.0)(typescript@7.0.2)
+        version: 0.12.0(@rslib/core@1.0.2)(@rstest/core@0.12.1)(typescript@7.0.2)
       '@types/micromatch':
         specifier: 'catalog:'
         version: 4.0.10
@@ -1875,8 +1875,8 @@ packages:
       typescript:
         optional: true
 
-  '@rstest/core@0.12.0':
-    resolution: {integrity: sha512-jawxfkm97gUroI/KNgNwvEOQ7Ty6gIdWK8U7pbs9MSSDQQxR8I8tMs3SoIRKtaxVLy5n8eDJpWWvffMPF43YZg==}
+  '@rstest/core@0.12.1':
+    resolution: {integrity: sha512-irrbH5VPqiHqIVM2Ta7Ib9sPyQ5Hsvxt0sSqqwRp/3j2by0sSu9ZeIMYzMEZj1puPwx2a8l3aFWW+Bk2ycKlEA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -4583,19 +4583,19 @@ snapshots:
 
   '@rstackjs/test-utils@1.0.0': {}
 
-  '@rstest/adapter-rsbuild@0.12.0(@rsbuild/core@2.2.9)(@rstest/core@0.12.0)':
+  '@rstest/adapter-rsbuild@0.12.0(@rsbuild/core@2.2.9)(@rstest/core@0.12.1)':
     dependencies:
       '@rsbuild/core': 2.2.9
-      '@rstest/core': 0.12.0(happy-dom@20.14.5)
+      '@rstest/core': 0.12.1(happy-dom@20.14.5)
 
-  '@rstest/adapter-rslib@0.12.0(@rslib/core@1.0.2)(@rstest/core@0.12.0)(typescript@7.0.2)':
+  '@rstest/adapter-rslib@0.12.0(@rslib/core@1.0.2)(@rstest/core@0.12.1)(typescript@7.0.2)':
     dependencies:
       '@rslib/core': 1.0.2(typescript@7.0.2)
-      '@rstest/core': 0.12.0(happy-dom@20.14.5)
+      '@rstest/core': 0.12.1(happy-dom@20.14.5)
     optionalDependencies:
       typescript: 7.0.2
 
-  '@rstest/core@0.12.0(happy-dom@20.14.5)':
+  '@rstest/core@0.12.1(happy-dom@20.14.5)':
     dependencies:
       '@rsbuild/core': 2.2.9
       '@types/chai': 5.2.3

@@ -27,7 +27,7 @@ catalog:
   '@rstackjs/test-utils': ^1.0.0
   '@rstest/adapter-rsbuild': '~0.12.0'
   '@rstest/adapter-rslib': '~0.12.0'
-  '@rstest/core': '~0.12.0'
+  '@rstest/core': '~0.12.1'
   '@swc-next/parser': '0.2.2'
   '@testing-library/dom': '^10.4.2'
   '@testing-library/jest-dom': '^7.0.1'
