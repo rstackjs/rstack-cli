@@ -169,7 +169,7 @@ catalogs:
       specifier: ^3.10.3
       version: 3.10.3
     '@rsbuild/core':
-      specifier: ~2.2.8
+      specifier: ~2.2.9
       version: 2.2.9
     '@rsbuild/plugin-react':
       specifier: ^2.1.0
