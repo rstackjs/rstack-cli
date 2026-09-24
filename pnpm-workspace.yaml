@@ -3,6 +3,8 @@ packages:
   - examples/*
   - website
 
+autoDedupe: true
+
 allowBuilds:
   core-js: false
   simple-git-hooks: false
