@@ -124,7 +124,23 @@ Available templates: app-vanilla, app-vanilla-ts, app-react, app-react-ts, app-p
 
 ## CLI 命令 \{#cli-commands}
 
-在 `package.json` 的 `scripts` 字段中添加项目所需的命令，例如：
+Rstack CLI 提供以下命令：
+
+- [`rs dev`](./cli/dev)：启动应用开发服务器。
+- [`rs build`](./cli/build)：构建应用的生产版本。
+- [`rs preview`](./cli/preview)：在本地预览应用的生产构建产物。
+- [`rs lib`](./cli/lib)：使用 Rslib 构建库。
+- [`rs doc`](./cli/doc)：使用 Rspress 开发、构建或预览文档站点。
+- [`rs test`](./cli/test)：使用 Rstest 运行测试。
+- [`rs check`](./cli/check)：运行 lint 和格式检查，并可选启用 TypeScript 类型检查。
+- [`rs lint`](./cli/lint)：使用 Rslint 检查源代码。
+- [`rs fmt`](./cli/fmt)：格式化代码。
+- [`rs hooks`](./cli/hooks)：安装、更新或卸载仓库级 Git hooks。
+- [`rs staged`](./cli/staged)：使用 lint-staged 对 Git 暂存区中的文件运行任务。
+
+### 通过项目脚本运行 \{#run-with-package-scripts}
+
+将常用命令添加到 `package.json` 的 `scripts` 字段中：
 
 ```json title="package.json"
 {
@@ -140,21 +156,33 @@ Available templates: app-vanilla, app-vanilla-ts, app-react, app-react-ts, app-p
 }
 ```
 
-package scripts 会使用项目本地安装的 `rs` 命令，因此无需全局安装 Rstack CLI。
+然后通过包管理器运行对应的脚本。例如，运行上面定义的 `dev` 脚本：
 
-Rstack CLI 提供以下命令：
+<PackageManagerTabs
+  command={{
+    pnpm: 'pnpm run dev',
+    npm: 'npm run dev',
+    yarn: 'yarn run dev',
+    bun: 'bun run dev',
+  }}
+/>
 
-- [`rs dev`](./cli/dev)：启动应用开发服务器。
-- [`rs build`](./cli/build)：构建应用的生产版本。
-- [`rs preview`](./cli/preview)：在本地预览应用的生产构建产物。
-- [`rs lib`](./cli/lib)：使用 Rslib 构建库。
-- [`rs doc`](./cli/doc)：使用 Rspress 开发、构建或预览文档站点。
-- [`rs test`](./cli/test)：使用 Rstest 运行测试。
-- [`rs check`](./cli/check)：运行 lint 和格式检查，并可选启用 TypeScript 类型检查。
-- [`rs lint`](./cli/lint)：使用 Rslint 检查源代码。
-- [`rs fmt`](./cli/fmt)：格式化代码。
-- [`rs hooks`](./cli/hooks)：安装、更新或卸载仓库级 Git hooks。
-- [`rs staged`](./cli/staged)：使用 lint-staged 对 Git 暂存区中的文件运行任务。
+项目脚本会使用本地安装的 `rs` 命令，因此无需全局安装 Rstack CLI。
+
+### 直接在终端运行 \{#run-directly-in-the-terminal}
+
+也可以直接通过包管理器运行 Rstack CLI，无需在 `package.json` 中添加脚本。例如，直接启动开发服务器：
+
+<PackageManagerTabs
+  command={{
+    pnpm: 'pnpm rs dev',
+    npm: 'npx rs dev',
+    yarn: 'yarn exec rs dev',
+    bun: 'bunx rs dev',
+  }}
+/>
+
+Rstack CLI 也提供 `rstack` 作为 `rs` 的别名。例如，`pnpm rstack dev` 与 `pnpm rs dev` 等效。
 
 ## 配置 Rstack CLI \{#configure-rstack}
 

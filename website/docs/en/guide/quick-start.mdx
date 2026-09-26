@@ -124,7 +124,23 @@ Install [`rstack`](https://www.npmjs.com/package/rstack) as a development depend
 
 ## CLI commands
 
-Add the commands your project needs to the `scripts` field in `package.json`. For example:
+The following commands are available:
+
+- [`rs dev`](./cli/dev): Start the application development server.
+- [`rs build`](./cli/build): Build the application for production.
+- [`rs preview`](./cli/preview): Preview the application's production build locally.
+- [`rs lib`](./cli/lib): Build a library with Rslib.
+- [`rs doc`](./cli/doc): Develop, build, or preview a documentation site with Rspress.
+- [`rs test`](./cli/test): Run tests with Rstest.
+- [`rs check`](./cli/check): Run linting and formatting checks, with optional TypeScript type checking.
+- [`rs lint`](./cli/lint): Lint source code with Rslint.
+- [`rs fmt`](./cli/fmt): Format code.
+- [`rs hooks`](./cli/hooks): Install, update, or uninstall repository-level Git hooks.
+- [`rs staged`](./cli/staged): Run tasks against files staged in Git with lint-staged.
+
+### Run with package scripts
+
+Add frequently used commands to the `scripts` field in `package.json`:
 
 ```json title="package.json"
 {
@@ -140,21 +156,33 @@ Add the commands your project needs to the `scripts` field in `package.json`. Fo
 }
 ```
 
+Then run the script with your package manager. For example, to run the `dev` script above:
+
+<PackageManagerTabs
+  command={{
+    pnpm: 'pnpm run dev',
+    npm: 'npm run dev',
+    yarn: 'yarn run dev',
+    bun: 'bun run dev',
+  }}
+/>
+
 Package scripts use the project-local `rs` binary, so Rstack CLI does not need to be installed globally.
 
-The following commands are available:
+### Run directly in the terminal
 
-- [`rs dev`](./cli/dev): Start the application development server.
-- [`rs build`](./cli/build): Build the application for production.
-- [`rs preview`](./cli/preview): Preview the application's production build locally.
-- [`rs lib`](./cli/lib): Build a library with Rslib.
-- [`rs doc`](./cli/doc): Develop, build, or preview a documentation site with Rspress.
-- [`rs test`](./cli/test): Run tests with Rstest.
-- [`rs check`](./cli/check): Run linting and formatting checks, with optional TypeScript type checking.
-- [`rs lint`](./cli/lint): Lint source code with Rslint.
-- [`rs fmt`](./cli/fmt): Format code.
-- [`rs hooks`](./cli/hooks): Install, update, or uninstall repository-level Git hooks.
-- [`rs staged`](./cli/staged): Run tasks against files staged in Git with lint-staged.
+You can also run Rstack CLI through your package manager without adding a package script. For example, to start the development server directly:
+
+<PackageManagerTabs
+  command={{
+    pnpm: 'pnpm rs dev',
+    npm: 'npx rs dev',
+    yarn: 'yarn exec rs dev',
+    bun: 'bunx rs dev',
+  }}
+/>
+
+Rstack CLI also provides `rstack` as an alias for `rs`. For example, `pnpm rstack dev` is equivalent to `pnpm rs dev`.
 
 ## Configure Rstack CLI \{#configure-rstack}
 
