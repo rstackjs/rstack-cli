@@ -28,7 +28,7 @@ type ConfigArgs<K extends keyof Configs> = K extends 'app'
 
 /**
  * Resolve one tool from ordered, normalized config layers. Lint factories are
- * already wrapped by define.lint; merging belongs to the tool adapters.
+ * already wrapped by define.lint. This function does not merge the results.
  */
 export const resolveConfigLayers = async <K extends keyof Configs>(
   layers: readonly Configs[],
@@ -55,4 +55,11 @@ export const resolveConfigLayers = async <K extends keyof Configs>(
   }
 
   return configs;
+};
+
+export const resolveRslintConfig = async (
+  layers: readonly Configs[],
+): Promise<RslintConfig | undefined> => {
+  const configs = await resolveConfigLayers(layers, 'lint');
+  return configs.length > 1 ? configs.flat() : configs[0];
 };
