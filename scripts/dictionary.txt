@@ -1,6 +1,7 @@
 # Custom Dictionary Words
 applypatch
 bundleless
+bunx
 cdpath
 clippy
 dirents
