@@ -1,7 +1,7 @@
 import type { RslintConfig } from '@rslint/core';
 import { expect, test } from 'rstack/test';
 import { normalizeRstackConfig } from '../../src/config.ts';
-import { resolveRslintConfig } from '../../src/lintConfig.ts';
+import { resolveRslintConfig } from '../../src/configLayers.ts';
 
 test('concatenates lint layers in order without merging entries', async () => {
   const shared: RslintConfig = [
