@@ -11,6 +11,7 @@ import path from 'node:path';
 import { define } from 'rstack';
 import { pluginOpenGraph } from 'rsbuild-plugin-open-graph';
 import { pluginFontOpenSans } from 'rspress-plugin-font-open-sans';
+import { withZephyr } from 'zephyr-rspress-plugin';
 
 const title = 'Rstack CLI';
 const description =
@@ -49,6 +50,7 @@ define.doc({
     cleanUrls: true,
   },
   plugins: [
+    withZephyr({ target: 'web' }),
     pluginClientRedirects({
       redirects: [
         {
