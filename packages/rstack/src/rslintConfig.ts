@@ -3,24 +3,19 @@ import { join } from 'node:path';
 import { loadRstackConfig, type LoadedRstackConfig } from './config.ts';
 import type { RslintConfig } from '@rslint/core';
 import { color, logger } from 'rslog';
+import { resolveRslintConfig } from './configLayers.ts';
 
 // Expose the loaded config so `rs check` can pass it to fmt instead of loading
 // and executing the Rstack config a second time.
 export const loadedConfig: LoadedRstackConfig = await loadRstackConfig();
 const { configs } = loadedConfig;
-const lintDefinition = configs.lint;
+const lintConfig = await resolveRslintConfig([configs]);
 
-let lintConfig: RslintConfig;
-
-if (lintDefinition === undefined) {
+if (lintConfig === undefined) {
   logger.error(
     `No lint configuration found. Add ${color.cyan('define.lint(...)')} to your Rstack config file.`,
   );
   process.exit(1);
-} else if (typeof lintDefinition === 'function') {
-  lintConfig = await lintDefinition();
-} else {
-  lintConfig = lintDefinition;
 }
 
 const basePath = process.cwd();
