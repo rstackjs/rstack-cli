@@ -4,7 +4,7 @@ import {
   type Options,
   type ParserOptions,
 } from 'prettier';
-import { expect, test } from 'rstack/test';
+import { describe, expect, test } from 'rstack/test';
 import { getPrettierPlugins } from '../../src/fmt/prettierPlugins.ts';
 import { swcNextPlugin } from '../../src/fmt/swcNextPlugin.ts';
 
@@ -107,85 +107,108 @@ test.each(['example.d.ts', 'example.d.mts', 'example.d.cts'])(
   },
 );
 
-test.each([
-  {
-    name: 'hashbangs and unicode locations',
-    parser: 'swc-next' as const,
-    source: '#!/usr/bin/env node\n// 中文 😀\nconst 你好={值:"😀"}',
-    expected: '#!/usr/bin/env node\n// 中文 😀\nconst 你好 = { 值: "😀" };\n',
-  },
-  {
-    name: 'Closure-style type casts',
-    parser: 'swc-next' as const,
-    source: '/** @type {Foo} */ (value).method()',
-    expected: '/** @type {Foo} */ (value).method();\n',
-  },
-  {
-    name: 'comments before semicolons',
-    parser: 'swc-next' as const,
-    source: 'foo /* trailing */ ;',
-    expected: 'foo; /* trailing */\n',
-  },
-  {
-    name: 'adjacent multiline JSDoc comments',
-    parser: 'swc-next' as const,
-    source: '/**\n * outer\n *//**\n * inner\n */\nfoo()',
-    expected: '/**\n * outer\n *//**\n * inner\n */\nfoo();\n',
-  },
-  {
-    name: 'right-nested logical expressions',
-    parser: 'swc-next' as const,
-    source: 'const value = a || (b || c)',
-    expected: 'const value = a || b || c;\n',
-  },
-  {
-    name: 'parenthesized TypeScript types',
-    parser: 'swc-next-ts' as const,
-    source: 'type Value = (((string | number)));',
-    expected: 'type Value = string | number;\n',
-  },
-  {
-    name: 'single-member unions with comments',
-    parser: 'swc-next-ts' as const,
-    source: 'type Value = | // value\nstring;',
-    expected: 'type Value =\n  // value\n  string;\n',
-  },
-  {
-    name: 'TypeScript template expressions',
-    parser: 'swc-next-ts' as const,
-    source: 'const result = `value: ${foo satisfies string}`',
-    expected: 'const result = `value: ${foo satisfies string}`;\n',
-  },
-  {
-    name: 'TSX expressions',
-    parser: 'swc-next-ts' as const,
-    filepath: 'example.tsx',
-    source: 'const view=(<Component value={{foo:1}}>{(item)}</Component>)',
-    expected:
-      'const view = <Component value={{ foo: 1 }}>{item}</Component>;\n',
-  },
-])('normalizes $name for the ESTree printer', async (fixture) => {
-  await expect(
-    formatWithSwcNext(fixture.source, {
-      filepath: fixture.filepath,
-      parser: fixture.parser,
-    }),
-  ).resolves.toBe(fixture.expected);
+describe('postprocess', () => {
+  test.each([
+    {
+      name: 'hashbangs and unicode locations',
+      parser: 'swc-next' as const,
+      source: '#!/usr/bin/env node\n// 中文 😀\nconst 你好={值:"😀"}',
+      expected: '#!/usr/bin/env node\n// 中文 😀\nconst 你好 = { 值: "😀" };\n',
+    },
+    {
+      name: 'Closure-style type casts',
+      parser: 'swc-next' as const,
+      source: '/** @type {Foo} */ (value).method()',
+      expected: '/** @type {Foo} */ (value).method();\n',
+    },
+    {
+      name: 'comments before semicolons',
+      parser: 'swc-next' as const,
+      source: 'foo /* trailing */ ;',
+      expected: 'foo; /* trailing */\n',
+    },
+    {
+      name: 'adjacent multiline JSDoc comments',
+      parser: 'swc-next' as const,
+      source: '/**\n * outer\n *//**\n * inner\n */\nfoo()',
+      expected: '/**\n * outer\n *//**\n * inner\n */\nfoo();\n',
+    },
+    {
+      name: 'right-nested logical expressions',
+      parser: 'swc-next' as const,
+      source: 'const value = a || (b || c)',
+      expected: 'const value = a || b || c;\n',
+    },
+    {
+      name: 'parenthesized TypeScript types',
+      parser: 'swc-next-ts' as const,
+      source: 'type Value = (((string | number)));',
+      expected: 'type Value = string | number;\n',
+    },
+    {
+      name: 'single-member unions with comments',
+      parser: 'swc-next-ts' as const,
+      source: 'type Value = | // value\nstring;',
+      expected: 'type Value =\n  // value\n  string;\n',
+    },
+    {
+      name: 'TypeScript template expressions',
+      parser: 'swc-next-ts' as const,
+      source: 'const result = `value: ${foo satisfies string}`',
+      expected: 'const result = `value: ${foo satisfies string}`;\n',
+    },
+    {
+      name: 'TSX expressions',
+      parser: 'swc-next-ts' as const,
+      filepath: 'example.tsx',
+      source: 'const view=(<Component value={{foo:1}}>{(item)}</Component>)',
+      expected:
+        'const view = <Component value={{ foo: 1 }}>{item}</Component>;\n',
+    },
+  ])('normalizes $name for the ESTree printer', async (fixture) => {
+    await expect(
+      formatWithSwcNext(fixture.source, {
+        filepath: fixture.filepath,
+        parser: fixture.parser,
+      }),
+    ).resolves.toBe(fixture.expected);
+  });
+
+  test.each(['swc-next', 'swc-next-ts'] as const)(
+    'normalizes nested template expressions with %s',
+    async (parser) => {
+      const source =
+        'const result=`outer ${(`inner ${(a || (b || c))}`)} ${/** @type {Foo} */ (value)}`';
+      const formatted = await formatWithSwcNext(source, { parser });
+
+      expect(formatted).toBe(
+        'const result = `outer ${`inner ${a || b || c}`} ${/** @type {Foo} */ (value)}`;\n',
+      );
+      expect(await formatWithSwcNext(formatted, { parser })).toBe(formatted);
+    },
+  );
+
+  test('matches the official hashbang AST shape', async () => {
+    const parser = swcNextPlugin.parsers?.['swc-next'];
+    if (!parser) {
+      throw new Error('The SWC Next parser is not registered.');
+    }
+
+    const options = { filepath: 'example.js' } as ParserOptions;
+    const astWithoutHashbang = (await parser.parse(
+      'const value = 1',
+      options,
+    )) as Record<string, unknown>;
+    const astWithHashbang = (await parser.parse(
+      '#!/usr/bin/env node\nconst value = 1',
+      options,
+    )) as Record<string, unknown>;
+
+    expect(Object.hasOwn(astWithoutHashbang, 'hashbang')).toBe(true);
+    expect(astWithoutHashbang.hashbang).toBeNull();
+    expect(Object.hasOwn(astWithHashbang, 'hashbang')).toBe(false);
+  });
 });
-
-test.each(['swc-next', 'swc-next-ts'] as const)(
-  'normalizes nested template expressions with %s',
-  async (parser) => {
-    const source =
-      'const result=`outer ${(`inner ${(a || (b || c))}`)} ${/** @type {Foo} */ (value)}`';
-    const formatted = await formatWithSwcNext(source, { parser });
-
-    expect(formatted).toBe(
-      'const result = `outer ${`inner ${a || b || c}`} ${/** @type {Foo} */ (value)}`;\n',
-    );
-    expect(await formatWithSwcNext(formatted, { parser })).toBe(formatted);
-  },
-);
 
 test('reuses Prettier options and pragma handling', async () => {
   await expect(
@@ -333,27 +356,6 @@ test('supports CommonJS source semantics for .cjs files', async () => {
       parser: 'swc-next',
     }),
   ).resolves.toBe('return require("example");\n');
-});
-
-test('matches the official hashbang AST shape', async () => {
-  const parser = swcNextPlugin.parsers?.['swc-next'];
-  if (!parser) {
-    throw new Error('The SWC Next parser is not registered.');
-  }
-
-  const options = { filepath: 'example.js' } as ParserOptions;
-  const astWithoutHashbang = (await parser.parse(
-    'const value = 1',
-    options,
-  )) as Record<string, unknown>;
-  const astWithHashbang = (await parser.parse(
-    '#!/usr/bin/env node\nconst value = 1',
-    options,
-  )) as Record<string, unknown>;
-
-  expect(Object.hasOwn(astWithoutHashbang, 'hashbang')).toBe(true);
-  expect(astWithoutHashbang.hashbang).toBeNull();
-  expect(Object.hasOwn(astWithHashbang, 'hashbang')).toBe(false);
 });
 
 test('reports SWC Next diagnostics with Prettier locations', async () => {
