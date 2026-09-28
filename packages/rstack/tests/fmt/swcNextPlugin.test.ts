@@ -107,7 +107,7 @@ test.each(['example.d.ts', 'example.d.mts', 'example.d.cts'])(
   },
 );
 
-describe('postprocess', () => {
+describe('should match upstream postprocess behavior', () => {
   test.each([
     {
       name: 'hashbangs and unicode locations',
