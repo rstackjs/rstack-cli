@@ -355,6 +355,15 @@ test('reports SWC Next diagnostics with Prettier locations', async () => {
   });
 });
 
+test.each(['swc-next', 'swc-next-ts'] as const)(
+  'rejects malformed template literals with %s diagnostics',
+  async (parser) => {
+    await expect(
+      formatWithSwcNext('const value = `value: ${}`', { parser }),
+    ).rejects.toBeInstanceOf(SyntaxError);
+  },
+);
+
 test.each(['js', 'jsx', 'ts', 'tsx'])(
   'uses SWC Next by default for .%s files',
   async (extension) => {

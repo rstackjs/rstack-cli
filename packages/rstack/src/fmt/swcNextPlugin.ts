@@ -1,5 +1,10 @@
-// Adapted from @prettier/plugin-yuku to use SWC Next:
-// https://github.com/prettier/prettier/tree/main/packages/plugin-yuku
+// Differences from @prettier/plugin-yuku at the original port's upstream revision:
+// https://github.com/prettier/prettier/blob/315f28198200d7678dadd3fd5eece499b127ff2a/packages/plugin-yuku/index.js
+// https://github.com/prettier/prettier/blob/315f28198200d7678dadd3fd5eece499b127ff2a/src/language-js/parse/postprocess/index.js
+// - Reuses the ESTree printer and keeps only SWC Next's JS/TS normalization.
+// - Masks comments in one pass and uses binary search for type-cast comments.
+// - Omits Hack pipelines (unsupported) and template-shape checks (guaranteed by SWC Next).
+// - Adds babel/typescript parser aliases, with a Babel File root for Vue.
 
 import * as prettierEstreePlugin from 'prettier/plugins/estree';
 import type { Parser, ParserOptions, Plugin } from 'prettier';
@@ -305,7 +310,8 @@ const visitNode = (value: unknown, options: VisitOptions): unknown => {
     return value;
   }
 
-  let node = asAstNode(value);
+  // Trust the parser's child nodes; validate the root at the parser entry point.
+  let node = value as AstNode;
 
   if (options.onEnter) {
     const result = options.onEnter(node) ?? node;
@@ -323,14 +329,12 @@ const visitNode = (value: unknown, options: VisitOptions): unknown => {
 };
 
 const isUnbalancedLogicalTree = (node: AstNode): boolean => {
-  if (node.type !== 'LogicalExpression' || !isAstNode(node.right)) {
+  if (node.type !== 'LogicalExpression') {
     return false;
   }
 
-  return (
-    node.right.type === 'LogicalExpression' &&
-    node.operator === node.right.operator
-  );
+  const right = node.right as AstNode;
+  return right.type === 'LogicalExpression' && node.operator === right.operator;
 };
 
 const rebalanceLogicalTree = (node: AstNode): AstNode => {
@@ -338,10 +342,10 @@ const rebalanceLogicalTree = (node: AstNode): AstNode => {
     return node;
   }
 
-  const left = asAstNode(node.left);
-  const right = asAstNode(node.right);
-  const rightLeft = asAstNode(right.left);
-  const rightRight = asAstNode(right.right);
+  const left = node.left as AstNode;
+  const right = node.right as AstNode;
+  const rightLeft = right.left as AstNode;
+  const rightRight = right.right as AstNode;
 
   return rebalanceLogicalTree({
     type: 'LogicalExpression',
@@ -387,7 +391,7 @@ const postprocess = (
 
       switch (node.type) {
         case 'ParenthesizedExpression': {
-          const expression = asAstNode(node.expression);
+          const expression = node.expression as AstNode;
           const start = locStart(node);
 
           // SWC Next comments are in source order, so these end offsets are sorted.
@@ -411,15 +415,6 @@ const postprocess = (
           return expression;
         }
 
-        case 'TemplateLiteral': {
-          const expressions = node.expressions as unknown[];
-          const quasis = node.quasis as unknown[];
-          if (expressions.length !== quasis.length - 1) {
-            throw new Error('Malformed template literal.');
-          }
-          break;
-        }
-
         case 'TemplateElement': {
           if (astType === 'swc-next-ts') {
             const start = locStart(node) + 1;
@@ -430,17 +425,13 @@ const postprocess = (
         }
 
         case 'TSParenthesizedType':
-          return asAstNode(node.typeAnnotation);
-
-        case 'TopicReference':
-          ast.extra = withExtra(ast, { __isUsingHackPipeline: true });
-          break;
+          return node.typeAnnotation as AstNode;
 
         case 'TSUnionType':
         case 'TSIntersectionType': {
           const types = node.types as unknown[];
           if (types.length === 1) {
-            return asAstNode(types[0]);
+            return types[0] as AstNode;
           }
           break;
         }
