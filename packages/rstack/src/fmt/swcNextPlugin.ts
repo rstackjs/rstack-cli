@@ -1,11 +1,12 @@
-// Differences from @prettier/plugin-yuku at the original port's upstream revision:
+// Adapted from @prettier/plugin-yuku:
 // https://github.com/prettier/prettier/blob/315f28198200d7678dadd3fd5eece499b127ff2a/packages/plugin-yuku/index.js
 // https://github.com/prettier/prettier/blob/315f28198200d7678dadd3fd5eece499b127ff2a/src/language-js/parse/postprocess/index.js
-// - Bundles a local copy of the plugin adapter, removing branches unrelated to SWC Next.
-// - Reuses Prettier's ESTree printer to avoid bundling a duplicate.
-// - Masks comments in one pass and uses binary search for type-cast comments.
-// - Omits Hack pipelines (unsupported) and template-shape checks (guaranteed by SWC Next).
-// - Adds babel/typescript parser aliases, with a Babel File root for Vue.
+//
+// Differences from upstream:
+// - Bundles the adapter locally and reuses Prettier's printer to avoid duplication.
+// - Uses SWC Next instead of Yuku, removing unused branches and redundant checks.
+// - Avoids repeated source copying and linear searches when processing comments.
+// - Registers babel/typescript aliases for other plugins; uses Babel's File root for Vue.
 
 import * as prettierEstreePlugin from 'prettier/plugins/estree';
 import type { Parser, ParserOptions, Plugin } from 'prettier';
