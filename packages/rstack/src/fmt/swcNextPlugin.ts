@@ -1,7 +1,8 @@
 // Differences from @prettier/plugin-yuku at the original port's upstream revision:
 // https://github.com/prettier/prettier/blob/315f28198200d7678dadd3fd5eece499b127ff2a/packages/plugin-yuku/index.js
 // https://github.com/prettier/prettier/blob/315f28198200d7678dadd3fd5eece499b127ff2a/src/language-js/parse/postprocess/index.js
-// - Reuses the ESTree printer and keeps only SWC Next's JS/TS normalization.
+// - Bundles a local copy of the plugin adapter, removing branches unrelated to SWC Next.
+// - Reuses Prettier's ESTree printer to avoid bundling a duplicate.
 // - Masks comments in one pass and uses binary search for type-cast comments.
 // - Omits Hack pipelines (unsupported) and template-shape checks (guaranteed by SWC Next).
 // - Adds babel/typescript parser aliases, with a Babel File root for Vue.
