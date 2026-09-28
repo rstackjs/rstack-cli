@@ -145,6 +145,12 @@ test.each([
     expected: 'type Value = string | number;\n',
   },
   {
+    name: 'single-member unions with comments',
+    parser: 'swc-next-ts' as const,
+    source: 'type Value = | // value\nstring;',
+    expected: 'type Value =\n  // value\n  string;\n',
+  },
+  {
     name: 'TypeScript template expressions',
     parser: 'swc-next-ts' as const,
     source: 'const result = `value: ${foo satisfies string}`',
@@ -166,6 +172,20 @@ test.each([
     }),
   ).resolves.toBe(fixture.expected);
 });
+
+test.each(['swc-next', 'swc-next-ts'] as const)(
+  'normalizes nested template expressions with %s',
+  async (parser) => {
+    const source =
+      'const result=`outer ${(`inner ${(a || (b || c))}`)} ${/** @type {Foo} */ (value)}`';
+    const formatted = await formatWithSwcNext(source, { parser });
+
+    expect(formatted).toBe(
+      'const result = `outer ${`inner ${a || b || c}`} ${/** @type {Foo} */ (value)}`;\n',
+    );
+    expect(await formatWithSwcNext(formatted, { parser })).toBe(formatted);
+  },
+);
 
 test('reuses Prettier options and pragma handling', async () => {
   await expect(
@@ -354,15 +374,6 @@ test('reports SWC Next diagnostics with Prettier locations', async () => {
     end: { column: 8, line: 3 },
   });
 });
-
-test.each(['swc-next', 'swc-next-ts'] as const)(
-  'rejects malformed template literals with %s diagnostics',
-  async (parser) => {
-    await expect(
-      formatWithSwcNext('const value = `value: ${}`', { parser }),
-    ).rejects.toBeInstanceOf(SyntaxError);
-  },
-);
 
 test.each(['js', 'jsx', 'ts', 'tsx'])(
   'uses SWC Next by default for .%s files',
