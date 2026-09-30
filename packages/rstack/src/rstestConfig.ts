@@ -14,15 +14,11 @@ const resolveAutomaticExtends = async (
   // Prefer the app when both app and lib are defined. Merging both adapters can
   // introduce conflicting runtime, resolve, and source transform settings.
   if (layers.some((layer) => layer.app !== undefined)) {
-    const [{ withRsbuildConfig }, { resolveRsbuildConfig }] = await Promise.all(
-      [
-        import(
-          /* rspackChunkName: 'adapterRsbuild' */
-          '@rstest/adapter-rsbuild'
-        ),
-        import('./rsbuildConfig.ts'),
-      ],
+    const { withRsbuildConfig } = await import(
+      /* rspackChunkName: 'adapterRsbuild' */
+      '@rstest/adapter-rsbuild'
     );
+    const { resolveRsbuildConfig } = await import('./rsbuildConfig.ts');
 
     return withRsbuildConfig({
       config: await resolveRsbuildConfig(layers, params),
@@ -30,13 +26,11 @@ const resolveAutomaticExtends = async (
   }
 
   if (layers.some((layer) => layer.lib !== undefined)) {
-    const [{ withRslibConfig }, { resolveRslibConfig }] = await Promise.all([
-      import(
-        /* rspackChunkName: 'adapterRslib' */
-        '@rstest/adapter-rslib'
-      ),
-      import('./rslibConfig.ts'),
-    ]);
+    const { withRslibConfig } = await import(
+      /* rspackChunkName: 'adapterRslib' */
+      '@rstest/adapter-rslib'
+    );
+    const { resolveRslibConfig } = await import('./rslibConfig.ts');
 
     return withRslibConfig({
       config: await resolveRslibConfig(layers, params),

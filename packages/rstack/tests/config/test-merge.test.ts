@@ -99,18 +99,32 @@ test('inherits merged lib config when no layer defines app', async () => {
   });
 });
 
-test.each([
-  { extends: undefined },
-  { projects: ['./external.config.ts', { name: 'explicit', extends: {} }] },
-])(
-  'skips build config factories when inheritance is disabled: %j',
-  async (testConfig) => {
-    const build = rs.fn(() => ({}));
-    await resolveRstestConfig(
-      [{ app: build, lib: build, test: { retry: 1 } }, { test: testConfig }],
-      params,
-    );
+test('skips build config factories when the root explicitly defines extends', async () => {
+  const build = rs.fn(() => ({}));
+  await resolveRstestConfig(
+    [
+      { app: build, lib: build, test: { retry: 1 } },
+      { test: { extends: undefined } },
+    ],
+    params,
+  );
 
-    expect(build).not.toHaveBeenCalled();
-  },
-);
+  expect(build).not.toHaveBeenCalled();
+});
+
+test('skips build config factories when no project needs automatic inheritance', async () => {
+  const build = rs.fn(() => ({}));
+  await resolveRstestConfig(
+    [
+      { app: build, lib: build, test: { retry: 1 } },
+      {
+        test: {
+          projects: ['./external.config.ts', { name: 'explicit', extends: {} }],
+        },
+      },
+    ],
+    params,
+  );
+
+  expect(build).not.toHaveBeenCalled();
+});
