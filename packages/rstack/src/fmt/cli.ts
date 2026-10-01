@@ -253,7 +253,7 @@ const loadFmtConfig = async (
     loadedConfig ?? (await loadRstackConfig({ cwd }));
 
   return resolveFmtConfig({
-    definition: configs.fmt,
+    layers: [configs],
     configFilePath: filePath,
     cwd,
   });

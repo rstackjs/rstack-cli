@@ -3,9 +3,54 @@ import { expect, test } from 'rstack/test';
 import {
   createOptionsResolver,
   normalizeFmtConfig,
+  resolveFmtConfig,
 } from '../../src/fmt/config.ts';
 
 const rootPath = path.join(import.meta.dirname, 'project');
+
+test('shallowly merges fmt layers before normalizing options and overrides', async () => {
+  const config = await resolveFmtConfig({
+    layers: [
+      {
+        fmt: {
+          singleQuote: true,
+          semi: true,
+          plugins: ['shared-plugin'],
+          ignorePatterns: ['dist/**'],
+          overrides: [{ files: '*.ts', options: { tabWidth: 8 } }],
+          pluginOptions: { shared: true, project: false },
+        },
+      },
+      {
+        fmt: () =>
+          Promise.resolve({
+            semi: false,
+            plugins: ['project-plugin'],
+            ignorePatterns: ['generated/**'],
+            overrides: [{ files: '*.ts', options: { semi: true } }],
+            pluginOptions: { project: true },
+          }),
+      },
+    ],
+    configFilePath: path.join(rootPath, 'rstack.config.ts'),
+    cwd: path.dirname(rootPath),
+  });
+
+  expect(config.rootPath).toBe(rootPath);
+  expect(config.baseOptions).toEqual({
+    singleQuote: true,
+    semi: false,
+    plugins: ['project-plugin'],
+    pluginOptions: { project: true },
+  });
+  expect(config.ignorePatterns).toEqual(['generated/**']);
+  expect(
+    createOptionsResolver(config)(path.join(rootPath, 'index.ts')),
+  ).toEqual({
+    ...config.baseOptions,
+    semi: true,
+  });
+});
 
 test('reuses base options when no override matches', () => {
   const config = normalizeFmtConfig(
