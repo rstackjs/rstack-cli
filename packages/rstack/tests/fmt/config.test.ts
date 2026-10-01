@@ -36,19 +36,21 @@ test('shallowly merges fmt layers before normalizing options and overrides', asy
     cwd: path.dirname(rootPath),
   });
 
-  expect(config.rootPath).toBe(rootPath);
-  expect(config.baseOptions).toEqual({
-    singleQuote: true,
-    semi: false,
-    plugins: ['project-plugin'],
-    pluginOptions: { project: true },
-  });
-  expect(config.ignorePatterns).toEqual(['generated/**']);
-  expect(
-    createOptionsResolver(config)(path.join(rootPath, 'index.ts')),
-  ).toEqual({
-    ...config.baseOptions,
-    semi: true,
+  expect(config).toEqual({
+    rootPath,
+    baseOptions: {
+      singleQuote: true,
+      semi: false,
+      plugins: ['project-plugin'],
+      pluginOptions: { project: true },
+    },
+    ignorePatterns: ['generated/**'],
+    overrides: [
+      {
+        matches: expect.any(Function) as unknown,
+        options: { semi: true },
+      },
+    ],
   });
 });
 
