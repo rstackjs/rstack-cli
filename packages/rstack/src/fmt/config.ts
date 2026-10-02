@@ -1,15 +1,16 @@
 import { dirname } from 'node:path';
 import micromatch from 'micromatch';
+import type { Configs } from '../config.ts';
+import { resolveConfigLayers } from '../configLayers.ts';
 import { createRelativePathResolver } from './pathHelpers.ts';
 import type {
   FmtConfig,
-  FmtConfigDefinition,
   ResolvedFmtConfig,
   ResolvedFmtOptions,
 } from './types.ts';
 
 type ResolveFmtConfigOptions = {
-  definition: FmtConfigDefinition | undefined;
+  layers: readonly Configs[];
   configFilePath: string | null;
   cwd: string;
 };
@@ -150,14 +151,17 @@ const createOptionsResolver = (
   };
 };
 
-/** Resolves a formatter config definition and its project root. */
+/** Resolves formatter config layers and their project root. */
 const resolveFmtConfig = async ({
-  definition,
+  layers,
   configFilePath,
   cwd,
 }: ResolveFmtConfigOptions): Promise<ResolvedFmtConfig> => {
+  const configs = await resolveConfigLayers(layers, 'fmt');
   const config =
-    typeof definition === 'function' ? await definition() : definition;
+    configs.length > 1
+      ? (Object.assign({}, ...configs) as FmtConfig)
+      : configs[0];
   const rootPath = configFilePath ? dirname(configFilePath) : cwd;
 
   return normalizeFmtConfig(config, rootPath);
