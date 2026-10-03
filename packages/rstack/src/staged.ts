@@ -2,6 +2,7 @@ import lintStaged from 'lint-staged';
 import { parseArgs } from './cli/args.ts';
 import { printCommandHelp } from './cli/help.ts';
 import { loadRstackConfig } from './config.ts';
+import { resolveStagedConfig } from './configLayers.ts';
 
 export type StagedSyncTaskGenerator = (
   stagedFileNames: readonly string[],
@@ -51,8 +52,8 @@ export async function runStagedCLI(args: string[]): Promise<void> {
   }
 
   const { configs } = await loadRstackConfig();
-  const stagedConfig = configs.staged;
-  if (!stagedConfig) {
+  const stagedConfig = await resolveStagedConfig([configs]);
+  if (stagedConfig === undefined) {
     throw new Error(
       'No define.staged config found. Add define.staged({ "*": "your-command" }) to rstack config file',
     );
