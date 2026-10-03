@@ -63,3 +63,19 @@ export const resolveRslintConfig = async (
   const configs = await resolveConfigLayers(layers, 'lint');
   return configs.length > 1 ? configs.flat() : configs[0];
 };
+
+export const resolveStagedConfig = async (
+  layers: readonly Configs[],
+): Promise<StagedConfig | undefined> => {
+  const configs = await resolveConfigLayers(layers, 'staged');
+  if (configs.length <= 1) {
+    return configs[0];
+  }
+
+  // Top-level task generators replace the whole config rather than glob keys.
+  return configs.reduce((merged, config) =>
+    typeof merged === 'function' || typeof config === 'function'
+      ? config
+      : { ...merged, ...config },
+  );
+};
