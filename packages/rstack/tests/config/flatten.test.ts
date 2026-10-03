@@ -19,10 +19,14 @@ test('flattens nested configs in order and preserves repeated references without
     base,
   ]);
   expect(app).not.toHaveBeenCalled();
-  expect(left.extends).toEqual([base]);
-  expect(nested.extends).toEqual([left]);
-  expect(right.extends).toEqual([base]);
-  expect(configs).toEqual([nested, right, base]);
+  expect(configs).toEqual([
+    {
+      extends: [{ extends: [base], fmt: { singleQuote: true } }],
+      fmt: { semi: false },
+    },
+    { extends: [base], fmt: { tabWidth: 4 } },
+    base,
+  ]);
 });
 
 test('reports the inheritance positions of a direct cycle', () => {

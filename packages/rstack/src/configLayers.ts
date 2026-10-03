@@ -38,19 +38,21 @@ export const flattenConfigLayers = (
   const ancestors = new Map<RstackConfig, string>();
 
   const visit = (config: RstackConfig, path: string): void => {
-    const ancestorPath = ancestors.get(config);
-    if (ancestorPath !== undefined) {
-      throw new Error(
-        `Circular config inheritance at ${path}: references ${ancestorPath}.`,
-      );
-    }
+    if (config.extends?.length) {
+      const ancestorPath = ancestors.get(config);
+      if (ancestorPath !== undefined) {
+        throw new Error(
+          `Circular config inheritance at ${path}: references ${ancestorPath}.`,
+        );
+      }
 
-    ancestors.set(config, path);
-    config.extends?.forEach((inherited, index) => {
-      visit(inherited, `${path}.extends[${index}]`);
-    });
+      ancestors.set(config, path);
+      config.extends.forEach((inherited, index) => {
+        visit(inherited, `${path}.extends[${index}]`);
+      });
+      ancestors.delete(config);
+    }
     layers.push(normalizeRstackConfig(config));
-    ancestors.delete(config);
   };
 
   configs.forEach((config, index) => visit(config, `extends[${index}]`));
