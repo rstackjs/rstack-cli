@@ -15,6 +15,7 @@ jobs:
   deploy:
     if: github.repository == 'rstackjs/rstack-cli' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment: deployment
     timeout-minutes: 30
     permissions:
       contents: read
@@ -38,7 +39,7 @@ jobs:
       - name: Verify Zephyr token
         env:
           ZE_CI_TOKEN: ${{ secrets.ZE_CI_TOKEN }}
-        run: test -n "$ZE_CI_TOKEN" || { echo '::error::Set repository secret ZE_CI_TOKEN.'; exit 1; }
+        run: test -n "$ZE_CI_TOKEN" || { echo '::error::Set ZE_CI_TOKEN in the deployment environment secrets.'; exit 1; }
 
       - name: Build workspace packages
         run: pnpm build
