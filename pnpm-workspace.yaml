@@ -62,6 +62,7 @@ catalog:
   'typescript': '^7.0.2'
   'vscode-languageserver': '10.1.1'
   'vscode-languageserver-textdocument': '1.0.14'
+  'zephyr-rspress-plugin': '1.4.2'
 
 dedupePeers: true
 
@@ -86,3 +87,9 @@ minimumReleaseAgeExclude:
   - 'rsbuild-plugin-*'
   - '@swc/*'
   - 'heading-case'
+  - 'zephyr-agent@1.4.2'
+  - 'zephyr-edge-contract@1.4.2'
+  - 'zephyr-rsbuild-plugin@1.4.2'
+  - 'zephyr-rspack-plugin@1.4.2'
+  - 'zephyr-rspress-plugin@1.4.2'
+  - 'zephyr-xpack-internal@1.4.2'

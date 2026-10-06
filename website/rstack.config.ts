@@ -1,5 +1,6 @@
 // Configuration guide: https://rstack.rs/config
 import { pluginSass } from '@rsbuild/plugin-sass';
+import type { UserConfig } from '@rspress/core';
 import { pluginClientRedirects } from '@rspress/plugin-client-redirects';
 import { pluginSitemap } from '@rspress/plugin-sitemap';
 import {
@@ -11,6 +12,7 @@ import path from 'node:path';
 import { define } from 'rstack';
 import { pluginOpenGraph } from 'rsbuild-plugin-open-graph';
 import { pluginFontOpenSans } from 'rspress-plugin-font-open-sans';
+import { withZephyr } from 'zephyr-rspress-plugin';
 
 const title = 'Rstack CLI';
 const description =
@@ -49,6 +51,9 @@ define.doc({
     cleanUrls: true,
   },
   plugins: [
+    ...(process.env.ZEPHYR_DEPLOY === 'true'
+      ? [withZephyr<UserConfig>({ target: 'web' })]
+      : []),
     pluginClientRedirects({
       redirects: [
         {
