@@ -6,7 +6,11 @@ import type { ConfigParams as LibConfigParams, RslibConfig } from '@rslib/core';
 import type { RslintConfig } from '@rslint/core';
 import type { UserConfig as RspressConfig } from '@rspress/core';
 import type { RstestConfig } from '@rstest/core';
-import type { Configs } from './config.ts';
+import {
+  type Configs,
+  type RstackConfig,
+  normalizeRstackConfig,
+} from './config.ts';
 import type { FmtConfig } from './fmt/types.ts';
 import type { StagedConfig } from './staged.ts';
 
@@ -25,6 +29,35 @@ type ConfigArgs<K extends keyof Configs> = K extends 'app'
   : K extends 'lib'
     ? [params: LibConfigParams]
     : [];
+
+/** Expand inherited configs before their children, preserving every occurrence. */
+export const flattenConfigLayers = (
+  configs: readonly RstackConfig[],
+): Configs[] => {
+  const layers: Configs[] = [];
+  const ancestors = new Map<RstackConfig, string>();
+
+  const visit = (config: RstackConfig, path: string): void => {
+    if (config.extends?.length) {
+      const ancestorPath = ancestors.get(config);
+      if (ancestorPath !== undefined) {
+        throw new Error(
+          `Circular config inheritance at ${path}: references ${ancestorPath}.`,
+        );
+      }
+
+      ancestors.set(config, path);
+      config.extends.forEach((inherited, index) => {
+        visit(inherited, `${path}.extends[${index}]`);
+      });
+      ancestors.delete(config);
+    }
+    layers.push(normalizeRstackConfig(config));
+  };
+
+  configs.forEach((config, index) => visit(config, `extends[${index}]`));
+  return layers;
+};
 
 /**
  * Resolve one tool from ordered, normalized config layers. Lint factories are
