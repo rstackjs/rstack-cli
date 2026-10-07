@@ -1,7 +1,7 @@
 import { dirname } from 'node:path';
 import micromatch from 'micromatch';
 import type { Configs } from '../config.ts';
-import { resolveConfigLayers } from '../configLayers.ts';
+import { resolveFmtConfigLayers } from '../configLayers.ts';
 import { createRelativePathResolver } from './pathHelpers.ts';
 import type {
   FmtConfig,
@@ -157,11 +157,7 @@ const resolveFmtConfig = async ({
   configFilePath,
   cwd,
 }: ResolveFmtConfigOptions): Promise<ResolvedFmtConfig> => {
-  const configs = await resolveConfigLayers(layers, 'fmt');
-  const config =
-    configs.length > 1
-      ? (Object.assign({}, ...configs) as FmtConfig)
-      : configs[0];
+  const config = await resolveFmtConfigLayers(layers);
   const rootPath = configFilePath ? dirname(configFilePath) : cwd;
 
   return normalizeFmtConfig(config, rootPath);
