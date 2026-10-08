@@ -1,8 +1,14 @@
 import type { RstackConfig } from '../../../src/config.ts';
 
 export const baseConfig: RstackConfig = {
-  app: { source: { entry: { index: './src/index.ts' } } },
-  lib: { lib: [{ format: 'esm' }] },
+  app: {
+    source: {
+      entry: { index: './src/index.ts' },
+    },
+  },
+  lib: {
+    lib: [{ format: 'esm' }],
+  },
   doc: { title: 'Docs' },
   test: { retry: 2 },
   lint: [],
@@ -18,7 +24,9 @@ export function sharedConfig(options: { retry?: number } = {}): RstackConfig {
     ] as const,
     test: { retry: options.retry ?? 2 },
     app: ({ command }) => ({
-      source: { define: { COMMAND: JSON.stringify(command) } },
+      source: {
+        define: { COMMAND: JSON.stringify(command) },
+      },
     }),
     lint: ({ js, ts }) => [js.configs.recommended, ts.configs.recommended],
     staged: (files) => (files.length ? ['rs lint'] : []),

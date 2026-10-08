@@ -5,7 +5,11 @@ import { resolveConfigLayers } from '../../src/configLayers.ts';
 test('preserves tool definitions without resolving factories or inheritance', () => {
   const app = rs.fn(() => ({}));
   const config = normalizeRstackConfig({
-    extends: [{ fmt: { singleQuote: true } }],
+    extends: [
+      {
+        fmt: { singleQuote: true },
+      },
+    ],
     app,
     lint: [],
   });
