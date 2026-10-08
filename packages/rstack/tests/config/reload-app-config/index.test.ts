@@ -60,7 +60,13 @@ test('should reload config when an imported shared config changes', async ({
   );
   const importedFile = path.join(import.meta.dirname, 'test-temp-imported.ts');
 
-  await writeFile(importedFile, 'export const sharedConfig = { app: {} };\n');
+  await writeFile(
+    importedFile,
+    `export const sharedConfig = {
+  app: {},
+};
+`,
+  );
   await writeFile(
     configFile,
     `import { define } from 'rstack';
@@ -80,7 +86,12 @@ define.app({
 
   await writeFile(
     importedFile,
-    'export const sharedConfig = { app: { html: { title: "updated" } } };\n',
+    `export const sharedConfig = {
+  app: {
+    html: { title: 'updated' },
+  },
+};
+`,
   );
 
   await logHelper.expectLog(

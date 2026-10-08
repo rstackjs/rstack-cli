@@ -73,7 +73,10 @@ test('should restart doc dev server when an imported shared config changes', asy
 
   await writeFile(
     importedFile,
-    "export const sharedConfig = { doc: { title: 'before import change' } };\n",
+    `export const sharedConfig = {
+  doc: { title: 'before import change' },
+};
+`,
   );
   await writeFile(
     configFile,
@@ -93,7 +96,10 @@ define.doc({ root: 'docs' });
 
   await writeFile(
     importedFile,
-    "export const sharedConfig = { doc: { title: 'after import change' } };\n",
+    `export const sharedConfig = {
+  doc: { title: 'after import change' },
+};
+`,
   );
 
   await logHelper.expectLog(

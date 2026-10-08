@@ -78,7 +78,12 @@ test('should restart lib watch build when an imported shared config changes', as
 
   await writeFile(
     importedFile,
-    "export const sharedConfig = { lib: { output: { distPath: 'dist-import-1' } } };\n",
+    `export const sharedConfig = {
+  lib: {
+    output: { distPath: 'dist-import-1' },
+  },
+};
+`,
   );
   await writeFile(
     configFile,
@@ -96,7 +101,12 @@ define.extends([sharedConfig]);
 
   await writeFile(
     importedFile,
-    "export const sharedConfig = { lib: { output: { distPath: 'dist-import-2' } } };\n",
+    `export const sharedConfig = {
+  lib: {
+    output: { distPath: 'dist-import-2' },
+  },
+};
+`,
   );
 
   await logHelper.expectLog(
