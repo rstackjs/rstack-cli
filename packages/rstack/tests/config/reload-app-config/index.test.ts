@@ -50,7 +50,7 @@ define.app({
   await waitForFile(dist2);
 });
 
-test('should reload config when an imported shared config changes', async ({
+test('should reload config when an imported file changes', async ({
   execCliAsync,
   logHelper,
 }) => {
@@ -60,13 +60,11 @@ test('should reload config when an imported shared config changes', async ({
   );
   const importedFile = path.join(import.meta.dirname, 'test-temp-imported.ts');
 
-  await writeFile(importedFile, 'export const sharedConfig = { app: {} };\n');
+  await writeFile(importedFile, '');
   await writeFile(
     configFile,
     `import { define } from 'rstack';
-import { sharedConfig } from './test-temp-imported.ts';
-
-define.extends([sharedConfig]);
+import './test-temp-imported.ts';
 
 define.app({
   server: { port: ${await getRandomPort()} },
@@ -78,10 +76,7 @@ define.app({
   await logHelper.expectBuildEnd();
   logHelper.clearLogs();
 
-  await writeFile(
-    importedFile,
-    'export const sharedConfig = { app: { html: { title: "updated" } } };\n',
-  );
+  await writeFile(importedFile, '// changed\n');
 
   await logHelper.expectLog(
     'restarting server as test-temp-imported.ts changed',

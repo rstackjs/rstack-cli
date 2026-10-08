@@ -86,12 +86,10 @@ test('should isolate parallel config sessions across top-level await', async () 
 
   expect(firstResult.configs).toEqual({
     app: { root: 'first' },
-    fmt: { semi: false },
     test: {},
   });
   expect(secondResult.configs).toEqual({
     app: { root: 'second' },
-    fmt: { semi: true },
     lib: {},
   });
 });
@@ -108,7 +106,6 @@ test('should keep a running session intact when another config fails', async () 
 
   expect((await successfulLoad).configs).toEqual({
     app: { root: 'first' },
-    fmt: { semi: false },
     test: {},
   });
 });

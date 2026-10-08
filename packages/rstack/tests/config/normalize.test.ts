@@ -1,29 +1,46 @@
 import { expect, rs, test } from 'rstack/test';
-import { normalizeRstackConfig } from '../../src/config.ts';
+import { normalizeRstackConfig, type RstackConfig } from '../../src/config.ts';
 import { resolveConfigLayers } from '../../src/configLayers.ts';
 
 test('preserves tool definitions without resolving factories or inheritance', () => {
   const app = rs.fn(() => ({}));
-  const config = normalizeRstackConfig({
+  const staged = rs.fn(() => ['rs lint']);
+  const shared: RstackConfig = {
     extends: [{ fmt: { singleQuote: true } }],
     app,
-    lint: [],
-  });
+    staged,
+  };
 
-  expect(config).toEqual({ app, lint: [] });
+  expect(normalizeRstackConfig(shared)).toEqual({ app, staged });
+  expect(shared.extends).toEqual([{ fmt: { singleQuote: true } }]);
   expect(app).not.toHaveBeenCalled();
+  expect(staged).not.toHaveBeenCalled();
 });
 
-test('wraps lint factories lazily with tool exports', async () => {
-  const lint = rs.fn((lint: typeof import('@rslint/core')) =>
-    Promise.resolve([lint.js.configs.recommended]),
+test('resolves sync and async lint factories lazily with tool exports', async () => {
+  const syncLint = rs.fn((lint: typeof import('@rslint/core')) => [
+    lint.js.configs.recommended,
+  ]);
+  const asyncLint = rs.fn((lint: typeof import('@rslint/core')) =>
+    Promise.resolve([lint.ts.configs.recommended]),
   );
-  const config = normalizeRstackConfig({ lint });
+  const shared: RstackConfig[] = [
+    { lint: [] },
+    { lint: syncLint },
+    { lint: asyncLint },
+  ];
+  const configs = shared.map(normalizeRstackConfig);
 
-  expect(lint).not.toHaveBeenCalled();
+  expect(syncLint).not.toHaveBeenCalled();
+  expect(asyncLint).not.toHaveBeenCalled();
+  expect(shared[1].lint).toBe(syncLint);
 
-  const { js } = await import('@rslint/core');
-  expect(await resolveConfigLayers([config], 'lint')).toEqual([
+  const resolved = await resolveConfigLayers(configs, 'lint');
+  const { js, ts } = await import('@rslint/core');
+
+  expect(resolved).toEqual([
+    [],
     [js.configs.recommended],
+    [ts.configs.recommended],
   ]);
 });
