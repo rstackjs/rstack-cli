@@ -1,6 +1,10 @@
 import path from 'node:path';
 import { afterEach, expect, test } from 'rstack/test';
-import { getConfigState, loadRstackConfig } from '../../../src/config.ts';
+import {
+  define,
+  getConfigState,
+  loadRstackConfig,
+} from '../../../src/config.ts';
 
 type Deferred = ReturnType<typeof Promise.withResolvers<void>>;
 
@@ -82,10 +86,12 @@ test('should isolate parallel config sessions across top-level await', async () 
 
   expect(firstResult.configs).toEqual({
     app: { root: 'first' },
+    fmt: { semi: false },
     test: {},
   });
   expect(secondResult.configs).toEqual({
     app: { root: 'second' },
+    fmt: { semi: true },
     lib: {},
   });
 });
@@ -102,6 +108,7 @@ test('should keep a running session intact when another config fails', async () 
 
   expect((await successfulLoad).configs).toEqual({
     app: { root: 'first' },
+    fmt: { semi: false },
     test: {},
   });
 });
@@ -109,5 +116,20 @@ test('should keep a running session intact when another config fails', async () 
 test('should reject duplicate definitions within the same session', async () => {
   await expect(loadConfigFile('duplicate.config.ts')).rejects.toThrow(
     'The "app" config has already been defined.',
+  );
+});
+
+test('rejects repeated extends calls even with empty arrays', async () => {
+  await expect(loadConfigFile('duplicate-extends.config.ts')).rejects.toThrow(
+    'The "extends" config has already been defined.',
+  );
+  expect((await loadConfigFile('explicit.config.ts')).configs).toEqual({
+    app: {},
+  });
+});
+
+test('rejects extends outside a config load', () => {
+  expect(() => define.extends([])).toThrow(
+    'The "extends" config must be defined while loading an Rstack config.',
   );
 });

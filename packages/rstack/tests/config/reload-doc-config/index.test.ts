@@ -61,7 +61,7 @@ define.doc({
   await logHelper.expectBuildEnd();
 });
 
-test('should restart doc dev server when an imported config file changes', async ({
+test('should restart doc dev server when an imported shared config changes', async ({
   execCliAsync,
   logHelper,
 }) => {
@@ -73,17 +73,15 @@ test('should restart doc dev server when an imported config file changes', async
 
   await writeFile(
     importedFile,
-    "export const title = 'before import change';\n",
+    "export const sharedConfig = { doc: { title: 'before import change' } };\n",
   );
   await writeFile(
     configFile,
     `import { define } from 'rstack';
-import { title } from './test-temp-imported.ts';
+import { sharedConfig } from './test-temp-imported.ts';
 
-define.doc({
-  root: 'docs',
-  title,
-});
+define.extends([sharedConfig]);
+define.doc({ root: 'docs' });
 `,
   );
 
@@ -95,7 +93,7 @@ define.doc({
 
   await writeFile(
     importedFile,
-    "export const title = 'after import change';\n",
+    "export const sharedConfig = { doc: { title: 'after import change' } };\n",
   );
 
   await logHelper.expectLog(

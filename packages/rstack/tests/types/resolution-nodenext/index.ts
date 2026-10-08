@@ -2,7 +2,7 @@
 import 'rstack/test/globals';
 import 'rstack/test/importMeta';
 import 'rstack/types';
-import { define } from 'rstack';
+import { define, type RstackConfig } from 'rstack';
 import { createRsbuild, defineConfig as defineAppConfig } from 'rstack/app';
 import {
   loadRstackConfig,
@@ -22,6 +22,8 @@ const loadOptions: LoadRstackConfigOptions = {
 };
 const loadedConfig: Promise<LoadedRstackConfig> = loadRstackConfig(loadOptions);
 const configs: Configs = {};
+const sharedConfig: RstackConfig = { app: appConfig, lint: lintConfig };
+define.extends([{ extends: [sharedConfig] }] as const);
 
 void loadedConfig;
 void configs;
