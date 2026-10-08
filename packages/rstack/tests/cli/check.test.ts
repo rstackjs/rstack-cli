@@ -10,10 +10,23 @@ const writeLintConfig = (): void => {
     'rstack.config.ts',
     `import { define } from "rstack";
 
-define.lint([
+if (process.env.RSTACK_CHECK_CONFIG_LOADED) {
+  throw new Error("Config was loaded twice");
+}
+process.env.RSTACK_CHECK_CONFIG_LOADED = "1";
+
+define.extends([
   {
-    files: ["**/*.{js,ts}"],
-    rules: { "no-debugger": "error" },
+    app: () => {
+      throw new Error("App config must not run during check");
+    },
+    lint: [
+      {
+        files: ["**/*.{js,ts}"],
+        rules: { "no-debugger": "error" },
+      },
+    ],
+    fmt: { singleQuote: false },
   },
 ]);
 `,
@@ -28,7 +41,7 @@ test('displays check help without loading config', () => {
   expect(normalizeHelpOutput(result.stdout)).toMatchSnapshot();
 });
 
-test('runs lint followed by a formatting check', () => {
+test('loads shared config once for lint and formatting without resolving app', () => {
   writeLintConfig();
   writeProjectFile('src/index.ts', 'const value=true');
 
