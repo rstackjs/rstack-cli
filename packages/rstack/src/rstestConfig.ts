@@ -87,13 +87,20 @@ const extendsConfig = async (
   };
 };
 
+export const mergeRstestConfigLayers = async (
+  layers: readonly Configs[],
+): Promise<RstestConfig> => {
+  const configs = await resolveConfigLayers(layers, 'test');
+  return configs.length > 1
+    ? mergeRstestConfig(...configs)
+    : (configs[0] ?? {});
+};
+
 export const resolveRstestConfig = async (
   layers: readonly Configs[],
   params: ConfigParams,
 ): Promise<RstestConfig> => {
-  const configs = await resolveConfigLayers(layers, 'test');
-  const testConfig =
-    configs.length > 1 ? mergeRstestConfig(...configs) : (configs[0] ?? {});
+  const testConfig = await mergeRstestConfigLayers(layers);
   return extendsConfig(layers, testConfig, params);
 };
 

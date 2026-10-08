@@ -112,3 +112,79 @@ export const resolveStagedConfig = async (
       : { ...merged, ...config },
   );
 };
+
+export const resolveFmtConfigLayers = async (
+  layers: readonly Configs[],
+): Promise<FmtConfig | undefined> => {
+  const configs = await resolveConfigLayers(layers, 'fmt');
+  return configs.length > 1
+    ? (Object.assign({}, ...configs) as FmtConfig)
+    : configs[0];
+};
+
+/** Compose effective definitions without executing any tool or task factories. */
+export const composeConfigLayers = async (
+  layers: readonly Configs[],
+): Promise<Configs> => {
+  if (layers.length <= 1) {
+    return layers[0] ?? {};
+  }
+
+  const configs: Configs = {};
+  for (const kind of [
+    'app',
+    'lib',
+    'doc',
+    'test',
+    'lint',
+    'fmt',
+    'staged',
+  ] as const) {
+    const matchingLayers = layers.filter((layer) => layer[kind] !== undefined);
+    if (matchingLayers.length === 0) {
+      continue;
+    }
+    if (matchingLayers.length === 1) {
+      Object.assign(configs, { [kind]: matchingLayers[0][kind] });
+      continue;
+    }
+
+    switch (kind) {
+      case 'app':
+        configs.app = async (params) => {
+          const { resolveRsbuildConfig } = await import('./rsbuildConfig.ts');
+          return resolveRsbuildConfig(matchingLayers, params);
+        };
+        break;
+      case 'lib':
+        configs.lib = async (params) => {
+          const { resolveRslibConfig } = await import('./rslibConfig.ts');
+          return resolveRslibConfig(matchingLayers, params);
+        };
+        break;
+      case 'doc':
+        configs.doc = async () => {
+          const { resolveRspressConfig } = await import('./rspressConfig.ts');
+          return resolveRspressConfig(matchingLayers);
+        };
+        break;
+      case 'test':
+        configs.test = async () => {
+          const { mergeRstestConfigLayers } = await import('./rstestConfig.ts');
+          return mergeRstestConfigLayers(matchingLayers);
+        };
+        break;
+      case 'lint':
+        configs.lint = async () => (await resolveRslintConfig(matchingLayers))!;
+        break;
+      case 'fmt':
+        configs.fmt = async () =>
+          (await resolveFmtConfigLayers(matchingLayers))!;
+        break;
+      case 'staged':
+        configs.staged = await resolveStagedConfig(matchingLayers);
+        break;
+    }
+  }
+  return configs;
+};

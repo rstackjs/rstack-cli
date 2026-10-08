@@ -13,6 +13,7 @@ import type { UserConfig, UserConfigAsyncFn } from '@rspress/core';
 import type { RstestConfigExport } from '@rstest/core';
 import type { FmtConfigDefinition } from './fmt/types.ts';
 import type { StagedConfig } from './staged.ts';
+import { composeConfigLayers } from './configLayers.ts';
 
 export type RslintConfigDefinition =
   RslintConfig | (() => Promise<RslintConfig>);
@@ -58,6 +59,7 @@ export const normalizeRstackConfig = ({
     : { ...configs, lint: normalizeLintConfig(lint) };
 
 export type LoadedRstackConfig = {
+  /** Effective tool definitions. Configuration factories remain unevaluated. */
   configs: Configs;
   filePath: string | null;
   dependencies: string[];
@@ -251,7 +253,7 @@ export const loadRstackConfig = async ({
       });
 
       return {
-        configs: session.configs,
+        configs: await composeConfigLayers([session.configs]),
         filePath,
         dependencies,
       };
