@@ -1,3 +1,7 @@
+---
+description: 'Rstack 公共 API，包括配置辅助方法、各工具重新导出的 API 和 TypeScript 类型声明。'
+---
+
 # API 参考 \{#api-reference}
 
 Rstack CLI 提供统一的配置 API，并通过专用子路径重导出 Rsbuild、Rslib、Rstest 和 Rslint 的公开 API。建议优先从这些子路径导入，而不是直接从各工具的 core 包导入，以统一依赖入口，并确保 API 与 Rstack CLI 集成的工具版本匹配。
