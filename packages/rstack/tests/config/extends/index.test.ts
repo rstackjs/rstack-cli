@@ -19,11 +19,27 @@ test('loads all seven tools from shared configs and tracks their dependencies', 
     fmt: await resolveConfigLayers(layers, 'fmt'),
     staged: await resolveConfigLayers(layers, 'staged'),
   }).toEqual({
-    app: [{ source: { define: { ENV: 'production' } } }],
-    lib: [{ lib: [{ format: 'esm' }] }],
+    app: [
+      {
+        source: {
+          define: { ENV: 'production' },
+        },
+      },
+    ],
+    lib: [
+      {
+        lib: [{ format: 'esm' }],
+      },
+    ],
     doc: [{ root: 'docs' }],
     test: [{ setupFiles: [path.join(cwd, 'setup.ts')] }],
-    lint: [[{ rules: { 'no-debugger': 'error' } }]],
+    lint: [
+      [
+        {
+          rules: { 'no-debugger': 'error' },
+        },
+      ],
+    ],
     fmt: [{ semi: false, singleQuote: false, printWidth: 80 }],
     staged: [{ '*.ts': 'rs lint' }],
   });
