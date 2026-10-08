@@ -63,7 +63,7 @@ define.lib({
   await logHelper.expectLog('build completed, watching for changes...');
 });
 
-test('should restart lib watch build when an imported config file changes', async ({
+test('should restart lib watch build when an imported shared config changes', async ({
   prepareDist,
   execCliAsync,
   logHelper,
@@ -76,17 +76,16 @@ test('should restart lib watch build when an imported config file changes', asyn
   );
   const importedFile = path.join(import.meta.dirname, 'test-temp-imported.ts');
 
-  await writeFile(importedFile, "export const distPath = 'dist-import-1';\n");
+  await writeFile(
+    importedFile,
+    "export const sharedConfig = { lib: { output: { distPath: 'dist-import-1' } } };\n",
+  );
   await writeFile(
     configFile,
     `import { define } from 'rstack';
-import { distPath } from './test-temp-imported.ts';
+import { sharedConfig } from './test-temp-imported.ts';
 
-define.lib({
-  output: {
-    distPath,
-  },
-});
+define.extends([sharedConfig]);
 `,
   );
 
@@ -95,7 +94,10 @@ define.lib({
   await waitForFile(path.join(dist1, 'index.js'));
   logHelper.clearLogs();
 
-  await writeFile(importedFile, "export const distPath = 'dist-import-2';\n");
+  await writeFile(
+    importedFile,
+    "export const sharedConfig = { lib: { output: { distPath: 'dist-import-2' } } };\n",
+  );
 
   await logHelper.expectLog(
     'restarting build as test-temp-imported.ts changed',
