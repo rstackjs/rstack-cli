@@ -41,7 +41,9 @@ test('should discard a config session after loading fails', async () => {
   await expect(loadRstackConfig()).rejects.toThrow('test config error');
 
   const { configs } = await loadConfigFile('explicit.config.ts');
-  expect(configs).toEqual({ app: {} });
+  expect(configs).toEqual({
+    app: {},
+  });
 });
 
 test('should prefer an explicit config path over the state config path', async () => {

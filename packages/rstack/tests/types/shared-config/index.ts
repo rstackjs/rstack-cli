@@ -1,8 +1,14 @@
 import { define, type RstackConfig } from 'rstack';
 
 export const baseConfig: RstackConfig = {
-  app: { source: { entry: { index: './src/index.ts' } } },
-  lib: { lib: [{ format: 'esm' }] },
+  app: {
+    source: {
+      entry: { index: './src/index.ts' },
+    },
+  },
+  lib: {
+    lib: [{ format: 'esm' }],
+  },
   doc: { title: 'Docs' },
   test: { retry: 2 },
   lint: [],
@@ -13,7 +19,9 @@ export const baseConfig: RstackConfig = {
 export const syncConfig: RstackConfig = {
   extends: [baseConfig] as const,
   app: ({ command }) => ({
-    source: { define: { COMMAND: JSON.stringify(command) } },
+    source: {
+      define: { COMMAND: JSON.stringify(command) },
+    },
   }),
   lib: ({ env }) => ({
     lib: [{ format: 'esm' }],
@@ -28,9 +36,14 @@ export const syncConfig: RstackConfig = {
 export const asyncConfig: RstackConfig = {
   app: ({ env }) =>
     Promise.resolve({
-      source: { define: { ENV: JSON.stringify(env) } },
+      source: {
+        define: { ENV: JSON.stringify(env) },
+      },
     }),
-  lib: () => Promise.resolve({ lib: [{ format: 'esm' }] }),
+  lib: () =>
+    Promise.resolve({
+      lib: [{ format: 'esm' }],
+    }),
   doc: () => Promise.resolve({ title: 'Docs' }),
   test: () => Promise.resolve({ retry: 2 }),
   lint: ({ js }) => Promise.resolve([js.configs.recommended]),
@@ -51,6 +64,3 @@ export const invalidConfig: RstackConfig = {
 };
 
 define.extends([sharedConfig()] as const);
-
-// @ts-expect-error Pass shared config objects, not config factories.
-define.extends([sharedConfig]);

@@ -22,7 +22,10 @@ const loadOptions: LoadRstackConfigOptions = {
 };
 const loadedConfig: Promise<LoadedRstackConfig> = loadRstackConfig(loadOptions);
 const configs: Configs = {};
-const sharedConfig: RstackConfig = { app: appConfig, lint: lintConfig };
+const sharedConfig: RstackConfig = {
+  app: appConfig,
+  lint: lintConfig,
+};
 define.extends([{ extends: [sharedConfig] }] as const);
 
 void loadedConfig;
@@ -52,11 +55,15 @@ define.lib(() => ({
   lib: [
     {
       format: 'esm',
-      source: { entry: { index: './src/index.ts' } },
+      source: {
+        entry: { index: './src/index.ts' },
+      },
     },
     {
       format: 'esm',
-      source: { entry: { worker: './src/worker.ts' } },
+      source: {
+        entry: { worker: './src/worker.ts' },
+      },
     },
   ],
 }));
