@@ -1,6 +1,10 @@
 import { define } from 'rstack';
 
-define.extends([{ fmt: { semi: false } }]);
+define.extends([
+  {
+    fmt: { semi: false },
+  },
+]);
 
 const hooks = globalThis.__rstackConfigTestHooks!;
 
