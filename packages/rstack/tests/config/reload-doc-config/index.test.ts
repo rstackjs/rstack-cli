@@ -25,6 +25,8 @@ define.doc({
   root: 'docs',
   title: '${title}',
   builderConfig: {
+    // Avoid disk cache contention between dev server processes in this fixture.
+    performance: { buildCache: false },
     dev: {
       watchFiles: {
         paths: ${JSON.stringify(userWatchFile)},
@@ -83,6 +85,9 @@ import { title } from './test-temp-imported.ts';
 define.doc({
   root: 'docs',
   title,
+  builderConfig: {
+    performance: { buildCache: false },
+  },
 });
 `,
   );
@@ -130,7 +135,12 @@ test('should restart doc dev server when an imported shared config changes', asy
 import { sharedConfig } from './test-temp-shared.ts';
 
 define.extends([sharedConfig]);
-define.doc({ root: 'docs' });
+define.doc({
+  root: 'docs',
+  builderConfig: {
+    performance: { buildCache: false },
+  },
+});
 `,
   );
 
