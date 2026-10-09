@@ -49,6 +49,46 @@ test('runs lint followed by a formatting check', () => {
   expect(formatted.stderr).toBe('');
 });
 
+test('applies shared lint and format config without reloading or resolving app', () => {
+  writeProjectFile(
+    'rstack.config.ts',
+    `import { define } from 'rstack';
+
+if (process.env.RSTACK_CHECK_CONFIG_LOADED) {
+  throw new Error('Config was loaded twice');
+}
+process.env.RSTACK_CHECK_CONFIG_LOADED = '1';
+
+define.extends([
+  {
+    app: () => {
+      throw new Error('App config must not run during check');
+    },
+    lint: [
+      {
+        files: ['**/*.ts'],
+        rules: { curly: 'error' },
+      },
+    ],
+    fmt: { singleQuote: true },
+  },
+]);
+`,
+  );
+  writeProjectFile(
+    'src/index.ts',
+    'const value = "hello";\nif (value) console.log(value);\n',
+  );
+
+  const result = runCheck(['--fix', 'src/index.ts']);
+
+  expect(result.status).toBe(0);
+  expect(result.stderr).toBe('');
+  expect(readProjectFile('src/index.ts')).toBe(
+    "const value = 'hello';\nif (value) {\n  console.log(value);\n}\n",
+  );
+});
+
 test('passes file arguments to lint and the formatting check', () => {
   writeLintConfig();
   writeProjectFile('src/selected-a.ts', 'const selectedA = true;\n');
