@@ -4,7 +4,7 @@ description: 'Run linting and formatting checks together, with optional TypeScri
 
 # check
 
-The `rs check` command combines linting, formatting, and optional TypeScript type checking for the current project. By default, it runs [`rs lint`](./lint) followed by [`rs fmt --check`](./fmt#--check).
+The `rs check` command runs lint and formatting checks for the current project, with optional TypeScript type checking.
 
 ## Usage
 
@@ -18,13 +18,11 @@ Pass files or directories to limit both linting and formatting to those paths:
 rs check src/index.ts packages/utils
 ```
 
-The same file arguments are passed to both linting and formatting.
-
 ## Checks
 
-Checks run sequentially: linting first, then formatting. Without `--fix`, formatting is checked even when linting or type checking reports errors, so one run reports both sets of problems. The command exits successfully only when every enabled check passes.
+By default, `rs check` runs [`rs lint`](./lint) followed by [`rs fmt --check`](./fmt#--check) without modifying your files. It continues to check formatting even if linting or type checking reports errors, so you can see the results of all enabled checks in one run.
 
-Errors that prevent checks from running, such as a configuration that cannot be loaded, can stop the command early.
+The command exits successfully only when all enabled checks pass. Errors that prevent a check from running, such as a failure to load the configuration, may stop the command early.
 
 ## Options
 
@@ -36,13 +34,7 @@ Automatically fix linting and formatting issues:
 rs check --fix
 ```
 
-This is equivalent to:
-
-```bash
-rs lint --fix && rs fmt --write
-```
-
-If linting still fails after applying available fixes, `rs check` stops without running the formatter.
+This runs `rs lint --fix` to apply available lint fixes. If linting and any enabled type checking pass, it then runs `rs fmt --write` to format the updated files.
 
 ### `--type-check`
 
@@ -52,9 +44,7 @@ Enable TypeScript type checking as part of linting:
 rs check --type-check
 ```
 
-Formatting is still checked when type checking reports errors, unless `--fix` is also enabled.
-
-Type checking is disabled when this option is omitted.
+Type checking is disabled by default.
 
 ### `-h, --help`
 
