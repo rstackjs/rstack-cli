@@ -50,6 +50,39 @@ define.app({
   await waitForFile(dist2);
 });
 
+test('should reload config when an imported file changes', async ({
+  execCliAsync,
+  logHelper,
+}) => {
+  const configFile = path.join(
+    import.meta.dirname,
+    'test-temp-import.config.ts',
+  );
+  const importedFile = path.join(import.meta.dirname, 'test-temp-imported.ts');
+
+  await writeFile(importedFile, '');
+  await writeFile(
+    configFile,
+    `import { define } from 'rstack';
+import './test-temp-imported.ts';
+
+define.app({
+  server: { port: ${await getRandomPort()} },
+});
+`,
+  );
+
+  execCliAsync('dev --config test-temp-import.config.ts');
+  await logHelper.expectBuildEnd();
+  logHelper.clearLogs();
+
+  await writeFile(importedFile, '// changed\n');
+
+  await logHelper.expectLog(
+    'restarting server as test-temp-imported.ts changed',
+  );
+});
+
 test('should reload config when an imported shared config changes', async ({
   execCliAsync,
   logHelper,
@@ -57,9 +90,9 @@ test('should reload config when an imported shared config changes', async ({
 }) => {
   const configFile = path.join(
     import.meta.dirname,
-    'test-temp-import.config.ts',
+    'test-temp-shared.config.ts',
   );
-  const importedFile = path.join(import.meta.dirname, 'test-temp-imported.ts');
+  const importedFile = path.join(import.meta.dirname, 'test-temp-shared.ts');
   const port = await getRandomPort();
   const url = `http://localhost:${port}`;
 
@@ -75,7 +108,7 @@ test('should reload config when an imported shared config changes', async ({
   await writeFile(
     configFile,
     `import { define } from 'rstack';
-import { sharedConfig } from './test-temp-imported.ts';
+import { sharedConfig } from './test-temp-shared.ts';
 
 define.extends([sharedConfig]);
 
@@ -85,7 +118,7 @@ define.app({
 `,
   );
 
-  execCliAsync('dev --config test-temp-import.config.ts');
+  execCliAsync('dev --config test-temp-shared.config.ts');
   await logHelper.expectBuildEnd();
   const initialResponse = await fetch(url);
   expect(await initialResponse.text()).toContain(
@@ -103,9 +136,7 @@ define.app({
 `,
   );
 
-  await logHelper.expectLog(
-    'restarting server as test-temp-imported.ts changed',
-  );
+  await logHelper.expectLog('restarting server as test-temp-shared.ts changed');
   await logHelper.expectBuildEnd();
   const updatedResponse = await fetch(url);
   expect(await updatedResponse.text()).toContain(

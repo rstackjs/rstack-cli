@@ -61,6 +61,49 @@ define.doc({
   await logHelper.expectBuildEnd();
 });
 
+test('should restart doc dev server when an imported config file changes', async ({
+  execCliAsync,
+  logHelper,
+}) => {
+  const configFile = path.join(
+    import.meta.dirname,
+    'test-temp-import.config.ts',
+  );
+  const importedFile = path.join(import.meta.dirname, 'test-temp-imported.ts');
+
+  await writeFile(
+    importedFile,
+    "export const title = 'before import change';\n",
+  );
+  await writeFile(
+    configFile,
+    `import { define } from 'rstack';
+import { title } from './test-temp-imported.ts';
+
+define.doc({
+  root: 'docs',
+  title,
+});
+`,
+  );
+
+  execCliAsync(
+    `doc --config test-temp-import.config.ts --port ${await getRandomPort()}`,
+  );
+  await logHelper.expectBuildEnd();
+  logHelper.clearLogs();
+
+  await writeFile(
+    importedFile,
+    "export const title = 'after import change';\n",
+  );
+
+  await logHelper.expectLog(
+    'restarting server as test-temp-imported.ts changed',
+  );
+  await logHelper.expectBuildEnd();
+});
+
 test('should restart doc dev server when an imported shared config changes', async ({
   execCliAsync,
   logHelper,
@@ -68,9 +111,9 @@ test('should restart doc dev server when an imported shared config changes', asy
 }) => {
   const configFile = path.join(
     import.meta.dirname,
-    'test-temp-import.config.ts',
+    'test-temp-shared.config.ts',
   );
-  const importedFile = path.join(import.meta.dirname, 'test-temp-imported.ts');
+  const importedFile = path.join(import.meta.dirname, 'test-temp-shared.ts');
   const port = await getRandomPort();
   const url = `http://localhost:${port}`;
 
@@ -84,14 +127,14 @@ test('should restart doc dev server when an imported shared config changes', asy
   await writeFile(
     configFile,
     `import { define } from 'rstack';
-import { sharedConfig } from './test-temp-imported.ts';
+import { sharedConfig } from './test-temp-shared.ts';
 
 define.extends([sharedConfig]);
 define.doc({ root: 'docs' });
 `,
   );
 
-  execCliAsync(`doc --config test-temp-import.config.ts --port ${port}`);
+  execCliAsync(`doc --config test-temp-shared.config.ts --port ${port}`);
   await logHelper.expectBuildEnd();
   const initialResponse = await fetch(url);
   expect(await initialResponse.text()).toContain(
@@ -107,9 +150,7 @@ define.doc({ root: 'docs' });
 `,
   );
 
-  await logHelper.expectLog(
-    'restarting server as test-temp-imported.ts changed',
-  );
+  await logHelper.expectLog('restarting server as test-temp-shared.ts changed');
   await logHelper.expectBuildEnd();
   const updatedResponse = await fetch(url);
   expect(await updatedResponse.text()).toContain(
