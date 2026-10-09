@@ -107,6 +107,48 @@ define.test({
 
 For multiple projects, setting `extends` on the root `define.test()` configuration disables automatic inheritance for every project. Setting it on an inline project disables inheritance only for that project.
 
+### Shared test configurations
+
+A [shared configuration](./configuration#shared-configurations) can provide both build and test settings. Rstack combines these with the project's settings before deciding whether tests should inherit the build configuration.
+
+First, Rstack merges the test settings with `mergeRstestConfig`. It then checks `extends` and `projects` in the merged result. Tests that need automatic inheritance use the merged App configuration, or the merged Lib configuration if no App configuration is defined.
+
+`define.extends()` and Rstest's `test.extends` serve different purposes: the former shares settings across tools; the latter controls Rstest's own configuration inheritance.
+
+```ts title="shared.ts"
+import type { RstackConfig } from 'rstack';
+
+export const sharedConfig: RstackConfig = {
+  app: {
+    resolve: {
+      alias: {
+        '@': './src',
+      },
+    },
+  },
+  test: {
+    retry: 2,
+  },
+};
+```
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+import { sharedConfig } from './shared.ts';
+
+define.extends([sharedConfig]);
+
+define.test({
+  testEnvironment: 'happy-dom',
+});
+```
+
+Tests run in happy-dom with `retry: 2` and inherit the shared App configuration's `@` alias. There is no need to call `define.app()` in the project.
+
+To disable automatic inheritance, set `extends` explicitly in the test configuration. This also works in a shared configuration: if the merged test settings contain `extends`, even as `extends: undefined`, automatic inheritance is disabled.
+
+For multiple projects, Rstack checks the merged inline projects individually. External projects specified by strings still load their own configurations. If no project needs automatic inheritance, Rstack skips the App and Lib configuration functions.
+
 ## Multiple projects
 
 Set Rstest's [`projects`](https://rstest.rs/config/test/projects) option to run multiple test configurations together. Entries can be inline projects or strings that Rstest resolves as external projects.
