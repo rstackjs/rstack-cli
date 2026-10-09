@@ -158,6 +158,8 @@ define.test({
 
 如果测试根配置未定义 `extends` 且包含 `projects`，Rstack CLI 会为每个未自行设置 `extends` 的内联项目应用自动继承。函数形式的应用或库配置只会解析一次，并由这些项目共享。字符串形式的项目会原样传给 Rstest；它们会独立加载外部配置，不继承当前应用或库的配置。
 
+这些规则同样适用于[公共配置](#shared-configurations)：Rstack 先合并测试配置，再判断是否需要继承合并后的 App 或 Lib 配置。
+
 > 如需了解更多测试相关用法，请参阅[测试](./testing)。
 
 ### `define.lint()` \{#define-lint}
@@ -201,4 +203,119 @@ define.staged({
 });
 ```
 
-与其他命令不同，`rs staged` 必须配置 `define.staged()`；缺少配置时会报错。
+请通过 `define.staged()` 或[公共配置](#shared-configurations)提供 staged 配置，否则 `rs staged` 会报错。
+
+## 公共配置 \{#shared-configurations}
+
+使用 `define.extends()` 可以在多个项目之间共享构建、测试、lint 和格式化配置。公共配置是一个普通对象，各字段的用法与对应的 `define.*()` API 一致。在 TypeScript 中，可以用 `RstackConfig` 检查配置类型：
+
+```ts title="shared.ts"
+import type { RstackConfig } from 'rstack';
+
+export const sharedConfig: RstackConfig = {
+  test: {
+    retry: 2,
+  },
+  lint: ({ js, ts }) => [js.configs.recommended, ts.configs.recommended],
+  fmt: {
+    singleQuote: true,
+    printWidth: 80,
+  },
+};
+```
+
+从本地模块或 npm 包导入公共配置，再添加项目自己的配置：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+import { sharedConfig } from './shared.ts';
+
+define.extends([sharedConfig]);
+
+define.fmt({
+  printWidth: 100,
+});
+```
+
+项目会继承公共配置，仅将 `printWidth` 改为 `100`。
+
+每次加载配置时，`define.extends()` 最多调用一次，多个公共配置请放在同一个数组中。
+
+### 合并顺序 \{#merge-order}
+
+配置按以下顺序应用：
+
+1. `define.extends()` 数组中的公共配置，从左到右。
+2. 项目自己的 `define.*()` 配置，即使这些调用写在 `define.extends()` 之前。
+
+各工具的[合并规则](#merge-rules)决定同一字段的值是合并还是替换。
+
+公共配置也可以继承其他公共配置：
+
+```ts title="team.ts"
+import type { RstackConfig } from 'rstack';
+import { sharedConfig } from './shared.ts';
+
+export const teamConfig: RstackConfig = {
+  extends: [sharedConfig],
+  test: {
+    retry: 3,
+  },
+};
+```
+
+被继承的配置先应用。使用 `define.extends([teamConfig])` 时，顺序为 `sharedConfig → teamConfig → 项目配置`。
+
+重复引用不会去重。例如，`a` 和 `b` 都继承 `base` 时，`define.extends([a, b])` 的顺序为 `base → a → base → b → 项目配置`。重复的插件由各工具按自身规则处理。循环继承会抛出错误，并指出循环引用的位置。
+
+### 合并规则 \{#merge-rules}
+
+Rstack 分别合并各个工具的配置：
+
+| 字段     | 合并方式                                                                             |
+| -------- | ------------------------------------------------------------------------------------ |
+| `app`    | 使用 Rsbuild 的 `mergeRsbuildConfig`。                                               |
+| `lib`    | 使用 Rslib 的 `mergeRslibConfig`。                                                   |
+| `test`   | 使用 Rstest 的 `mergeRstestConfig`。                                                 |
+| `lint`   | 按顺序拼接配置数组，由 Rslint 应用其中的规则。                                       |
+| `fmt`    | 浅合并，同名选项由后面的值覆盖。数组和对象（包括 `overrides`）整体替换。             |
+| `doc`    | 使用 Rspress 的 `mergeDocConfig`：递归合并对象、追加数组，普通函数由后面的函数覆盖。 |
+| `staged` | 按 glob 模式浅合并，同名模式的任务整体替换，包括命令数组和任务函数。                 |
+
+`doc` 的合并规则同样适用于 `builderConfig`：后面的 `builderConfig.tools.rspack` 回调会覆盖前面的回调，回调数组则按顺序拼接。数组与已定义的非数组值合并时，Rspress 会将后者作为一个数组元素参与拼接。
+
+合并 `staged` 时，只要任一配置是顶层任务生成函数，就由后一个配置整体替换前一个。例如，「glob 映射 → 函数 → 新的 glob 映射」最终只保留新的映射。任务函数由 lint-staged 传入暂存文件列表后执行。
+
+### 依赖加载 \{#loading-dependencies}
+
+公共配置也可以在工具配置函数中[动态导入依赖](#loading-dependencies-on-demand)，让各命令只加载需要的依赖。
+
+```ts title="shared.ts"
+import type { RstackConfig } from 'rstack';
+
+export const sharedConfig: RstackConfig = {
+  app: async () => {
+    const { pluginReact } = await import('@rsbuild/plugin-react');
+    return {
+      plugins: [pluginReact()],
+    };
+  },
+};
+```
+
+### 路径解析 \{#resolving-paths}
+
+相对路径沿用各工具的解析规则，不会自动改为以公共模块所在目录为基准。引用公共配置自带的文件时，请使用绝对路径：
+
+```ts title="shared.ts"
+import { fileURLToPath } from 'node:url';
+import type { RstackConfig } from 'rstack';
+
+export const sharedConfig: RstackConfig = {
+  test: {
+    setupFiles: [fileURLToPath(new URL('./setup.ts', import.meta.url))],
+  },
+};
+```
+
+发布包中需要包含引用的文件。如果该文件经过编译，请将路径改为编译产物的位置。
