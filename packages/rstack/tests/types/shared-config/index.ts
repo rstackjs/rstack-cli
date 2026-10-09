@@ -1,4 +1,4 @@
-import type { RstackConfig } from '../../../src/config.ts';
+import { define, type RstackConfig } from 'rstack';
 
 export const baseConfig: RstackConfig = {
   app: {
@@ -37,3 +37,5 @@ export const invalidConfig: RstackConfig = {
   // @ts-expect-error Lint factories receive tool exports, not build parameters.
   lint: (_params: { env: string }) => [],
 };
+
+define.extends([sharedConfig()] as const);
