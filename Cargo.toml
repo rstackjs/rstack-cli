@@ -9,9 +9,9 @@ repository = "https://github.com/rstackjs/rstack-cli"
 
 [workspace.dependencies]
 ignore = { version = "0.4.33", default-features = false }
-napi = { version = "3.12.6", default-features = false, features = ["napi9"] }
-napi-build = "2.4.3"
-napi-derive = "3.6.7"
+napi = { version = "3.14.2", default-features = false, features = ["napi9"] }
+napi-build = "2.6.0"
+napi-derive = "3.6.12"
 pathdiff = "0.2.3"
 rstack-ignore = { path = "crates/rstack-ignore" }
 
