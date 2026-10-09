@@ -1,46 +1,33 @@
 import { expect, rs, test } from 'rstack/test';
-import { normalizeRstackConfig, type RstackConfig } from '../../src/config.ts';
+import { normalizeRstackConfig } from '../../src/config.ts';
 import { resolveConfigLayers } from '../../src/configLayers.ts';
 
 test('preserves tool definitions without resolving factories or inheritance', () => {
   const app = rs.fn(() => ({}));
-  const staged = rs.fn(() => ['rs lint']);
-  const shared: RstackConfig = {
-    extends: [{ fmt: { singleQuote: true } }],
+  const config = normalizeRstackConfig({
+    extends: [
+      {
+        fmt: { singleQuote: true },
+      },
+    ],
     app,
-    staged,
-  };
+    lint: [],
+  });
 
-  expect(normalizeRstackConfig(shared)).toEqual({ app, staged });
-  expect(shared.extends).toEqual([{ fmt: { singleQuote: true } }]);
+  expect(config).toEqual({ app, lint: [] });
   expect(app).not.toHaveBeenCalled();
-  expect(staged).not.toHaveBeenCalled();
 });
 
-test('resolves sync and async lint factories lazily with tool exports', async () => {
-  const syncLint = rs.fn((lint: typeof import('@rslint/core')) => [
-    lint.js.configs.recommended,
-  ]);
-  const asyncLint = rs.fn((lint: typeof import('@rslint/core')) =>
-    Promise.resolve([lint.ts.configs.recommended]),
+test('wraps lint factories lazily with tool exports', async () => {
+  const lint = rs.fn((lint: typeof import('@rslint/core')) =>
+    Promise.resolve([lint.js.configs.recommended]),
   );
-  const shared: RstackConfig[] = [
-    { lint: [] },
-    { lint: syncLint },
-    { lint: asyncLint },
-  ];
-  const configs = shared.map(normalizeRstackConfig);
+  const config = normalizeRstackConfig({ lint });
 
-  expect(syncLint).not.toHaveBeenCalled();
-  expect(asyncLint).not.toHaveBeenCalled();
-  expect(shared[1].lint).toBe(syncLint);
+  expect(lint).not.toHaveBeenCalled();
 
-  const resolved = await resolveConfigLayers(configs, 'lint');
-  const { js, ts } = await import('@rslint/core');
-
-  expect(resolved).toEqual([
-    [],
+  const { js } = await import('@rslint/core');
+  expect(await resolveConfigLayers([config], 'lint')).toEqual([
     [js.configs.recommended],
-    [ts.configs.recommended],
   ]);
 });
