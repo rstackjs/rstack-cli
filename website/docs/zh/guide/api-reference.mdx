@@ -11,6 +11,7 @@ Rstack CLI 提供统一的配置 API，并通过专用子路径重导出 Rsbuild
 | 导入路径                 | 内容                                      | 使用场景                 |
 | ------------------------ | ----------------------------------------- | ------------------------ |
 | `rstack`                 | Rstack CLI 配置 API                       | 注册各项工具配置         |
+| `rstack/config`          | 配置加载器及其类型                        | 加载公共配置和项目配置   |
 | `rstack/app`             | `@rsbuild/core` 的公开 API                | 构建应用及扩展 Rsbuild   |
 | `rstack/lib`             | `@rslib/core` 的公开 API                  | 构建库及扩展 Rslib       |
 | `rstack/test`            | `@rstest/core` 的公开 API                 | 编写测试及配置测试项目   |
@@ -70,6 +71,38 @@ import { js, reactPlugin, ts } from 'rstack/lint';
 ```
 
 可用的预设和插件请参阅 [Rslint 规则和预设](https://rslint.rs/config/rules-and-presets)。
+
+## 加载配置 \{#loading-configurations}
+
+### `loadRstackConfig()` \{#loadrstackconfig}
+
+从 `rstack/config` 导入 `loadRstackConfig`，以编程方式加载配置：
+
+```ts
+import { loadRstackConfig } from 'rstack/config';
+
+const { configs, filePath, dependencies } = await loadRstackConfig({
+  cwd: process.cwd(),
+  configFilePath: './rstack.config.ts',
+});
+```
+
+两个选项均可省略：
+
+- `cwd`：用于查找配置文件和解析相对配置文件路径的目录，默认为当前工作目录。
+- `configFilePath`：配置文件的相对或绝对路径。省略时，优先使用 CLI 的 `--config` 路径；如果未设置，则在 `cwd` 中查找[默认配置文件名](./configuration#configuration-file)。
+
+返回对象包含：
+
+- `configs`：包含公共配置和项目配置的工具配置定义。未配置的工具不会出现在该对象中。
+- `filePath`：加载的配置文件路径，未找到文件时为 `null`。
+- `dependencies`：加载器报告的配置依赖。
+
+加载器不会执行配置函数。即使某个工具的配置全部以对象形式传入，返回的字段也可能是异步函数，以便在需要该工具时再合并这些对象。
+
+使用返回结果时，需要按各工具的要求传入参数、解析配置，再执行相应的初始化和运行流程。Rstack 的测试自动继承和格式化配置标准化也需要在这个阶段完成。`staged` 函数用于生成任务，应在运行任务时传入暂存文件名。
+
+`rstack/config` 还导出 `Configs`、`LoadedRstackConfig` 和 `LoadRstackConfigOptions` 类型。
 
 ## TypeScript 类型 \{#typescript-types}
 
