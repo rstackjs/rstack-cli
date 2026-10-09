@@ -14,7 +14,7 @@
     "test:watch": "rs test --watch"
   },
   "dependencies": {
-    "solid-js": "^1.9.15"
+    "solid-js": "^1.9.17"
   },
   "devDependencies": {
     "@rsbuild/plugin-babel": "^2.1.0",

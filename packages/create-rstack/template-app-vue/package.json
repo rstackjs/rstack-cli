@@ -14,7 +14,7 @@
     "test:watch": "rs test --watch"
   },
   "dependencies": {
-    "vue": "^3.5.42"
+    "vue": "^3.5.43"
   },
   "devDependencies": {
     "@rsbuild/plugin-vue": "^2.0.1",

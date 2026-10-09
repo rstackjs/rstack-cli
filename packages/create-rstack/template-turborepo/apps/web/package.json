@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@repo/tsconfig": "workspace:^",
-    "@rsbuild/plugin-react": "^2.1.0",
+    "@rsbuild/plugin-react": "^2.1.1",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
