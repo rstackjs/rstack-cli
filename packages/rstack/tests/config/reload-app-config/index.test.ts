@@ -53,17 +53,22 @@ define.app({
 test('should reload config when an imported shared config changes', async ({
   execCliAsync,
   logHelper,
+  expect,
 }) => {
   const configFile = path.join(
     import.meta.dirname,
     'test-temp-import.config.ts',
   );
   const importedFile = path.join(import.meta.dirname, 'test-temp-imported.ts');
+  const port = await getRandomPort();
+  const url = `http://localhost:${port}`;
 
   await writeFile(
     importedFile,
     `export const sharedConfig = {
-  app: {},
+  app: {
+    html: { title: 'before import change' },
+  },
 };
 `,
   );
@@ -75,20 +80,24 @@ import { sharedConfig } from './test-temp-imported.ts';
 define.extends([sharedConfig]);
 
 define.app({
-  server: { port: ${await getRandomPort()} },
+  server: { port: ${port} },
 });
 `,
   );
 
   execCliAsync('dev --config test-temp-import.config.ts');
   await logHelper.expectBuildEnd();
+  const initialResponse = await fetch(url);
+  expect(await initialResponse.text()).toContain(
+    '<title>before import change</title>',
+  );
   logHelper.clearLogs();
 
   await writeFile(
     importedFile,
     `export const sharedConfig = {
   app: {
-    html: { title: 'updated' },
+    html: { title: 'after import change' },
   },
 };
 `,
@@ -96,5 +105,10 @@ define.app({
 
   await logHelper.expectLog(
     'restarting server as test-temp-imported.ts changed',
+  );
+  await logHelper.expectBuildEnd();
+  const updatedResponse = await fetch(url);
+  expect(await updatedResponse.text()).toContain(
+    '<title>after import change</title>',
   );
 });
