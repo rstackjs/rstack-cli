@@ -158,7 +158,7 @@ When `extends` is omitted, Rstack CLI automatically connects the test configurat
 
 If the root test configuration does not define `extends` and contains `projects`, Rstack CLI applies automatic inheritance to each inline project that omits its own `extends`. A function-based application or library configuration is resolved once and shared by those projects. String project entries are passed to Rstest unchanged; they load their external configurations independently and do not inherit the current application or library configuration.
 
-These rules also apply to shared configurations: Rstack first merges the test settings, then uses the merged App or Lib configuration for automatic inheritance.
+These rules also apply to [shared configurations](#shared-configurations): Rstack first merges the test settings, then uses the merged App or Lib configuration for automatic inheritance.
 
 > For more guidance on testing, see [Testing](./testing).
 
@@ -237,9 +237,9 @@ define.fmt({
 });
 ```
 
-The project uses the shared test and lint settings, keeps `singleQuote: true`, and changes `printWidth` to `100`. Inherited settings take effect without additional `define.test()` or `define.lint()` calls.
+The project inherits the shared settings and changes only `printWidth` to `100`.
 
-Like the other `define.*()` APIs, `define.extends()` must be called while loading `rstack.config.*`. Call it once with all shared configurations in a single array. Calling it again throws an error, even if the first array was empty.
+Call `define.extends()` at most once per configuration load, with all shared configurations in a single array.
 
 ### Merge order
 
@@ -286,80 +286,11 @@ For `doc`, Rspress also handles a mix of array and non-array values: if both are
 
 For `staged`, a top-level task-generator function replaces all earlier settings. A later configuration also replaces that function in full. Any subsequent glob mappings then merge as usual. For example, with `glob mappings → function → new glob mappings`, only the new mappings remain. Task functions run when lint-staged passes them the list of staged files.
 
-### App and lib presets
+### Dependencies and paths
 
-A developer infrastructure team can provide separate presets for applications and libraries. Each preset combines its build settings with shared test, lint, and formatting settings.
+Shared configurations can also [import dependencies dynamically](#loading-dependencies-on-demand) inside tool configuration functions, so each command loads only what it needs.
 
-The application preset below extends `sharedConfig` and accepts a page title. To make a preset configurable, export a regular function that returns a `RstackConfig` object:
-
-```ts title="app-preset.ts"
-import type { RstackConfig } from 'rstack';
-import { sharedConfig } from './shared.ts';
-
-export function appPreset(options: { title: string }): RstackConfig {
-  return {
-    extends: [sharedConfig],
-    app: async () => {
-      const { pluginReact } = await import('@rsbuild/plugin-react');
-      return {
-        plugins: [pluginReact()],
-        html: {
-          title: options.title,
-        },
-      };
-    },
-    test: {
-      testEnvironment: 'happy-dom',
-    },
-  };
-}
-```
-
-The library preset can use a plain object:
-
-```ts title="lib-preset.ts"
-import type { RstackConfig } from 'rstack';
-import { sharedConfig } from './shared.ts';
-
-export const libPreset: RstackConfig = {
-  extends: [sharedConfig],
-  lib: {
-    format: 'esm',
-    dts: true,
-  },
-  test: {
-    testEnvironment: 'node',
-  },
-};
-```
-
-After publishing these presets as `@biz/app-preset` and `@biz/lib-preset`, an application can use:
-
-```ts title="rstack.config.ts (application)"
-import { appPreset } from '@biz/app-preset';
-import { define } from 'rstack';
-
-define.extends([appPreset({ title: 'My App' })]);
-```
-
-A library can use:
-
-```ts title="rstack.config.ts (library)"
-import { libPreset } from '@biz/lib-preset';
-import { define } from 'rstack';
-
-define.extends([libPreset]);
-```
-
-Declare `@rsbuild/plugin-react` as a dependency of the application preset, and install `happy-dom` in applications that use it for testing.
-
-### Loading dependencies and resolving paths
-
-Shared configurations follow the same [dependency loading guidance](#loading-dependencies-on-demand) as project configurations. A command evaluates only the tool configuration functions it needs. In the application preset above, `rs lint` and `rs fmt` skip the React plugin import. `rs test` loads it when inheriting the application configuration.
-
-The outer `appPreset()` function runs as soon as the configuration file loads. Keep tool-specific imports inside the relevant configuration function, such as `app: async () => { ... }`.
-
-Each tool keeps its existing rules for relative paths, so moving a setting into a preset does not change its path base. To reference a file shipped with the preset, resolve an absolute path from `import.meta.url`:
+Relative paths follow each tool's existing rules. Use an absolute path to reference a file shipped with a shared configuration:
 
 ```ts title="shared.ts"
 import { fileURLToPath } from 'node:url';
@@ -372,6 +303,4 @@ export const sharedConfig: RstackConfig = {
 };
 ```
 
-Publish `setup.ts` at that location in the package, or update the path to point to its compiled output.
-
-Local shared modules are also tracked as configuration dependencies. Editing an imported shared module reloads the App, Lib, or Doc configuration in development or watch mode.
+Include the file when publishing the shared configuration package, or point the path to its compiled output.

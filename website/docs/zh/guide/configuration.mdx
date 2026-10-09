@@ -158,7 +158,7 @@ define.test({
 
 如果测试根配置未定义 `extends` 且包含 `projects`，Rstack CLI 会为每个未自行设置 `extends` 的内联项目应用自动继承。函数形式的应用或库配置只会解析一次，并由这些项目共享。字符串形式的项目会原样传给 Rstest；它们会独立加载外部配置，不继承当前应用或库的配置。
 
-这些规则同样适用于公共配置：Rstack 先合并测试配置，再使用合并后的 App 或 Lib 配置进行自动继承。
+这些规则同样适用于[公共配置](#shared-configurations)：Rstack 先合并测试配置，再使用合并后的 App 或 Lib 配置进行自动继承。
 
 > 如需了解更多测试相关用法，请参阅[测试](./testing)。
 
@@ -237,9 +237,9 @@ define.fmt({
 });
 ```
 
-这个项目会使用公共配置中的测试和 lint 设置，保留 `singleQuote: true`，并将 `printWidth` 改为 `100`。无需额外调用 `define.test()` 或 `define.lint()`，继承的配置就会生效。
+项目会继承公共配置，仅将 `printWidth` 改为 `100`。
 
-与其他 `define.*()` API 一样，`define.extends()` 需要在加载 `rstack.config.*` 时调用。请将所有公共配置放在同一个数组中，一次传入。重复调用会抛出错误，即使第一次传入的是空数组。
+每次加载配置时，`define.extends()` 最多调用一次，多个公共配置请放在同一个数组中。
 
 ### 合并顺序 \{#merge-order}
 
@@ -286,80 +286,11 @@ Rstack 分别合并各个工具的配置：
 
 对于 `staged`，顶层任务生成函数会整体替换此前的配置，而它之后的配置也会整体替换这个函数。再往后的 glob 映射则按通常的规则合并。例如，按「glob 映射 → 函数 → 新的 glob 映射」应用时，最终只保留新的映射。任务函数由 lint-staged 传入暂存文件列表后执行。
 
-### App 和 lib 预设 \{#app-and-lib-presets}
+### 依赖与路径 \{#dependencies-and-paths}
 
-业务基建团队可以分别为应用和库提供一套预设，将各自的构建配置与公共的测试、lint 和格式化配置组合起来。
+公共配置也可以在工具配置函数中[动态导入依赖](#loading-dependencies-on-demand)，让各命令只加载需要的依赖。
 
-下面的应用预设继承了 `sharedConfig`，并允许使用者传入页面标题。需要支持参数时，导出一个返回 `RstackConfig` 对象的普通函数即可：
-
-```ts title="app-preset.ts"
-import type { RstackConfig } from 'rstack';
-import { sharedConfig } from './shared.ts';
-
-export function appPreset(options: { title: string }): RstackConfig {
-  return {
-    extends: [sharedConfig],
-    app: async () => {
-      const { pluginReact } = await import('@rsbuild/plugin-react');
-      return {
-        plugins: [pluginReact()],
-        html: {
-          title: options.title,
-        },
-      };
-    },
-    test: {
-      testEnvironment: 'happy-dom',
-    },
-  };
-}
-```
-
-库预设可以直接使用普通对象：
-
-```ts title="lib-preset.ts"
-import type { RstackConfig } from 'rstack';
-import { sharedConfig } from './shared.ts';
-
-export const libPreset: RstackConfig = {
-  extends: [sharedConfig],
-  lib: {
-    format: 'esm',
-    dts: true,
-  },
-  test: {
-    testEnvironment: 'node',
-  },
-};
-```
-
-将两套预设发布为 `@biz/app-preset` 和 `@biz/lib-preset` 后，应用项目可以这样使用：
-
-```ts title="rstack.config.ts（应用项目）"
-import { appPreset } from '@biz/app-preset';
-import { define } from 'rstack';
-
-define.extends([appPreset({ title: 'My App' })]);
-```
-
-库项目可以这样使用：
-
-```ts title="rstack.config.ts（库项目）"
-import { libPreset } from '@biz/lib-preset';
-import { define } from 'rstack';
-
-define.extends([libPreset]);
-```
-
-请将 `@rsbuild/plugin-react` 声明为应用预设的依赖，并在使用 happy-dom 运行测试的应用项目中安装 `happy-dom`。
-
-### 依赖加载与路径解析 \{#loading-dependencies-and-resolving-paths}
-
-公共配置与项目配置遵循相同的[依赖加载建议](#loading-dependencies-on-demand)，每个命令只执行它需要的工具配置函数。在上面的应用预设中，`rs lint` 和 `rs fmt` 会跳过 React 插件的导入，`rs test` 则会在继承应用配置时加载它。
-
-外层的 `appPreset()` 函数在加载配置文件时就会执行。因此，请将工具专用依赖的导入放在对应的配置函数内，例如 `app: async () => { ... }`。
-
-各工具继续沿用原有的相对路径规则，将配置移入预设不会改变路径的解析基准。如果要引用随预设发布的文件，请通过 `import.meta.url` 获取绝对路径：
+相对路径沿用各工具的解析规则。引用公共配置自带的文件时，请使用绝对路径：
 
 ```ts title="shared.ts"
 import { fileURLToPath } from 'node:url';
@@ -372,6 +303,4 @@ export const sharedConfig: RstackConfig = {
 };
 ```
 
-请将 `setup.ts` 发布到包中的对应位置，或将路径改为它的编译产物。
-
-本地公共模块也会被追踪为配置依赖。在开发或监听模式下，修改导入的公共模块会重新加载对应的 App、Lib 或 Doc 配置。
+发布公共配置包时，请包含该文件，或将路径指向它的编译产物。
