@@ -107,6 +107,44 @@ define.test({
 
 使用多项目配置时，在 `define.test()` 根配置中设置 `extends` 会关闭所有项目的自动继承；在某个内联项目中设置 `extends` 则只会关闭该项目的自动继承。
 
+### 公共测试配置 \{#shared-test-configurations}
+
+[`define.extends()`](./configuration#shared-configurations) 用于跨工具共享配置，而测试配置内的 `extends` 字段是 Rstest 自身的继承选项，两者作用于不同层级。
+
+Rstack 先使用 `mergeRstestConfig` 合并所有公共配置和项目中的测试配置，再根据结果中的 `extends` 和 `projects` 判断是否需要自动继承。如果需要，则使用合并后的 App 配置；未定义任何 App 配置时，使用合并后的 Lib 配置。
+
+```ts title="shared.ts"
+import type { RstackConfig } from 'rstack';
+
+export const sharedConfig: RstackConfig = {
+  app: {
+    resolve: {
+      alias: {
+        '@': './src',
+      },
+    },
+  },
+  test: {
+    retry: 2,
+  },
+};
+```
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+import { sharedConfig } from './shared.ts';
+
+define.extends([sharedConfig]);
+
+define.test({
+  testEnvironment: 'happy-dom',
+});
+```
+
+测试会使用 `retry: 2`，在 happy-dom 中运行，并继承公共 App 配置中的 `@` 别名，无需在项目中调用 `define.app()`。
+
+公共配置同样遵循关闭自动继承的规则：合并后的测试配置中存在显式 `extends` 时（包括 `extends: undefined`），会关闭自动继承。内联项目在合并后判断，字符串形式的外部项目仍独立加载。如果没有项目需要自动继承，Rstack 不会为此执行 App 或 Lib 配置函数。
+
 ## 多项目 \{#multiple-projects}
 
 通过 Rstest 的 [`projects`](https://rstest.rs/zh/config/test/projects) 选项可以同时运行多套测试配置。每一项既可以是内联项目，也可以是由 Rstest 解析为外部项目的字符串。

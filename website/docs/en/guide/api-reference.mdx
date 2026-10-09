@@ -11,6 +11,7 @@ Rstack CLI provides a unified configuration API and re-exports the public APIs o
 | Import path              | Contents                                          | Use case                                |
 | ------------------------ | ------------------------------------------------- | --------------------------------------- |
 | `rstack`                 | Rstack CLI configuration API                      | Register tool configurations            |
+| `rstack/config`          | Configuration loader and its types                | Load shared and project configurations  |
 | `rstack/app`             | Public APIs from `@rsbuild/core`                  | Build applications and extend Rsbuild   |
 | `rstack/lib`             | Public APIs from `@rslib/core`                    | Build libraries and extend Rslib        |
 | `rstack/test`            | Public APIs from `@rstest/core`                   | Write tests and configure test projects |
@@ -24,6 +25,68 @@ Rstack CLI provides a unified configuration API and re-exports the public APIs o
 ### `define`
 
 Import `define` from `rstack` to register tool configurations in `rstack.config.ts`; see [Configuration APIs](./configuration#configuration-apis) for details.
+
+### `define.extends()` \{#define-extends}
+
+Registers shared configurations to apply before the project's own tool configurations:
+
+```ts
+import { define } from 'rstack';
+import { sharedConfig } from './shared.ts';
+
+define.extends([sharedConfig]);
+```
+
+- **Type:** `(configs: readonly RstackConfig[]) => void`
+- Accepts configuration objects. For a parameterized preset, call the preset function and pass its return value.
+- Can be called at most once per configuration load, including calls with an empty array.
+- Applies shared configurations from left to right, then project definitions, regardless of call order.
+
+See [Shared configurations](./configuration#shared-configurations) for nested inheritance, merge rules, and examples.
+
+### `RstackConfig`
+
+A type for authoring shared configurations. Its optional `app`, `lib`, `doc`, `test`, `lint`, `fmt`, and `staged` fields accept the same inputs as the corresponding `define.*()` APIs. Its optional `extends` field accepts `readonly RstackConfig[]` for nested inheritance.
+
+```ts
+import type { RstackConfig } from 'rstack';
+
+export const sharedConfig: RstackConfig = {
+  fmt: {
+    singleQuote: true,
+  },
+};
+```
+
+## Loading configurations
+
+### `loadRstackConfig()` \{#loadrstackconfig}
+
+Import `loadRstackConfig` from `rstack/config` to load configurations programmatically:
+
+```ts
+import { loadRstackConfig } from 'rstack/config';
+
+const { configs, filePath, dependencies } = await loadRstackConfig({
+  cwd: process.cwd(),
+  configFilePath: './rstack.config.ts',
+});
+```
+
+Both options are optional:
+
+- `cwd`: the directory used to search for a configuration file and resolve relative configuration file paths. Defaults to the current working directory.
+- `configFilePath`: a relative or absolute configuration file path. If omitted, uses the CLI's `--config` path when set; otherwise, searches for the [default configuration file names](./configuration#configuration-file) in `cwd`.
+
+The returned object contains:
+
+- `configs`: effective tool definitions, including shared configurations and project definitions. A tool's field is absent if it was never defined.
+- `filePath`: the loaded configuration file's path, or `null` if no file was found.
+- `dependencies`: configuration dependencies reported by the loader.
+
+Configuration functions remain unevaluated. A field may be an async function even when all its inputs were objects, because merging is deferred until that tool is needed. Consumers must resolve definitions with the appropriate tool parameters and follow the tool's configuration and execution flow; this API does not return fully resolved runtime configurations. In particular, loading alone does not apply Rstack's automatic test inheritance or formatting normalization. Staged functions remain task generators that receive file names.
+
+`rstack/config` also exports the `Configs`, `LoadedRstackConfig`, and `LoadRstackConfigOptions` types.
 
 ## Re-exports
 
