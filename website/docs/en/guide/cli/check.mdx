@@ -38,13 +38,11 @@ This runs `rs lint --fix` to apply available lint fixes. If linting and any enab
 
 ### `--type-check`
 
-Enable TypeScript type checking as part of linting:
+By default, `rs check` checks only lint and formatting issues. Add `--type-check` to also check TypeScript types during linting:
 
 ```bash
 rs check --type-check
 ```
-
-Type checking is disabled by default.
 
 ### `-h, --help`
 
