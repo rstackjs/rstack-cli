@@ -23,7 +23,7 @@ type RslintConfigFactory = (
 
 export type RslintConfigDefinition = RslintConfig | RslintConfigFactory;
 
-export type Configs = {
+export type RstackConfigDefinitions = {
   app?: RsbuildConfigDefinition;
   lib?: RslibConfigDefinition;
   doc?: RspressConfigDefinition;
@@ -34,14 +34,14 @@ export type Configs = {
 };
 
 /** Shared configuration input; lint factories receive the tool exports. */
-export type RstackConfig = Omit<Configs, 'lint'> & {
+export type RstackConfig = Omit<RstackConfigDefinitions, 'lint'> & {
   extends?: readonly RstackConfig[];
   lint?: RslintConfigDefinition;
 };
 
 const normalizeLintConfig = (
   config: RslintConfigDefinition,
-): NonNullable<Configs['lint']> =>
+): NonNullable<RstackConfigDefinitions['lint']> =>
   typeof config === 'function'
     ? async () => config(await import('@rslint/core'))
     : config;
@@ -51,14 +51,14 @@ export const normalizeRstackConfig = ({
   extends: _extends,
   lint,
   ...configs
-}: RstackConfig): Configs =>
+}: RstackConfig): RstackConfigDefinitions =>
   lint === undefined
     ? configs
     : { ...configs, lint: normalizeLintConfig(lint) };
 
 export type LoadedRstackConfig = {
   /** Effective tool definitions. Configuration factories remain unevaluated. */
-  configs: Configs;
+  configs: RstackConfigDefinitions;
   filePath: string | null;
   dependencies: string[];
 };
@@ -79,7 +79,7 @@ export type LoadRstackConfigOptions = {
 };
 
 type ConfigSession = {
-  configs: Configs;
+  configs: RstackConfigDefinitions;
   extends?: readonly RstackConfig[];
   active: boolean;
 };
@@ -194,9 +194,9 @@ type Define = {
   staged: (config: StagedConfig) => void;
 };
 
-const setConfig = <T extends keyof Configs>(
+const setConfig = <T extends keyof RstackConfigDefinitions>(
   type: T,
-  config: Configs[T],
+  config: RstackConfigDefinitions[T],
 ): void => {
   const session = getConfigSessionStorage().getStore();
 

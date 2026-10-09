@@ -7,7 +7,7 @@ import type { RslintConfig } from '@rslint/core';
 import type { UserConfig as RspressConfig } from '@rspress/core';
 import type { RstestConfig } from '@rstest/core';
 import {
-  type Configs,
+  type RstackConfigDefinitions,
   type RstackConfig,
   normalizeRstackConfig,
 } from './config.ts';
@@ -24,7 +24,7 @@ type ConfigValues = {
   staged: StagedConfig;
 };
 
-type ConfigArgs<K extends keyof Configs> = K extends 'app'
+type ConfigArgs<K extends keyof RstackConfigDefinitions> = K extends 'app'
   ? [params: AppConfigParams]
   : K extends 'lib'
     ? [params: LibConfigParams]
@@ -33,8 +33,8 @@ type ConfigArgs<K extends keyof Configs> = K extends 'app'
 /** Expand inherited configs before their children, preserving every occurrence. */
 export const flattenConfigLayers = (
   configs: readonly RstackConfig[],
-): Configs[] => {
-  const layers: Configs[] = [];
+): RstackConfigDefinitions[] => {
+  const layers: RstackConfigDefinitions[] = [];
   const ancestors = new Map<RstackConfig, string>();
 
   const visit = (config: RstackConfig, path: string): void => {
@@ -63,8 +63,10 @@ export const flattenConfigLayers = (
  * Resolve one tool from ordered, normalized config layers. Lint factories are
  * already wrapped by define.lint. This function does not merge the results.
  */
-export const resolveConfigLayers = async <K extends keyof Configs>(
-  layers: readonly Configs[],
+export const resolveConfigLayers = async <
+  K extends keyof RstackConfigDefinitions,
+>(
+  layers: readonly RstackConfigDefinitions[],
   kind: K,
   ...args: ConfigArgs<K>
 ): Promise<ConfigValues[K][]> => {
@@ -91,14 +93,14 @@ export const resolveConfigLayers = async <K extends keyof Configs>(
 };
 
 export const resolveRslintConfig = async (
-  layers: readonly Configs[],
+  layers: readonly RstackConfigDefinitions[],
 ): Promise<RslintConfig | undefined> => {
   const configs = await resolveConfigLayers(layers, 'lint');
   return configs.length > 1 ? configs.flat() : configs[0];
 };
 
 export const resolveStagedConfig = async (
-  layers: readonly Configs[],
+  layers: readonly RstackConfigDefinitions[],
 ): Promise<StagedConfig | undefined> => {
   const configs = await resolveConfigLayers(layers, 'staged');
   if (configs.length <= 1) {
@@ -114,7 +116,7 @@ export const resolveStagedConfig = async (
 };
 
 export const resolveFmtConfigLayers = async (
-  layers: readonly Configs[],
+  layers: readonly RstackConfigDefinitions[],
 ): Promise<FmtConfig | undefined> => {
   const configs = await resolveConfigLayers(layers, 'fmt');
   return configs.length > 1
@@ -124,13 +126,13 @@ export const resolveFmtConfigLayers = async (
 
 /** Compose effective definitions without executing any tool or task factories. */
 export const composeConfigLayers = async (
-  layers: readonly Configs[],
-): Promise<Configs> => {
+  layers: readonly RstackConfigDefinitions[],
+): Promise<RstackConfigDefinitions> => {
   if (layers.length <= 1) {
     return layers[0] ?? {};
   }
 
-  const configs: Configs = {};
+  const configs: RstackConfigDefinitions = {};
   for (const kind of [
     'app',
     'lib',
