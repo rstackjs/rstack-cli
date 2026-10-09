@@ -20,9 +20,9 @@ rs check src/index.ts packages/utils
 
 ## Checks
 
-By default, `rs check` runs [`rs lint`](./lint) followed by [`rs fmt --check`](./fmt#--check) without modifying your files. It continues to check formatting even if linting or type checking reports errors, so you can see the results of all enabled checks in one run.
+By default, `rs check` runs [`rs lint`](./lint) followed by [`rs fmt --check`](./fmt#--check). It reports issues without modifying files.
 
-The command exits successfully only when all enabled checks pass. Errors that prevent a check from running, such as a failure to load the configuration, may stop the command early.
+Formatting is still checked if linting or type checking reports errors. The command exits successfully only when all enabled checks pass.
 
 ## Options
 
@@ -34,11 +34,11 @@ Automatically fix linting and formatting issues:
 rs check --fix
 ```
 
-This runs `rs lint --fix` to apply available lint fixes. If linting and any enabled type checking pass, it then runs `rs fmt --write` to format the updated files.
+This first runs `rs lint --fix` to apply available lint fixes. If linting and any enabled type checking pass, it then runs `rs fmt --write` to format the updated files.
 
 ### `--type-check`
 
-By default, `rs check` checks only lint and formatting issues. Add `--type-check` to also check TypeScript types during linting:
+Add `--type-check` to enable TypeScript type checking alongside linting:
 
 ```bash
 rs check --type-check
@@ -54,4 +54,4 @@ rs check --help
 
 ## Configuration
 
-`rs check` has no separate `define.check()` configuration. It uses the linting configuration from [`define.lint()`](../configuration#define-lint) and the formatting configuration from [`define.fmt()`](../configuration#define-fmt).
+`rs check` uses the linting configuration from [`define.lint()`](../configuration#define-lint) and the formatting configuration from [`define.fmt()`](../configuration#define-fmt).
