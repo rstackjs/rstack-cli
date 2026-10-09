@@ -27,7 +27,7 @@ Import `define` from `rstack` to register tool configurations in `rstack.config.
 
 ### `RstackConfig`
 
-Use this type to define a shared configuration. All fields are optional: `app`, `lib`, `doc`, `test`, `lint`, `fmt`, and `staged` accept the same values as their corresponding `define.*()` APIs. Add `extends`, typed as `readonly RstackConfig[]`, to inherit other shared configurations.
+Use this type to define a [shared configuration](./configuration#shared-configurations). All fields are optional: `app`, `lib`, `doc`, `test`, `lint`, `fmt`, and `staged` accept the same values as their corresponding `define.*()` APIs. Add `extends`, typed as `readonly RstackConfig[]`, to inherit other shared configurations.
 
 ```ts
 import type { RstackConfig } from 'rstack';
