@@ -74,6 +74,137 @@ define.fmt({
 });
 ```
 
+## Configuration APIs
+
+Configuration options follow the formats of the underlying tools. When using APIs and helpers that Rstack CLI re-exports, prefer the `rstack/app`, `rstack/lib`, `rstack/test`, and `rstack/lint` entry points.
+
+| API                                 | Tool                                                                    | Commands                                                                        |
+| ----------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [`define.app()`](#define-app)       | [Rsbuild](https://rsbuild.rs/config/)                                   | [`rs dev`](./cli/dev), [`rs build`](./cli/build), [`rs preview`](./cli/preview) |
+| [`define.lib()`](#define-lib)       | [Rslib](https://rslib.rs/config/)                                       | [`rs lib`](./cli/lib)                                                           |
+| [`define.doc()`](#define-doc)       | [Rspress](https://rspress.rs/api/config/config-basic)                   | [`rs doc`](./cli/doc)                                                           |
+| [`define.test()`](#define-test)     | [Rstest](https://rstest.rs/config/)                                     | [`rs test`](./cli/test)                                                         |
+| [`define.lint()`](#define-lint)     | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
+| [`define.fmt()`](#define-fmt)       | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
+| [`define.staged()`](#define-staged) | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
+
+### `define.app()` \{#define-app}
+
+Defines the [Rsbuild configuration](https://rsbuild.rs/config/) for an application. It accepts a configuration object or a configuration function. The function receives the standard Rsbuild configuration parameters.
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.app({
+  html: {
+    title: 'My App',
+  },
+  output: {
+    distPath: {
+      root: 'dist',
+    },
+  },
+});
+```
+
+### `define.lib()` \{#define-lib}
+
+Defines the [Rslib configuration](https://rslib.rs/config/) for a library. It accepts a configuration object or a configuration function. The function receives the standard Rslib configuration parameters.
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.lib({
+  dts: true,
+  format: 'esm',
+});
+```
+
+### `define.doc()` \{#define-doc}
+
+Defines the [Rspress configuration](https://rspress.rs/api/config/config-basic) for a documentation site. It accepts a configuration object or an async configuration function.
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.doc({
+  root: 'docs',
+  title: 'My Site',
+});
+```
+
+`@rspress/core` is an optional dependency of Rstack CLI. Install it in every project that uses the `rs doc` command:
+
+<PackageManagerTabs command="install -D @rspress/core" />
+
+### `define.test()` \{#define-test}
+
+Defines the [Rstest configuration](https://rstest.rs/config/). It accepts a configuration object or a configuration function.
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.app({
+  // Shared application configuration
+});
+
+define.test({
+  setupFiles: ['./tests/rstest.setup.ts'],
+  testEnvironment: 'happy-dom',
+});
+```
+
+When `extends` is omitted, Rstack CLI automatically connects the test configuration to `define.app()` through the Rsbuild adapter. If no application configuration is defined, it falls back to `define.lib()` through the Rslib adapter. The application configuration takes precedence when both are defined. Set `extends` explicitly to opt out of this automatic inheritance.
+
+If the root test configuration does not define `extends` and contains `projects`, Rstack CLI applies automatic inheritance to each inline project that omits its own `extends`. A function-based application or library configuration is resolved once and shared by those projects. String project entries are passed to Rstest unchanged; they load their external configurations independently and do not inherit the current application or library configuration.
+
+These rules also apply to shared configurations: Rstack first merges the test settings, then uses the merged App or Lib configuration for automatic inheritance.
+
+> For more guidance on testing, see [Testing](./testing).
+
+### `define.lint()` \{#define-lint}
+
+Defines the [Rslint configuration](https://rslint.rs/config/). Pass the configuration directly, or use a synchronous or asynchronous function. The function receives all exports from `rstack/lint`, so presets and plugins do not need to be imported manually.
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.lint(({ js, ts }) => [
+  js.configs.recommended,
+  ts.configs.recommendedTypeChecked,
+]);
+```
+
+### `define.fmt()` \{#define-fmt}
+
+Defines formatting settings for [`rs fmt`](./cli/fmt). Pass a configuration object directly, or use a synchronous or asynchronous function that returns one.
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.fmt({
+  printWidth: 100,
+  singleQuote: true,
+});
+```
+
+For detailed usage, see [Formatting](./formatting).
+
+### `define.staged()` \{#define-staged}
+
+Defines the [lint-staged configuration](https://github.com/lint-staged/lint-staged#configuration) used to run tasks on staged Git files. It accepts either an object that maps glob patterns to tasks or a task-generator function. Tasks can be commands, command arrays, or functions supported by lint-staged.
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.staged({
+  '*.{js,jsx,ts,tsx}': ['rs lint', 'rs fmt'],
+  '*.{json,jsonc,md,mdx,css,html,yml,yaml}': 'rs fmt',
+});
+```
+
+`rs staged` requires a staged configuration, provided by `define.staged()` or a shared configuration, and reports an error when it is missing.
+
 ## Shared configurations
 
 Use `define.extends()` to share build, test, lint, and formatting settings across projects. Define a shared configuration as a plain object with the `RstackConfig` type. Its fields accept the same values as the corresponding `define.*()` APIs:
@@ -244,134 +375,3 @@ export const sharedConfig: RstackConfig = {
 Publish `setup.ts` at that location in the package, or update the path to point to its compiled output.
 
 Local shared modules are also tracked as configuration dependencies. Editing an imported shared module reloads the App, Lib, or Doc configuration in development or watch mode.
-
-## Configuration APIs
-
-Configuration options follow the formats of the underlying tools. When using APIs and helpers that Rstack CLI re-exports, prefer the `rstack/app`, `rstack/lib`, `rstack/test`, and `rstack/lint` entry points.
-
-| API                                 | Tool                                                                    | Commands                                                                        |
-| ----------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| [`define.app()`](#define-app)       | [Rsbuild](https://rsbuild.rs/config/)                                   | [`rs dev`](./cli/dev), [`rs build`](./cli/build), [`rs preview`](./cli/preview) |
-| [`define.lib()`](#define-lib)       | [Rslib](https://rslib.rs/config/)                                       | [`rs lib`](./cli/lib)                                                           |
-| [`define.doc()`](#define-doc)       | [Rspress](https://rspress.rs/api/config/config-basic)                   | [`rs doc`](./cli/doc)                                                           |
-| [`define.test()`](#define-test)     | [Rstest](https://rstest.rs/config/)                                     | [`rs test`](./cli/test)                                                         |
-| [`define.lint()`](#define-lint)     | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
-| [`define.fmt()`](#define-fmt)       | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
-| [`define.staged()`](#define-staged) | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
-
-### `define.app()` \{#define-app}
-
-Defines the [Rsbuild configuration](https://rsbuild.rs/config/) for an application. It accepts a configuration object or a configuration function. The function receives the standard Rsbuild configuration parameters.
-
-```ts title="rstack.config.ts"
-import { define } from 'rstack';
-
-define.app({
-  html: {
-    title: 'My App',
-  },
-  output: {
-    distPath: {
-      root: 'dist',
-    },
-  },
-});
-```
-
-### `define.lib()` \{#define-lib}
-
-Defines the [Rslib configuration](https://rslib.rs/config/) for a library. It accepts a configuration object or a configuration function. The function receives the standard Rslib configuration parameters.
-
-```ts title="rstack.config.ts"
-import { define } from 'rstack';
-
-define.lib({
-  dts: true,
-  format: 'esm',
-});
-```
-
-### `define.doc()` \{#define-doc}
-
-Defines the [Rspress configuration](https://rspress.rs/api/config/config-basic) for a documentation site. It accepts a configuration object or an async configuration function.
-
-```ts title="rstack.config.ts"
-import { define } from 'rstack';
-
-define.doc({
-  root: 'docs',
-  title: 'My Site',
-});
-```
-
-`@rspress/core` is an optional dependency of Rstack CLI. Install it in every project that uses the `rs doc` command:
-
-<PackageManagerTabs command="install -D @rspress/core" />
-
-### `define.test()` \{#define-test}
-
-Defines the [Rstest configuration](https://rstest.rs/config/). It accepts a configuration object or a configuration function.
-
-```ts title="rstack.config.ts"
-import { define } from 'rstack';
-
-define.app({
-  // Shared application configuration
-});
-
-define.test({
-  setupFiles: ['./tests/rstest.setup.ts'],
-  testEnvironment: 'happy-dom',
-});
-```
-
-When `extends` is omitted, Rstack CLI automatically connects the test configuration to `define.app()` through the Rsbuild adapter. If no application configuration is defined, it falls back to `define.lib()` through the Rslib adapter. The application configuration takes precedence when both are defined. Set `extends` explicitly to opt out of this automatic inheritance.
-
-If the root test configuration does not define `extends` and contains `projects`, Rstack CLI applies automatic inheritance to each inline project that omits its own `extends`. A function-based application or library configuration is resolved once and shared by those projects. String project entries are passed to Rstest unchanged; they load their external configurations independently and do not inherit the current application or library configuration.
-
-These rules also apply to shared configurations: Rstack first merges the test settings, then uses the merged App or Lib configuration for automatic inheritance.
-
-> For more guidance on testing, see [Testing](./testing).
-
-### `define.lint()` \{#define-lint}
-
-Defines the [Rslint configuration](https://rslint.rs/config/). Pass the configuration directly, or use a synchronous or asynchronous function. The function receives all exports from `rstack/lint`, so presets and plugins do not need to be imported manually.
-
-```ts title="rstack.config.ts"
-import { define } from 'rstack';
-
-define.lint(({ js, ts }) => [
-  js.configs.recommended,
-  ts.configs.recommendedTypeChecked,
-]);
-```
-
-### `define.fmt()` \{#define-fmt}
-
-Defines formatting settings for [`rs fmt`](./cli/fmt). Pass a configuration object directly, or use a synchronous or asynchronous function that returns one.
-
-```ts title="rstack.config.ts"
-import { define } from 'rstack';
-
-define.fmt({
-  printWidth: 100,
-  singleQuote: true,
-});
-```
-
-For detailed usage, see [Formatting](./formatting).
-
-### `define.staged()` \{#define-staged}
-
-Defines the [lint-staged configuration](https://github.com/lint-staged/lint-staged#configuration) used to run tasks on staged Git files. It accepts either an object that maps glob patterns to tasks or a task-generator function. Tasks can be commands, command arrays, or functions supported by lint-staged.
-
-```ts title="rstack.config.ts"
-import { define } from 'rstack';
-
-define.staged({
-  '*.{js,jsx,ts,tsx}': ['rs lint', 'rs fmt'],
-  '*.{json,jsonc,md,mdx,css,html,yml,yaml}': 'rs fmt',
-});
-```
-
-`rs staged` requires a staged configuration, provided by `define.staged()` or a shared configuration, and reports an error when it is missing.
