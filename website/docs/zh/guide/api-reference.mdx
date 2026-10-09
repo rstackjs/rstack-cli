@@ -25,14 +25,6 @@ Rstack CLI 提供统一的配置 API，并通过专用子路径重导出 Rsbuild
 
 从 `rstack` 导入 `define`，用于在 `rstack.config.ts` 中注册各项工具配置；详细用法请参阅[配置 API](./configuration#configuration-apis)。
 
-### `define.extends()` \{#define-extends}
-
-接收一组公共配置对象，先应用其中各工具的配置，再合并当前项目通过 `define.*()` 定义的配置。
-
-**类型：** `(configs: readonly RstackConfig[]) => void`
-
-用法和合并规则请参阅[公共配置](./configuration#shared-configurations)。
-
 ### `RstackConfig`
 
 使用这个类型定义公共配置。所有字段均为可选：`app`、`lib`、`doc`、`test`、`lint`、`fmt` 和 `staged` 的用法与对应的 `define.*()` API 一致。需要继承其他公共配置时，可以添加类型为 `readonly RstackConfig[]` 的 `extends` 字段。
