@@ -11,6 +11,7 @@ Rstack CLI provides a unified configuration API and re-exports the public APIs o
 | Import path              | Contents                                          | Use case                                |
 | ------------------------ | ------------------------------------------------- | --------------------------------------- |
 | `rstack`                 | Rstack CLI configuration API                      | Register tool configurations            |
+| `rstack/config`          | Configuration loader and its types                | Load shared and project configurations  |
 | `rstack/app`             | Public APIs from `@rsbuild/core`                  | Build applications and extend Rsbuild   |
 | `rstack/lib`             | Public APIs from `@rslib/core`                    | Build libraries and extend Rslib        |
 | `rstack/test`            | Public APIs from `@rstest/core`                   | Write tests and configure test projects |
@@ -100,6 +101,36 @@ import { js, reactPlugin, ts } from 'rstack/lint';
 ```
 
 For details about the available presets and plugins, see [Rslint rules and presets](https://rslint.rs/config/rules-and-presets).
+
+## Loading configurations
+
+### `loadRstackConfig()` \{#loadrstackconfig}
+
+Use `loadRstackConfig()` from `rstack/config` to load Rstack configurations in your own code:
+
+```ts
+import { loadRstackConfig } from 'rstack/config';
+
+const { configs, filePath, dependencies } = await loadRstackConfig({
+  cwd: process.cwd(),
+  configFilePath: './rstack.config.ts',
+});
+```
+
+The function accepts these optional parameters:
+
+- `cwd`: the directory to search for a configuration file. Relative `configFilePath` values are also resolved from this directory. Defaults to the current working directory.
+- `configFilePath`: a relative or absolute path to the configuration file. If omitted, the loader uses the path specified by the CLI's `--config` option. If neither is set, it searches `cwd` for the [default file names](./configuration#configuration-file).
+
+The returned object has these fields:
+
+- `configs`: configuration objects or functions for each tool, including project settings and inherited [shared configurations](./configuration#shared-configurations).
+- `filePath`: the loaded configuration file's path, or `null` if no file was found.
+- `dependencies`: paths to configuration dependencies collected by the loader.
+
+`loadRstackConfig()` only loads configurations; it does not run tool configuration functions. Before running a tool, the caller must resolve its configuration and initialize it.
+
+`rstack/config` also exports the related types: `LoadRstackConfigOptions` for the parameters, `LoadedRstackConfig` for the return value, and `Configs` for the tool configurations.
 
 ## TypeScript types
 
