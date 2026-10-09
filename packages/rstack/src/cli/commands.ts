@@ -189,9 +189,6 @@ async function runCheckCLI(args: string[]): Promise<void> {
   ]);
 
   const lintExitCode = Number(process.exitCode ?? 0);
-  if (values.fix && lintExitCode !== 0) {
-    return;
-  }
 
   // Rslint loads its one-shot config through Node's module cache. Import the
   // same URL to read the Rstack config exported for the following fmt phase.
