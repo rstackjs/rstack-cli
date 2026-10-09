@@ -34,7 +34,7 @@ Automatically fix linting and formatting issues:
 rs check --fix
 ```
 
-This first runs `rs lint --fix` to apply available lint fixes. If linting and any enabled type checking pass, it then runs `rs fmt --write` to format the updated files.
+This first runs `rs lint --fix` to apply available lint fixes, then `rs fmt --write` to format the updated files. Formatting still runs if lint or type errors remain, and the command exits with a non-zero code if either step fails.
 
 ### `--type-check`
 

@@ -34,7 +34,7 @@ rs check src/index.ts packages/utils
 rs check --fix
 ```
 
-该选项会先运行 `rs lint --fix`，自动修复 lint 问题。只有 lint 和已启用的类型检查都通过，才会继续运行 `rs fmt --write`，格式化修复后的文件。
+该选项会先运行 `rs lint --fix` 自动修复 lint 问题，再运行 `rs fmt --write` 格式化修复后的文件。即使仍有 lint 或类型错误，也会继续格式化；任一步骤失败，命令都会以非零退出码结束。
 
 ### `--type-check`
 

@@ -206,9 +206,17 @@ test('preserves a formatter error exit code after lint fails', () => {
   expect(result.stderr).toContain('broken.json');
 });
 
-test('does not format when lint fails in fix mode', () => {
-  writeLintConfig();
-  writeProjectFile('src/index.js', 'debugger;const value=true');
+test('formats lint fixes even when unfixable errors remain', () => {
+  writeProjectFile(
+    'rstack.config.ts',
+    `import { define } from 'rstack';
+define.lint([{
+  files: ['**/*.js'],
+  rules: { curly: 'error', 'no-debugger': 'error' },
+}]);
+`,
+  );
+  writeProjectFile('src/index.js', 'debugger;let value=true;if(value) value++');
 
   const result = runCheck(['--fix', 'src/index.js']);
 
@@ -216,6 +224,24 @@ test('does not format when lint fails in fix mode', () => {
   expect(`${result.stdout}\n${result.stderr}`).toContain(
     "Unexpected 'debugger' statement",
   );
-  expect(result.stdout).not.toContain('Formatting...');
-  expect(readProjectFile('src/index.js')).toBe('debugger;const value=true');
+  expect(result.stdout).toContain('Formatting completed in');
+  expect(readProjectFile('src/index.js')).toBe(
+    'debugger;\nlet value = true;\nif (value) {\n  value++;\n}\n',
+  );
+});
+
+test('formats files even when type checking fails in fix mode', () => {
+  writeLintConfig();
+  writeProjectFile(
+    'tsconfig.json',
+    '{ "compilerOptions": { "strict": true }, "include": ["src"] }',
+  );
+  writeProjectFile('src/index.ts', 'const value: string=1');
+
+  const result = runCheck(['--fix', '--type-check', 'src/index.ts']);
+
+  expect(result.status).toBe(1);
+  expect(`${result.stdout}\n${result.stderr}`).toContain('TS2322');
+  expect(result.stdout).toContain('Formatting completed in');
+  expect(readProjectFile('src/index.ts')).toBe('const value: string = 1;\n');
 });
