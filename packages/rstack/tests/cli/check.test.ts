@@ -168,6 +168,40 @@ test('enables type checking only with --type-check', () => {
   expect(withTypeCheck.stdout).toContain('Format check passed in');
 });
 
+test.each([true, false])(
+  'respects explicit projectService: %s with a root tsconfig',
+  (projectService) => {
+    writeProjectFile(
+      'rstack.config.ts',
+      `import { define } from 'rstack';
+
+define.lint([
+  {
+    files: ['**/*.ts'],
+    languageOptions: {
+      parserOptions: { projectService: ${projectService} },
+    },
+    rules: { 'no-debugger': 'error' },
+  },
+]);
+`,
+    );
+    writeProjectFile('tsconfig.json', '{"include":["src"]}\n');
+    writeProjectFile('src/index.ts', 'const value: string = 1;\n');
+
+    const result = runCheck(['--type-check', 'src/index.ts']);
+
+    expect(result.status).toBe(projectService ? 1 : 0);
+    const output = `${result.stdout}\n${result.stderr}`;
+    if (projectService) {
+      expect(output).toContain('TS2322');
+    } else {
+      expect(output).not.toContain('TS2322');
+    }
+    expect(result.stdout).toContain('Format check passed in');
+  },
+);
+
 test.each([
   { source: 'debugger;\n', formatted: true },
   { source: 'debugger;const value=true', formatted: false },
