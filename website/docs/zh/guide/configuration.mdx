@@ -80,7 +80,6 @@ define.fmt({
 
 | API                                   | 底层工具                                                                | 对应命令                                                                        |
 | ------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| [`define.extends()`](#define-extends) | —                                                                       | —                                                                               |
 | [`define.app()`](#define-app)         | [Rsbuild](https://rsbuild.rs/zh/config/)                                | [`rs dev`](./cli/dev)、[`rs build`](./cli/build)、[`rs preview`](./cli/preview) |
 | [`define.lib()`](#define-lib)         | [Rslib](https://rslib.rs/zh/config/)                                    | [`rs lib`](./cli/lib)                                                           |
 | [`define.doc()`](#define-doc)         | [Rspress](https://rspress.rs/zh/api/config/config-basic)                | [`rs doc`](./cli/doc)                                                           |
@@ -88,14 +87,7 @@ define.fmt({
 | [`define.lint()`](#define-lint)       | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
 | [`define.fmt()`](#define-fmt)         | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
 | [`define.staged()`](#define-staged)   | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
-
-### `define.extends()` \{#define-extends}
-
-接收一组公共配置对象，先应用其中各工具的配置，再合并当前项目通过 `define.*()` 定义的配置。
-
-**类型：** `(configs: readonly RstackConfig[]) => void`
-
-用法和合并规则请参阅[公共配置](#shared-configurations)。
+| [`define.extends()`](#define-extends) | —                                                                       | —                                                                               |
 
 ### `define.app()` \{#define-app}
 
@@ -213,6 +205,14 @@ define.staged({
 ```
 
 请通过 `define.staged()` 或[公共配置](#shared-configurations)提供 staged 配置，否则 `rs staged` 会报错。
+
+### `define.extends()` \{#define-extends}
+
+接收一组公共配置对象，先应用其中各工具的配置，再合并当前项目通过 `define.*()` 定义的配置。
+
+**类型：** `(configs: readonly RstackConfig[]) => void`
+
+用法和合并规则请参阅[公共配置](#shared-configurations)。
 
 ## 公共配置 \{#shared-configurations}
 

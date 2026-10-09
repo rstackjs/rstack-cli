@@ -80,7 +80,6 @@ Configuration options follow the formats of the underlying tools. When using API
 
 | API                                   | Tool                                                                    | Commands                                                                        |
 | ------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| [`define.extends()`](#define-extends) | —                                                                       | —                                                                               |
 | [`define.app()`](#define-app)         | [Rsbuild](https://rsbuild.rs/config/)                                   | [`rs dev`](./cli/dev), [`rs build`](./cli/build), [`rs preview`](./cli/preview) |
 | [`define.lib()`](#define-lib)         | [Rslib](https://rslib.rs/config/)                                       | [`rs lib`](./cli/lib)                                                           |
 | [`define.doc()`](#define-doc)         | [Rspress](https://rspress.rs/api/config/config-basic)                   | [`rs doc`](./cli/doc)                                                           |
@@ -88,14 +87,7 @@ Configuration options follow the formats of the underlying tools. When using API
 | [`define.lint()`](#define-lint)       | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
 | [`define.fmt()`](#define-fmt)         | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
 | [`define.staged()`](#define-staged)   | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
-
-### `define.extends()` \{#define-extends}
-
-Accepts an array of shared configuration objects and applies their tool settings before merging the project's own `define.*()` configurations.
-
-**Type:** `(configs: readonly RstackConfig[]) => void`
-
-See [Shared configurations](#shared-configurations) for usage and merge rules.
+| [`define.extends()`](#define-extends) | —                                                                       | —                                                                               |
 
 ### `define.app()` \{#define-app}
 
@@ -213,6 +205,14 @@ define.staged({
 ```
 
 Provide a staged configuration through `define.staged()` or a [shared configuration](#shared-configurations). `rs staged` reports an error if neither provides one.
+
+### `define.extends()` \{#define-extends}
+
+Accepts an array of shared configuration objects and applies their tool settings before merging the project's own `define.*()` configurations.
+
+**Type:** `(configs: readonly RstackConfig[]) => void`
+
+See [Shared configurations](#shared-configurations) for usage and merge rules.
 
 ## Shared configurations
 
