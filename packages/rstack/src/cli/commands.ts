@@ -187,7 +187,8 @@ async function runCheckCLI(args: string[]): Promise<void> {
     ...(values.typeCheck ? ['--type-check'] : []),
     ...fileArgs,
   ]);
-  if (process.exitCode) {
+  const lintExitCode = Number(process.exitCode ?? 0);
+  if (values.fix && lintExitCode !== 0) {
     return;
   }
 
@@ -200,10 +201,14 @@ async function runCheckCLI(args: string[]): Promise<void> {
     /* rspackChunkName: 'fmt' */
     '../fmt/cli.ts'
   );
+  // Keep each phase's status separate: fmt may succeed or return without
+  // setting an exit code, but neither should clear a lint failure.
+  process.exitCode = 0;
   await runFmtCLI([values.fix ? '--write' : '--check', ...fileArgs], {
     fixOption: '--fix',
     loadedConfig,
   });
+  process.exitCode = Math.max(lintExitCode, Number(process.exitCode ?? 0));
 }
 
 export async function setupCommands(): Promise<void> {

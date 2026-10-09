@@ -18,21 +18,13 @@ Pass files or directories to limit both linting and formatting to those paths:
 rs check src/index.ts packages/utils
 ```
 
-The same file arguments are passed to both commands, so the example above is equivalent to:
-
-```bash
-rs lint src/index.ts packages/utils && rs fmt --check src/index.ts packages/utils
-```
+The same file arguments are passed to both linting and formatting.
 
 ## Checks
 
-Running `rs check` is equivalent to:
+Checks run sequentially: linting first, then formatting. Without `--fix`, formatting is checked even when linting or type checking reports errors, so one run reports both sets of problems. The command exits successfully only when every enabled check passes.
 
-```bash
-rs lint && rs fmt --check
-```
-
-Checks run sequentially. If linting fails, `rs check` stops without running the formatting check. The command exits successfully only when every enabled check passes.
+Errors that prevent checks from running, such as a configuration that cannot be loaded, can stop the command early.
 
 ## Options
 
@@ -60,11 +52,7 @@ Enable TypeScript type checking as part of linting:
 rs check --type-check
 ```
 
-This is equivalent to:
-
-```bash
-rs lint --type-check && rs fmt --check
-```
+Formatting is still checked when type checking reports errors, unless `--fix` is also enabled.
 
 Type checking is disabled when this option is omitted.
 

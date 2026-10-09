@@ -18,21 +18,13 @@ rs check [options] [files...]
 rs check src/index.ts packages/utils
 ```
 
-相同的文件参数会同时传给两个命令，因此上述示例等同于：
-
-```bash
-rs lint src/index.ts packages/utils && rs fmt --check src/index.ts packages/utils
-```
+相同的文件参数会同时传给 lint 和格式检查。
 
 ## 检查内容 \{#checks}
 
-运行 `rs check` 等同于：
+各项检查会按顺序运行：先 lint，再检查格式。未启用 `--fix` 时，即使 lint 或类型检查报告错误，也会继续检查格式，在一次运行中报告两类问题。只有所有已启用的检查均通过时，该命令才会成功退出。
 
-```bash
-rs lint && rs fmt --check
-```
-
-各项检查会按顺序运行。如果 lint 失败，`rs check` 会停止运行，不再检查格式。只有所有已启用的检查均通过时，该命令才会成功退出。
+如果遇到无法加载配置等导致检查无法运行的错误，命令可能会提前停止。
 
 ## 选项 \{#options}
 
@@ -60,11 +52,7 @@ rs lint --fix && rs fmt --write
 rs check --type-check
 ```
 
-该命令等同于：
-
-```bash
-rs lint --type-check && rs fmt --check
-```
+类型检查报告错误时，仍会继续检查格式，除非同时启用了 `--fix`。
 
 省略此选项时，不会运行类型检查。
 
