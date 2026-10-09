@@ -31,14 +31,26 @@ Rstack CLI 提供统一的配置 API，并通过专用子路径重导出 Rsbuild
 
 各工具字段接受与对应 `define.*()` 方法相同的配置，例如 `fmt` 对应 `define.fmt()`。
 
-还可以通过 `extends` 字段继承其他公共配置，该字段的类型为 `readonly RstackConfig[]`。
-
-```ts
+```ts title="shared.ts"
 import type { RstackConfig } from 'rstack';
 
 export const sharedConfig: RstackConfig = {
   fmt: {
     singleQuote: true,
+  },
+};
+```
+
+还可以通过 `extends` 字段继承其他公共配置，该字段的类型为 `readonly RstackConfig[]`。
+
+```ts title="team.ts"
+import type { RstackConfig } from 'rstack';
+import { sharedConfig } from './shared.ts';
+
+export const teamConfig: RstackConfig = {
+  extends: [sharedConfig],
+  fmt: {
+    printWidth: 100,
   },
 };
 ```

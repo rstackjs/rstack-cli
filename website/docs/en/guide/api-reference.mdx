@@ -31,14 +31,26 @@ Import `define` from `rstack` to register tool configurations in `rstack.config.
 
 Each tool field accepts the same configuration as its corresponding `define.*()` method. For example, `fmt` accepts the same input as `define.fmt()`.
 
-Use the `extends` field to inherit other shared configurations. Its type is `readonly RstackConfig[]`.
-
-```ts
+```ts title="shared.ts"
 import type { RstackConfig } from 'rstack';
 
 export const sharedConfig: RstackConfig = {
   fmt: {
     singleQuote: true,
+  },
+};
+```
+
+Use the `extends` field to inherit other shared configurations. Its type is `readonly RstackConfig[]`.
+
+```ts title="team.ts"
+import type { RstackConfig } from 'rstack';
+import { sharedConfig } from './shared.ts';
+
+export const teamConfig: RstackConfig = {
+  extends: [sharedConfig],
+  fmt: {
+    printWidth: 100,
   },
 };
 ```
