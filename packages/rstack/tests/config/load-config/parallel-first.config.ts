@@ -1,11 +1,5 @@
 import { define } from 'rstack';
 
-define.extends([
-  {
-    fmt: { semi: false },
-  },
-]);
-
 const hooks = globalThis.__rstackConfigTestHooks!;
 
 define.app({ root: 'first' });
