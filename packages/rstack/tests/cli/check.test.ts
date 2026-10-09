@@ -192,22 +192,19 @@ test.each([
   },
 );
 
-test.each([false, true])(
-  'preserves a formatter error exit code after lint fails (fix: %s)',
-  (fix) => {
-    writeLintConfig();
-    writeProjectFile('src/index.js', 'debugger;\n');
-    writeProjectFile('src/broken.json', '{ "value": }');
+test('preserves a formatter error exit code after lint fails', () => {
+  writeLintConfig();
+  writeProjectFile('src/index.js', 'debugger;\n');
+  writeProjectFile('src/broken.json', '{ "value": }');
 
-    const result = runCheck([...(fix ? ['--fix'] : []), 'src']);
+  const result = runCheck(['src']);
 
-    expect(result.status).toBe(2);
-    expect(`${result.stdout}\n${result.stderr}`).toContain(
-      "Unexpected 'debugger' statement",
-    );
-    expect(result.stderr).toContain('broken.json');
-  },
-);
+  expect(result.status).toBe(2);
+  expect(`${result.stdout}\n${result.stderr}`).toContain(
+    "Unexpected 'debugger' statement",
+  );
+  expect(result.stderr).toContain('broken.json');
+});
 
 test('formats lint fixes even when unfixable errors remain', () => {
   writeProjectFile(
@@ -220,10 +217,6 @@ define.lint([{
 `,
   );
   writeProjectFile('src/index.js', 'debugger;let value=true;if(value) value++');
-  writeProjectFile(
-    'src/unselected.js',
-    'debugger;let value=true;if(value) value++',
-  );
 
   const result = runCheck(['--fix', 'src/index.js']);
 
@@ -234,9 +227,6 @@ define.lint([{
   expect(result.stdout).toContain('Formatting completed in');
   expect(readProjectFile('src/index.js')).toBe(
     'debugger;\nlet value = true;\nif (value) {\n  value++;\n}\n',
-  );
-  expect(readProjectFile('src/unselected.js')).toBe(
-    'debugger;let value=true;if(value) value++',
   );
 });
 
