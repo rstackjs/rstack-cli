@@ -27,7 +27,7 @@ Import `define` from `rstack` to register tool configurations in `rstack.config.
 
 ### `define.extends()` \{#define-extends}
 
-Inherits shared configurations.
+Accepts an array of shared configuration objects and applies their tool settings before merging the project's own `define.*()` configurations.
 
 **Type:** `(configs: readonly RstackConfig[]) => void`
 
