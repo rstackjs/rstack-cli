@@ -5,11 +5,11 @@ import {
   mergeRslibConfig,
 } from '@rslib/core';
 import { withConfigMeta } from '@rstackjs/load-config';
-import { loadRstackConfig, type Configs } from './config.ts';
+import { loadRstackConfig, type RstackConfigDefinitions } from './config.ts';
 import { resolveConfigLayers } from './configLayers.ts';
 
 export const resolveRslibConfig = async (
-  layers: readonly Configs[],
+  layers: readonly RstackConfigDefinitions[],
   params: ConfigParams,
 ): Promise<RslibConfig> => {
   const configs = await resolveConfigLayers(layers, 'lib', params);

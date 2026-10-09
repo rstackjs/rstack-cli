@@ -1,10 +1,10 @@
 import type { WatchFiles } from '@rsbuild/core';
 import type { UserConfig } from '@rspress/core';
-import { loadRstackConfig, type Configs } from './config.ts';
+import { loadRstackConfig, type RstackConfigDefinitions } from './config.ts';
 import { resolveConfigLayers } from './configLayers.ts';
 
 export const resolveRspressConfig = async (
-  layers: readonly Configs[],
+  layers: readonly RstackConfigDefinitions[],
 ): Promise<UserConfig> => {
   const configs = await resolveConfigLayers(layers, 'doc');
   if (configs.length <= 1) {

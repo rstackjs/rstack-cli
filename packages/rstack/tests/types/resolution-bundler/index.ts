@@ -6,7 +6,7 @@ import { define, type RstackConfig } from 'rstack';
 import { createRsbuild, defineConfig as defineAppConfig } from 'rstack/app';
 import {
   loadRstackConfig,
-  type Configs,
+  type RstackConfigDefinitions,
   type LoadedRstackConfig,
   type LoadRstackConfigOptions,
 } from 'rstack/config';
@@ -21,7 +21,7 @@ const loadOptions: LoadRstackConfigOptions = {
   configFilePath: 'rstack.config.ts',
 };
 const loadedConfig: Promise<LoadedRstackConfig> = loadRstackConfig(loadOptions);
-const configs: Configs = {};
+const configs: RstackConfigDefinitions = {};
 const sharedConfig: RstackConfig = {
   app: appConfig,
   lint: lintConfig,

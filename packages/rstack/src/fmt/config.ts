@@ -1,6 +1,6 @@
 import { dirname } from 'node:path';
 import micromatch from 'micromatch';
-import type { Configs } from '../config.ts';
+import type { RstackConfigDefinitions } from '../config.ts';
 import { resolveFmtConfigLayers } from '../configLayers.ts';
 import { createRelativePathResolver } from './pathHelpers.ts';
 import type {
@@ -10,7 +10,7 @@ import type {
 } from './types.ts';
 
 type ResolveFmtConfigOptions = {
-  layers: readonly Configs[];
+  layers: readonly RstackConfigDefinitions[];
   configFilePath: string | null;
   cwd: string;
 };

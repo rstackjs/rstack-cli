@@ -4,11 +4,11 @@ import {
   type RstestConfigExport,
   mergeRstestConfig,
 } from '@rstest/core';
-import { loadRstackConfig, type Configs } from './config.ts';
+import { loadRstackConfig, type RstackConfigDefinitions } from './config.ts';
 import { resolveConfigLayers } from './configLayers.ts';
 
 const resolveAutomaticExtends = async (
-  layers: readonly Configs[],
+  layers: readonly RstackConfigDefinitions[],
   params: ConfigParams,
 ): Promise<RstestConfig['extends'] | undefined> => {
   // Prefer the app when both app and lib are defined. Merging both adapters can
@@ -55,7 +55,7 @@ const injectExtends = <T extends RstestConfig>(
 };
 
 const extendsConfig = async (
-  layers: readonly Configs[],
+  layers: readonly RstackConfigDefinitions[],
   testConfig: RstestConfig,
   params: ConfigParams,
 ) => {
@@ -88,7 +88,7 @@ const extendsConfig = async (
 };
 
 export const mergeRstestConfigLayers = async (
-  layers: readonly Configs[],
+  layers: readonly RstackConfigDefinitions[],
 ): Promise<RstestConfig> => {
   const configs = await resolveConfigLayers(layers, 'test');
   return configs.length > 1
@@ -97,7 +97,7 @@ export const mergeRstestConfigLayers = async (
 };
 
 export const resolveRstestConfig = async (
-  layers: readonly Configs[],
+  layers: readonly RstackConfigDefinitions[],
   params: ConfigParams,
 ): Promise<RstestConfig> => {
   const testConfig = await mergeRstestConfigLayers(layers);
