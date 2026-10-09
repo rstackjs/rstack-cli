@@ -11,7 +11,6 @@ Rstack CLI 提供统一的配置 API，并通过专用子路径重导出 Rsbuild
 | 导入路径                 | 内容                                      | 使用场景                 |
 | ------------------------ | ----------------------------------------- | ------------------------ |
 | `rstack`                 | Rstack CLI 配置 API                       | 注册各项工具配置         |
-| `rstack/config`          | 配置加载器及其类型                        | 加载公共配置和项目配置   |
 | `rstack/app`             | `@rsbuild/core` 的公开 API                | 构建应用及扩展 Rsbuild   |
 | `rstack/lib`             | `@rslib/core` 的公开 API                  | 构建库及扩展 Rslib       |
 | `rstack/test`            | `@rstest/core` 的公开 API                 | 编写测试及配置测试项目   |
@@ -25,68 +24,6 @@ Rstack CLI 提供统一的配置 API，并通过专用子路径重导出 Rsbuild
 ### `define`
 
 从 `rstack` 导入 `define`，用于在 `rstack.config.ts` 中注册各项工具配置；详细用法请参阅[配置 API](./configuration#configuration-apis)。
-
-### `define.extends()` \{#define-extends}
-
-注册公共配置，在项目自身的工具配置之前应用：
-
-```ts
-import { define } from 'rstack';
-import { sharedConfig } from './shared.ts';
-
-define.extends([sharedConfig]);
-```
-
-- **类型：** `(configs: readonly RstackConfig[]) => void`
-- 接受配置对象。对于带参数的预设，先调用预设函数，再传入返回值。
-- 每次加载配置时最多调用一次，传入空数组的调用也计入此限制。
-- 先从左到右应用公共配置，再应用项目配置，与调用位置无关。
-
-嵌套继承、合并规则和示例请参阅[公共配置](./configuration#shared-configurations)。
-
-### `RstackConfig`
-
-用于编写公共配置的类型。可选字段 `app`、`lib`、`doc`、`test`、`lint`、`fmt` 和 `staged` 接受与对应 `define.*()` API 相同的输入。可选字段 `extends` 接受 `readonly RstackConfig[]`，用于嵌套继承。
-
-```ts
-import type { RstackConfig } from 'rstack';
-
-export const sharedConfig: RstackConfig = {
-  fmt: {
-    singleQuote: true,
-  },
-};
-```
-
-## 加载配置 \{#loading-configurations}
-
-### `loadRstackConfig()` \{#loadrstackconfig}
-
-从 `rstack/config` 导入 `loadRstackConfig`，以编程方式加载配置：
-
-```ts
-import { loadRstackConfig } from 'rstack/config';
-
-const { configs, filePath, dependencies } = await loadRstackConfig({
-  cwd: process.cwd(),
-  configFilePath: './rstack.config.ts',
-});
-```
-
-两个选项均可省略：
-
-- `cwd`：用于查找配置文件和解析相对配置文件路径的目录，默认为当前工作目录。
-- `configFilePath`：配置文件的相对或绝对路径。省略时，优先使用 CLI 的 `--config` 路径；如果未设置，则在 `cwd` 中查找[默认配置文件名](./configuration#configuration-file)。
-
-返回对象包含：
-
-- `configs`：包含公共配置和项目配置的有效工具配置定义。未定义过的工具不会出现在该对象中。
-- `filePath`：加载的配置文件路径，未找到文件时为 `null`。
-- `dependencies`：加载器报告的配置依赖。
-
-配置函数保持未执行状态。即使输入全部是对象，返回的字段仍可能是异步函数，因为合并会推迟到需要该工具时进行。调用方需要传入相应工具的参数来解析配置定义，并遵循工具自身的配置和执行流程；此 API 不会返回完全解析后的运行时配置。尤其是，仅加载配置不会应用 Rstack 的测试自动继承或格式化配置标准化。Staged 函数仍是接收文件名的任务生成函数。
-
-`rstack/config` 还导出 `Configs`、`LoadedRstackConfig` 和 `LoadRstackConfigOptions` 类型。
 
 ## 重导出 \{#re-exports}
 

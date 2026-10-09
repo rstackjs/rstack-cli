@@ -107,44 +107,6 @@ define.test({
 
 For multiple projects, setting `extends` on the root `define.test()` configuration disables automatic inheritance for every project. Setting it on an inline project disables inheritance only for that project.
 
-### Shared test configurations
-
-[`define.extends()`](./configuration#shared-configurations) shares configurations across tools. The `extends` field inside a test configuration is Rstest's own inheritance option. These operate at different levels.
-
-Rstack first merges all shared and project test configurations using `mergeRstestConfig`. It then checks the resulting `extends` and `projects` fields to decide whether automatic inheritance is needed. If it is, Rstack uses the merged App configuration, or the merged Lib configuration when no App configuration is defined.
-
-```ts title="shared.ts"
-import type { RstackConfig } from 'rstack';
-
-export const sharedConfig: RstackConfig = {
-  app: {
-    resolve: {
-      alias: {
-        '@': './src',
-      },
-    },
-  },
-  test: {
-    retry: 2,
-  },
-};
-```
-
-```ts title="rstack.config.ts"
-import { define } from 'rstack';
-import { sharedConfig } from './shared.ts';
-
-define.extends([sharedConfig]);
-
-define.test({
-  testEnvironment: 'happy-dom',
-});
-```
-
-Tests use `retry: 2`, run in happy-dom, and inherit the `@` alias from the shared App configuration. A local `define.app()` call is not required.
-
-The same opt-out rules apply to shared configurations: an explicit `extends` in the merged test configuration, including `extends: undefined`, disables automatic inheritance. Inline projects are checked after merging; external string projects still load independently. If no project needs automatic inheritance, Rstack does not evaluate App or Lib configuration functions for it.
-
 ## Multiple projects
 
 Set Rstest's [`projects`](https://rstest.rs/config/test/projects) option to run multiple test configurations together. Entries can be inline projects or strings that Rstest resolves as external projects.
