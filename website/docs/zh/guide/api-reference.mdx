@@ -98,11 +98,7 @@ const { configs, filePath, dependencies } = await loadRstackConfig({
 - `filePath`：加载的配置文件路径，未找到文件时为 `null`。
 - `dependencies`：加载器收集到的配置依赖路径列表。
 
-加载时不会执行工具配置函数。需要合并多份配置时，返回值可能是一个异步函数，即使原始配置都是对象。调用该函数时才会执行合并。
-
-调用方仍需按各工具的要求传入参数、解析配置并运行工具。测试自动继承、格式化配置标准化等步骤不会在加载时执行。
-
-`staged` 中的函数用于根据文件列表生成任务，由 lint-staged 在运行时调用。
+`loadRstackConfig()` 仅负责加载配置，不会执行工具配置函数。调用方仍需完成相应工具的配置解析和初始化，才能运行工具。
 
 `rstack/config` 还导出相关类型：`LoadRstackConfigOptions`（参数）、`LoadedRstackConfig`（返回值）和 `Configs`（工具配置）。
 

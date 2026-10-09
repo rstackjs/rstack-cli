@@ -98,11 +98,7 @@ The returned object has these fields:
 - `filePath`: the loaded configuration file's path, or `null` if no file was found.
 - `dependencies`: paths to configuration dependencies collected by the loader.
 
-The loader does not run tool configuration functions. When several configurations need to be merged, it may return an async function even if the original configurations were all objects. The merge runs when that function is called.
-
-Your code still needs to pass the parameters each tool expects, resolve its configuration, and run the tool. Automatic test inheritance and formatting normalization do not run during loading.
-
-Functions in `staged` generate tasks from file lists. They are called by lint-staged when tasks run.
+`loadRstackConfig()` only loads configurations; it does not run tool configuration functions. Before running a tool, the caller must resolve its configuration and initialize it.
 
 `rstack/config` also exports the related types: `LoadRstackConfigOptions` for the parameters, `LoadedRstackConfig` for the return value, and `Configs` for the tool configurations.
 
