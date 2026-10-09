@@ -165,17 +165,57 @@ test('enables type checking only with --type-check', () => {
   expect(`${withTypeCheck.stdout}\n${withTypeCheck.stderr}`).toContain(
     'TS2322',
   );
+  expect(withTypeCheck.stdout).toContain('Format check passed in');
 });
 
-test('does not run the formatting check when lint fails', () => {
+test.each([
+  { source: 'debugger;\n', formatted: true },
+  { source: 'debugger;const value=true', formatted: false },
+])(
+  'checks formatting after lint fails (formatted: $formatted)',
+  ({ source, formatted }) => {
+    writeLintConfig();
+    writeProjectFile('src/index.js', source);
+
+    const result = runCheck(['src/index.js']);
+
+    expect(result.status).toBe(1);
+    expect(`${result.stdout}\n${result.stderr}`).toContain(
+      "Unexpected 'debugger' statement",
+    );
+    if (formatted) {
+      expect(result.stdout).toContain('Format check passed in');
+    } else {
+      expect(result.stderr).toContain('Formatting issues found in 1 file.');
+    }
+    expect(readProjectFile('src/index.js')).toBe(source);
+  },
+);
+
+test('preserves a formatter error exit code after lint fails', () => {
   writeLintConfig();
   writeProjectFile('src/index.js', 'debugger;\n');
+  writeProjectFile('src/broken.json', '{ "value": }');
 
-  const result = runCheck();
+  const result = runCheck(['src']);
+
+  expect(result.status).toBe(2);
+  expect(`${result.stdout}\n${result.stderr}`).toContain(
+    "Unexpected 'debugger' statement",
+  );
+  expect(result.stderr).toContain('broken.json');
+});
+
+test('does not format when lint fails in fix mode', () => {
+  writeLintConfig();
+  writeProjectFile('src/index.js', 'debugger;const value=true');
+
+  const result = runCheck(['--fix', 'src/index.js']);
 
   expect(result.status).toBe(1);
   expect(`${result.stdout}\n${result.stderr}`).toContain(
     "Unexpected 'debugger' statement",
   );
-  expect(result.stdout).not.toContain('Checking formatting...');
+  expect(result.stdout).not.toContain('Formatting...');
+  expect(readProjectFile('src/index.js')).toBe('debugger;const value=true');
 });

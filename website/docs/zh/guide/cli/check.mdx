@@ -1,10 +1,10 @@
 ---
-description: '同时运行 lint 和格式检查，并可选启用 TypeScript 类型检查。'
+description: '统一运行 lint 和格式检查，并可选启用 TypeScript 类型检查。'
 ---
 
 # check
 
-`rs check` 命令可统一运行当前项目的 lint、格式和可选的 TypeScript 类型检查。默认情况下，它会先运行 [`rs lint`](./lint)，再运行 [`rs fmt --check`](./fmt#--check)。
+`rs check` 命令用于检查当前项目的 lint 和格式问题，也可以启用 TypeScript 类型检查。
 
 ## 用法 \{#usage}
 
@@ -12,27 +12,17 @@ description: '同时运行 lint 和格式检查，并可选启用 TypeScript 类
 rs check [options] [files...]
 ```
 
-传入文件或目录，可以将 lint 和格式检查都限制在这些路径中：
+传入文件或目录，可以只检查指定路径下的 lint 和格式问题：
 
 ```bash
 rs check src/index.ts packages/utils
 ```
 
-相同的文件参数会同时传给两个命令，因此上述示例等同于：
-
-```bash
-rs lint src/index.ts packages/utils && rs fmt --check src/index.ts packages/utils
-```
-
 ## 检查内容 \{#checks}
 
-运行 `rs check` 等同于：
+默认情况下，`rs check` 会先运行 [`rs lint`](./lint)，再运行 [`rs fmt --check`](./fmt#--check)，仅报告问题，不修改文件。
 
-```bash
-rs lint && rs fmt --check
-```
-
-各项检查会按顺序运行。如果 lint 失败，`rs check` 会停止运行，不再检查格式。只有所有已启用的检查均通过时，该命令才会成功退出。
+即使 lint 或类型检查报告错误，也会继续检查格式。只有所有已启用的检查都通过，命令才会成功退出。
 
 ## 选项 \{#options}
 
@@ -44,29 +34,15 @@ rs lint && rs fmt --check
 rs check --fix
 ```
 
-该命令等同于：
-
-```bash
-rs lint --fix && rs fmt --write
-```
-
-如果应用可用的修复后 lint 仍然失败，`rs check` 会停止运行，不再执行格式化。
+该选项会先运行 `rs lint --fix`，自动修复 lint 问题。只有 lint 和已启用的类型检查都通过，才会继续运行 `rs fmt --write`，格式化修复后的文件。
 
 ### `--type-check`
 
-在 lint 过程中启用 TypeScript 类型检查：
+添加 `--type-check`，可在 lint 过程中启用 TypeScript 类型检查：
 
 ```bash
 rs check --type-check
 ```
-
-该命令等同于：
-
-```bash
-rs lint --type-check && rs fmt --check
-```
-
-省略此选项时，不会运行类型检查。
 
 ### `-h, --help`
 
@@ -78,4 +54,4 @@ rs check --help
 
 ## 配置 \{#configuration}
 
-`rs check` 没有独立的 `define.check()` 配置。它会使用 [`define.lint()`](../configuration#define-lint) 中的 lint 配置，以及 [`define.fmt()`](../configuration#define-fmt) 中的格式化配置。
+`rs check` 使用 [`define.lint()`](../configuration#define-lint) 中的 lint 配置，以及 [`define.fmt()`](../configuration#define-fmt) 中的格式化配置。

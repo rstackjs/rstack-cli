@@ -4,7 +4,7 @@ description: 'Run linting and formatting checks together, with optional TypeScri
 
 # check
 
-The `rs check` command combines linting, formatting, and optional TypeScript type checking for the current project. By default, it runs [`rs lint`](./lint) followed by [`rs fmt --check`](./fmt#--check).
+The `rs check` command runs lint and formatting checks for the current project, with optional TypeScript type checking.
 
 ## Usage
 
@@ -18,21 +18,11 @@ Pass files or directories to limit both linting and formatting to those paths:
 rs check src/index.ts packages/utils
 ```
 
-The same file arguments are passed to both commands, so the example above is equivalent to:
-
-```bash
-rs lint src/index.ts packages/utils && rs fmt --check src/index.ts packages/utils
-```
-
 ## Checks
 
-Running `rs check` is equivalent to:
+By default, `rs check` runs [`rs lint`](./lint) followed by [`rs fmt --check`](./fmt#--check). It reports issues without modifying files.
 
-```bash
-rs lint && rs fmt --check
-```
-
-Checks run sequentially. If linting fails, `rs check` stops without running the formatting check. The command exits successfully only when every enabled check passes.
+Formatting is still checked if linting or type checking reports errors. The command exits successfully only when all enabled checks pass.
 
 ## Options
 
@@ -44,29 +34,15 @@ Automatically fix linting and formatting issues:
 rs check --fix
 ```
 
-This is equivalent to:
-
-```bash
-rs lint --fix && rs fmt --write
-```
-
-If linting still fails after applying available fixes, `rs check` stops without running the formatter.
+This first runs `rs lint --fix` to apply available lint fixes. If linting and any enabled type checking pass, it then runs `rs fmt --write` to format the updated files.
 
 ### `--type-check`
 
-Enable TypeScript type checking as part of linting:
+Add `--type-check` to enable TypeScript type checking alongside linting:
 
 ```bash
 rs check --type-check
 ```
-
-This is equivalent to:
-
-```bash
-rs lint --type-check && rs fmt --check
-```
-
-Type checking is disabled when this option is omitted.
 
 ### `-h, --help`
 
@@ -78,4 +54,4 @@ rs check --help
 
 ## Configuration
 
-`rs check` has no separate `define.check()` configuration. It uses the linting configuration from [`define.lint()`](../configuration#define-lint) and the formatting configuration from [`define.fmt()`](../configuration#define-fmt).
+`rs check` uses the linting configuration from [`define.lint()`](../configuration#define-lint) and the formatting configuration from [`define.fmt()`](../configuration#define-fmt).
