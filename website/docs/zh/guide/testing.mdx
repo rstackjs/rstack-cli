@@ -36,6 +36,8 @@ import { defineInlineProject, expect, test } from 'rstack/test';
 
 当 `define.test()` 未设置 Rstest 的 [`extends`](https://rstest.rs/zh/config/test/extends) 时，Rstack CLI 会自动将 `define.app()` 或 `define.lib()` 注册的配置转换为 Rstest 配置，再与直接传给 `define.test()` 的选项合并。
 
+使用[公共配置](./configuration#shared-configurations)时，Rstack 会先合并公共配置和项目中的测试配置，再判断是否需要自动继承。需要继承时，使用合并后的 App 或 Lib 配置。
+
 ### 继承应用配置 \{#inherit-the-application-configuration}
 
 注册 `define.app()` 后，Rstack CLI 会通过 [`@rstest/adapter-rsbuild`](https://rstest.rs/zh/guide/integration/rsbuild) 转换该配置，并将结果作为测试配置的 `extends`：
@@ -106,48 +108,6 @@ define.test({
 ```
 
 使用多项目配置时，在 `define.test()` 根配置中设置 `extends` 会关闭所有项目的自动继承；在某个内联项目中设置 `extends` 则只会关闭该项目的自动继承。
-
-### 公共测试配置 \{#shared-test-configurations}
-
-[公共配置](./configuration#shared-configurations) 可以同时提供构建和测试配置。Rstack 会先将它们与项目配置合并，再判断测试是否需要继承构建配置。
-
-Rstack 首先使用 `mergeRstestConfig` 合并测试配置，再检查合并结果中的 `extends` 和 `projects`。需要自动继承的测试会使用合并后的 App 配置；没有定义 App 配置时，则使用合并后的 Lib 配置。
-
-`define.extends()` 用于在多个工具之间共享配置，Rstest 的 `test.extends` 则控制测试配置自身的继承，两者用途不同。
-
-```ts title="shared.ts"
-import type { RstackConfig } from 'rstack';
-
-export const sharedConfig: RstackConfig = {
-  app: {
-    resolve: {
-      alias: {
-        '@': './src',
-      },
-    },
-  },
-  test: {
-    retry: 2,
-  },
-};
-```
-
-```ts title="rstack.config.ts"
-import { define } from 'rstack';
-import { sharedConfig } from './shared.ts';
-
-define.extends([sharedConfig]);
-
-define.test({
-  testEnvironment: 'happy-dom',
-});
-```
-
-测试会在 happy-dom 中运行，使用 `retry: 2`，并继承公共 App 配置中的 `@` 别名。项目中无需再调用 `define.app()`。
-
-如果要关闭自动继承，请在测试配置中显式设置 `extends`。在公共配置中设置也同样有效：只要合并后的测试配置包含 `extends`，即使值为 `undefined`，自动继承也会关闭。
-
-使用多项目配置时，Rstack 会逐一检查合并后的内联项目。字符串形式的外部项目仍独立加载自己的配置。如果所有项目都不需要自动继承，Rstack 就会跳过 App 和 Lib 配置函数。
 
 ## 多项目 \{#multiple-projects}
 
