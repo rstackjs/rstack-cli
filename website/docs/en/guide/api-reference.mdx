@@ -25,6 +25,36 @@ Rstack CLI provides a unified configuration API and re-exports the public APIs o
 
 Import `define` from `rstack` to register tool configurations in `rstack.config.ts`; see [Configuration APIs](./configuration#configuration-apis) for details.
 
+### `RstackConfig`
+
+`RstackConfig` is the type for a [shared configuration](./configuration#shared-configurations). All fields are optional, so include only the settings you want to share.
+
+Each tool field accepts the same configuration as its corresponding `define.*()` method. For example, `fmt` accepts the same input as `define.fmt()`.
+
+```ts title="shared.ts"
+import type { RstackConfig } from 'rstack';
+
+export const sharedConfig: RstackConfig = {
+  fmt: {
+    singleQuote: true,
+  },
+};
+```
+
+Use the `extends` field to inherit other shared configurations. Its type is `readonly RstackConfig[]`.
+
+```ts title="team.ts"
+import type { RstackConfig } from 'rstack';
+import { sharedConfig } from './shared.ts';
+
+export const teamConfig: RstackConfig = {
+  extends: [sharedConfig],
+  fmt: {
+    printWidth: 100,
+  },
+};
+```
+
 ## Re-exports
 
 The tool-specific subpaths below re-export the public APIs from their corresponding core packages. Using these entry points keeps imports unified and APIs aligned with the tool versions integrated by Rstack CLI.

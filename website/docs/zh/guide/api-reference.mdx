@@ -25,6 +25,36 @@ Rstack CLI 提供统一的配置 API，并通过专用子路径重导出 Rsbuild
 
 从 `rstack` 导入 `define`，用于在 `rstack.config.ts` 中注册各项工具配置；详细用法请参阅[配置 API](./configuration#configuration-apis)。
 
+### `RstackConfig`
+
+`RstackConfig` 是[公共配置](./configuration#shared-configurations)的类型。所有字段均为可选，只需填写需要共享的配置。
+
+各工具字段接受与对应 `define.*()` 方法相同的配置，例如 `fmt` 对应 `define.fmt()`。
+
+```ts title="shared.ts"
+import type { RstackConfig } from 'rstack';
+
+export const sharedConfig: RstackConfig = {
+  fmt: {
+    singleQuote: true,
+  },
+};
+```
+
+还可以通过 `extends` 字段继承其他公共配置，该字段的类型为 `readonly RstackConfig[]`。
+
+```ts title="team.ts"
+import type { RstackConfig } from 'rstack';
+import { sharedConfig } from './shared.ts';
+
+export const teamConfig: RstackConfig = {
+  extends: [sharedConfig],
+  fmt: {
+    printWidth: 100,
+  },
+};
+```
+
 ## 重导出 \{#re-exports}
 
 以下工具子路径均会重导出对应 core 包的公开 API。通过这些入口导入，可以统一依赖入口，并确保 API 与 Rstack CLI 集成的工具版本匹配。

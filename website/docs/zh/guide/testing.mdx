@@ -36,6 +36,8 @@ import { defineInlineProject, expect, test } from 'rstack/test';
 
 当 `define.test()` 未设置 Rstest 的 [`extends`](https://rstest.rs/zh/config/test/extends) 时，Rstack CLI 会自动将 `define.app()` 或 `define.lib()` 注册的配置转换为 Rstest 配置，再与直接传给 `define.test()` 的选项合并。
 
+使用[公共配置](./configuration#shared-configurations)时，Rstack 会先合并公共配置和项目中的测试配置，再判断是否需要自动继承。需要继承时，使用合并后的 App 或 Lib 配置。
+
 ### 继承应用配置 \{#inherit-the-application-configuration}
 
 注册 `define.app()` 后，Rstack CLI 会通过 [`@rstest/adapter-rsbuild`](https://rstest.rs/zh/guide/integration/rsbuild) 转换该配置，并将结果作为测试配置的 `extends`：

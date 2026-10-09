@@ -36,6 +36,8 @@ import { defineInlineProject, expect, test } from 'rstack/test';
 
 When `define.test()` does not set Rstest's [`extends`](https://rstest.rs/config/test/extends), Rstack CLI automatically converts the configuration registered by `define.app()` or `define.lib()` into an Rstest configuration. The inherited configuration is merged with the options passed directly to `define.test()`.
 
+When using [shared configurations](./configuration#shared-configurations), Rstack first merges the shared and project test settings, then determines whether automatic inheritance is needed. If it is, Rstack uses the merged App or Lib configuration.
+
 ### Inherit the application configuration
 
 When `define.app()` is registered, Rstack CLI converts it with [`@rstest/adapter-rsbuild`](https://rstest.rs/guide/integration/rsbuild) and uses the result as the test configuration's `extends` value:
