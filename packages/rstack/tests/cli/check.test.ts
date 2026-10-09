@@ -8,25 +8,25 @@ const runCheck = (args: string[] = []) => runCLI(['check', ...args]);
 const writeLintConfig = (): void => {
   writeProjectFile(
     'rstack.config.ts',
-    `import { define } from "rstack";
+    `import { define } from 'rstack';
 
 if (process.env.RSTACK_CHECK_CONFIG_LOADED) {
-  throw new Error("Config was loaded twice");
+  throw new Error('Config was loaded twice');
 }
-process.env.RSTACK_CHECK_CONFIG_LOADED = "1";
+process.env.RSTACK_CHECK_CONFIG_LOADED = '1';
 
 define.extends([
   {
     app: () => {
-      throw new Error("App config must not run during check");
+      throw new Error('App config must not run during check');
     },
     lint: [
       {
-        files: ["**/*.{js,ts}"],
-        rules: { "no-debugger": "error" },
+        files: ['**/*.{js,ts}'],
+        rules: { 'no-debugger': 'error' },
       },
     ],
-    fmt: { singleQuote: false },
+    fmt: { singleQuote: true },
   },
 ]);
 `,
@@ -43,7 +43,7 @@ test('displays check help without loading config', () => {
 
 test('loads shared config once for lint and formatting without resolving app', () => {
   writeLintConfig();
-  writeProjectFile('src/index.ts', 'const value=true');
+  writeProjectFile('src/index.ts', 'const value = "hello";\n');
 
   const unformatted = runCheck();
 
@@ -52,9 +52,9 @@ test('loads shared config once for lint and formatting without resolving app', (
   expect(unformatted.stderr).toContain(
     'Formatting issues found in 1 file. Rerun this command with --fix to fix.',
   );
-  expect(readProjectFile('src/index.ts')).toBe('const value=true');
+  expect(readProjectFile('src/index.ts')).toBe('const value = "hello";\n');
 
-  writeProjectFile('src/index.ts', 'const value = true;\n');
+  writeProjectFile('src/index.ts', "const value = 'hello';\n");
   const formatted = runCheck();
 
   expect(formatted.status).toBe(0);
