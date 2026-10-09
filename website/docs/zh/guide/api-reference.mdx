@@ -76,7 +76,7 @@ import { js, reactPlugin, ts } from 'rstack/lint';
 
 ### `loadRstackConfig()` \{#loadrstackconfig}
 
-从 `rstack/config` 导入 `loadRstackConfig`，以编程方式加载配置：
+使用 `rstack/config` 导出的 `loadRstackConfig()`，可以在代码中加载 Rstack 配置：
 
 ```ts
 import { loadRstackConfig } from 'rstack/config';
@@ -87,22 +87,24 @@ const { configs, filePath, dependencies } = await loadRstackConfig({
 });
 ```
 
-两个选项均可省略：
+支持以下可选参数：
 
-- `cwd`：用于查找配置文件和解析相对配置文件路径的目录，默认为当前工作目录。
-- `configFilePath`：配置文件的相对或绝对路径。省略时，优先使用 CLI 的 `--config` 路径；如果未设置，则在 `cwd` 中查找[默认配置文件名](./configuration#configuration-file)。
+- `cwd`：查找配置文件的目录。`configFilePath` 为相对路径时，也以此目录为基准。默认为当前工作目录。
+- `configFilePath`：配置文件路径，可以是相对路径或绝对路径。省略时，优先使用 CLI 通过 `--config` 指定的路径；若也未指定，则在 `cwd` 中按[默认文件名](./configuration#configuration-file)查找配置。
 
-返回对象包含：
+返回对象包含以下字段：
 
-- `configs`：包含公共配置和项目配置的工具配置定义。未配置的工具不会出现在该对象中。
+- `configs`：各工具的配置对象或函数，包含项目配置及继承的[公共配置](./configuration#shared-configurations)。未配置的工具会被省略。
 - `filePath`：加载的配置文件路径，未找到文件时为 `null`。
-- `dependencies`：加载器报告的配置依赖。
+- `dependencies`：加载器收集到的配置依赖路径列表。
 
-加载器不会执行配置函数。即使某个工具的配置全部以对象形式传入，返回的字段也可能是异步函数，以便在需要该工具时再合并这些对象。
+加载时不会执行工具配置函数。需要合并多份配置时，返回值可能是一个异步函数，即使原始配置都是对象。调用该函数时才会执行合并。
 
-使用返回结果时，需要按各工具的要求传入参数、解析配置，再执行相应的初始化和运行流程。Rstack 的测试自动继承和格式化配置标准化也需要在这个阶段完成。`staged` 函数用于生成任务，应在运行任务时传入暂存文件名。
+调用方仍需按各工具的要求传入参数、解析配置并运行工具。测试自动继承、格式化配置标准化等步骤不会在加载时执行。
 
-`rstack/config` 还导出 `Configs`、`LoadedRstackConfig` 和 `LoadRstackConfigOptions` 类型。
+`staged` 中的函数用于根据文件列表生成任务，由 lint-staged 在运行时调用。
+
+`rstack/config` 还导出相关类型：`LoadRstackConfigOptions`（参数）、`LoadedRstackConfig`（返回值）和 `Configs`（工具配置）。
 
 ## TypeScript 类型 \{#typescript-types}
 

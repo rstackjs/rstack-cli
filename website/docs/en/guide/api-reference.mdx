@@ -76,7 +76,7 @@ For details about the available presets and plugins, see [Rslint rules and prese
 
 ### `loadRstackConfig()` \{#loadrstackconfig}
 
-Import `loadRstackConfig` from `rstack/config` to load configurations programmatically:
+Use `loadRstackConfig()` from `rstack/config` to load Rstack configurations in your own code:
 
 ```ts
 import { loadRstackConfig } from 'rstack/config';
@@ -87,22 +87,24 @@ const { configs, filePath, dependencies } = await loadRstackConfig({
 });
 ```
 
-Both options are optional:
+The function accepts these optional parameters:
 
-- `cwd`: the directory used to search for a configuration file and resolve relative configuration file paths. Defaults to the current working directory.
-- `configFilePath`: a relative or absolute configuration file path. If omitted, uses the CLI's `--config` path when set; otherwise, searches for the [default configuration file names](./configuration#configuration-file) in `cwd`.
+- `cwd`: the directory to search for a configuration file. Relative `configFilePath` values are also resolved from this directory. Defaults to the current working directory.
+- `configFilePath`: a relative or absolute path to the configuration file. If omitted, the loader uses the path specified by the CLI's `--config` option. If neither is set, it searches `cwd` for the [default file names](./configuration#configuration-file).
 
-The returned object contains:
+The returned object has these fields:
 
-- `configs`: tool configuration definitions that include both shared and project settings. Tools with no configuration are omitted.
+- `configs`: configuration objects or functions for each tool, including project settings and inherited [shared configurations](./configuration#shared-configurations). Tools with no configuration are omitted.
 - `filePath`: the loaded configuration file's path, or `null` if no file was found.
-- `dependencies`: the configuration's dependencies, as reported by the loader.
+- `dependencies`: paths to configuration dependencies collected by the loader.
 
-The loader leaves configuration functions unevaluated. It may also return an async function for a tool whose inputs were all objects, so those objects can be merged when the tool is needed.
+The loader does not run tool configuration functions. When several configurations need to be merged, it may return an async function even if the original configurations were all objects. The merge runs when that function is called.
 
-When using the result, resolve each definition with the parameters its tool expects, then follow that tool's setup and execution steps. Rstack's automatic test inheritance and formatting normalization still need to run at that stage. A `staged` function is a task generator: call it with the staged file names when running tasks.
+Your code still needs to pass the parameters each tool expects, resolve its configuration, and run the tool. Automatic test inheritance and formatting normalization do not run during loading.
 
-`rstack/config` also exports the `Configs`, `LoadedRstackConfig`, and `LoadRstackConfigOptions` types.
+Functions in `staged` generate tasks from file lists. They are called by lint-staged when tasks run.
+
+`rstack/config` also exports the related types: `LoadRstackConfigOptions` for the parameters, `LoadedRstackConfig` for the return value, and `Configs` for the tool configurations.
 
 ## TypeScript types
 
