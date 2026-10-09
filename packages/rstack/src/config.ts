@@ -13,24 +13,22 @@ import type { UserConfig, UserConfigAsyncFn } from '@rspress/core';
 import type { RstestConfigExport } from '@rstest/core';
 import type { FmtConfigDefinition } from './fmt/types.ts';
 import type { StagedConfig } from './staged.ts';
-import { composeConfigLayers } from './configLayers.ts';
+import { composeConfigLayers, flattenConfigLayers } from './configLayers.ts';
 
-export type RslintConfigDefinition =
-  RslintConfig | (() => Promise<RslintConfig>);
 export type RspressConfigDefinition = UserConfig | UserConfigAsyncFn;
 
 type RslintConfigFactory = (
   lint: typeof import('@rslint/core'),
 ) => RslintConfig | Promise<RslintConfig>;
 
-type RslintConfigInput = RslintConfig | RslintConfigFactory;
+export type RslintConfigDefinition = RslintConfig | RslintConfigFactory;
 
 export type Configs = {
   app?: RsbuildConfigDefinition;
   lib?: RslibConfigDefinition;
   doc?: RspressConfigDefinition;
   test?: RstestConfigExport;
-  lint?: RslintConfigDefinition;
+  lint?: RslintConfig | (() => Promise<RslintConfig>);
   fmt?: FmtConfigDefinition;
   staged?: StagedConfig;
 };
@@ -38,12 +36,12 @@ export type Configs = {
 /** Shared configuration input; lint factories receive the tool exports. */
 export type RstackConfig = Omit<Configs, 'lint'> & {
   extends?: readonly RstackConfig[];
-  lint?: RslintConfigInput;
+  lint?: RslintConfigDefinition;
 };
 
 const normalizeLintConfig = (
-  config: RslintConfigInput,
-): RslintConfigDefinition =>
+  config: RslintConfigDefinition,
+): NonNullable<Configs['lint']> =>
   typeof config === 'function'
     ? async () => config(await import('@rslint/core'))
     : config;
@@ -82,6 +80,7 @@ export type LoadRstackConfigOptions = {
 
 type ConfigSession = {
   configs: Configs;
+  extends?: readonly RstackConfig[];
   active: boolean;
 };
 
@@ -126,6 +125,13 @@ export const getConfigState = (): ConfigState => {
 
 type Define = {
   /**
+   * Inherits shared configs from left to right, followed by the project's own
+   * definitions regardless of call order. May only be called once per config load.
+   *
+   * @see {@link https://rstack.rs/config | Configuration guide}
+   */
+  extends: (configs: readonly RstackConfig[]) => void;
+  /**
    * Defines the Rsbuild config for the app.
    *
    * This config is used by the `rs dev`, `rs build`, and `rs preview` commands.
@@ -169,7 +175,7 @@ type Define = {
    *
    * @see {@link https://rstack.rs/config | Configuration guide}
    */
-  lint: (config: RslintConfigInput) => void;
+  lint: (config: RslintConfigDefinition) => void;
   /**
    * Defines the Prettier config for formatting.
    *
@@ -207,6 +213,18 @@ const setConfig = <T extends keyof Configs>(
 };
 
 export const define: Define = {
+  extends: (configs) => {
+    const session = getConfigSessionStorage().getStore();
+    if (!session?.active) {
+      throw new Error(
+        'The "extends" config must be defined while loading an Rstack config.',
+      );
+    }
+    if (session.extends !== undefined) {
+      throw new Error('The "extends" config has already been defined.');
+    }
+    session.extends = configs;
+  },
   app: ((config) => {
     setConfig('app', config);
     return config;
@@ -253,13 +271,19 @@ export const loadRstackConfig = async ({
       });
 
       return {
-        configs: await composeConfigLayers([session.configs]),
+        configs: session.extends?.length
+          ? await composeConfigLayers([
+              ...flattenConfigLayers(session.extends),
+              session.configs,
+            ])
+          : session.configs,
         filePath,
         dependencies,
       };
     } finally {
       session.active = false;
       session.configs = {};
+      session.extends = undefined;
     }
   });
 };
