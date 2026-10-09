@@ -27,7 +27,11 @@ Rstack CLI 提供统一的配置 API，并通过专用子路径重导出 Rsbuild
 
 ### `RstackConfig`
 
-使用这个类型定义[公共配置](./configuration#shared-configurations)。所有字段均为可选：`app`、`lib`、`doc`、`test`、`lint`、`fmt` 和 `staged` 的用法与对应的 `define.*()` API 一致。需要继承其他公共配置时，可以添加类型为 `readonly RstackConfig[]` 的 `extends` 字段。
+`RstackConfig` 是[公共配置](./configuration#shared-configurations)的类型。所有字段均为可选，只需填写需要共享的配置。
+
+各工具字段接受与对应 `define.*()` 方法相同的配置，例如 `fmt` 对应 `define.fmt()`。
+
+还可以通过 `extends` 字段继承其他公共配置，该字段的类型为 `readonly RstackConfig[]`。
 
 ```ts
 import type { RstackConfig } from 'rstack';
