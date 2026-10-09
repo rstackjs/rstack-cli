@@ -286,9 +286,24 @@ The `doc` rules also apply to `builderConfig`: a later `builderConfig.tools.rspa
 
 For `staged`, if either configuration is a top-level task-generator function, the later configuration replaces the earlier one entirely. For example, `glob mappings → function → new glob mappings` leaves only the new mappings. Task functions run when lint-staged supplies the staged file list.
 
-### Dependencies and paths
+### Loading dependencies
 
 Shared configurations can also [import dependencies dynamically](#loading-dependencies-on-demand) inside tool configuration functions, so each command loads only what it needs.
+
+```ts title="shared.ts"
+import type { RstackConfig } from 'rstack';
+
+export const sharedConfig: RstackConfig = {
+  app: async () => {
+    const { pluginReact } = await import('@rsbuild/plugin-react');
+    return {
+      plugins: [pluginReact()],
+    };
+  },
+};
+```
+
+### Resolving paths
 
 Relative paths follow each tool's existing rules; they are not automatically resolved from the shared module's directory. Use an absolute path for files shipped with the shared configuration:
 

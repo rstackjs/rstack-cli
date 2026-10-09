@@ -286,9 +286,24 @@ Rstack 分别合并各个工具的配置：
 
 合并 `staged` 时，只要任一配置是顶层任务生成函数，就由后一个配置整体替换前一个。例如，「glob 映射 → 函数 → 新的 glob 映射」最终只保留新的映射。任务函数由 lint-staged 传入暂存文件列表后执行。
 
-### 依赖与路径 \{#dependencies-and-paths}
+### 依赖加载 \{#loading-dependencies}
 
 公共配置也可以在工具配置函数中[动态导入依赖](#loading-dependencies-on-demand)，让各命令只加载需要的依赖。
+
+```ts title="shared.ts"
+import type { RstackConfig } from 'rstack';
+
+export const sharedConfig: RstackConfig = {
+  app: async () => {
+    const { pluginReact } = await import('@rsbuild/plugin-react');
+    return {
+      plugins: [pluginReact()],
+    };
+  },
+};
+```
+
+### 路径解析 \{#resolving-paths}
 
 相对路径沿用各工具的解析规则，不会自动改为以公共模块所在目录为基准。引用公共配置自带的文件时，请使用绝对路径：
 
