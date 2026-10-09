@@ -2,65 +2,51 @@
 import { define } from 'rstack';
 import skillsLock from './skills-lock.json' with { type: 'json' };
 
-define.lint(({ globals, js, ts, rstestPlugin }) => {
-  return [
-    js.configs.recommended,
-    ts.configs.recommendedTypeChecked,
-    {
-      files: ['**/*.{js,jsx,cjs,mjs}'],
-      languageOptions: {
-        globals: {
-          ...globals.browser,
-          ...globals.nodeBuiltin,
-          DEFINE_APP_TEST_VALUE: 'readonly',
-          DEFINE_LIB_TEST_VALUE: 'readonly',
-          DEFINE_VALUE: 'readonly',
-        },
-      },
+define.lint(({ js, ts, rstestPlugin }) => [
+  js.configs.recommended,
+  ts.configs.recommendedTypeChecked,
+  {
+    files: ['**/*.test.{ts,tsx}'],
+    ...rstestPlugin.configs.recommended,
+    rules: {
+      'rstest/expect-expect': ['error', { assertFunctionNames: ['expect*'] }],
+      'rstest/no-standalone-expect': [
+        'error',
+        { additionalTestBlockFunctions: ['test'] },
+      ],
     },
-    {
-      files: ['**/*.test.{ts,tsx}'],
-      ...rstestPlugin.configs.recommended,
-      rules: {
-        'rstest/expect-expect': ['error', { assertFunctionNames: ['expect*'] }],
-        'rstest/no-standalone-expect': [
-          'error',
-          { additionalTestBlockFunctions: ['test'] },
-        ],
-      },
-    },
-    // Source imports use .ts for Node.js native TypeScript execution; builds rewrite them to .js.
-    {
-      files: ['packages/rstack/src/**/*.ts'],
-      rules: {
-        '@typescript-eslint/no-restricted-imports': [
-          'error',
-          {
-            patterns: [
-              {
-                regex: String.raw`^\.{1,2}/.*\.js$`,
-                message: 'Use the .ts extension for relative imports.',
-              },
-            ],
-          },
-        ],
-      },
-    },
-    {
-      languageOptions: {
-        parserOptions: {
-          project: [
-            './packages/*/tsconfig.json',
-            './packages/*/tests/tsconfig.json',
-            './packages/rstack/tests/types/*/tsconfig.json',
-            './examples/*/tsconfig.json',
-            './website/tsconfig.json',
+  },
+  // Source imports use .ts for Node.js native TypeScript execution; builds rewrite them to .js.
+  {
+    files: ['packages/rstack/src/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: String.raw`^\.{1,2}/.*\.js$`,
+              message: 'Use the .ts extension for relative imports.',
+            },
           ],
         },
+      ],
+    },
+  },
+  {
+    languageOptions: {
+      parserOptions: {
+        project: [
+          './packages/*/tsconfig.json',
+          './packages/*/tests/tsconfig.json',
+          './packages/rstack/tests/types/*/tsconfig.json',
+          './examples/*/tsconfig.json',
+          './website/tsconfig.json',
+        ],
       },
     },
-  ];
-});
+  },
+]);
 
 define.fmt({
   ignorePatterns: [
