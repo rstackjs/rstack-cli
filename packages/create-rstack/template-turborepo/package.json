@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.4",
-    "rstack": "^0.8.2",
+    "rstack": "^0.8.3",
     "turbo": "^2.11.7",
     "typescript": "^7.0.2"
   },
