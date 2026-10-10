@@ -29,13 +29,16 @@ const resolvedLintConfig: RslintConfig = lintEntries.map((entry) => ({
   ...entry,
 }));
 
-const hasExplicitProject = lintEntries.some(
-  (entry) => entry.languageOptions?.parserOptions?.project !== undefined,
-);
+const hasExplicitProjectMode = lintEntries.some((entry) => {
+  const options = entry.languageOptions?.parserOptions;
+  return (
+    options?.project !== undefined || options?.projectService !== undefined
+  );
+});
 
 // Rslint's implicit tsconfig lookup also follows the internal config directory.
-// Preserve the CWD lookup without overriding user projects.
-if (!hasExplicitProject && existsSync(join(basePath, 'tsconfig.json'))) {
+// Preserve the CWD lookup only when neither project option is explicitly set.
+if (!hasExplicitProjectMode && existsSync(join(basePath, 'tsconfig.json'))) {
   resolvedLintConfig.push({
     basePath,
     languageOptions: {
