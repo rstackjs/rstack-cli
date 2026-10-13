@@ -265,8 +265,8 @@ catalogs:
       specifier: 4.0.8
       version: 4.0.8
     prettier:
-      specifier: 3.9.9
-      version: 3.9.9
+      specifier: 3.9.10
+      version: 3.9.10
     prettier-plugin-svelte:
       specifier: ^4.1.1
       version: 4.1.1
@@ -325,10 +325,10 @@ importers:
         version: 0.0.4
       heading-case:
         specifier: 'catalog:'
-        version: 2.0.2(prettier@3.9.9)
+        version: 2.0.2(prettier@3.9.10)
       prettier:
         specifier: 'catalog:'
-        version: 3.9.9
+        version: 3.9.10
       rstack:
         specifier: workspace:*
         version: link:packages/rstack
@@ -539,7 +539,7 @@ importers:
         version: 0.2.3
       prettier:
         specifier: 'catalog:'
-        version: 3.9.9
+        version: 3.9.10
       tinypool:
         specifier: 'catalog:'
         version: 2.2.0
@@ -585,10 +585,10 @@ importers:
         version: 4.0.8
       prettier-plugin-svelte:
         specifier: 'catalog:'
-        version: 4.1.1(prettier@3.9.9)(svelte@5.57.2)
+        version: 4.1.1(prettier@3.9.10)(svelte@5.57.2)
       prettier-plugin-tailwindcss:
         specifier: 'catalog:'
-        version: 0.8.1(prettier-plugin-svelte@4.1.1)(prettier@3.9.9)
+        version: 0.8.1(prettier-plugin-svelte@4.1.1)(prettier@3.9.10)
       rslog:
         specifier: 'catalog:'
         version: 2.3.0
@@ -2999,8 +2999,8 @@ packages:
       prettier-plugin-svelte:
         optional: true
 
-  prettier@3.9.9:
-    resolution: {integrity: sha512-Z/CJHIkdujO/OtN7nXUii0Rf3VT5SRuhjBA82Xvu2XhBUgX3nhP67T0LHceBdQLex7OOFGTox+Q5Yg8Jk2Qivg==}
+  prettier@3.9.10:
+    resolution: {integrity: sha512-skGHTH1Yb9QvaTC4hWnRTzEYtCpApF0UMBPz+t/0ZPzP8ihefo/btKd+QA7pUE0fEwA1SbS/NmhyEcstdXOIdA==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -5270,9 +5270,9 @@ snapshots:
       property-information: 7.2.0
       space-separated-tokens: 2.0.2
 
-  heading-case@2.0.2(prettier@3.9.9):
+  heading-case@2.0.2(prettier@3.9.10):
     dependencies:
-      prettier: 3.9.9
+      prettier: 3.9.10
 
   hookable@6.1.1: {}
 
@@ -5951,18 +5951,18 @@ snapshots:
 
   powershell-utils@0.2.1: {}
 
-  prettier-plugin-svelte@4.1.1(prettier@3.9.9)(svelte@5.57.2):
+  prettier-plugin-svelte@4.1.1(prettier@3.9.10)(svelte@5.57.2):
     dependencies:
-      prettier: 3.9.9
+      prettier: 3.9.10
       svelte: 5.57.2
 
-  prettier-plugin-tailwindcss@0.8.1(prettier-plugin-svelte@4.1.1)(prettier@3.9.9):
+  prettier-plugin-tailwindcss@0.8.1(prettier-plugin-svelte@4.1.1)(prettier@3.9.10):
     dependencies:
-      prettier: 3.9.9
+      prettier: 3.9.10
     optionalDependencies:
-      prettier-plugin-svelte: 4.1.1(prettier@3.9.9)(svelte@5.57.2)
+      prettier-plugin-svelte: 4.1.1(prettier@3.9.10)(svelte@5.57.2)
 
-  prettier@3.9.9: {}
+  prettier@3.9.10: {}
 
   pretty-format@27.5.1:
     dependencies:
