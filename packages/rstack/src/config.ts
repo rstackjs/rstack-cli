@@ -15,7 +15,22 @@ import type { FmtConfigDefinition } from './fmt/types.ts';
 import type { StagedConfig } from './staged.ts';
 import { composeConfigLayers, flattenConfigLayers } from './configLayers.ts';
 
-setJitiLoader(() => import('@rsbuild/core/jiti'));
+setJitiLoader(async () => {
+  const { createJiti } = await import('@rsbuild/core/jiti');
+
+  return {
+    createJiti: (...args: Parameters<typeof createJiti>) => {
+      const session = getConfigSessionStorage().getStore();
+      if (session?.active) {
+        // A native attempt may have registered configs before falling back.
+        // Reset per attempt, since the jiti importer itself is cached.
+        session.configs = {};
+        session.extends = undefined;
+      }
+      return createJiti(...args);
+    },
+  };
+});
 
 export type RspressConfigDefinition = UserConfig | UserConfigAsyncFn;
 

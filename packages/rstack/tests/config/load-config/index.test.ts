@@ -64,6 +64,18 @@ test('should fall back to jiti for TypeScript syntax unsupported by the native l
   expect(configs.app).toEqual({ html: { title: 'jiti config' } });
 });
 
+test('should discard partial definitions before each jiti fallback', async () => {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { configs } = await loadConfigFile('fallback.config.ts');
+
+    expect(configs).toEqual({
+      app: { html: { title: 'jiti config' } },
+      lib: {},
+      fmt: { singleQuote: true },
+    });
+  }
+});
+
 test('should resolve a relative explicit config path from cwd', async () => {
   const { configs, filePath } = await loadRstackConfig({
     configFilePath: 'explicit.config.ts',
