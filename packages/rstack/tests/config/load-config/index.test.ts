@@ -64,7 +64,7 @@ test('should fall back to jiti for TypeScript syntax unsupported by the native l
   expect(configs.app).toEqual({ html: { title: 'jiti config' } });
 });
 
-test('should discard partial definitions before each jiti fallback', async () => {
+test('should avoid duplicate definitions when falling back to jiti across repeated loads', async () => {
   for (let attempt = 0; attempt < 2; attempt++) {
     const { configs } = await loadConfigFile('fallback.config.ts');
 
