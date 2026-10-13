@@ -247,8 +247,8 @@ catalogs:
       specifier: 2.1.0
       version: 2.1.0
     happy-dom:
-      specifier: ^20.14.5
-      version: 20.14.5
+      specifier: ^21.0.1
+      version: 21.0.1
     heading-case:
       specifier: ^2.0.2
       version: 2.0.2
@@ -365,7 +365,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       happy-dom:
         specifier: 'catalog:'
-        version: 20.14.5
+        version: 21.0.1
       rstack:
         specifier: workspace:*
         version: link:../../packages/rstack
@@ -386,7 +386,7 @@ importers:
         version: 26.6.4
       happy-dom:
         specifier: 'catalog:'
-        version: 20.14.5
+        version: 21.0.1
       rstack:
         specifier: workspace:*
         version: link:../../packages/rstack
@@ -453,7 +453,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       happy-dom:
         specifier: 'catalog:'
-        version: 20.14.5
+        version: 21.0.1
       react:
         specifier: 'catalog:'
         version: 19.3.0
@@ -496,7 +496,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       happy-dom:
         specifier: 'catalog:'
-        version: 20.14.5
+        version: 21.0.1
       rstack:
         specifier: workspace:*
         version: link:../../packages/rstack
@@ -2454,6 +2454,10 @@ packages:
 
   happy-dom@20.14.5:
     resolution: {integrity: sha512-x/RzkpWO40bTjIoT30iQtt64FLLmH/iRcUCN2X//bLx7H3ifkdfPXyqsro/OYtqzIAhiLMMA7mmiOR9C3NOKjQ==}
+    engines: {node: '>=20.0.0'}
+
+  happy-dom@21.0.1:
+    resolution: {integrity: sha512-pRBs/u9fhrncyByOl58DMex0R2uAj6ZPKWIjV5j5yNGZBqLw3P6BTRhlc0DD5b/Ht4/6JYTMuE2LJhUWRC6SGw==}
     engines: {node: '>=20.0.0'}
 
   has-flag@4.0.0:
@@ -5126,6 +5130,20 @@ snapshots:
   graceful-fs@4.2.11: {}
 
   happy-dom@20.14.5:
+    dependencies:
+      '@types/node': 26.6.4
+      '@types/whatwg-mimetype': 3.0.2
+      '@types/ws': 8.18.1
+      buffer-image-size: 0.6.4
+      entities: 7.0.1
+      whatwg-mimetype: 3.0.0
+      ws: 8.21.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    optional: true
+
+  happy-dom@21.0.1:
     dependencies:
       '@types/node': 26.6.4
       '@types/whatwg-mimetype': 3.0.2
