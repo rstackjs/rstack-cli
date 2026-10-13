@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { loadConfig } from '@rstackjs/load-config';
+import { loadConfig, setJitiLoader } from '@rstackjs/load-config';
 import type {
   defineConfig as defineAppConfig,
   RsbuildConfigDefinition,
@@ -14,6 +14,23 @@ import type { RstestConfigExport } from '@rstest/core';
 import type { FmtConfigDefinition } from './fmt/types.ts';
 import type { StagedConfig } from './staged.ts';
 import { composeConfigLayers, flattenConfigLayers } from './configLayers.ts';
+
+setJitiLoader(async () => {
+  const { createJiti } = await import('@rsbuild/core/jiti');
+
+  return {
+    createJiti: (...args: Parameters<typeof createJiti>) => {
+      const session = getConfigSessionStorage().getStore();
+      if (session?.active) {
+        // A native attempt may have registered configs before falling back.
+        // Reset per attempt, since the jiti importer itself is cached.
+        session.configs = {};
+        session.extends = undefined;
+      }
+      return createJiti(...args);
+    },
+  };
+});
 
 export type RspressConfigDefinition = UserConfig | UserConfigAsyncFn;
 
@@ -254,7 +271,7 @@ export const loadRstackConfig = async ({
   return getConfigSessionStorage().run(session, async () => {
     try {
       const { filePath, dependencies } = await loadConfig({
-        loader: 'native',
+        loader: 'auto',
         exportName: false,
         fresh: true,
         cwd,

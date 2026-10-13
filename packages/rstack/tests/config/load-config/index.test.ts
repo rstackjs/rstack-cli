@@ -58,6 +58,24 @@ test('should prefer an explicit config path over the state config path', async (
   expect(filePath).toBe(explicitConfigPath);
 });
 
+test('should fall back to jiti for TypeScript syntax unsupported by the native loader', async () => {
+  const { configs } = await loadConfigFile('jiti.config.ts');
+
+  expect(configs.app).toEqual({ html: { title: 'jiti config' } });
+});
+
+test('should avoid duplicate definitions when falling back to jiti across repeated loads', async () => {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { configs } = await loadConfigFile('fallback.config.ts');
+
+    expect(configs).toEqual({
+      app: { html: { title: 'jiti config' } },
+      lib: {},
+      fmt: { singleQuote: true },
+    });
+  }
+});
+
 test('should resolve a relative explicit config path from cwd', async () => {
   const { configs, filePath } = await loadRstackConfig({
     configFilePath: 'explicit.config.ts',
