@@ -21,7 +21,7 @@
     "rstack": "^0.8.3"
   },
   "engines": {
-    "node": ">=22.12.0"
+    "node": "^20.19.0 || >=22.12.0"
   },
   "publishConfig": {
     "access": "public"
