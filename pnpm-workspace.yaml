@@ -35,7 +35,7 @@ catalog:
   '@testing-library/jest-dom': '^7.0.1'
   '@testing-library/react': '^16.3.3'
   '@types/micromatch': '^4.0.10'
-  '@types/node': '^26.6.4'
+  '@types/node': '^26.6.5'
   '@types/react': '^19.3.0'
   '@types/react-dom': '^19.3.0'
   '@shikijs/transformers': '^4.5.0'
