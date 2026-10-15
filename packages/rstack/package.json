@@ -106,7 +106,7 @@
     "vscode-languageserver-textdocument": "catalog:"
   },
   "peerDependencies": {
-    "@rspress/core": "^2.0.17"
+    "@rspress/core": "^2.0.17 || ^2.1.0-beta.1"
   },
   "peerDependenciesMeta": {
     "@rspress/core": {
