@@ -20,9 +20,8 @@ catalog:
   '@rsbuild/plugin-sass': '^2.0.1'
   '@rslib/core': '~1.0.3'
   '@rslint/core': '0.9.5'
-  '@rspress/core': '^2.0.23'
-  '@rspress/plugin-client-redirects': '^2.0.23'
-  '@rspress/plugin-sitemap': '^2.0.23'
+  '@rspress/core': '2.1.0-beta.1'
+  '@rspress/plugin-client-redirects': '2.1.0-beta.1'
   '@rstackjs/doc-ui': '1.14.11'
   '@rstackjs/create-toolkit': '2.2.7'
   '@rstackjs/load-config': ^1.0.2

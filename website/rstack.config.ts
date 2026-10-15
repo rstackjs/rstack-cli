@@ -2,7 +2,6 @@
 import { pluginSass } from '@rsbuild/plugin-sass';
 import type { UserConfig } from '@rspress/core';
 import { pluginClientRedirects } from '@rspress/plugin-client-redirects';
-import { pluginSitemap } from '@rspress/plugin-sitemap';
 import {
   transformerNotationDiff,
   transformerNotationFocus,
@@ -24,13 +23,13 @@ const injectLlmsHint = process.env.RSPRESS_INJECT_LLMS_HINT !== 'false';
 const siteUrl = 'https://rstack.rs';
 
 define.doc({
+  siteOrigin: siteUrl,
   root: path.join(import.meta.dirname, 'docs'),
   title,
   icon: 'https://assets.rspack.rs/rspack/rspack-claw-logo.svg',
   logo: '/horizontal-logo.svg',
   description,
   lang: 'en',
-  llms: true,
   search: {
     codeBlocks: true,
   },
@@ -63,7 +62,6 @@ define.doc({
       ],
     }),
     pluginFontOpenSans(),
-    pluginSitemap({ siteUrl }),
   ],
   locales: [
     {
