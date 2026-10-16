@@ -12,18 +12,15 @@
     "build": {
       "dependsOn": ["^build"],
       "cache": true,
-      "inputs": ["default", "^default"],
       "outputs": ["{projectRoot}/dist"]
     },
     "dev": {
       "dependsOn": ["^build"],
-      "cache": false,
       "continuous": true
     },
     "test": {
       "dependsOn": ["^build"],
-      "cache": true,
-      "inputs": ["default", "^default"]
+      "cache": true
     }
   }
 }

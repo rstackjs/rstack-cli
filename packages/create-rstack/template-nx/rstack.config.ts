@@ -26,5 +26,4 @@ define.lint(({ js, ts, reactPlugin, reactHooksPlugin, rstestPlugin }) => [
 
 define.fmt({
   singleQuote: true,
-  ignorePatterns: ['**/dist/**', '**/.nx/**'],
 });
