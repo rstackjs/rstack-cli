@@ -298,32 +298,38 @@ test.each(docTemplates)(
   },
 );
 
-test('creates the Turborepo template with pnpm when invoked using npm', async () => {
-  const projectDirectory = await createProject('turborepo', {
-    userAgent: 'npm/11.0.0',
-  });
-  const packageJson = await readProjectPackage(projectDirectory);
-  const appPackage = await readProjectPackage(
-    path.join(projectDirectory, 'apps/web'),
-  );
+test.each(['turborepo', 'nx'])(
+  'creates the %s template with pnpm when invoked using npm',
+  async (template) => {
+    const projectDirectory = await createProject(template, {
+      userAgent: 'npm/11.0.0',
+    });
+    const packageJson = await readProjectPackage(projectDirectory);
+    const appPackage = await readProjectPackage(
+      path.join(projectDirectory, 'apps/web'),
+    );
 
-  await expectStagedSetup(projectDirectory, 'ts', packageJson.scripts);
-  expect(packageJson.packageManager).toMatch(/^pnpm@/u);
-  expect(appPackage.dependencies?.['@repo/ui']).toBe('workspace:^');
-  await expectFiles(projectDirectory, [
-    'pnpm-workspace.yaml',
-    'turbo.json',
-    'apps/web/src/index.tsx',
-    'packages/ui/src/button.tsx',
-  ]);
-});
+    await expectStagedSetup(projectDirectory, 'ts', packageJson.scripts);
+    expect(packageJson.packageManager).toMatch(/^pnpm@/u);
+    expect(appPackage.dependencies?.['@repo/ui']).toBe('workspace:^');
+    await expectFiles(projectDirectory, [
+      'pnpm-workspace.yaml',
+      template === 'nx' ? 'nx.json' : 'turbo.json',
+      'apps/web/src/index.tsx',
+      'packages/ui/src/button.tsx',
+    ]);
+  },
+);
 
-test('configures Turborepo when Git initialization is disabled', async () => {
-  const projectDirectory = await createProject('turborepo', {
-    args: ['--no-git'],
-  });
-  const packageJson = await readProjectPackage(projectDirectory);
+test.each(['turborepo', 'nx'])(
+  'configures %s when Git initialization is disabled',
+  async (template) => {
+    const projectDirectory = await createProject(template, {
+      args: ['--no-git'],
+    });
+    const packageJson = await readProjectPackage(projectDirectory);
 
-  expect(packageJson.packageManager).toMatch(/^pnpm@/u);
-  await expectNoStagedSetup(projectDirectory, 'ts', packageJson.scripts);
-});
+    expect(packageJson.packageManager).toMatch(/^pnpm@/u);
+    await expectNoStagedSetup(projectDirectory, 'ts', packageJson.scripts);
+  },
+);

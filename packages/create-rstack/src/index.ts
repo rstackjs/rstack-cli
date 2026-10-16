@@ -44,6 +44,7 @@ const templateNames = [
   'doc',
   'doc-i18n',
   'turborepo',
+  'nx',
 ];
 
 const resolveTemplateName = (template: string): string => {
@@ -56,7 +57,7 @@ const resolveTemplateName = (template: string): string => {
 
 const getTemplateName = async ({ template }: Argv): Promise<string> => {
   if (typeof template === 'string') {
-    if (/^(?:app|lib|doc|turborepo)(?:-|$)/u.test(template)) {
+    if (/^(?:app|lib|doc|turborepo|nx)(?:-|$)/u.test(template)) {
       return resolveTemplateName(template);
     }
 
@@ -79,7 +80,10 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
     const monorepoType = checkCancel<string>(
       await select({
         message: 'Select monorepo tool',
-        options: [{ value: 'turborepo', label: 'Turborepo', hint: 'pnpm' }],
+        options: [
+          { value: 'turborepo', label: 'Turborepo', hint: 'pnpm' },
+          { value: 'nx', label: 'Nx', hint: 'pnpm' },
+        ],
       }),
     );
 
@@ -235,6 +239,6 @@ await create({
   builtinTools: [],
   getTemplateName,
   getPackageManager: ({ templateName }) =>
-    templateName === 'turborepo' ? 'pnpm' : undefined,
+    ['turborepo', 'nx'].includes(templateName) ? 'pnpm' : undefined,
   onGitResolved: injectStagedSetup,
 });
