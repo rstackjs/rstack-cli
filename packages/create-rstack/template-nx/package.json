@@ -1,0 +1,20 @@
+{
+  "name": "rstack-nx",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nx run-many -t build",
+    "check": "rs check --type-check",
+    "dev": "nx run-many -t dev",
+    "format": "rs fmt",
+    "lint": "rs lint",
+    "test": "nx run-many -t test"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "nx": "^23.3.0",
+    "rstack": "^0.8.4",
+    "typescript": "^7.0.2"
+  },
+  "packageManager": "pnpm@12.11.2"
+}

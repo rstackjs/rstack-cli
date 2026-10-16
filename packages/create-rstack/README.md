@@ -51,6 +51,7 @@ npx create-rstack --dir my-project --template app-vanilla-ts --no-git
 - `doc` - Basic documentation site
 - `doc-i18n` - Multilingual documentation site
 - `turborepo` - Turborepo
+- `nx` - Nx
 
 ## Documentation
 
