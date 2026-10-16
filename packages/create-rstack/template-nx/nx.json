@@ -3,14 +3,14 @@
   "namedInputs": {
     "default": [
       "{projectRoot}/**/*",
-      { "fileset": "{projectRoot}/.env*", "includeIgnored": true },
+      { "fileset": "{projectRoot}/.{env*,*.env}", "includeIgnored": true },
       "sharedGlobals"
     ],
     "sharedGlobals": [
       "{workspaceRoot}/tsconfig.base.json",
       "{workspaceRoot}/rstack.config.ts",
       "{workspaceRoot}/pnpm-workspace.yaml",
-      { "fileset": "{workspaceRoot}/.env*", "includeIgnored": true }
+      { "fileset": "{workspaceRoot}/.{env*,*.env}", "includeIgnored": true }
     ]
   },
   "targetDefaults": {
