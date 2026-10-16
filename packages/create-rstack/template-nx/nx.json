@@ -1,23 +1,17 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "namedInputs": {
-    "default": [
-      "{projectRoot}/**/*",
-      { "fileset": "{projectRoot}/.env*", "includeIgnored": true },
-      "sharedGlobals"
-    ],
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "sharedGlobals": [
       "{workspaceRoot}/tsconfig.base.json",
       "{workspaceRoot}/rstack.config.ts",
-      "{workspaceRoot}/pnpm-workspace.yaml",
-      { "fileset": "{workspaceRoot}/.env*", "includeIgnored": true }
+      "{workspaceRoot}/pnpm-workspace.yaml"
     ]
   },
   "targetDefaults": {
     "build": {
       "dependsOn": ["^build"],
       "cache": true,
-      "inputs": ["default", "^default"],
       "outputs": ["{projectRoot}/dist"]
     },
     "dev": {
@@ -26,8 +20,7 @@
     },
     "test": {
       "dependsOn": ["^build"],
-      "cache": true,
-      "inputs": ["default", "^default"]
+      "cache": true
     }
   }
 }
