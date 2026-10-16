@@ -318,6 +318,9 @@ test.each(['turborepo', 'nx'])(
       'apps/web/src/index.tsx',
       'packages/ui/src/button.tsx',
     ]);
+    if (template === 'nx') {
+      await expectFiles(projectDirectory, ['.env', 'tsconfig.base.json']);
+    }
   },
 );
 
