@@ -10,6 +10,7 @@ errexit
 esac
 esbenp
 extglob
+fileset
 fnames
 huskyrc
 indentable
