@@ -5,8 +5,6 @@ define.app(async () => {
   const { pluginReact } = await import('@rsbuild/plugin-react');
   return {
     plugins: [pluginReact()],
-    html: { title: 'Web | Rstack' },
-    server: { port: 3000 },
   };
 });
 
