@@ -11,23 +11,19 @@
 import * as prettierEstreePlugin from 'prettier/plugins/estree';
 import type { Parser, ParserOptions, Plugin } from 'prettier';
 import {
-  CommentMode,
-  Lang,
-  SourceType,
   langFromPath,
   parseSync as parseWithSwcNext,
   type Comment,
   type Diagnostic,
+  type Lang,
   type ParseResult,
+  type SourceType,
 } from '@swc-next/parser';
 
 const AST_FORMAT = 'estree-swc-next';
 const JS_TS_FILE_REGEXP = /\.(?:js|mjs|cjs|jsx|ts|mts|cts|tsx)$/i;
 const JSX_REGEXP = /^[^"'`]*<\/|^[^/]{2}.*\/>/m;
-const SOURCE_TYPE_COMBINATIONS: SourceType[] = [
-  SourceType.Module,
-  SourceType.CommonJs,
-];
+const SOURCE_TYPE_COMBINATIONS: SourceType[] = ['module', 'commonjs'];
 
 type Range = [start: number, end: number];
 
@@ -487,7 +483,7 @@ const parseWithOptions = (
 ): ParseResult => {
   const result = parseWithSwcNext(text, {
     preserveParens: true,
-    comments: CommentMode.Flat,
+    comments: 'flat',
     ...options,
   });
 
@@ -500,11 +496,11 @@ const parseWithOptions = (
 
 const getSourceType = (filepath: string): SourceType | undefined => {
   if (/\.(?:mjs|mts)$/i.test(filepath)) {
-    return SourceType.Module;
+    return 'module';
   }
 
   if (/\.(?:cjs|cts)$/i.test(filepath)) {
-    return SourceType.CommonJs;
+    return 'commonjs';
   }
 
   return undefined;
@@ -518,9 +514,7 @@ const getLanguageCombinations = (text: string, filepath: string): Lang[] => {
   }
 
   // Embedded code from Vue or Svelte keeps the host file path, so detect JSX from its content.
-  return JSX_REGEXP.test(text)
-    ? [Lang.Tsx, Lang.Ts, Lang.Dts]
-    : [Lang.Ts, Lang.Tsx, Lang.Dts];
+  return JSX_REGEXP.test(text) ? ['tsx', 'ts', 'dts'] : ['ts', 'tsx', 'dts'];
 };
 
 const tryCombinations = (combinations: (() => ParseResult)[]): ParseResult => {
@@ -554,7 +548,7 @@ const parseJavaScript = (
     sourceType ? [sourceType] : SOURCE_TYPE_COMBINATIONS
   ).map(
     (candidate) => () =>
-      parseWithOptions(text, { sourceType: candidate, lang: Lang.Jsx }),
+      parseWithOptions(text, { sourceType: candidate, lang: 'jsx' }),
   );
   const result = tryCombinations(combinations);
 
