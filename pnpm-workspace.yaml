@@ -29,7 +29,7 @@ catalog:
   '@rstest/adapter-rsbuild': '~0.12.3'
   '@rstest/adapter-rslib': '~0.12.3'
   '@rstest/core': '~0.12.3'
-  '@swc-next/parser': '0.2.4'
+  '@swc-next/parser': '0.3.0'
   '@testing-library/dom': '^10.4.2'
   '@testing-library/jest-dom': '^7.0.1'
   '@testing-library/react': '^16.3.3'
