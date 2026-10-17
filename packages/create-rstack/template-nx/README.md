@@ -25,6 +25,8 @@ Run from the repository root:
 
 Nx discovers projects and tasks from workspace package manifests. Build and test tasks are cached, and dependencies are built first.
 
+The root `.env` disables Nx's environment-file loading so Rstack can load each project's environment files with the correct mode and priority.
+
 Run `pnpm run build` before `pnpm run check`.
 
 Use `pnpm exec nx graph` to explore the project graph.
