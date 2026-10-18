@@ -298,7 +298,7 @@ test.each(docTemplates)(
   },
 );
 
-test.each(['turborepo', 'nx'])(
+test.each(['pnpm', 'turborepo', 'nx'])(
   'creates the %s template with pnpm when invoked using npm',
   async (template) => {
     const projectDirectory = await createProject(template, {
@@ -314,14 +314,16 @@ test.each(['turborepo', 'nx'])(
     expect(appPackage.dependencies?.['@repo/ui']).toBe('workspace:^');
     await expectFiles(projectDirectory, [
       'pnpm-workspace.yaml',
-      template === 'nx' ? 'nx.json' : 'turbo.json',
+      ...(template === 'pnpm'
+        ? []
+        : [template === 'nx' ? 'nx.json' : 'turbo.json']),
       'apps/web/src/index.tsx',
       'packages/ui/src/button.tsx',
     ]);
   },
 );
 
-test.each(['turborepo', 'nx'])(
+test.each(['pnpm', 'turborepo', 'nx'])(
   'configures %s when Git initialization is disabled',
   async (template) => {
     const projectDirectory = await createProject(template, {

@@ -1,0 +1,19 @@
+{
+  "name": "rstack-pnpm",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r build",
+    "check": "rs check --type-check",
+    "dev": "pnpm --filter \"./packages/**\" build && pnpm -r --parallel dev",
+    "format": "rs fmt",
+    "lint": "rs lint",
+    "test": "pnpm --filter \"./packages/**\" build && pnpm -r test"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "rstack": "^0.8.4",
+    "typescript": "^7.0.2"
+  },
+  "packageManager": "pnpm@12.11.2"
+}
