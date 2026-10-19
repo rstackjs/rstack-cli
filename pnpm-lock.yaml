@@ -169,8 +169,8 @@ catalogs:
       specifier: ^3.10.8
       version: 3.10.8
     '@rsbuild/core':
-      specifier: ~2.2.13
-      version: 2.2.13
+      specifier: ~2.2.14
+      version: 2.2.14
     '@rsbuild/plugin-react':
       specifier: ^2.1.1
       version: 2.1.1
@@ -344,7 +344,7 @@ importers:
     devDependencies:
       '@rsbuild/plugin-react':
         specifier: 'catalog:'
-        version: 2.1.1(@rsbuild/core@2.2.13)(@rspack/core@2.2.9)
+        version: 2.1.1(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)
       '@testing-library/dom':
         specifier: 'catalog:'
         version: 10.4.2
@@ -432,7 +432,7 @@ importers:
     devDependencies:
       '@rsbuild/plugin-react':
         specifier: 'catalog:'
-        version: 2.1.1(@rsbuild/core@2.2.13)(@rspack/core@2.2.9)
+        version: 2.1.1(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)
       '@testing-library/dom':
         specifier: 'catalog:'
         version: 10.4.2
@@ -475,7 +475,7 @@ importers:
     devDependencies:
       '@rsbuild/plugin-react':
         specifier: 'catalog:'
-        version: 2.1.1(@rsbuild/core@2.2.13)(@rspack/core@2.2.9)
+        version: 2.1.1(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)
       '@testing-library/dom':
         specifier: 'catalog:'
         version: 10.4.2
@@ -521,7 +521,7 @@ importers:
     dependencies:
       '@rsbuild/core':
         specifier: 'catalog:'
-        version: 2.2.13
+        version: 2.2.14
       '@rslib/core':
         specifier: 'catalog:'
         version: 1.0.3(typescript@7.0.2)
@@ -555,7 +555,7 @@ importers:
         version: 1.0.0
       '@rstest/adapter-rsbuild':
         specifier: 'catalog:'
-        version: 0.12.3(@rsbuild/core@2.2.13)(@rstest/core@0.12.4)
+        version: 0.12.3(@rsbuild/core@2.2.14)(@rstest/core@0.12.4)
       '@rstest/adapter-rslib':
         specifier: 'catalog:'
         version: 0.12.3(@rslib/core@1.0.3)(@rstest/core@0.12.4)(typescript@7.0.2)
@@ -612,7 +612,7 @@ importers:
     devDependencies:
       '@rsbuild/plugin-sass':
         specifier: 'catalog:'
-        version: 2.0.1(@rsbuild/core@2.2.13)
+        version: 2.0.1(@rsbuild/core@2.2.14)
       '@rspress/core':
         specifier: 'catalog:'
         version: 2.1.0-beta.1(@rspack/core@2.2.9)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
@@ -642,7 +642,7 @@ importers:
         version: 19.3.0(react@19.3.0)
       rsbuild-plugin-open-graph:
         specifier: 'catalog:'
-        version: 1.1.3(@rsbuild/core@2.2.13)
+        version: 1.1.3(@rsbuild/core@2.2.14)
       rspress-plugin-font-open-sans:
         specifier: 'catalog:'
         version: 1.0.4(@rspress/core@2.1.0-beta.1)
@@ -654,7 +654,7 @@ importers:
         version: 7.0.2
       zephyr-rspress-plugin:
         specifier: 'catalog:'
-        version: 1.6.0(@rsbuild/core@2.2.13)(@rspack/core@2.2.9)(@rspress/core@2.1.0-beta.1)(supports-color@8.1.1)
+        version: 1.6.0(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)(@rspress/core@2.1.0-beta.1)(supports-color@8.1.1)
 
 packages:
 
@@ -1433,8 +1433,8 @@ packages:
     resolution: {integrity: sha512-tmmZ3lQxAe/k/+rNnXQRawJ4NjxO2hqiOLTHvWchtGZULp4RyFeh6aU4XdOYBFe2KE1oShQTv4AblOs2iOrNnQ==}
     engines: {node: '>= 10.0.0'}
 
-  '@rsbuild/core@2.2.13':
-    resolution: {integrity: sha512-UDSDrokgG70tmx+0bz9kuc64SkPQ5A1/Zhqsp8pD0L3Cko/xEnukAbrjouGihUTk55imhC4zx62DnQN/1VJ+GQ==}
+  '@rsbuild/core@2.2.14':
+    resolution: {integrity: sha512-HNzuviBQuaPn24ltmlW0BwwB9YclY9sFz847Qyh8CeTtLLkfznmkSMeXeUHSTcZC22gveRKkut7iLjI1HPzCjw==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -4238,23 +4238,23 @@ snapshots:
       '@parcel/watcher-win32-x64': 2.5.6
     optional: true
 
-  '@rsbuild/core@2.2.13':
+  '@rsbuild/core@2.2.14':
     dependencies:
       '@rspack/core': 2.2.9(@swc/helpers@0.5.23)
       '@swc/helpers': 0.5.23
     transitivePeerDependencies:
       - '@module-federation/runtime-tools'
 
-  '@rsbuild/plugin-react@2.1.1(@rsbuild/core@2.2.13)(@rspack/core@2.2.9)':
+  '@rsbuild/plugin-react@2.1.1(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)':
     dependencies:
       '@rspack/plugin-react-refresh': 2.0.2(@rspack/core@2.2.9)(react-refresh@0.19.0)
       react-refresh: 0.19.0
     optionalDependencies:
-      '@rsbuild/core': 2.2.13
+      '@rsbuild/core': 2.2.14
     transitivePeerDependencies:
       - '@rspack/core'
 
-  '@rsbuild/plugin-sass@2.0.1(@rsbuild/core@2.2.13)':
+  '@rsbuild/plugin-sass@2.0.1(@rsbuild/core@2.2.14)':
     dependencies:
       deepmerge: 4.3.1
       loader-utils: 2.0.4
@@ -4262,12 +4262,12 @@ snapshots:
       reduce-configs: 2.0.1
       sass-embedded: 1.100.0
     optionalDependencies:
-      '@rsbuild/core': 2.2.13
+      '@rsbuild/core': 2.2.14
 
   '@rslib/core@1.0.3(typescript@7.0.2)':
     dependencies:
-      '@rsbuild/core': 2.2.13
-      rsbuild-plugin-dts: 1.0.3(@rsbuild/core@2.2.13)(typescript@7.0.2)
+      '@rsbuild/core': 2.2.14
+      rsbuild-plugin-dts: 1.0.3(@rsbuild/core@2.2.14)(typescript@7.0.2)
     optionalDependencies:
       typescript: 7.0.2
     transitivePeerDependencies:
@@ -4391,8 +4391,8 @@ snapshots:
     dependencies:
       '@mdx-js/mdx': 3.1.1(supports-color@8.1.1)
       '@mdx-js/react': 3.1.1(@types/react@19.3.0)(react@19.3.0)
-      '@rsbuild/core': 2.2.13
-      '@rsbuild/plugin-react': 2.1.1(@rsbuild/core@2.2.13)(@rspack/core@2.2.9)
+      '@rsbuild/core': 2.2.14
+      '@rsbuild/plugin-react': 2.1.1(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)
       '@rspress/shared': 2.1.0-beta.1(supports-color@8.1.1)
       '@shikijs/rehype': 4.3.1
       '@types/mdast': 4.0.4
@@ -4441,7 +4441,7 @@ snapshots:
 
   '@rspress/shared@2.1.0-beta.1(supports-color@8.1.1)':
     dependencies:
-      '@rsbuild/core': 2.2.13
+      '@rsbuild/core': 2.2.14
       '@shikijs/rehype': 4.3.1
       '@types/react': 19.3.0
       mdast-util-mdx-jsx: 3.2.0(supports-color@8.1.1)
@@ -4463,9 +4463,9 @@ snapshots:
 
   '@rstackjs/test-utils@1.0.0': {}
 
-  '@rstest/adapter-rsbuild@0.12.3(@rsbuild/core@2.2.13)(@rstest/core@0.12.4)':
+  '@rstest/adapter-rsbuild@0.12.3(@rsbuild/core@2.2.14)(@rstest/core@0.12.4)':
     dependencies:
-      '@rsbuild/core': 2.2.13
+      '@rsbuild/core': 2.2.14
       '@rstest/core': 0.12.4(happy-dom@20.14.5)
 
   '@rstest/adapter-rslib@0.12.3(@rslib/core@1.0.3)(@rstest/core@0.12.4)(typescript@7.0.2)':
@@ -4477,7 +4477,7 @@ snapshots:
 
   '@rstest/core@0.12.4(happy-dom@20.14.5)':
     dependencies:
-      '@rsbuild/core': 2.2.13
+      '@rsbuild/core': 2.2.14
       '@types/chai': 5.2.3
       cjs-module-lexer: 2.3.0
     optionalDependencies:
@@ -6167,16 +6167,16 @@ snapshots:
 
   retry@0.13.1: {}
 
-  rsbuild-plugin-dts@1.0.3(@rsbuild/core@2.2.13)(typescript@7.0.2):
+  rsbuild-plugin-dts@1.0.3(@rsbuild/core@2.2.14)(typescript@7.0.2):
     dependencies:
       '@ast-grep/napi': 0.45.3
-      '@rsbuild/core': 2.2.13
+      '@rsbuild/core': 2.2.14
     optionalDependencies:
       typescript: 7.0.2
 
-  rsbuild-plugin-open-graph@1.1.3(@rsbuild/core@2.2.13):
+  rsbuild-plugin-open-graph@1.1.3(@rsbuild/core@2.2.14):
     optionalDependencies:
-      '@rsbuild/core': 2.2.13
+      '@rsbuild/core': 2.2.14
 
   rslog@2.3.0: {}
 
@@ -6548,9 +6548,9 @@ snapshots:
 
   zephyr-edge-contract@1.6.0: {}
 
-  zephyr-rsbuild-plugin@1.6.0(@rsbuild/core@2.2.13)(@rspack/core@2.2.9)(supports-color@8.1.1):
+  zephyr-rsbuild-plugin@1.6.0(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)(supports-color@8.1.1):
     dependencies:
-      '@rsbuild/core': 2.2.13
+      '@rsbuild/core': 2.2.14
       zephyr-agent: 1.6.0(supports-color@8.1.1)
       zephyr-rspack-plugin: 1.6.0(@rspack/core@2.2.9)(supports-color@8.1.1)
       zephyr-xpack-internal: 1.6.0(supports-color@8.1.1)
@@ -6568,12 +6568,12 @@ snapshots:
       - kerberos
       - supports-color
 
-  zephyr-rspress-plugin@1.6.0(@rsbuild/core@2.2.13)(@rspack/core@2.2.9)(@rspress/core@2.1.0-beta.1)(supports-color@8.1.1):
+  zephyr-rspress-plugin@1.6.0(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)(@rspress/core@2.1.0-beta.1)(supports-color@8.1.1):
     dependencies:
       '@rspress/core': 2.1.0-beta.1(@rspack/core@2.2.9)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
       zephyr-agent: 1.6.0(supports-color@8.1.1)
       zephyr-edge-contract: 1.6.0
-      zephyr-rsbuild-plugin: 1.6.0(@rsbuild/core@2.2.13)(@rspack/core@2.2.9)(supports-color@8.1.1)
+      zephyr-rsbuild-plugin: 1.6.0(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)(supports-color@8.1.1)
       zephyr-xpack-internal: 1.6.0(supports-color@8.1.1)
     transitivePeerDependencies:
       - '@rsbuild/core'
