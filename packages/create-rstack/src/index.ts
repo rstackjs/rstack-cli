@@ -15,6 +15,9 @@ import {
 import path from 'node:path';
 
 const packageRoot = path.join(import.meta.dirname, '..');
+const { version } = JSON.parse(
+  await readFile(path.join(packageRoot, 'package.json'), 'utf-8'),
+) as { version: string };
 
 const templateNames = [
   'app-vanilla',
@@ -237,6 +240,7 @@ const injectStagedSetup = async ({
 await create({
   root: packageRoot,
   name: 'rstack',
+  banner: `create-rstack v${version}`,
   templates: templateNames,
   builtinTools: [],
   getTemplateName,
