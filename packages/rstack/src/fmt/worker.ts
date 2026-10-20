@@ -12,6 +12,8 @@ interface FormatFileTask {
   cache?: FmtFileCache;
 }
 
+let formatModule: Promise<typeof import('./format.ts')> | undefined;
+
 const hashContent = (content: string | Uint8Array): string =>
   hash('sha256', content, 'base64url').slice(0, 16);
 
@@ -65,7 +67,7 @@ const formatFile = async ({
     }
   }
 
-  const { formatFmtSource } = await import('./format.ts');
+  const { formatFmtSource } = await (formatModule ??= import('./format.ts'));
   const result = await formatFmtSource(file, () => (source ??= readSource()));
   if (result.status === 'unsupported') {
     return cache
