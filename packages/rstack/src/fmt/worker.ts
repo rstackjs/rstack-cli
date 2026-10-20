@@ -2,6 +2,7 @@
 
 import { hash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
+import { cachedImport } from '../cachedImport.ts';
 import type { FmtCacheEntry } from './cacheStore.ts';
 import { hasDottedBasename } from './pathHelpers.ts';
 import type { FmtFileCache, FmtFileRequest, FmtWorkerResult } from './types.ts';
@@ -12,7 +13,7 @@ interface FormatFileTask {
   cache?: FmtFileCache;
 }
 
-let formatModule: Promise<typeof import('./format.ts')> | undefined;
+const getFormatModule = cachedImport(() => import('./format.ts'));
 
 const hashContent = (content: string | Uint8Array): string =>
   hash('sha256', content, 'base64url').slice(0, 16);
@@ -67,7 +68,7 @@ const formatFile = async ({
     }
   }
 
-  const { formatFmtSource } = await (formatModule ??= import('./format.ts'));
+  const { formatFmtSource } = await getFormatModule();
   const result = await formatFmtSource(file, () => (source ??= readSource()));
   if (result.status === 'unsupported') {
     return cache
