@@ -103,8 +103,6 @@ define.fmt({
 
 Patterns follow Gitignore syntax and are resolved relative to the directory containing the Rstack configuration file. Because they are applied after the files are selected, they also exclude files passed explicitly on the command line.
 
-By default, `rs fmt` ignores `.yarn/releases/` directories at any depth, which contain Yarn CLI distributions. To format these files, add `'!**/.yarn/releases/'` to `ignorePatterns` to re-include their directories.
-
 ### Lock files
 
 By default, `rs fmt` ignores common lock files, including `package-lock.json`, `pnpm-lock.yaml`, and `skills-lock.json`.

@@ -124,28 +124,6 @@ test('excludes .rstack from discovery', async () => {
   });
 });
 
-test('ignores Yarn releases by default and allows re-including their directories', async () => {
-  await withTempProject(async (rootPath) => {
-    const releases = [
-      writeProjectFile(rootPath, '.yarn/releases/yarn.cjs'),
-      writeProjectFile(rootPath, 'packages/app/.yarn/releases/yarn.cjs'),
-    ];
-    const keepPath = writeProjectFile(rootPath, '.yarn/versions/version.yml');
-
-    for (const patterns of [undefined, ['**/*'], [...releases, keepPath]]) {
-      const files = await discover(rootPath, patterns);
-      expect(files.map((file) => file.path)).toEqual([keepPath]);
-    }
-
-    const files = await discover(rootPath, undefined, {
-      ignorePatterns: ['!**/.yarn/releases/'],
-    });
-    expect(files.map((file) => file.path).sort()).toEqual(
-      [...releases, keepPath].sort(),
-    );
-  });
-});
-
 const customCacheCases: { config?: FmtConfig; name: string }[] = [
   { name: 'without configured ignore patterns' },
   {
