@@ -13,7 +13,7 @@ import type { ResolvedFmtConfig } from './types.ts';
  * Prettier already skips other generated lock files when it cannot infer a parser, so this list
  * contains only the additional defaults owned by `rs fmt`.
  */
-const defaultIgnoreNames = [
+const defaultIgnorePatterns = [
   'package-lock.json',
   'pnpm-lock.yaml',
   'skills-lock.json',
@@ -43,20 +43,6 @@ interface CreateIgnoreMatcherOptions {
   ignorePaths?: string[];
   precheck?: IgnorePredicate;
 }
-
-const createDefaultMatcher = (): IgnoreMatcher => {
-  const suffixes = defaultIgnoreNames.map((name) => `${path.sep}${name}`);
-
-  return (filePath) => suffixes.some((suffix) => filePath.endsWith(suffix));
-};
-
-const combineIgnorePredicates = (
-  first: IgnorePredicate,
-  second: IgnorePredicate,
-): IgnorePredicate => {
-  return (filePath, isDirectory = false) =>
-    first(filePath, isDirectory) || second(filePath, isDirectory);
-};
 
 const createSourceMatcher = (
   sources: IgnoreSource[],
@@ -107,30 +93,18 @@ const createIgnoreMatcher = async ({
   const ignoreFileSources = await Promise.all(
     ignorePaths.map((ignorePath) => loadIgnoreSource(cwd, ignorePath)),
   );
-  if (config.ignorePatterns.length) {
-    return createSourceMatcher(
-      [
-        {
-          rootPath: config.rootPath,
-          patterns: [...defaultIgnoreNames, ...config.ignorePatterns].join(
-            '\n',
-          ),
-        },
-        ...ignoreFileSources,
-      ],
-      precheck,
-    );
-  }
-
-  const defaultMatcher = createDefaultMatcher();
-  const matcher = precheck
-    ? combineIgnorePredicates(precheck, defaultMatcher)
-    : defaultMatcher;
-  if (ignoreFileSources.length === 0) {
-    return matcher;
-  }
-
-  return createSourceMatcher(ignoreFileSources, matcher);
+  return createSourceMatcher(
+    [
+      {
+        rootPath: config.rootPath,
+        patterns: [...defaultIgnorePatterns, ...config.ignorePatterns].join(
+          '\n',
+        ),
+      },
+      ...ignoreFileSources,
+    ],
+    precheck,
+  );
 };
 
 export { createIgnoreMatcher };

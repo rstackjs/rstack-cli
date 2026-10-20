@@ -125,7 +125,7 @@ test('excludes .rstack from discovery', async () => {
 });
 
 const customCacheCases: { config?: FmtConfig; name: string }[] = [
-  { name: 'with scalar matching' },
+  { name: 'without configured ignore patterns' },
   {
     name: 'before native matching',
     config: { ignorePatterns: ['generated/'] },
