@@ -1,6 +1,6 @@
 #![deny(clippy::all)]
 
-use std::{borrow::Cow, collections::HashMap, path::Path, path::PathBuf};
+use std::{borrow::Cow, collections::HashMap, path::Path, path::PathBuf, sync::Arc};
 
 use ignore::{
     gitignore::{Gitignore, GitignoreBuilder},
@@ -138,6 +138,7 @@ impl IgnoreMatcher {
 /// A hierarchy of repository `.gitignore` files keyed by their root-relative directories.
 #[derive(Default)]
 pub struct GitIgnoreMatcher {
+    compiled_patterns: HashMap<Box<str>, Arc<Gitignore>>,
     matchers: HashMap<Box<str>, GitIgnoreSourceMatcher>,
     // Traversal checks every file's parent, so cache both ignored and included directories.
     ignored_directories: HashMap<Box<str>, bool>,
@@ -149,6 +150,11 @@ impl GitIgnoreMatcher {
         Self::default()
     }
 
+    /// Releases compiled rules and matching state after directory traversal.
+    pub fn clear(&mut self) {
+        *self = Self::default();
+    }
+
     /// Adds or replaces the patterns rooted at a POSIX, repository-relative directory.
     ///
     /// Returns whether the hierarchy contains any effective rules after the update.
@@ -158,7 +164,15 @@ impl GitIgnoreMatcher {
         patterns: &str,
     ) -> Result<bool, ignore::Error> {
         let relative_root = normalize_relative_path(relative_root);
-        let matcher = compile_patterns(patterns)?;
+        // Compiled rules use relative paths, so identical contents can share them across roots.
+        let matcher = if let Some(matcher) = self.compiled_patterns.get(patterns) {
+            Arc::clone(matcher)
+        } else {
+            let matcher = Arc::new(compile_patterns(patterns)?);
+            self.compiled_patterns
+                .insert(patterns.into(), Arc::clone(&matcher));
+            matcher
+        };
 
         self.invalidate_directory_cache(relative_root);
         if matcher.is_empty() {
@@ -329,12 +343,12 @@ impl GitIgnoreMatcher {
 /// One `.gitignore` source with the directory state needed to reproduce
 /// `ignore.test(path)` without re-walking ancestors for every file.
 struct GitIgnoreSourceMatcher {
-    matcher: Gitignore,
+    matcher: Arc<Gitignore>,
     directory_states: HashMap<Box<str>, Option<bool>>,
 }
 
 impl GitIgnoreSourceMatcher {
-    fn new(matcher: Gitignore) -> Self {
+    fn new(matcher: Arc<Gitignore>) -> Self {
         Self {
             matcher,
             directory_states: HashMap::new(),
@@ -549,6 +563,36 @@ fn to_posix_path(path: &Path) -> Cow<'_, str> {
 mod tests {
     use super::{GitIgnoreMatcher, IgnoreMatcher, IgnoreSource};
     use std::path::Path;
+
+    #[test]
+    fn identical_gitignore_contents_keep_independent_roots() {
+        let mut matcher = GitIgnoreMatcher::new();
+        let patterns = "/dist/\n*.log\n!keep.log\n";
+        matcher.add_source("a", patterns).unwrap();
+        matcher.add_source("b", patterns).unwrap();
+        for root in ["a", "b"] {
+            assert!(matcher.is_ignored(&format!("{root}/dist/index.js"), false));
+            assert!(!matcher.is_ignored(&format!("{root}/nested/dist/index.js"), false));
+            assert!(!matcher.is_ignored(&format!("{root}/keep.log"), false));
+        }
+        matcher.add_source("a", "").unwrap();
+        assert!(!matcher.is_ignored("a/dist/index.js", false));
+        assert!(matcher.is_ignored("b/dist/index.js", false));
+        assert!(!matcher.is_ignored("dist/index.js", false));
+    }
+
+    #[test]
+    fn clearing_gitignore_removes_rules_and_directory_state() {
+        let mut matcher = GitIgnoreMatcher::new();
+        matcher.add_source("", "dist/\n").unwrap();
+        assert!(matcher.is_ignored("dist/index.js", false));
+        matcher.clear();
+        matcher.clear();
+        assert!(!matcher.is_ignored("dist/index.js", false));
+        matcher.add_source("", "*.log\n").unwrap();
+        assert!(!matcher.is_ignored("dist/index.js", false));
+        assert!(matcher.is_ignored("debug.log", false));
+    }
 
     #[test]
     fn keeps_independent_ignore_sources_isolated() {

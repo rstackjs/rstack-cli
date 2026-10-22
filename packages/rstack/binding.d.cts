@@ -13,6 +13,8 @@ export declare const __napiBindingTarget: 'native' | 'wasm32-wasi' | 'wasm32-was
 export declare class GitIgnoreMatcher {
   /** Creates an empty matcher whose sources can be added during directory traversal. */
   constructor()
+  /** Releases compiled rules and matching state after directory traversal. */
+  clear(): void
   /** Compiles or replaces rules rooted at a repository-relative POSIX directory. */
   addSource(relativeRoot: string, patterns: string): boolean
   /** Returns whether one repository-relative POSIX path is ignored. */
