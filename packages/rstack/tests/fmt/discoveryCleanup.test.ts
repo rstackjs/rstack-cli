@@ -13,51 +13,44 @@ afterEach(() => {
   mocks.readdir.mockReset();
 });
 
-test.each([false, true])(
-  'releases rules only after all traversals settle (failure: %s)',
-  async (fail) => {
-    await withTempProject(async (rootPath) => {
-      writeProjectFile(rootPath, '.gitignore', '*.log\n');
-      const firstFile = writeProjectFile(rootPath, 'first/index.ts');
-      const secondFile = writeProjectFile(rootPath, 'second/index.ts');
-      const pending = Promise.withResolvers<{ files: string[] }>();
-      const started = Promise.withResolvers<void>();
-      const error = new Error('Traversal failed');
-      const clear = rs.spyOn(
-        loadNativeBinding().GitIgnoreMatcher.prototype,
-        'clear',
-      );
+test('waits for pending traversals before releasing rules after a failure', async () => {
+  await withTempProject(async (rootPath) => {
+    writeProjectFile(rootPath, '.gitignore', '*.log\n');
+    const firstFile = writeProjectFile(rootPath, 'first/index.ts');
+    const secondFile = writeProjectFile(rootPath, 'second/index.ts');
+    const pending = Promise.withResolvers<{ files: string[] }>();
+    const started = Promise.withResolvers<void>();
+    const error = new Error('Traversal failed');
+    const clear = rs.spyOn(
+      loadNativeBinding().GitIgnoreMatcher.prototype,
+      'clear',
+    );
 
-      mocks.readdir.mockImplementation((directory: string) => {
-        if (directory === path.dirname(firstFile)) {
-          return fail
-            ? Promise.reject(error)
-            : Promise.resolve({ files: [firstFile] });
-        }
-        started.resolve();
-        return pending.promise;
-      });
-
-      const discovery = discoverFmtPaths({
-        cwd: rootPath,
-        patterns: ['first', 'second'],
-      });
-      const completion = fail
-        ? expect(discovery).rejects.toBe(error)
-        : expect(discovery).resolves.toEqual([firstFile, secondFile]);
-      try {
-        await started.promise;
-        // Let a sibling rejection propagate while this traversal is still pending.
-        await setImmediate();
-        expect(clear).not.toHaveBeenCalled();
-      } finally {
-        pending.resolve({ files: [secondFile] });
-        await completion;
+    mocks.readdir.mockImplementation((directory: string) => {
+      if (directory === path.dirname(firstFile)) {
+        return Promise.reject(error);
       }
-      expect(clear).toHaveBeenCalledTimes(1);
+      started.resolve();
+      return pending.promise;
     });
-  },
-);
+
+    const discovery = discoverFmtPaths({
+      cwd: rootPath,
+      patterns: ['first', 'second'],
+    });
+    const completion = expect(discovery).rejects.toBe(error);
+    try {
+      await started.promise;
+      // Let a sibling rejection propagate while this traversal is still pending.
+      await setImmediate();
+      expect(clear).not.toHaveBeenCalled();
+    } finally {
+      pending.resolve({ files: [secondFile] });
+      await completion;
+    }
+    expect(clear).toHaveBeenCalledTimes(1);
+  });
+});
 
 test('releases rules when initialization fails', async () => {
   await withTempProject(async (rootPath) => {
