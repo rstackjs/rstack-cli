@@ -137,6 +137,12 @@ impl GitIgnoreMatcher {
         Self::default()
     }
 
+    /// Releases compiled rules and matching state after directory traversal.
+    #[napi]
+    pub fn clear(&mut self) {
+        self.inner.clear();
+    }
+
     /// Compiles or replaces rules rooted at a repository-relative POSIX directory.
     #[napi]
     pub fn add_source(&mut self, relative_root: String, patterns: String) -> napi::Result<bool> {

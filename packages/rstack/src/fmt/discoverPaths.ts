@@ -115,8 +115,25 @@ class GitIgnoreFiles {
 
   static async create(cwd: string): Promise<GitIgnoreFiles> {
     const matcher = new GitIgnoreFiles(await findGitRoot(cwd));
-    await matcher.loadThrough(cwd);
-    return matcher;
+    try {
+      await matcher.loadThrough(cwd);
+      return matcher;
+    } catch (error) {
+      await matcher.waitForLoads();
+      matcher.dispose();
+      throw error;
+    }
+  }
+
+  async waitForLoads(): Promise<void> {
+    // A failed operation may leave other ignore files still loading.
+    await Promise.allSettled(this.#loads.values());
+  }
+
+  dispose(): void {
+    this.#matcher?.clear();
+    this.#matcher = undefined;
+    this.#loads.clear();
   }
 
   async loadThrough(directoryPath: string): Promise<void> {
@@ -642,53 +659,62 @@ const discoverFmtPaths = async ({
 
   if (traversalRoots.length) {
     const gitIgnore = await GitIgnoreFiles.create(cwd);
-    const results = await Promise.all(
-      traversalRoots.map(async (rootPath) => {
-        const stats = await lstatSafe(rootPath);
-        if (!stats?.isDirectory()) {
-          return [];
-        }
-
-        await gitIgnore.loadThrough(rootPath);
-        if (
-          gitIgnore.isIgnored(rootPath, true) ||
-          isIgnored?.(rootPath, true) === true
-        ) {
-          return [];
-        }
-
-        const includesAll = directoryRoots.some((directoryPath) =>
-          isPathInside(directoryPath, rootPath),
-        );
-        const isIncluded = includesAll
-          ? undefined
-          : (filePath: string): boolean => {
-              if (
-                directoryRoots.some((directoryPath) =>
-                  isPathInside(directoryPath, filePath),
-                )
-              ) {
-                return true;
-              }
-
-              const relativePath = toPosixPath(resolveRelativePath(filePath));
-              return globMatchers.some((matches) => matches(relativePath));
-            };
-
-        return discoverDirectoryFiles(
-          rootPath,
-          gitIgnore,
-          ignoredDirNames,
-          isIncluded,
-          isIgnored,
-        );
-      }),
-    );
-
-    for (const files of results) {
-      for (const filePath of files) {
-        candidates.add(filePath);
+    const traversals = traversalRoots.map(async (rootPath) => {
+      const stats = await lstatSafe(rootPath);
+      if (!stats?.isDirectory()) {
+        return [];
       }
+
+      await gitIgnore.loadThrough(rootPath);
+      if (
+        gitIgnore.isIgnored(rootPath, true) ||
+        isIgnored?.(rootPath, true) === true
+      ) {
+        return [];
+      }
+
+      const includesAll = directoryRoots.some((directoryPath) =>
+        isPathInside(directoryPath, rootPath),
+      );
+      const isIncluded = includesAll
+        ? undefined
+        : (filePath: string): boolean => {
+            if (
+              directoryRoots.some((directoryPath) =>
+                isPathInside(directoryPath, filePath),
+              )
+            ) {
+              return true;
+            }
+
+            const relativePath = toPosixPath(resolveRelativePath(filePath));
+            return globMatchers.some((matches) => matches(relativePath));
+          };
+
+      return discoverDirectoryFiles(
+        rootPath,
+        gitIgnore,
+        ignoredDirNames,
+        isIncluded,
+        isIgnored,
+      );
+    });
+
+    try {
+      const results = await Promise.all(traversals);
+
+      for (const files of results) {
+        for (const filePath of files) {
+          candidates.add(filePath);
+        }
+      }
+    } catch (error) {
+      // A rejected traversal must not release rules still used by another root.
+      await Promise.allSettled(traversals);
+      await gitIgnore.waitForLoads();
+      throw error;
+    } finally {
+      gitIgnore.dispose();
     }
   }
 
