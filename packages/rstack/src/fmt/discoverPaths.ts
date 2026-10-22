@@ -119,18 +119,21 @@ class GitIgnoreFiles {
       await matcher.loadThrough(cwd);
       return matcher;
     } catch (error) {
-      await matcher.dispose();
+      await matcher.waitForLoads();
+      matcher.dispose();
       throw error;
     }
   }
 
-  async dispose(): Promise<void> {
-    // Initialization may reject while other ignore files are still loading.
+  async waitForLoads(): Promise<void> {
+    // A failed operation may leave other ignore files still loading.
     await Promise.allSettled(this.#loads.values());
+  }
+
+  dispose(): void {
     this.#matcher?.clear();
     this.#matcher = undefined;
     this.#loads.clear();
-    this.#hasRules = false;
   }
 
   async loadThrough(directoryPath: string): Promise<void> {
@@ -698,21 +701,20 @@ const discoverFmtPaths = async ({
     });
 
     try {
-      // A rejected traversal must not release rules still used by another root.
-      const results = await Promise.all(traversals).catch(
-        async (error: unknown) => {
-          await Promise.allSettled(traversals);
-          throw error;
-        },
-      );
+      const results = await Promise.all(traversals);
 
       for (const files of results) {
         for (const filePath of files) {
           candidates.add(filePath);
         }
       }
+    } catch (error) {
+      // A rejected traversal must not release rules still used by another root.
+      await Promise.allSettled(traversals);
+      await gitIgnore.waitForLoads();
+      throw error;
     } finally {
-      await gitIgnore.dispose();
+      gitIgnore.dispose();
     }
   }
 
