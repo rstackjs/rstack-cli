@@ -140,6 +140,13 @@ export const getConfigState = (): ConfigState => {
   return globalThis.__rstackCliState;
 };
 
+/**
+ * Passes the `--config` path to Rslint's JS plugin workers, which import the
+ * internal lint config in a fresh realm without the CLI state above. Only that
+ * config reads it.
+ */
+export const CLI_CONFIG_PATH_ENV = 'RSTACK_CLI_CONFIG_PATH';
+
 type Define = {
   /**
    * Inherits shared configs from left to right, followed by the project's own

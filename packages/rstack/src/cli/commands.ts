@@ -1,6 +1,6 @@
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { getConfigState } from '../config.ts';
+import { CLI_CONFIG_PATH_ENV, getConfigState } from '../config.ts';
 import { insertConfigArg, parseArgs, parseCliArgs } from './args.ts';
 import { hasHelpFlag, printCommandHelp } from './help.ts';
 
@@ -151,6 +151,15 @@ const RSLINT_CONFIG_PATH = join(import.meta.dirname, 'rslintConfig.js');
 async function runRslintCLI(args: string[]): Promise<void> {
   if (hasHelpFlag(args)) {
     return printCommandHelp('lint');
+  }
+
+  // Rslint's JS plugin workers inherit `process.env`. Clear an inherited path so
+  // that a run without `--config` still searches cwd.
+  const { configPath } = getConfigState();
+  if (configPath === undefined) {
+    delete process.env[CLI_CONFIG_PATH_ENV];
+  } else {
+    process.env[CLI_CONFIG_PATH_ENV] = configPath;
   }
 
   const argv = [
