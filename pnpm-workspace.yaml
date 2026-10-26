@@ -60,7 +60,7 @@ catalog:
   tinypool: '2.2.0'
   tiny-readdir: 3.1.1
   'typescript': '^7.0.2'
-  'vscode-languageserver': '10.1.2'
+  'vscode-languageserver': '11.0.0'
   'vscode-languageserver-textdocument': '1.0.15'
   'zephyr-rspress-plugin': '1.6.0'
 
