@@ -207,24 +207,14 @@ impl GitIgnoreMatcher {
         names: &[String],
         directory_flags: &[u8],
     ) -> Vec<u8> {
-        let relative_parent = normalize_relative_path(relative_parent);
-        let separator = usize::from(!relative_parent.is_empty());
-        let name_capacity = names.iter().map(String::len).max().unwrap_or(0);
-        let mut relative_path =
-            String::with_capacity(relative_parent.len() + separator + name_capacity);
-        let mut ignored = Vec::with_capacity(names.len());
-
-        for (name, is_directory) in names.iter().zip(directory_flags) {
-            relative_path.clear();
-            if !relative_parent.is_empty() {
-                relative_path.push_str(relative_parent);
-                relative_path.push('/');
-            }
-            relative_path.push_str(name);
-            ignored.push(u8::from(
-                self.is_ignored(&relative_path, *is_directory != 0),
-            ));
-        }
+        debug_assert_eq!(names.len(), directory_flags.len());
+        let mut ignored = vec![0; names.len()];
+        self.match_batch(
+            relative_parent,
+            names,
+            |index| directory_flags[index] != 0,
+            &mut ignored,
+        );
 
         ignored
     }
@@ -257,26 +247,86 @@ impl GitIgnoreMatcher {
     ) -> u32 {
         debug_assert!(names.len() <= u32::BITS as usize);
 
-        let relative_parent = normalize_relative_path(relative_parent);
-        let separator = usize::from(!relative_parent.is_empty());
-        let name_capacity = names.iter().map(String::len).max().unwrap_or(0);
-        let mut relative_path =
-            String::with_capacity(relative_parent.len() + separator + name_capacity);
-        let mut ignored_mask = 0;
+        let mut ignored = [0; 32];
+        self.match_batch(
+            relative_parent,
+            names,
+            |index| directory_mask & (1 << index) != 0,
+            &mut ignored[..names.len()],
+        );
+        ignored[..names.len()]
+            .iter()
+            .enumerate()
+            .fold(0, |mask, (index, ignored)| {
+                mask | (u32::from(*ignored) << index)
+            })
+    }
 
-        for (index, name) in names.iter().enumerate() {
+    fn match_batch(
+        &mut self,
+        relative_parent: &str,
+        names: &[String],
+        is_directory: impl Fn(usize) -> bool,
+        ignored: &mut [u8],
+    ) {
+        let relative_parent = normalize_relative_path(relative_parent);
+        if names.is_empty() || self.matchers.is_empty() {
+            return;
+        }
+        if self.is_directory_ignored(relative_parent) {
+            ignored.fill(1);
+            return;
+        }
+
+        let name_capacity = names.iter().map(String::len).max().unwrap_or(0);
+        let mut relative_path = String::with_capacity(relative_parent.len() + 1 + name_capacity);
+        // Resolve applicable sources and each source's parent state once for the whole batch.
+        let root_ends = std::iter::once(0)
+            .chain(relative_parent.match_indices('/').map(|(index, _)| index))
+            .chain((!relative_parent.is_empty()).then_some(relative_parent.len()));
+        for root_end in root_ends {
+            let Some(source) = self.matchers.get_mut(&relative_parent[..root_end]) else {
+                continue;
+            };
+            let source_start = if root_end == 0 {
+                0
+            } else {
+                (root_end + 1).min(relative_parent.len())
+            };
+            let source_parent = &relative_parent[source_start..];
+            let parent_ignored =
+                !source_parent.is_empty() && source.is_directory_ignored(source_parent);
             relative_path.clear();
-            if !relative_parent.is_empty() {
-                relative_path.push_str(relative_parent);
+            relative_path.push_str(source_parent);
+            if !source_parent.is_empty() {
                 relative_path.push('/');
             }
-            relative_path.push_str(name);
-            if self.is_ignored(&relative_path, directory_mask & (1 << index) != 0) {
-                ignored_mask |= 1 << index;
+            let prefix_len = relative_path.len();
+            for (index, name) in names.iter().enumerate() {
+                relative_path.truncate(prefix_len);
+                relative_path.push_str(name);
+                if let Some(state) =
+                    source.match_path(&relative_path, is_directory(index), Some(parent_ignored))
+                {
+                    ignored[index] = u8::from(state);
+                }
             }
         }
 
-        ignored_mask
+        relative_path.clear();
+        relative_path.push_str(relative_parent);
+        if !relative_parent.is_empty() {
+            relative_path.push('/');
+        }
+        let prefix_len = relative_path.len();
+        for (index, name) in names.iter().enumerate() {
+            if is_directory(index) {
+                relative_path.truncate(prefix_len);
+                relative_path.push_str(name);
+                self.ignored_directories
+                    .insert(relative_path.clone().into_boxed_str(), ignored[index] != 0);
+            }
+        }
     }
 
     fn invalidate_directory_cache(&mut self, relative_root: &str) {
@@ -314,7 +364,7 @@ impl GitIgnoreMatcher {
         if self.matchers.len() == 1 {
             if let Some(root_matcher) = self.matchers.get_mut("") {
                 return root_matcher
-                    .match_path(relative_path, is_directory)
+                    .match_path(relative_path, is_directory, None)
                     .unwrap_or(false);
             }
         }
@@ -327,7 +377,7 @@ impl GitIgnoreMatcher {
             let matcher_root = &relative_path[..matcher_root_end];
             if let Some(matcher) = self.matchers.get_mut(matcher_root) {
                 let path_from_matcher = &relative_path[path_from_matcher_start..];
-                if let Some(state) = matcher.match_path(path_from_matcher, is_directory) {
+                if let Some(state) = matcher.match_path(path_from_matcher, is_directory, None) {
                     ignored = state;
                 }
             }
@@ -355,39 +405,36 @@ impl GitIgnoreSourceMatcher {
         }
     }
 
-    fn match_path(&mut self, relative_path: &str, is_directory: bool) -> Option<bool> {
+    fn match_path(
+        &mut self,
+        relative_path: &str,
+        is_directory: bool,
+        // Batch callers can reuse the shared parent's state.
+        parent_ignored: Option<bool>,
+    ) -> Option<bool> {
         if is_directory {
-            return self.match_directory(relative_path);
+            if let Some(state) = self.directory_states.get(relative_path) {
+                return *state;
+            }
         }
-
-        match self.matcher.matched(relative_path, false) {
+        let state = match self.matcher.matched(relative_path, is_directory) {
             Match::Ignore(_) => Some(true),
             Match::Whitelist(_) => Some(false),
-            Match::None => parent_directory(relative_path)
-                .is_some_and(|parent| self.is_directory_ignored(parent))
-                .then_some(true),
-        }
-    }
-
-    fn match_directory(&mut self, relative_path: &str) -> Option<bool> {
-        if let Some(state) = self.directory_states.get(relative_path) {
-            return *state;
-        }
-
-        let matched = self.matcher.matched(relative_path, true);
-        let state = match matched {
-            Match::Ignore(_) => Some(true),
-            Match::Whitelist(_) => Some(false),
-            Match::None => parent_directory(relative_path)
-                .is_some_and(|parent| self.is_directory_ignored(parent))
+            Match::None => parent_ignored
+                .unwrap_or_else(|| {
+                    parent_directory(relative_path)
+                        .is_some_and(|parent| self.is_directory_ignored(parent))
+                })
                 .then_some(true),
         };
-        self.directory_states.insert(relative_path.into(), state);
+        if is_directory {
+            self.directory_states.insert(relative_path.into(), state);
+        }
         state
     }
 
     fn is_directory_ignored(&mut self, relative_path: &str) -> bool {
-        self.match_directory(relative_path) == Some(true)
+        self.match_path(relative_path, true, None) == Some(true)
     }
 }
 
@@ -421,6 +468,7 @@ impl SourceMatcher {
         ignored: &mut [u8],
     ) -> usize {
         let relative_parent = self.relative_path(parent_path);
+        let parent_ignored = self.is_directory_ignored(&to_posix_path(relative_parent.as_ref()));
         let name_capacity = names.iter().map(String::len).max().unwrap_or(0);
         let mut relative_path = PathBuf::with_capacity(
             relative_parent.as_os_str().len()
@@ -437,7 +485,8 @@ impl SourceMatcher {
             relative_path.clear();
             relative_path.push(relative_parent.as_ref());
             relative_path.push(name);
-            if self.is_relative_path_ignored(&relative_path, directory_flags[index] != 0) {
+            if parent_ignored || self.is_child_ignored(&relative_path, directory_flags[index] != 0)
+            {
                 ignored[index] = 1;
                 matched += 1;
             }
@@ -456,6 +505,7 @@ impl SourceMatcher {
         debug_assert_ne!(candidate_mask, 0);
 
         let relative_parent = self.relative_path(parent_path);
+        let parent_ignored = self.is_directory_ignored(&to_posix_path(relative_parent.as_ref()));
         let name_capacity = names[candidate_mask.trailing_zeros() as usize].len();
         let mut relative_path = PathBuf::with_capacity(
             relative_parent.as_os_str().len()
@@ -473,12 +523,24 @@ impl SourceMatcher {
             relative_path.clear();
             relative_path.push(relative_parent.as_ref());
             relative_path.push(&names[index]);
-            if self.is_relative_path_ignored(&relative_path, directory_mask & entry_mask != 0) {
+            if parent_ignored
+                || self.is_child_ignored(&relative_path, directory_mask & entry_mask != 0)
+            {
                 ignored_mask |= entry_mask;
             }
         }
 
         ignored_mask
+    }
+
+    // Batch callers have already checked whether the shared parent is ignored.
+    fn is_child_ignored(&mut self, relative_path: &Path, is_directory: bool) -> bool {
+        let relative_path = to_posix_path(relative_path);
+        if is_directory {
+            self.is_directory_ignored(&relative_path)
+        } else {
+            is_ignore_match(self.matcher.matched(relative_path.as_ref(), false))
+        }
     }
 
     fn is_relative_path_ignored(&mut self, relative_path: &Path, is_directory: bool) -> bool {
@@ -691,6 +753,22 @@ mod tests {
 
         assert!(!matcher.is_ignored("scripts/debug", true));
         assert!(matcher.is_ignored("scripts/debug/launch.mjs", false));
+
+        let names = vec!["keep.js".into(), "drop.js".into(), "nested".into()];
+        assert_eq!(
+            matcher.is_ignored_batch("scripts/debug", &names, &[0, 0, 1]),
+            vec![1, 1, 1]
+        );
+        assert!(matcher.is_ignored("scripts/debug/nested", true));
+
+        matcher
+            .add_source("scripts/debug", "!keep.js\n!nested/\n")
+            .unwrap();
+        assert_eq!(
+            matcher.is_ignored_batch_mask("scripts/debug", &names, 0b100),
+            0b010
+        );
+        assert!(!matcher.is_ignored("scripts/debug/nested", true));
     }
 
     #[test]
