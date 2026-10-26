@@ -25,7 +25,7 @@
     "happy-dom": "^21.0.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "rstack": "^0.8.5"
+    "rstack": "^0.8.6"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
