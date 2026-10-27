@@ -20,7 +20,7 @@
     "@rsbuild/plugin-vue": "^2.0.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@vue/test-utils": "^2.5.1",
-    "happy-dom": "^21.0.1",
+    "happy-dom": "^21.0.4",
     "rstack": "^0.8.6"
   }
 }

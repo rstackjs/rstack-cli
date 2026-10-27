@@ -7,153 +7,153 @@ importers:
     configDependencies: {}
     packageManagerDependencies:
       pnpm:
-        specifier: 12.11.2
-        version: 12.11.2
+        specifier: 12.15.0
+        version: 12.15.0
 
 packages:
 
-  '@pnpm/exe.android-arm64@12.11.2':
-    resolution: {integrity: sha512-owLw13OfPkEoY+hLBNeeG+dCFhywr7q2d/EHPz4mNL2RhKnv8gNwMARkjkiDQu234aItVwFNDeGnmQXm+ikkAg==}
+  '@pnpm/exe.android-arm64@12.15.0':
+    resolution: {integrity: sha512-eVCqmscY70LGvgRzu3mi8IBWBFGix+a6mNZoWmXxESsBdeiKEF9xQSuaeel10yn+zI7TXy2jlI63vFLzETk+aQ==}
     cpu: [arm64]
     os: [android]
 
-  '@pnpm/exe.android-x64@12.11.2':
-    resolution: {integrity: sha512-GYPkVebl4iokOA/4MPSpGoUVfFlsth7uqOCe1XiaiM23LAdvUOMJBObqHJijr89ZqjwHm9pO6vO45GRwJ2U2qA==}
+  '@pnpm/exe.android-x64@12.15.0':
+    resolution: {integrity: sha512-Gx/WbkFcdUFUg8g8AShezcS9EiQxfYvdAm2hfKLO8sfJmJvKOCt5fzlgHWDzmGhoclibgW+tUGZ/KF4F4wOTCA==}
     cpu: [x64]
     os: [android]
 
-  '@pnpm/exe.darwin-arm64@12.11.2':
-    resolution: {integrity: sha512-n9M4On66y8FDxUAKgMO1FXt0qihyG4e+56p3/F0uo8Bx9KplW8BwKVnXigzCJ8aNM6sVVPkOE6M9XXbeVIxnZA==}
+  '@pnpm/exe.darwin-arm64@12.15.0':
+    resolution: {integrity: sha512-N0ZykiDWCvqSBJvt71j7cSoBR993FqvYZFtmpCtqvW3pguiI+NAgraLPA5OTwu5mV+/d8hYpVcPktJA3xFDLtA==}
     cpu: [arm64]
     os: [darwin]
 
-  '@pnpm/exe.darwin-x64@12.11.2':
-    resolution: {integrity: sha512-oSW7n3sBT0c0cyk4kj10T2Y6Mpm+OFEiCAWozgX039tdoI6yqJF1uaFD3sw7ugLdu6VV3+uY0pa1TUZIPdxDWA==}
+  '@pnpm/exe.darwin-x64@12.15.0':
+    resolution: {integrity: sha512-7Ntr2HlBUxzwWOg7NwDxCbRW/3vXuqKO+hcXm+w3SBi9rrHY53li1wLqWVT7Gjxd+lVEHM1QJZo6WJEGFU8C6A==}
     cpu: [x64]
     os: [darwin]
 
-  '@pnpm/exe.freebsd-x64@12.11.2':
-    resolution: {integrity: sha512-qbzc3KoDpa/Lkf8vs3jnDe6dUUbso+6eLIyssYFMiliLpYNxn8dirk11YoNnOQcdHVB50v5RFls1Yid6ttT5pg==}
+  '@pnpm/exe.freebsd-x64@12.15.0':
+    resolution: {integrity: sha512-btOiyL7fL7W4uQGH0aqFai2TNC3IoKcZ7gNHBVbEFZt2dWrnrD0SufL3iGs3fLlmb4OtuU35uf4Zpr9V9Jh9mA==}
     cpu: [x64]
     os: [freebsd]
 
-  '@pnpm/exe.linux-arm64-musl@12.11.2':
-    resolution: {integrity: sha512-uMEYDwKRktGwANubQ+kYCwmhNwg3Ik6qK89ahsbQ5cP30R/5FVJb/T99vr9XRUBC/A7mZI6eeT92oyVas9ACyg==}
+  '@pnpm/exe.linux-arm64-musl@12.15.0':
+    resolution: {integrity: sha512-pNC38k+O+90FOjbPNSnw0E7apq1PKTmz3fFe1amn+lys/U5kL++uzir8bRiho8ONcyA3d9EU7wdqcY0DKkj+JA==}
     cpu: [arm64]
     os: [linux]
     libc: [musl]
 
-  '@pnpm/exe.linux-arm64@12.11.2':
-    resolution: {integrity: sha512-6e8ZAQUwFXAWHHHv5FesWqf/kEK04wuitBv5f/gxzkC0DiBfaixr+f+6JQede8SF4Ji5LcMwVFJbzAtffpWxEg==}
+  '@pnpm/exe.linux-arm64@12.15.0':
+    resolution: {integrity: sha512-qML/8aCXslh8td/w4U+HJNqUcZ2+m6EfTbWScIzZRmyPsRFN+xB4LP1U/hymxc1iSJiKtG56HJx2fvUErWFIGw==}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@pnpm/exe.linux-ppc64@12.11.2':
-    resolution: {integrity: sha512-Ui8A4nepkVupx2VpuFfysEluMvWK6gTB5rgVts7Ss/+8dj0RD28x3F/seNeH/zSypgC6yKdV6qsKVQh/uffTuQ==}
+  '@pnpm/exe.linux-ppc64@12.15.0':
+    resolution: {integrity: sha512-tjRDUUl7RCJ6T/6eoNPxOqkwU4Mzi5RtTXmSAxujyz37OTwwsMU7Ps087Zk4gHcUvRSeyF40ZFsew3vtE+nmUA==}
     cpu: [ppc64]
     os: [linux]
     libc: [glibc]
 
-  '@pnpm/exe.linux-riscv64@12.11.2':
-    resolution: {integrity: sha512-i1yLdQ5bu+wjQ+srtFoJAaY2gN/+oXHFdjul4llCeoDxHE0rTIG3R41NhHfCjyFPW4+CpbBT58933CL9sMOCnA==}
+  '@pnpm/exe.linux-riscv64@12.15.0':
+    resolution: {integrity: sha512-bF1uBWEfbwaeryz6lIiaJ8AWD082otZfvzGX5l+6LZRpRwUEpJHUsJrORaYP5/cNMv5ZR2p6TvvcJcQzwtDzmw==}
     cpu: [riscv64]
     os: [linux]
     libc: [glibc]
 
-  '@pnpm/exe.linux-s390x@12.11.2':
-    resolution: {integrity: sha512-YS1/lhPjjTsN4QL50VaFZKRa3Uc/bDnhE8eKbJMFvuX06UuFS5YaiDg04APoZdfVSGqTfX27QAg7rfLMSWaqxA==}
+  '@pnpm/exe.linux-s390x@12.15.0':
+    resolution: {integrity: sha512-zKMhIzsexYMToeLmqV5jPsvV/f9vwsJb2kUH2NFYzalbxImeBrlA4kL7GwF8gD4pagV6jYYcJb8RjbZIdjHptg==}
     cpu: [s390x]
     os: [linux]
     libc: [glibc]
 
-  '@pnpm/exe.linux-x64-musl@12.11.2':
-    resolution: {integrity: sha512-7eIxQR05fvJxCujUSKp5KTtehJ7QqrgqP/HD1+BcB/SaV2Be4XI1PEHiOgA1zxsiMIeMvTF6E4G4dYHrFjeXRg==}
+  '@pnpm/exe.linux-x64-musl@12.15.0':
+    resolution: {integrity: sha512-A9J0Jg0Rdx+qQU4qXtwyST5tto9IOu1zi4fDk35nbc6DWahggbcKtFvZPKFwL2qgUXGXOX//hXv6z/sp6emO8A==}
     cpu: [x64]
     os: [linux]
     libc: [musl]
 
-  '@pnpm/exe.linux-x64@12.11.2':
-    resolution: {integrity: sha512-FK7QKe24AYgppJwO3mpooYptduuvIGqKJPi5ac7MdnWkjUy46JBfYhCW0grnkWKC8YOf0x+vGviuQqJEj3SpQQ==}
+  '@pnpm/exe.linux-x64@12.15.0':
+    resolution: {integrity: sha512-yc+QlZR+9+nr29J4fRzhMoapgxTBDndq/+peyoq1XUufnQFnfbXUMFudDIKzHi545linGqmOmXfn0NoufNgcOg==}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@pnpm/exe.win32-arm64@12.11.2':
-    resolution: {integrity: sha512-PCTjVDdJb6VvraZxrEeFv6EqEA0hhIsAySx28e95J2Tqpi88hLpgOXgNqV0vpxq9A+b8GLQfyk/D+1UlJPv/YQ==}
+  '@pnpm/exe.win32-arm64@12.15.0':
+    resolution: {integrity: sha512-fPXZxuY1VclkOga9bc53qNCXcegfeoBR8+Ue+AospDwKzuGGSHll0oDxkLfkmpjyRqpe7bH5DyQPYp/xSMaIVA==}
     cpu: [arm64]
     os: [win32]
 
-  '@pnpm/exe.win32-x64@12.11.2':
-    resolution: {integrity: sha512-8sgX86OvRjJ3yZs/TvGR2L31wH9ScPZ+f+geKI3ikuB0RRiK3i4LlTRO8OXN6pdRqj8epMde4312MCjj7JsJdA==}
+  '@pnpm/exe.win32-x64@12.15.0':
+    resolution: {integrity: sha512-nrd+Tp1We1DGj4DGG5Bea9lZNh9y1PjlLBdEwdInS4D0h0UIDtM7JaGGGDJhNzIwcHASyihWI7HLV+dtG+fhYg==}
     cpu: [x64]
     os: [win32]
 
-  pnpm@12.11.2:
-    resolution: {integrity: sha512-JaUWUqGWeFr18ovabf6NxYLr76SsHRgCIc4TkCMcX7dmN4IupLbkYzznSs3LCnf3Ja8RutOBd/3t2u6BipVcuQ==}
-    engines: {node: '>=18.*'}
+  pnpm@12.15.0:
+    resolution: {integrity: sha512-s5UdbW/0qfE9x89WzSjSuOs328ycaOUuHhGRhz6p+CoBcoerULqtxczElPA2xnwOR+sTYIwvo29HcRth6hKOYQ==}
+    engines: {node: '>=18'}
     hasBin: true
 
 snapshots:
 
-  '@pnpm/exe.android-arm64@12.11.2':
+  '@pnpm/exe.android-arm64@12.15.0':
     optional: true
 
-  '@pnpm/exe.android-x64@12.11.2':
+  '@pnpm/exe.android-x64@12.15.0':
     optional: true
 
-  '@pnpm/exe.darwin-arm64@12.11.2':
+  '@pnpm/exe.darwin-arm64@12.15.0':
     optional: true
 
-  '@pnpm/exe.darwin-x64@12.11.2':
+  '@pnpm/exe.darwin-x64@12.15.0':
     optional: true
 
-  '@pnpm/exe.freebsd-x64@12.11.2':
+  '@pnpm/exe.freebsd-x64@12.15.0':
     optional: true
 
-  '@pnpm/exe.linux-arm64-musl@12.11.2':
+  '@pnpm/exe.linux-arm64-musl@12.15.0':
     optional: true
 
-  '@pnpm/exe.linux-arm64@12.11.2':
+  '@pnpm/exe.linux-arm64@12.15.0':
     optional: true
 
-  '@pnpm/exe.linux-ppc64@12.11.2':
+  '@pnpm/exe.linux-ppc64@12.15.0':
     optional: true
 
-  '@pnpm/exe.linux-riscv64@12.11.2':
+  '@pnpm/exe.linux-riscv64@12.15.0':
     optional: true
 
-  '@pnpm/exe.linux-s390x@12.11.2':
+  '@pnpm/exe.linux-s390x@12.15.0':
     optional: true
 
-  '@pnpm/exe.linux-x64-musl@12.11.2':
+  '@pnpm/exe.linux-x64-musl@12.15.0':
     optional: true
 
-  '@pnpm/exe.linux-x64@12.11.2':
+  '@pnpm/exe.linux-x64@12.15.0':
     optional: true
 
-  '@pnpm/exe.win32-arm64@12.11.2':
+  '@pnpm/exe.win32-arm64@12.15.0':
     optional: true
 
-  '@pnpm/exe.win32-x64@12.11.2':
+  '@pnpm/exe.win32-x64@12.15.0':
     optional: true
 
-  pnpm@12.11.2:
+  pnpm@12.15.0:
     optionalDependencies:
-      '@pnpm/exe.android-arm64': 12.11.2
-      '@pnpm/exe.android-x64': 12.11.2
-      '@pnpm/exe.darwin-arm64': 12.11.2
-      '@pnpm/exe.darwin-x64': 12.11.2
-      '@pnpm/exe.freebsd-x64': 12.11.2
-      '@pnpm/exe.linux-arm64': 12.11.2
-      '@pnpm/exe.linux-arm64-musl': 12.11.2
-      '@pnpm/exe.linux-ppc64': 12.11.2
-      '@pnpm/exe.linux-riscv64': 12.11.2
-      '@pnpm/exe.linux-s390x': 12.11.2
-      '@pnpm/exe.linux-x64': 12.11.2
-      '@pnpm/exe.linux-x64-musl': 12.11.2
-      '@pnpm/exe.win32-arm64': 12.11.2
-      '@pnpm/exe.win32-x64': 12.11.2
+      '@pnpm/exe.android-arm64': 12.15.0
+      '@pnpm/exe.android-x64': 12.15.0
+      '@pnpm/exe.darwin-arm64': 12.15.0
+      '@pnpm/exe.darwin-x64': 12.15.0
+      '@pnpm/exe.freebsd-x64': 12.15.0
+      '@pnpm/exe.linux-arm64': 12.15.0
+      '@pnpm/exe.linux-arm64-musl': 12.15.0
+      '@pnpm/exe.linux-ppc64': 12.15.0
+      '@pnpm/exe.linux-riscv64': 12.15.0
+      '@pnpm/exe.linux-s390x': 12.15.0
+      '@pnpm/exe.linux-x64': 12.15.0
+      '@pnpm/exe.linux-x64-musl': 12.15.0
+      '@pnpm/exe.win32-arm64': 12.15.0
+      '@pnpm/exe.win32-x64': 12.15.0
 
 ---
 lockfileVersion: '9.0'
@@ -166,8 +166,8 @@ settings:
 catalogs:
   default:
     '@napi-rs/cli':
-      specifier: ^3.10.8
-      version: 3.10.8
+      specifier: ^3.10.9
+      version: 3.10.9
     '@rsbuild/core':
       specifier: ~2.2.14
       version: 2.2.14
@@ -202,11 +202,11 @@ catalogs:
       specifier: ^1.0.0
       version: 1.0.0
     '@rstest/adapter-rsbuild':
-      specifier: ~0.12.3
-      version: 0.12.3
+      specifier: ~0.12.5
+      version: 0.12.5
     '@rstest/adapter-rslib':
-      specifier: ~0.12.3
-      version: 0.12.3
+      specifier: ~0.12.5
+      version: 0.12.5
     '@rstest/core':
       specifier: ~0.12.4
       version: 0.12.4
@@ -244,8 +244,8 @@ catalogs:
       specifier: 2.1.0
       version: 2.1.0
     happy-dom:
-      specifier: ^21.0.1
-      version: 21.0.1
+      specifier: ^21.0.4
+      version: 21.0.4
     heading-case:
       specifier: ^2.0.2
       version: 2.0.2
@@ -271,11 +271,11 @@ catalogs:
       specifier: 0.8.1
       version: 0.8.1
     react:
-      specifier: ^19.3.0
-      version: 19.3.0
+      specifier: ^19.3.1
+      version: 19.3.1
     react-dom:
-      specifier: ^19.3.0
-      version: 19.3.0
+      specifier: ^19.3.1
+      version: 19.3.1
     rsbuild-plugin-open-graph:
       specifier: ^1.1.3
       version: 1.1.3
@@ -304,11 +304,11 @@ catalogs:
       specifier: 11.0.0
       version: 11.0.0
     vscode-languageserver-textdocument:
-      specifier: 1.0.15
-      version: 1.0.15
+      specifier: 1.0.16
+      version: 1.0.16
     zephyr-rspress-plugin:
-      specifier: 1.6.0
-      version: 1.6.0
+      specifier: 1.7.0
+      version: 1.7.0
 
 importers:
 
@@ -337,10 +337,10 @@ importers:
     dependencies:
       react:
         specifier: 'catalog:'
-        version: 19.3.0
+        version: 19.3.1
       react-dom:
         specifier: 'catalog:'
-        version: 19.3.0(react@19.3.0)
+        version: 19.3.1(react@19.3.1)
     devDependencies:
       '@rsbuild/plugin-react':
         specifier: 'catalog:'
@@ -353,7 +353,7 @@ importers:
         version: 7.0.1(@testing-library/dom@10.4.2)
       '@testing-library/react':
         specifier: 'catalog:'
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0)(@types/react@19.3.0)(react-dom@19.3.0)(react@19.3.0)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0)(@types/react@19.3.0)(react-dom@19.3.1)(react@19.3.1)
       '@types/react':
         specifier: 'catalog:'
         version: 19.3.0
@@ -362,7 +362,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       happy-dom:
         specifier: 'catalog:'
-        version: 21.0.1
+        version: 21.0.4
       rstack:
         specifier: workspace:*
         version: link:../../packages/rstack
@@ -383,7 +383,7 @@ importers:
         version: 26.6.5
       happy-dom:
         specifier: 'catalog:'
-        version: 21.0.1
+        version: 21.0.4
       rstack:
         specifier: workspace:*
         version: link:../../packages/rstack
@@ -411,10 +411,10 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       react:
         specifier: 'catalog:'
-        version: 19.3.0
+        version: 19.3.1
       react-dom:
         specifier: 'catalog:'
-        version: 19.3.0(react@19.3.0)
+        version: 19.3.1(react@19.3.1)
 
   examples/lib-node:
     devDependencies:
@@ -441,7 +441,7 @@ importers:
         version: 7.0.1(@testing-library/dom@10.4.2)
       '@testing-library/react':
         specifier: 'catalog:'
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0)(@types/react@19.3.0)(react-dom@19.3.0)(react@19.3.0)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0)(@types/react@19.3.0)(react-dom@19.3.1)(react@19.3.1)
       '@types/react':
         specifier: 'catalog:'
         version: 19.3.0
@@ -450,13 +450,13 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       happy-dom:
         specifier: 'catalog:'
-        version: 21.0.1
+        version: 21.0.4
       react:
         specifier: 'catalog:'
-        version: 19.3.0
+        version: 19.3.1
       react-dom:
         specifier: 'catalog:'
-        version: 19.3.0(react@19.3.0)
+        version: 19.3.1(react@19.3.1)
       rstack:
         specifier: workspace:*
         version: link:../../packages/rstack
@@ -468,10 +468,10 @@ importers:
     dependencies:
       react:
         specifier: 'catalog:'
-        version: 19.3.0
+        version: 19.3.1
       react-dom:
         specifier: 'catalog:'
-        version: 19.3.0(react@19.3.0)
+        version: 19.3.1(react@19.3.1)
     devDependencies:
       '@rsbuild/plugin-react':
         specifier: 'catalog:'
@@ -481,7 +481,7 @@ importers:
         version: 10.4.2
       '@testing-library/react':
         specifier: 'catalog:'
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0)(@types/react@19.3.0)(react-dom@19.3.0)(react@19.3.0)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0)(@types/react@19.3.0)(react-dom@19.3.1)(react@19.3.1)
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.5
@@ -493,7 +493,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       happy-dom:
         specifier: 'catalog:'
-        version: 21.0.1
+        version: 21.0.4
       rstack:
         specifier: workspace:*
         version: link:../../packages/rstack
@@ -543,7 +543,7 @@ importers:
     devDependencies:
       '@napi-rs/cli':
         specifier: 'catalog:'
-        version: 3.10.8(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.6.5)(supports-color@8.1.1)
+        version: 3.10.9(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.6.5)(supports-color@8.1.1)
       '@rspress/core':
         specifier: 'catalog:'
         version: 2.1.0-beta.1(@rspack/core@2.2.9)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
@@ -555,10 +555,10 @@ importers:
         version: 1.0.0
       '@rstest/adapter-rsbuild':
         specifier: 'catalog:'
-        version: 0.12.3(@rsbuild/core@2.2.14)(@rstest/core@0.12.4)
+        version: 0.12.5(@rsbuild/core@2.2.14)(@rstest/core@0.12.4)
       '@rstest/adapter-rslib':
         specifier: 'catalog:'
-        version: 0.12.3(@rslib/core@1.0.3)(@rstest/core@0.12.4)(typescript@7.0.2)
+        version: 0.12.5(@rslib/core@1.0.3)(@rstest/core@0.12.4)(typescript@7.0.2)
       '@types/micromatch':
         specifier: 'catalog:'
         version: 4.0.10
@@ -606,7 +606,7 @@ importers:
         version: 11.0.0
       vscode-languageserver-textdocument:
         specifier: 'catalog:'
-        version: 1.0.15
+        version: 1.0.16
 
   website:
     devDependencies:
@@ -636,10 +636,10 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       react:
         specifier: 'catalog:'
-        version: 19.3.0
+        version: 19.3.1
       react-dom:
         specifier: 'catalog:'
-        version: 19.3.0(react@19.3.0)
+        version: 19.3.1(react@19.3.1)
       rsbuild-plugin-open-graph:
         specifier: 'catalog:'
         version: 1.1.3(@rsbuild/core@2.2.14)
@@ -654,7 +654,7 @@ importers:
         version: 7.0.2
       zephyr-rspress-plugin:
         specifier: 'catalog:'
-        version: 1.6.0(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)(@rspress/core@2.1.0-beta.1)(supports-color@8.1.1)
+        version: 1.7.0(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)(@rspress/core@2.1.0-beta.1)(supports-color@8.1.1)
 
 packages:
 
@@ -928,8 +928,8 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  '@napi-rs/cli@3.10.8':
-    resolution: {integrity: sha512-hg7m8VwECTIIHxNzajDG8QgtTOEVAKiIVLCLCW90Th6Z5R/ijWjh16iaQrRvXj4ve/S2fcXYo5cctCWJ8aVxIg==}
+  '@napi-rs/cli@3.10.9':
+    resolution: {integrity: sha512-RpzJrTDlSxUi2Deo+dh4bmDTKklAVe295aSQjZspwbZyUBG7twbXbiKskL2w/bL4kNg3DdkrwbI/iQwI9kgQaQ==}
     engines: {node: ^20.17.0 || ^22.13.0 || >= 23.5.0}
     hasBin: true
     peerDependencies:
@@ -1663,14 +1663,14 @@ packages:
   '@rstackjs/test-utils@1.0.0':
     resolution: {integrity: sha512-g7oEZzqwke/pRVGAsvEpML+37PDOo9BwR8nKignbtXlKmW9Cb202pRRUSVEsWG//7pnyIi+q4P7b1H/h1ianGA==}
 
-  '@rstest/adapter-rsbuild@0.12.3':
-    resolution: {integrity: sha512-jnCb1XrtZ38sKULF0Xftjus512IZwF23U+xaITlWPUNtEBioXYcl76fsEOwkqWdRVFqjHV6jHEShhsE25bb0Yw==}
+  '@rstest/adapter-rsbuild@0.12.5':
+    resolution: {integrity: sha512-hNWcWoR9xOa7AdcVDoohcowPbOqVF25yz+ljWWgW/XP4m37OmGND3IinJrPaUoa5caEmZMm8/X36BjFn3ecjNA==}
     peerDependencies:
       '@rsbuild/core': ^1.0.0 || ^2.0.0
       '@rstest/core': ^0.12.0
 
-  '@rstest/adapter-rslib@0.12.3':
-    resolution: {integrity: sha512-TrTIFtJq6sy7EA8aQFqyP119/d93YOyK/Caig0OArC3jceVrQ40EIb5lpdPilwB5S3Y3e4uwl5EQJ8qjetN+uQ==}
+  '@rstest/adapter-rslib@0.12.5':
+    resolution: {integrity: sha512-mY8P8peS6lOqs+iR46Vzl2d8A6KoUnFdj3Sx/DxfbKVK8YuZTVfg2yZ4m3XEBuKOQpJmDCm1vtBgJR6T3o/olA==}
     peerDependencies:
       '@rslib/core': '>=0.18.6 || ^1.0.0-0'
       '@rstest/core': ^0.12.0
@@ -2185,6 +2185,8 @@ packages:
 
   clipanion@4.0.0-rc.4:
     resolution: {integrity: sha512-CXkMQxU6s9GklO/1f714dkKBMu1lopS1WFF0B8o4AxPykR1hpozxSiUZ5ZUeBjfPgCWqbcNOtZVFhB8Lkfp1+Q==}
+    peerDependencies:
+      typanion: '*'
 
   clsx@2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
@@ -2447,8 +2449,8 @@ packages:
     resolution: {integrity: sha512-x/RzkpWO40bTjIoT30iQtt64FLLmH/iRcUCN2X//bLx7H3ifkdfPXyqsro/OYtqzIAhiLMMA7mmiOR9C3NOKjQ==}
     engines: {node: '>=20.0.0'}
 
-  happy-dom@21.0.1:
-    resolution: {integrity: sha512-pRBs/u9fhrncyByOl58DMex0R2uAj6ZPKWIjV5j5yNGZBqLw3P6BTRhlc0DD5b/Ht4/6JYTMuE2LJhUWRC6SGw==}
+  happy-dom@21.0.4:
+    resolution: {integrity: sha512-tFm+GaLBgo6o0awHnvHaNoraVo27qJ+2tZEtZ+cIa08hXbeitrxAJajLI05hsUy/2/YTKcUjQYzHe5mCcraLBw==}
     engines: {node: '>=20.0.0'}
 
   has-flag@4.0.0:
@@ -3025,10 +3027,10 @@ packages:
     resolution: {integrity: sha512-cJ+oHTW1VAEa8cJslgmUZrc+sjRKgAKl3Zyse6+PV38hZe/V6Z14TbCuXcan9F9ghlz4QrFr2c92TNF82UkYHA==}
     engines: {node: '>=10'}
 
-  react-dom@19.3.0:
-    resolution: {integrity: sha512-JDk8dgif51OjFoDE70+OT9ICyYr+69HlmihNwp1+Nsfbna3t5sIiCa9ZJktDmQ4/1b/rn26hIAR2uYXDMr5r0Q==}
+  react-dom@19.3.1:
+    resolution: {integrity: sha512-Y0bARz53lhEC1NMCASs0/j+faB/zqt3R8hpvg1e8+61ZVJ4UL0UdC4cBbXfZMcIuhrfgeILTLe+ZeBCavQPtKQ==}
     peerDependencies:
-      react: ^19.3.0
+      react: ^19.3.1
 
   react-is@17.0.2:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
@@ -3068,8 +3070,8 @@ packages:
       react-dom:
         optional: true
 
-  react@19.3.0:
-    resolution: {integrity: sha512-E8LUcbtBWt20bbl2YoHfx4ZDBdxVTfOKtCZn9cDSJ4l6/nuoApcpIBcj47t2wZoVX8g2ZHuMHbiShgCR1T5Sog==}
+  react@19.3.1:
+    resolution: {integrity: sha512-QNhWdt7nrgVWWQG58QuGsAR3jv3Hbe4mb4vz7w2csnHavciZJgda1CPNaldF6eVxv90ud3jUXpKlHL69gO38yw==}
     engines: {node: '>=0.10.0'}
 
   readdirp@5.0.0:
@@ -3492,8 +3494,8 @@ packages:
   vscode-languageserver-protocol@3.18.5:
     resolution: {integrity: sha512-FW4fBMzZ99N8xeob4py0l050wgCoRgTpEq5Xcsb9lM1bc29UKGR/wSV+4knaqFxssFHajy7OzNiKP/m3U1ZEuA==}
 
-  vscode-languageserver-textdocument@1.0.15:
-    resolution: {integrity: sha512-Gsfr9S8LU3S6885cS+NaleasJ0n3V5y/SOTqHCifQiXWFw3G9w9/YItDfwHrlCz+dSZWWZ8ilYVMcJe7Sz7Sxw==}
+  vscode-languageserver-textdocument@1.0.16:
+    resolution: {integrity: sha512-qeNEuOi9a3qkqRf7Gfez2WL2VwlBTLCNekHBGO9kxPVUp9XuY15yfTJ9jwvOwKI0I2MhUUfZq95NSp+LK1CLQg==}
 
   vscode-languageserver-types@3.18.5:
     resolution: {integrity: sha512-kPd6+JQNz3HMJvjKlqUxERSlZHAntl/aGpsk7ImwIh0ewDKDcjgAEyVSYciPiOJD3ftbK9IrfiqUeTZLSbCizw==}
@@ -3530,29 +3532,29 @@ packages:
     engines: {node: '>= 14.6'}
     hasBin: true
 
-  zephyr-agent@1.6.0:
-    resolution: {integrity: sha512-BPs3XoWUWTa+EOPupDHQPnDgxoP4XItDqIpm47KRYBa3mFSsu5FybLQp9KBmKHgUfRY0W4x8WbKkretHdFmlwA==}
+  zephyr-agent@1.7.0:
+    resolution: {integrity: sha512-Hbt92tB5i4b6mVX2gfTGXaKeackTyfEEuPzlWJdgvr6Zx4rUkyL5sSxjQg2hUeZYMsrVnlkJ2seBZ2v77dXMUg==}
 
-  zephyr-edge-contract@1.6.0:
-    resolution: {integrity: sha512-zNnXTyNx8OJEtLM70hbuk9cyGZiNiPftgWox78AlDTflglug8XUs57FdIlfy5JWcMqzQ8eo+MtqBixv9ITbz2g==}
+  zephyr-edge-contract@1.7.0:
+    resolution: {integrity: sha512-JlbwKGpMNnkcH05vrjK7CKg7bQaZobIwyaVZtj5yiVZaxVW4L6Ac40b8X2QWNoDI9glVJIYTvRUeu43hGdZEtw==}
 
-  zephyr-rsbuild-plugin@1.6.0:
-    resolution: {integrity: sha512-s54lZnFaLYpJ5IYmjPdMNEGIvcKfzCT/BTtViQXrgCP/ieVRp9xm5IJ6tYqs/ugyPrmNTd1lXaMkhESF86iGqA==}
+  zephyr-rsbuild-plugin@1.7.0:
+    resolution: {integrity: sha512-Sya97g2E4xgGVvpW55KOOw4ZD2wdIKHDmJ8OPQ6elrQyEddDZLtQmdlOuNEtPx6crvVjdFcrOOhCt2VoZYsi0Q==}
     peerDependencies:
       '@rsbuild/core': ^1.0.0 || ^2.0.0-0
 
-  zephyr-rspack-plugin@1.6.0:
-    resolution: {integrity: sha512-t4BVX3LWLBvt6nldF0xlm++J5KUhzYdndNi+S9Jj78BKMcwLkHCC3EE07gPMsRDkZqptPR9cfqM771T3d2sGSg==}
+  zephyr-rspack-plugin@1.7.0:
+    resolution: {integrity: sha512-lBE0mUEA+h68GsWmvUGLkP1sWeWPGoUOEA9SEwBHn9AWC/yBC6QCK42cexSUj2I4X0I3McOdsTMlQubeEgP/MQ==}
     peerDependencies:
       '@rspack/core': ^1.0.0 || ^2.0.0-0
 
-  zephyr-rspress-plugin@1.6.0:
-    resolution: {integrity: sha512-ssJTo+P9ljwprPFjTV4rv6bskLogIkMv3GYD8/ie39Ty7lLzs3X9+3bMH5jFuz2Dc9WuyQ+j8v6wdLna1VhPmw==}
+  zephyr-rspress-plugin@1.7.0:
+    resolution: {integrity: sha512-KadUjKcXU0MvFoJq8sS+xY5nEHr49dfjQyrxrOjoQD3X+IXXQggtYmBkv6kYA+eOQJpGhs4MmRH7I0GvVbzm8A==}
     peerDependencies:
       '@rspress/core': ^2.0.0
 
-  zephyr-xpack-internal@1.6.0:
-    resolution: {integrity: sha512-CkTS3VSuVfo10a8G0vX4kAIs/qLQ2UkcK/Ts5Vvpr6N0I2j0xkt13rtCNZS2GiVd2y7d4SqAHbCEqwBeAqw2Nw==}
+  zephyr-xpack-internal@1.7.0:
+    resolution: {integrity: sha512-Ui8aA9a6eq8Sss1kXrO+Z2OKUm/Zw+ydKcJ789G7TiUChXafw53mm6zCm94O6pEYy8ksg2LgzkvD6lNGqi5oag==}
 
   zimmerframe@1.1.4:
     resolution: {integrity: sha512-B58NGBEoc8Y9MWWCQGl/gq9xBCe4IiKM0a2x7GZdQKOW5Exr8S1W24J6OgM1njK8xCRGvAJIL/MxXHf6SkmQKQ==}
@@ -3837,13 +3839,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.0)':
+  '@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1)':
     dependencies:
       '@types/mdx': 2.0.14
       '@types/react': 19.3.0
-      react: 19.3.0
+      react: 19.3.1
 
-  '@napi-rs/cli@3.10.8(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.6.5)(supports-color@8.1.1)':
+  '@napi-rs/cli@3.10.9(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.6.5)(supports-color@8.1.1)':
     dependencies:
       '@inquirer/prompts': 8.5.2(@types/node@26.6.5)
       '@napi-rs/cross-toolchain': 1.0.3(supports-color@8.1.1)
@@ -4390,14 +4392,14 @@ snapshots:
   '@rspress/core@2.1.0-beta.1(@rspack/core@2.2.9)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)':
     dependencies:
       '@mdx-js/mdx': 3.1.1(supports-color@8.1.1)
-      '@mdx-js/react': 3.1.1(@types/react@19.3.0)(react@19.3.0)
+      '@mdx-js/react': 3.1.1(@types/react@19.3.0)(react@19.3.1)
       '@rsbuild/core': 2.2.14
       '@rsbuild/plugin-react': 2.1.1(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)
       '@rspress/shared': 2.1.0-beta.1(supports-color@8.1.1)
       '@shikijs/rehype': 4.3.1
       '@types/mdast': 4.0.4
       '@types/react': 19.3.0
-      '@unhead/react': 2.1.17(react@19.3.0)
+      '@unhead/react': 2.1.17(react@19.3.1)
       body-scroll-lock: 4.0.0-beta.0
       clsx: 2.1.1
       copy-to-clipboard: 3.3.3
@@ -4408,11 +4410,11 @@ snapshots:
       mdast-util-mdxjs-esm: 2.0.1(supports-color@8.1.1)
       medium-zoom: 1.1.0
       nprogress: 0.2.0
-      react: 19.3.0
-      react-dom: 19.3.0(react@19.3.0)
+      react: 19.3.1
+      react-dom: 19.3.1(react@19.3.1)
       react-lazy-with-preload: 2.2.1
-      react-render-to-markdown: 19.1.0(react@19.3.0)
-      react-router-dom: 7.18.4(react-dom@19.3.0)(react@19.3.0)
+      react-render-to-markdown: 19.1.0(react@19.3.1)
+      react-router-dom: 7.18.4(react-dom@19.3.1)(react@19.3.1)
       rehype-external-links: 3.0.0
       rehype-raw: 7.0.0
       remark-cjk-friendly: 2.3.2(@types/mdast@4.0.4)(micromark-util-types@2.0.2)(micromark@4.0.2)(unified@11.0.5)
@@ -4463,12 +4465,12 @@ snapshots:
 
   '@rstackjs/test-utils@1.0.0': {}
 
-  '@rstest/adapter-rsbuild@0.12.3(@rsbuild/core@2.2.14)(@rstest/core@0.12.4)':
+  '@rstest/adapter-rsbuild@0.12.5(@rsbuild/core@2.2.14)(@rstest/core@0.12.4)':
     dependencies:
       '@rsbuild/core': 2.2.14
       '@rstest/core': 0.12.4(happy-dom@20.14.5)
 
-  '@rstest/adapter-rslib@0.12.3(@rslib/core@1.0.3)(@rstest/core@0.12.4)(typescript@7.0.2)':
+  '@rstest/adapter-rslib@0.12.5(@rslib/core@1.0.3)(@rstest/core@0.12.4)(typescript@7.0.2)':
     dependencies:
       '@rslib/core': 1.0.3(typescript@7.0.2)
       '@rstest/core': 0.12.4(happy-dom@20.14.5)
@@ -4652,12 +4654,12 @@ snapshots:
       picocolors: 1.1.1
       redent: 3.0.0
 
-  '@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0)(@types/react@19.3.0)(react-dom@19.3.0)(react@19.3.0)':
+  '@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0)(@types/react@19.3.0)(react-dom@19.3.1)(react@19.3.1)':
     dependencies:
       '@babel/runtime': 7.29.7
       '@testing-library/dom': 10.4.2
-      react: 19.3.0
-      react-dom: 19.3.0(react@19.3.0)
+      react: 19.3.1
+      react-dom: 19.3.1(react@19.3.1)
     optionalDependencies:
       '@types/react': 19.3.0
       '@types/react-dom': 19.3.0(@types/react@19.3.0)
@@ -4790,9 +4792,9 @@ snapshots:
 
   '@ungap/structured-clone@1.3.2': {}
 
-  '@unhead/react@2.1.17(react@19.3.0)':
+  '@unhead/react@2.1.17(react@19.3.1)':
     dependencies:
-      react: 19.3.0
+      react: 19.3.1
       unhead: 2.1.17
 
   acorn-jsx@5.3.2(acorn@8.19.0):
@@ -5135,7 +5137,7 @@ snapshots:
       - utf-8-validate
     optional: true
 
-  happy-dom@21.0.1:
+  happy-dom@21.0.4:
     dependencies:
       '@types/node': 26.6.5
       '@types/whatwg-mimetype': 3.0.2
@@ -5992,42 +5994,42 @@ snapshots:
 
   proxy-from-env@2.1.0: {}
 
-  react-dom@19.3.0(react@19.3.0):
+  react-dom@19.3.1(react@19.3.1):
     dependencies:
-      react: 19.3.0
+      react: 19.3.1
       scheduler: 0.28.0
 
   react-is@17.0.2: {}
 
   react-lazy-with-preload@2.2.1: {}
 
-  react-reconciler@0.33.0(react@19.3.0):
+  react-reconciler@0.33.0(react@19.3.1):
     dependencies:
-      react: 19.3.0
+      react: 19.3.1
       scheduler: 0.27.0
 
   react-refresh@0.19.0: {}
 
-  react-render-to-markdown@19.1.0(react@19.3.0):
+  react-render-to-markdown@19.1.0(react@19.3.1):
     dependencies:
-      react: 19.3.0
-      react-reconciler: 0.33.0(react@19.3.0)
+      react: 19.3.1
+      react-reconciler: 0.33.0(react@19.3.1)
 
-  react-router-dom@7.18.4(react-dom@19.3.0)(react@19.3.0):
+  react-router-dom@7.18.4(react-dom@19.3.1)(react@19.3.1):
     dependencies:
-      react: 19.3.0
-      react-dom: 19.3.0(react@19.3.0)
-      react-router: 7.18.4(react-dom@19.3.0)(react@19.3.0)
+      react: 19.3.1
+      react-dom: 19.3.1(react@19.3.1)
+      react-router: 7.18.4(react-dom@19.3.1)(react@19.3.1)
 
-  react-router@7.18.4(react-dom@19.3.0)(react@19.3.0):
+  react-router@7.18.4(react-dom@19.3.1)(react@19.3.1):
     dependencies:
       cookie: 1.1.1
-      react: 19.3.0
+      react: 19.3.1
       set-cookie-parser: 2.7.2
     optionalDependencies:
-      react-dom: 19.3.0(react@19.3.0)
+      react-dom: 19.3.1(react@19.3.1)
 
-  react@19.3.0: {}
+  react@19.3.1: {}
 
   readdirp@5.0.0:
     optional: true
@@ -6507,7 +6509,7 @@ snapshots:
       vscode-jsonrpc: 10.0.0
       vscode-languageserver-types: 3.18.5
 
-  vscode-languageserver-textdocument@1.0.15: {}
+  vscode-languageserver-textdocument@1.0.16: {}
 
   vscode-languageserver-types@3.18.5: {}
 
@@ -6529,7 +6531,7 @@ snapshots:
   yaml@2.9.1:
     optional: true
 
-  zephyr-agent@1.6.0(supports-color@8.1.1):
+  zephyr-agent@1.7.0(supports-color@8.1.1):
     dependencies:
       '@bybrave/proper-lockfile2': 5.0.0
       '@toon-format/toon': 4.1.1
@@ -6541,50 +6543,50 @@ snapshots:
       jiti: 2.7.0
       jose: 6.2.12
       open: 11.0.4
-      zephyr-edge-contract: 1.6.0
+      zephyr-edge-contract: 1.7.0
     transitivePeerDependencies:
       - kerberos
       - supports-color
 
-  zephyr-edge-contract@1.6.0: {}
+  zephyr-edge-contract@1.7.0: {}
 
-  zephyr-rsbuild-plugin@1.6.0(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)(supports-color@8.1.1):
+  zephyr-rsbuild-plugin@1.7.0(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)(supports-color@8.1.1):
     dependencies:
       '@rsbuild/core': 2.2.14
-      zephyr-agent: 1.6.0(supports-color@8.1.1)
-      zephyr-rspack-plugin: 1.6.0(@rspack/core@2.2.9)(supports-color@8.1.1)
-      zephyr-xpack-internal: 1.6.0(supports-color@8.1.1)
+      zephyr-agent: 1.7.0(supports-color@8.1.1)
+      zephyr-rspack-plugin: 1.7.0(@rspack/core@2.2.9)(supports-color@8.1.1)
+      zephyr-xpack-internal: 1.7.0(supports-color@8.1.1)
     transitivePeerDependencies:
       - '@rspack/core'
       - kerberos
       - supports-color
 
-  zephyr-rspack-plugin@1.6.0(@rspack/core@2.2.9)(supports-color@8.1.1):
+  zephyr-rspack-plugin@1.7.0(@rspack/core@2.2.9)(supports-color@8.1.1):
     dependencies:
       '@rspack/core': 2.2.9(@swc/helpers@0.5.23)
-      zephyr-agent: 1.6.0(supports-color@8.1.1)
-      zephyr-xpack-internal: 1.6.0(supports-color@8.1.1)
+      zephyr-agent: 1.7.0(supports-color@8.1.1)
+      zephyr-xpack-internal: 1.7.0(supports-color@8.1.1)
     transitivePeerDependencies:
       - kerberos
       - supports-color
 
-  zephyr-rspress-plugin@1.6.0(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)(@rspress/core@2.1.0-beta.1)(supports-color@8.1.1):
+  zephyr-rspress-plugin@1.7.0(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)(@rspress/core@2.1.0-beta.1)(supports-color@8.1.1):
     dependencies:
       '@rspress/core': 2.1.0-beta.1(@rspack/core@2.2.9)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
-      zephyr-agent: 1.6.0(supports-color@8.1.1)
-      zephyr-edge-contract: 1.6.0
-      zephyr-rsbuild-plugin: 1.6.0(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)(supports-color@8.1.1)
-      zephyr-xpack-internal: 1.6.0(supports-color@8.1.1)
+      zephyr-agent: 1.7.0(supports-color@8.1.1)
+      zephyr-edge-contract: 1.7.0
+      zephyr-rsbuild-plugin: 1.7.0(@rsbuild/core@2.2.14)(@rspack/core@2.2.9)(supports-color@8.1.1)
+      zephyr-xpack-internal: 1.7.0(supports-color@8.1.1)
     transitivePeerDependencies:
       - '@rsbuild/core'
       - '@rspack/core'
       - kerberos
       - supports-color
 
-  zephyr-xpack-internal@1.6.0(supports-color@8.1.1):
+  zephyr-xpack-internal@1.7.0(supports-color@8.1.1):
     dependencies:
-      zephyr-agent: 1.6.0(supports-color@8.1.1)
-      zephyr-edge-contract: 1.6.0
+      zephyr-agent: 1.7.0(supports-color@8.1.1)
+      zephyr-edge-contract: 1.7.0
     transitivePeerDependencies:
       - kerberos
       - supports-color
