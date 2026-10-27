@@ -22,7 +22,7 @@
     "@solidjs/testing-library": "^0.8.10",
     "@testing-library/jest-dom": "^7.0.1",
     "@types/node": "^26.6.5",
-    "happy-dom": "^21.0.1",
+    "happy-dom": "^21.0.4",
     "rstack": "^0.8.6",
     "typescript": "^7.0.2"
   }

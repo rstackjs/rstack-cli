@@ -13,8 +13,8 @@
   "devDependencies": {
     "@types/node": "^26.6.5",
     "rstack": "^0.8.6",
-    "turbo": "^2.11.8",
+    "turbo": "^2.11.10",
     "typescript": "^7.0.2"
   },
-  "packageManager": "pnpm@12.11.2"
+  "packageManager": "pnpm@12.15.0"
 }
