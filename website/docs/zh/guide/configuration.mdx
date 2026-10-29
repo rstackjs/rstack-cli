@@ -157,7 +157,7 @@ define.test({
 
 未设置 `extends` 时，Rstack CLI 会通过 Rsbuild 适配器让测试配置自动继承 `define.app()`；如果未定义应用配置，则通过 Rslib 适配器回退到 `define.lib()`。二者同时存在时，应用配置的优先级更高。显式设置 `extends` 可关闭自动继承。
 
-如果测试根配置未定义 `extends` 且包含 `projects`，Rstack CLI 会为每个未自行设置 `extends` 的内联项目应用自动继承。函数形式的应用或库配置只会解析一次，并由这些项目共享。字符串形式的项目会原样传给 Rstest；它们会独立加载外部配置，不继承当前应用或库的配置。
+如果测试根配置未定义 `extends` 且包含 `projects`，Rstack CLI 会为每个未自行设置 `extends` 的内联项目应用自动继承。函数形式的应用或库配置只会解析一次，并由这些项目共享。字符串形式的项目使用各自的 Rstack 配置，不使用根配置。
 
 这些规则同样适用于[公共配置](#shared-configurations)：Rstack 先合并测试配置，再判断是否需要继承合并后的 App 或 Lib 配置。
 
