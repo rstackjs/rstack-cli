@@ -84,11 +84,9 @@ export type LoadRstackConfigOptions = {
   /**
    * The path to the Rstack config file, can be a relative or absolute path.
    * A relative path is resolved from `cwd`.
-   * If `configFilePath` is omitted, the config path set by the CLI is used.
-   * If neither path is provided, the function will search for the config file in `cwd`.
-   * Pass `null` to search `cwd` and ignore the CLI config path.
+   * If omitted, the function searches for the config file in `cwd`.
    */
-  configFilePath?: string | null;
+  configFilePath?: string;
   /**
    * The directory the config file is searched in and relative config paths are resolved from.
    * Defaults to the current working directory.
@@ -102,21 +100,10 @@ type ConfigSession = {
   active: boolean;
 };
 
-type ConfigState = {
-  /**
-   * Config file path from the global `--config` flag. Always absolute: the CLI
-   * resolves it at parse time so it stays independent of later cwd choices
-   * (`loadRstackConfig` may be called with an LSP workspace root as `cwd`).
-   */
-  configPath?: string;
-};
-
 declare global {
   // rslint-disable-next-line no-var
   var __rstackConfigSessionStorage:
     AsyncLocalStorage<ConfigSession> | undefined;
-  // rslint-disable-next-line no-var
-  var __rstackCliState: ConfigState | undefined;
 }
 
 const getConfigSessionStorage = (): AsyncLocalStorage<ConfigSession> => {
@@ -130,23 +117,6 @@ const getConfigSessionStorage = (): AsyncLocalStorage<ConfigSession> => {
 
   return globalThis.__rstackConfigSessionStorage;
 };
-
-export const getConfigState = (): ConfigState => {
-  // The CLI and its internal tool config can also be loaded as separate module
-  // instances. Keep only the CLI config path in its own global state.
-  if (!globalThis.__rstackCliState) {
-    globalThis.__rstackCliState = {};
-  }
-
-  return globalThis.__rstackCliState;
-};
-
-/**
- * Passes the `--config` path to Rslint's JS plugin workers, which import the
- * internal lint config in a fresh realm without the CLI state above. Only that
- * config reads it.
- */
-export const CLI_CONFIG_PATH_ENV = 'RSTACK_CLI_CONFIG_PATH';
 
 type Define = {
   /**
@@ -269,9 +239,6 @@ export const loadRstackConfig = async ({
   configFilePath,
   cwd,
 }: LoadRstackConfigOptions = {}): Promise<LoadedRstackConfig> => {
-  const state = getConfigState();
-  const configPath =
-    configFilePath === null ? undefined : (configFilePath ?? state.configPath);
   const session: ConfigSession = {
     configs: {},
     active: true,
@@ -284,8 +251,8 @@ export const loadRstackConfig = async ({
         exportName: false,
         fresh: true,
         cwd,
-        ...(configPath !== undefined
-          ? { path: configPath }
+        ...(configFilePath !== undefined
+          ? { path: configFilePath }
           : {
               configFileNames: [
                 'rstack.config.ts',

@@ -1,10 +1,10 @@
 import path from 'node:path';
 import { afterEach, expect, test } from 'rstack/test';
+import { define, loadRstackConfig } from '../../../src/config.ts';
 import {
-  define,
   getConfigState,
-  loadRstackConfig,
-} from '../../../src/config.ts';
+  loadCliRstackConfig,
+} from '../../../src/cli/config.ts';
 
 type Deferred = ReturnType<typeof Promise.withResolvers<void>>;
 
@@ -38,7 +38,7 @@ afterEach(() => {
 test('should discard a config session after loading fails', async () => {
   state.configPath = configPath('rstack.config.ts');
 
-  await expect(loadRstackConfig()).rejects.toThrow('test config error');
+  await expect(loadCliRstackConfig()).rejects.toThrow('test config error');
 
   const { configs } = await loadConfigFile('explicit.config.ts');
   expect(configs).toEqual({
@@ -50,7 +50,7 @@ test('should prefer an explicit config path over the state config path', async (
   const explicitConfigPath = configPath('explicit.config.ts');
   state.configPath = configPath('rstack.config.ts');
 
-  const { configs, filePath } = await loadRstackConfig({
+  const { configs, filePath } = await loadCliRstackConfig({
     configFilePath: explicitConfigPath,
   });
 
@@ -86,7 +86,9 @@ test('should resolve a relative explicit config path from cwd', async () => {
   expect(filePath).toBe(configPath('explicit.config.ts'));
 });
 
-test('should search for the config file in cwd', async () => {
+test('should search cwd without inheriting the CLI config path', async () => {
+  state.configPath = configPath('explicit.config.ts');
+
   await expect(loadRstackConfig({ cwd: import.meta.dirname })).rejects.toThrow(
     'test config error',
   );

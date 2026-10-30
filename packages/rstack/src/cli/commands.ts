@@ -1,6 +1,6 @@
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { CLI_CONFIG_PATH_ENV, getConfigState } from '../config.ts';
+import { CLI_CONFIG_PATH_ENV, getConfigState } from './config.ts';
 import { insertConfigArg, parseArgs, parseCliArgs } from './args.ts';
 import { hasHelpFlag, printCommandHelp } from './help.ts';
 

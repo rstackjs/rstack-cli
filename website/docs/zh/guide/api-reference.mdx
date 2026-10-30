@@ -120,7 +120,7 @@ const { configs, filePath, dependencies } = await loadRstackConfig({
 支持以下可选参数：
 
 - `cwd`：查找配置文件的目录。`configFilePath` 为相对路径时，也以此目录为基准。默认为当前工作目录。
-- `configFilePath`：配置文件路径，可以是相对路径或绝对路径。省略时，优先使用 CLI 通过 `--config` 指定的路径；若也未指定，则在 `cwd` 中按[默认文件名](./configuration#configuration-file)查找配置。
+- `configFilePath`：配置文件路径，可以是相对路径或绝对路径。省略时，在 `cwd` 中按[默认文件名](./configuration#configuration-file)查找配置。此 API 不读取 CLI 的 `--config` 选项。
 
 返回对象包含以下字段：
 
