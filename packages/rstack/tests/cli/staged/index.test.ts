@@ -1,15 +1,15 @@
 import lintStaged from 'lint-staged';
 import { afterEach, beforeEach, rs } from 'rstack/test';
 import { normalizeHelpOutput, test } from '#test-helpers';
-import { loadRstackConfig } from '../../../src/config.ts';
+import { loadCliRstackConfig } from '../../../src/cli/config.ts';
 import { runStagedCLI, type StagedConfig } from '../../../src/staged.ts';
 
 rs.mock('lint-staged');
-rs.mock('../../../src/config.ts');
+rs.mock('../../../src/cli/config.ts');
 
 const mocks = {
   lintStaged: rs.mocked(lintStaged),
-  loadRstackConfig: rs.mocked(loadRstackConfig),
+  loadCliRstackConfig: rs.mocked(loadCliRstackConfig),
 };
 
 const stagedConfig: StagedConfig = {
@@ -20,7 +20,7 @@ beforeEach(() => {
   delete process.env.RSTACK_STAGED;
   rs.resetAllMocks();
   mocks.lintStaged.mockResolvedValue(true);
-  mocks.loadRstackConfig.mockResolvedValue({
+  mocks.loadCliRstackConfig.mockResolvedValue({
     configs: { staged: stagedConfig },
     filePath: null,
     dependencies: [],

@@ -1,6 +1,7 @@
 import type { WatchFiles } from '@rsbuild/core';
 import type { UserConfig } from '@rspress/core';
-import { loadRstackConfig, type RstackConfigDefinitions } from './config.ts';
+import type { RstackConfigDefinitions } from './config.ts';
+import { loadCliRstackConfig } from './cli/config.ts';
 import { resolveConfigLayers } from './configLayers.ts';
 
 export const resolveRspressConfig = async (
@@ -16,7 +17,7 @@ export const resolveRspressConfig = async (
 };
 
 export default async (): Promise<UserConfig> => {
-  const { configs, filePath, dependencies } = await loadRstackConfig();
+  const { configs, filePath, dependencies } = await loadCliRstackConfig();
   const config = await resolveRspressConfig([configs]);
 
   if (!filePath) {
