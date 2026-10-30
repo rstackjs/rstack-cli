@@ -84,10 +84,11 @@ export type LoadRstackConfigOptions = {
   /**
    * The path to the Rstack config file, can be a relative or absolute path.
    * A relative path is resolved from `cwd`.
-   * If `configFilePath` is not provided, the config path set by the CLI is used.
+   * If `configFilePath` is omitted, the config path set by the CLI is used.
    * If neither path is provided, the function will search for the config file in `cwd`.
+   * Pass `null` to search `cwd` and ignore the CLI config path.
    */
-  configFilePath?: string;
+  configFilePath?: string | null;
   /**
    * The directory the config file is searched in and relative config paths are resolved from.
    * Defaults to the current working directory.
@@ -269,7 +270,8 @@ export const loadRstackConfig = async ({
   cwd,
 }: LoadRstackConfigOptions = {}): Promise<LoadedRstackConfig> => {
   const state = getConfigState();
-  const configPath = configFilePath ?? state.configPath;
+  const configPath =
+    configFilePath === null ? undefined : (configFilePath ?? state.configPath);
   const session: ConfigSession = {
     configs: {},
     active: true,

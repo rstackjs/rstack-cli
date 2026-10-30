@@ -157,7 +157,7 @@ define.test({
 
 When `extends` is omitted, Rstack CLI automatically connects the test configuration to `define.app()` through the Rsbuild adapter. If no application configuration is defined, it falls back to `define.lib()` through the Rslib adapter. The application configuration takes precedence when both are defined. Set `extends` explicitly to opt out of this automatic inheritance.
 
-If the root test configuration does not define `extends` and contains `projects`, Rstack CLI applies automatic inheritance to each inline project that omits its own `extends`. A function-based application or library configuration is resolved once and shared by those projects. String project entries are passed to Rstest unchanged; they load their external configurations independently and do not inherit the current application or library configuration.
+If the root test configuration does not define `extends` and contains `projects`, Rstack CLI applies automatic inheritance to each inline project that omits its own `extends`. A function-based application or library configuration is resolved once and shared by those projects. String project entries use each project's own Rstack config instead of the root configuration.
 
 These rules also apply to [shared configurations](#shared-configurations): Rstack first merges the test settings, then determines whether to inherit the merged App or Lib configuration.
 

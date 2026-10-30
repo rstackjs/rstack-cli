@@ -107,11 +107,11 @@ define.test({
 });
 ```
 
-使用多项目配置时，在 `define.test()` 根配置中设置 `extends` 会关闭所有项目的自动继承；在某个内联项目中设置 `extends` 则只会关闭该项目的自动继承。
+使用多项目配置时，在 `define.test()` 根配置中设置 `extends` 会关闭其内联项目的自动继承；在某个内联项目中设置 `extends` 则只会关闭该项目的自动继承。外部项目的继承由各自的 Rstack 配置决定。
 
 ## 多项目 \{#multiple-projects}
 
-通过 Rstest 的 [`projects`](https://rstest.rs/zh/config/test/projects) 选项可以同时运行多套测试配置。每一项既可以是内联项目，也可以是由 Rstest 解析为外部项目的字符串。
+通过 Rstest 的 [`projects`](https://rstest.rs/zh/config/test/projects) 选项可以同时运行多套测试配置。每一项既可以是内联项目，也可以是指向项目目录或其 Rstack 配置文件的字符串。
 
 ### 内联项目 \{#inline-projects}
 
@@ -153,14 +153,24 @@ rs test --project dom
 
 ### 外部项目 \{#external-projects}
 
-使用字符串形式的配置项加载外部项目：
+项目的测试配置放在自己的 Rstack 配置文件中时，请使用字符串形式的配置项加载：
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
 
 define.test({
-  projects: ['./legacy/rstest.config.ts'],
+  projects: ['./packages/*'],
 });
 ```
 
-Rstack CLI 会将字符串形式的项目原样传给 Rstest。外部项目会加载自己的配置，不会继承当前的 `define.app()` 或 `define.lib()` 配置。每个项目需要独立管理配置时，请使用外部项目。
+目录形式的配置项会加载该目录下的 `rstack.config.*`。需要显式指定配置文件时，改用文件形式的配置项：
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.test({
+  projects: ['./packages/*/rstack.config.ts'],
+});
+```
+
+Rstack CLI 用每个项目自己的 Rstack 配置解析字符串条目。目录下没有 Rstack 配置文件时，使用 Rstest 的默认配置。项目的 `rstest.config.ts` 不会被加载。在 watch 模式下，修改项目的 Rstack 配置文件会重新运行测试。

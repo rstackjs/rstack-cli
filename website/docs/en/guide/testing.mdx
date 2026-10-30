@@ -107,11 +107,11 @@ define.test({
 });
 ```
 
-For multiple projects, setting `extends` on the root `define.test()` configuration disables automatic inheritance for every project. Setting it on an inline project disables inheritance only for that project.
+For multiple projects, setting `extends` on the root `define.test()` configuration disables automatic inheritance for its inline projects. Setting it on an inline project disables inheritance only for that project. External projects resolve inheritance from their own Rstack config.
 
 ## Multiple projects
 
-Set Rstest's [`projects`](https://rstest.rs/config/test/projects) option to run multiple test configurations together. Entries can be inline projects or strings that Rstest resolves as external projects.
+Set Rstest's [`projects`](https://rstest.rs/config/test/projects) option to run multiple test configurations together. Entries can be inline projects or strings that point to a project directory or its Rstack config file.
 
 ### Inline projects
 
@@ -153,14 +153,24 @@ See [`examples/test-inline-projects`](https://github.com/rstackjs/rstack-cli/tre
 
 ### External projects
 
-Use a string entry for an externally configured project:
+Use a string entry when a project keeps its test configuration in its own Rstack config file:
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
 
 define.test({
-  projects: ['./legacy/rstest.config.ts'],
+  projects: ['./packages/*'],
 });
 ```
 
-Rstack CLI passes string entries to Rstest unchanged. External projects load their own configuration and do not inherit the current `define.app()` or `define.lib()` configuration. Use external projects when each project manages its configuration independently.
+A directory entry loads `rstack.config.*` from that directory. To list a config file explicitly, use a file entry:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+
+define.test({
+  projects: ['./packages/*/rstack.config.ts'],
+});
+```
+
+Rstack CLI uses each project's own Rstack config to resolve string entries. A directory without a Rstack config file uses Rstest's default configuration. `rstest.config.ts` is not loaded for projects. In watch mode, changing a project's Rstack config file restarts the run.
