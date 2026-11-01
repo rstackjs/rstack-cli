@@ -1,6 +1,7 @@
 import { lstat, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import isBinaryPath from 'is-binary-path';
+// rslint-disable-next-line import/default -- micromatch is CommonJS; Node.js supports its default import.
 import micromatch from 'micromatch';
 import readdir, { type Dirent, type DirentLike } from 'tiny-readdir';
 import type { GitIgnoreMatcher as NativeGitIgnoreMatcher } from '../../binding.cjs';
