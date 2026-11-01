@@ -28,7 +28,7 @@
     "@testing-library/jest-dom": "^7.0.1",
     "happy-dom": "^21.0.4",
     "rstack": "^0.8.6",
-    "solid-js": "^1.9.17"
+    "solid-js": "^1.9.18"
   },
   "peerDependencies": {
     "solid-js": ">=1.8.0"
