@@ -20,8 +20,8 @@ catalog:
   '@rsbuild/plugin-sass': '^2.0.1'
   '@rslib/core': '~1.0.5'
   '@rslint/core': '0.9.5'
-  '@rspress/core': '2.1.0-beta.1'
-  '@rspress/plugin-client-redirects': '2.1.0-beta.1'
+  '@rspress/core': '2.1.0-beta.2'
+  '@rspress/plugin-client-redirects': '2.1.0-beta.2'
   '@rstackjs/doc-ui': '1.14.11'
   '@rstackjs/create-toolkit': '2.2.11'
   '@rstackjs/load-config': ^1.0.2
@@ -34,14 +34,14 @@ catalog:
   '@testing-library/jest-dom': '^7.0.1'
   '@testing-library/react': '^16.3.3'
   '@types/micromatch': '^4.0.10'
-  '@types/node': '^26.6.5'
+  '@types/node': '^26.6.6'
   '@types/react': '^19.3.0'
   '@types/react-dom': '^19.3.0'
   '@shikijs/transformers': '^4.5.0'
   'cspell-ban-words': '^0.0.4'
   'fast-json-stable-stringify': '2.1.0'
   'happy-dom': '^21.0.4'
-  'heading-case': '^2.0.2'
+  'heading-case': '^2.0.3'
   'import-meta-resolve': '4.2.0'
   is-binary-path: 3.0.0
   'lint-staged': '^17.6.0'
@@ -56,7 +56,7 @@ catalog:
   'rspress-plugin-font-open-sans': '^1.0.4'
   # v4 requires Node.js 22.
   'sort-package-json': '3.7.1'
-  svelte: '^5.57.2'
+  svelte: '^5.57.3'
   tinypool: '2.2.0'
   tiny-readdir: 3.1.1
   'typescript': '^7.0.2'
