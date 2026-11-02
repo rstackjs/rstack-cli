@@ -7,6 +7,7 @@ import {
 } from '@rstest/core';
 import { type LoadProjectConfig, PROJECT_LOADER } from '@rstest/core/api';
 import { loadRstackConfig, type RstackConfigDefinitions } from './config.ts';
+import { loadCliRstackConfig } from './cli/config.ts';
 import { resolveConfigLayers } from './configLayers.ts';
 
 const resolveAutomaticExtends = async (
@@ -120,11 +121,9 @@ export const resolveRstestConfig = async (
 const createProjectLoader =
   (params: ConfigParams): LoadProjectConfig =>
   async ({ dirPath, filePath }) => {
-    // `null` searches the project directory with the default config file names
-    // instead of reusing the `rs --config` path that loads the root config.
     const loaded = await loadRstackConfig({
       cwd: dirPath,
-      configFilePath: filePath ?? null,
+      configFilePath: filePath,
     });
     if (loaded.filePath === null) {
       return null;
@@ -140,7 +139,7 @@ const createProjectLoader =
   };
 
 const loadRstestConfig = (async (params: ConfigParams) => {
-  const { configs } = await loadRstackConfig();
+  const { configs } = await loadCliRstackConfig();
   const config = await resolveRstestConfig([configs], params);
   return {
     ...config,

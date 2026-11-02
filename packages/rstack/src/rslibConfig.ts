@@ -5,7 +5,8 @@ import {
   mergeRslibConfig,
 } from '@rslib/core';
 import { withConfigMeta } from '@rstackjs/load-config';
-import { loadRstackConfig, type RstackConfigDefinitions } from './config.ts';
+import type { RstackConfigDefinitions } from './config.ts';
+import { loadCliRstackConfig } from './cli/config.ts';
 import { resolveConfigLayers } from './configLayers.ts';
 
 export const resolveRslibConfig = async (
@@ -17,7 +18,7 @@ export const resolveRslibConfig = async (
 };
 
 const loadRslibConfig = (async (params: ConfigParams) => {
-  const { configs, filePath, dependencies } = await loadRstackConfig();
+  const { configs, filePath, dependencies } = await loadCliRstackConfig();
   const config = await resolveRslibConfig([configs], params);
 
   return withConfigMeta(config, { filePath, dependencies });

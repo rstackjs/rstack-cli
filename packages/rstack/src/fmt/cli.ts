@@ -3,7 +3,8 @@ import { performance } from 'node:perf_hooks';
 import { color, logger } from 'rslog';
 import { parseArgs } from '../cli/args.ts';
 import { printCommandHelp } from '../cli/help.ts';
-import { loadRstackConfig, type LoadedRstackConfig } from '../config.ts';
+import type { LoadedRstackConfig } from '../config.ts';
+import { loadCliRstackConfig } from '../cli/config.ts';
 import { ensureProjectCacheDir } from '../projectCache.ts';
 import { fmtCacheFileName } from './cacheStore.ts';
 import { resolveFmtConfig } from './config.ts';
@@ -250,7 +251,7 @@ const loadFmtConfig = async (
   loadedConfig?: LoadedRstackConfig,
 ): Promise<ResolvedFmtConfig> => {
   const { configs, filePath } =
-    loadedConfig ?? (await loadRstackConfig({ cwd }));
+    loadedConfig ?? (await loadCliRstackConfig({ cwd }));
 
   return resolveFmtConfig({
     layers: [configs],

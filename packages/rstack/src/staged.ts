@@ -1,7 +1,7 @@
 import lintStaged from 'lint-staged';
 import { parseArgs } from './cli/args.ts';
 import { printCommandHelp } from './cli/help.ts';
-import { loadRstackConfig } from './config.ts';
+import { loadCliRstackConfig } from './cli/config.ts';
 import { resolveStagedConfig } from './configLayers.ts';
 
 export type StagedSyncTaskGenerator = (
@@ -51,7 +51,7 @@ export async function runStagedCLI(args: string[]): Promise<void> {
     return;
   }
 
-  const { configs } = await loadRstackConfig();
+  const { configs } = await loadCliRstackConfig();
   const stagedConfig = await resolveStagedConfig([configs]);
   if (stagedConfig === undefined) {
     throw new Error(

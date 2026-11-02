@@ -1,10 +1,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import {
-  CLI_CONFIG_PATH_ENV,
-  loadRstackConfig,
-  type LoadedRstackConfig,
-} from './config.ts';
+import { CLI_CONFIG_PATH_ENV, loadCliRstackConfig } from './cli/config.ts';
+import type { LoadedRstackConfig } from './config.ts';
 import type { RslintConfig } from '@rslint/core';
 import { color, logger } from 'rslog';
 import { resolveRslintConfig } from './configLayers.ts';
@@ -12,7 +9,7 @@ import { resolveRslintConfig } from './configLayers.ts';
 // Expose the loaded config so `rs check` can pass it to fmt instead of loading
 // and executing the Rstack config a second time. Rslint also imports this
 // module in its JS plugin workers, which get `--config` from the environment.
-export const loadedConfig: LoadedRstackConfig = await loadRstackConfig({
+export const loadedConfig: LoadedRstackConfig = await loadCliRstackConfig({
   configFilePath: process.env[CLI_CONFIG_PATH_ENV],
 });
 const { configs } = loadedConfig;
