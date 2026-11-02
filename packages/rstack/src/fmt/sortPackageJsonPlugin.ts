@@ -1,6 +1,6 @@
 import type { Plugin } from 'prettier';
 import { parsers } from 'prettier/plugins/babel';
-import sortPackageJson from 'sort-package-json';
+import { sortPackageJson } from 'sort-package-json';
 
 const sortPackageJsonPlugin: Plugin = {
   parsers: {
