@@ -2,9 +2,19 @@
 import { define } from 'rstack';
 import skillsLock from './skills-lock.json' with { type: 'json' };
 
-define.lint(({ js, ts, rstestPlugin }) => [
+define.lint(({ js, ts, importPlugin, rstestPlugin }) => [
   js.configs.recommended,
   ts.configs.recommendedTypeChecked,
+  importPlugin.configs.recommended,
+  {
+    files: [
+      'packages/create-rstack/template-*/**',
+      'packages/rstack/tests/types/**',
+    ],
+    rules: {
+      'import/no-unresolved': 'off',
+    },
+  },
   {
     files: ['**/*.test.{ts,tsx}'],
     ...rstestPlugin.configs.recommended,

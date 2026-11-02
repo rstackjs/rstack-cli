@@ -1,4 +1,5 @@
 import { dirname } from 'node:path';
+// rslint-disable-next-line import/default -- micromatch is CommonJS; Node.js supports its default import.
 import micromatch from 'micromatch';
 import type { RstackConfigDefinitions } from '../config.ts';
 import { resolveFmtConfigLayers } from '../configLayers.ts';

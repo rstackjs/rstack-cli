@@ -11,10 +11,10 @@
     "test": "nx run-many -t test"
   },
   "devDependencies": {
-    "@types/node": "^26.6.5",
-    "nx": "^24.0.1",
+    "@types/node": "^26.6.6",
+    "nx": "^24.0.3",
     "rstack": "^0.8.6",
     "typescript": "^7.0.2"
   },
-  "packageManager": "pnpm@12.15.0"
+  "packageManager": "pnpm@12.16.1"
 }
