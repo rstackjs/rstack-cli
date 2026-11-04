@@ -484,6 +484,8 @@ const parseWithOptions = (
   const result = parseWithSwcNext(text, {
     preserveParens: true,
     comments: 'flat',
+    // Return diagnostics so they can be converted to Prettier-compatible errors.
+    errorRecovery: true,
     ...options,
   });
 
