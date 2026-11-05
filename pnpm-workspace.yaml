@@ -14,20 +14,20 @@ catalogMode: prefer
 cleanupUnusedCatalogs: true
 
 catalog:
-  '@napi-rs/cli': '^3.10.9'
+  '@napi-rs/cli': '^3.10.12'
   '@rsbuild/core': '~2.3.1'
   '@rsbuild/plugin-react': '^2.1.1'
   '@rsbuild/plugin-sass': '^2.0.1'
   '@rslib/core': '~1.0.5'
   '@rslint/core': '0.10.0'
-  '@rspress/core': '2.1.0-beta.2'
-  '@rspress/plugin-client-redirects': '2.1.0-beta.2'
+  '@rspress/core': '2.1.0'
+  '@rspress/plugin-client-redirects': '2.1.0'
   '@rstackjs/doc-ui': '1.14.11'
   '@rstackjs/create-toolkit': '2.2.11'
   '@rstackjs/load-config': ^1.0.2
   '@rstackjs/test-utils': ^1.0.0
-  '@rstest/adapter-rsbuild': '~0.12.5'
-  '@rstest/adapter-rslib': '~0.12.5'
+  '@rstest/adapter-rsbuild': '~0.12.6'
+  '@rstest/adapter-rslib': '~0.12.6'
   '@rstest/core': '~0.12.6'
   '@swc-next/parser': '0.5.0'
   '@testing-library/dom': '^10.4.2'
@@ -37,7 +37,7 @@ catalog:
   '@types/node': '^26.6.6'
   '@types/react': '^19.3.0'
   '@types/react-dom': '^19.3.0'
-  '@shikijs/transformers': '^4.5.0'
+  '@shikijs/transformers': '^4.6.0'
   'cspell-ban-words': '^0.0.4'
   'fast-json-stable-stringify': '2.1.0'
   'happy-dom': '^21.0.4'
