@@ -53,6 +53,7 @@ define.doc({
     ...(process.env.ZEPHYR_DEPLOY === 'true'
       ? [withZephyr<UserConfig>({ target: 'web' })]
       : []),
+    // Keep a fallback for local dev/preview and deployments without Pages redirects.
     pluginClientRedirects({
       redirects: [
         {

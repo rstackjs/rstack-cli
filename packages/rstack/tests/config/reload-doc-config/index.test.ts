@@ -46,7 +46,7 @@ define.doc({
   );
   await logHelper.expectBuildEnd();
   // The build log can arrive before the restart watcher finishes its initial scan.
-  await waitFor(200);
+  await waitFor(100);
   logHelper.clearLogs();
 
   await writeConfig('after config change');
@@ -55,7 +55,7 @@ define.doc({
     'restarting server as test-temp-rstack.config.ts changed',
   );
   await logHelper.expectBuildEnd();
-  await waitFor(200);
+  await waitFor(100);
   logHelper.clearLogs();
 
   await writeFile(userWatchFile, 'changed\n');
@@ -99,7 +99,7 @@ define.doc({
     `doc --config test-temp-import.config.ts --port ${await getRandomPort()}`,
   );
   await logHelper.expectBuildEnd();
-  await waitFor(200);
+  await waitFor(100);
   logHelper.clearLogs();
 
   await writeFile(
@@ -154,7 +154,7 @@ define.doc({
   expect(await initialResponse.text()).toContain(
     '<title>before import change</title>',
   );
-  await waitFor(200);
+  await waitFor(100);
   logHelper.clearLogs();
 
   await writeFile(
