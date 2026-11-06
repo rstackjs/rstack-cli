@@ -76,3 +76,7 @@ jobs:
       - name: Run Test (Windows)
         if: steps.changes.outputs.changed == 'true' && runner.os == 'Windows'
         run: pnpm --workspace-concurrency=1 --filter "./packages/**" test
+
+      - name: Compare worker pools
+        if: steps.changes.outputs.changed == 'true'
+        run: node .github/scripts/benchmark-pools.mjs
