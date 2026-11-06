@@ -40,7 +40,7 @@ import { defineInlineProject, expect, test } from 'rstack/test';
 
 ### 继承应用配置 \{#inherit-the-application-configuration}
 
-注册 `define.app()` 后，Rstack CLI 会通过 [`@rstest/adapter-rsbuild`](https://rstest.rs/zh/guide/integration/rsbuild) 转换该配置，并将结果作为测试配置的 `extends`：
+注册 `define.app()` 后，Rstack CLI 会通过 [`@rstest/adapter-rsbuild`](https://rstest.rs/zh/integration/rsbuild/) 转换该配置，并将结果作为测试配置的 `extends`：
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
@@ -61,7 +61,7 @@ define.test({
 
 ### 继承库配置 \{#inherit-the-library-configuration}
 
-注册 `define.lib()` 后，Rstack CLI 会通过 [`@rstest/adapter-rslib`](https://rstest.rs/zh/guide/integration/rslib) 转换该配置：
+注册 `define.lib()` 后，Rstack CLI 会通过 [`@rstest/adapter-rslib`](https://rstest.rs/zh/integration/rslib/) 转换该配置：
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
