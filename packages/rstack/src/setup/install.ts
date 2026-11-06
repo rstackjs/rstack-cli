@@ -7,6 +7,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import path from 'node:path';
+import { types } from 'node:util';
 import {
   displayPath,
   fail,
@@ -156,7 +157,7 @@ const claimOwner = (
     writeFileSync(ownerPath, `${project}\n`, { flag: 'wx' });
   } catch (error) {
     const code =
-      error instanceof Error && 'code' in error ? error.code : undefined;
+      types.isNativeError(error) && 'code' in error ? error.code : undefined;
     if (code !== 'EEXIST') {
       throw error;
     }
@@ -285,7 +286,7 @@ export const installHooks = ({
       chmodSync(filePath, 0o755);
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = types.isNativeError(error) ? error.message : String(error);
     return fail('write-failed', `Failed to write Git hook files: ${message}`);
   }
 
