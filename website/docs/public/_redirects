@@ -1,0 +1,5 @@
+# Keep /config as a stable entry point; use 302 so its destination can change.
+# Leave the destination fragment-free so browsers preserve the original hash.
+# https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.2
+/config /guide/configuration 302
+/config/ /guide/configuration 302
