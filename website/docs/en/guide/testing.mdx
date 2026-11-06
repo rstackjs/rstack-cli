@@ -40,7 +40,7 @@ When using [shared configurations](./configuration#shared-configurations), Rstac
 
 ### Inherit the application configuration
 
-When `define.app()` is registered, Rstack CLI converts it with [`@rstest/adapter-rsbuild`](https://rstest.rs/guide/integration/rsbuild) and uses the result as the test configuration's `extends` value:
+When `define.app()` is registered, Rstack CLI converts it with [`@rstest/adapter-rsbuild`](https://rstest.rs/integration/rsbuild/) and uses the result as the test configuration's `extends` value:
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
@@ -61,7 +61,7 @@ define.test({
 
 ### Inherit the library configuration
 
-When `define.lib()` is registered, Rstack CLI converts it with [`@rstest/adapter-rslib`](https://rstest.rs/guide/integration/rslib):
+When `define.lib()` is registered, Rstack CLI converts it with [`@rstest/adapter-rslib`](https://rstest.rs/integration/rslib/):
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
