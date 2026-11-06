@@ -123,7 +123,7 @@ type Define = {
    * Inherits shared configs from left to right, followed by the project's own
    * definitions regardless of call order. May only be called once per config load.
    *
-   * @see {@link https://rstack.rs/config | Configuration guide}
+   * @see {@link https://rstack.rs/guide/configuration | Configuration guide}
    */
   extends: (configs: readonly RstackConfig[]) => void;
   /**
@@ -131,7 +131,7 @@ type Define = {
    *
    * This config is used by the `rs dev`, `rs build`, and `rs preview` commands.
    *
-   * @see {@link https://rstack.rs/config | Configuration guide}
+   * @see {@link https://rstack.rs/guide/configuration | Configuration guide}
    */
   app: typeof defineAppConfig;
   /**
@@ -139,7 +139,7 @@ type Define = {
    *
    * This config is used by the `rs lib` command.
    *
-   * @see {@link https://rstack.rs/config | Configuration guide}
+   * @see {@link https://rstack.rs/guide/configuration | Configuration guide}
    */
   lib: typeof defineRslibConfig;
   /**
@@ -147,7 +147,7 @@ type Define = {
    *
    * This config is used by the `rs doc` command.
    *
-   * @see {@link https://rstack.rs/config | Configuration guide}
+   * @see {@link https://rstack.rs/guide/configuration | Configuration guide}
    */
   doc: (config: RspressConfigDefinition) => void;
   /**
@@ -159,7 +159,7 @@ type Define = {
    * falls back to `define.lib`. For multi-project configs, this applies to every inline
    * project without an explicit `extends`. The app config takes precedence when both are defined.
    *
-   * @see {@link https://rstack.rs/config | Configuration guide}
+   * @see {@link https://rstack.rs/guide/configuration | Configuration guide}
    */
   test: (config: RstestConfigExport) => void;
   /**
@@ -168,7 +168,7 @@ type Define = {
    * This config is used by the `rs lint` command.
    * A config factory receives the exports from `rstack/lint`.
    *
-   * @see {@link https://rstack.rs/config | Configuration guide}
+   * @see {@link https://rstack.rs/guide/configuration | Configuration guide}
    */
   lint: (config: RslintConfigDefinition) => void;
   /**
@@ -176,7 +176,7 @@ type Define = {
    *
    * This config will be used by the `rs fmt` command.
    *
-   * @see {@link https://rstack.rs/config | Configuration guide}
+   * @see {@link https://rstack.rs/guide/configuration | Configuration guide}
    */
   fmt: (config: FmtConfigDefinition) => void;
   /**
@@ -184,7 +184,7 @@ type Define = {
    *
    * This config is used by the `rs staged` command.
    *
-   * @see {@link https://rstack.rs/config | Configuration guide}
+   * @see {@link https://rstack.rs/guide/configuration | Configuration guide}
    */
   staged: (config: StagedConfig) => void;
 };

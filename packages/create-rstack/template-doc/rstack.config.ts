@@ -1,4 +1,4 @@
-// Configuration guide: https://rstack.rs/config
+// Configuration guide: https://rstack.rs/guide/configuration
 import path from 'node:path';
 import { define } from 'rstack';
 

@@ -1,4 +1,4 @@
-// Configuration guide: https://rstack.rs/config
+// Configuration guide: https://rstack.rs/guide/configuration
 import { pluginReact } from '@rsbuild/plugin-react';
 import { define } from 'rstack';
 

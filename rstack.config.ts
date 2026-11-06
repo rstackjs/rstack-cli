@@ -1,4 +1,4 @@
-// Configuration guide: https://rstack.rs/config
+// Configuration guide: https://rstack.rs/guide/configuration
 import { define } from 'rstack';
 import skillsLock from './skills-lock.json' with { type: 'json' };
 

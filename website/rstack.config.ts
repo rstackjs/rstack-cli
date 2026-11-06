@@ -1,4 +1,4 @@
-// Configuration guide: https://rstack.rs/config
+// Configuration guide: https://rstack.rs/guide/configuration
 import { pluginSass } from '@rsbuild/plugin-sass';
 import type { UserConfig } from '@rspress/core';
 import { pluginClientRedirects } from '@rspress/plugin-client-redirects';

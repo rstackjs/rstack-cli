@@ -1,4 +1,4 @@
-// Configuration guide: https://rstack.rs/config
+// Configuration guide: https://rstack.rs/guide/configuration
 import { withRslibConfig } from '@rstest/adapter-rslib';
 import { define } from 'rstack';
 
