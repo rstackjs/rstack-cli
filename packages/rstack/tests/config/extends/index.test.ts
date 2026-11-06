@@ -1,50 +1,52 @@
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { expect, test } from 'rstack/test';
 import { loadRstackConfig } from '../../../src/config.ts';
 import { resolveConfigLayers } from '../../../src/configLayers.ts';
 
 const cwd = import.meta.dirname;
-const params = { command: 'build', env: 'production' } as const;
 
-test('loads all seven tools from shared configs and tracks their dependencies', async () => {
-  const { configs, filePath, dependencies } = await loadRstackConfig({ cwd });
-  const layers = [configs];
+test('loads all seven tools from shared configs and tracks their dependencies', () => {
+  // Dependency tracking uses Node loader hooks, outside the test VM.
+  const output = execFileSync(
+    process.execPath,
+    [path.join(cwd, 'load-shared.ts')],
+    { encoding: 'utf8', timeout: 10_000 },
+  );
+  const result: unknown = JSON.parse(output);
+  const dependencies: unknown = expect.arrayContaining([
+    path.join(cwd, 'shared.ts'),
+  ]);
 
-  expect({
-    app: await resolveConfigLayers(layers, 'app', params),
-    lib: await resolveConfigLayers(layers, 'lib', params),
-    doc: await resolveConfigLayers(layers, 'doc'),
-    test: await resolveConfigLayers(layers, 'test'),
-    lint: await resolveConfigLayers(layers, 'lint'),
-    fmt: await resolveConfigLayers(layers, 'fmt'),
-    staged: await resolveConfigLayers(layers, 'staged'),
-  }).toEqual({
-    app: [
-      {
-        source: {
-          define: { ENV: 'production' },
-        },
-      },
-    ],
-    lib: [
-      {
-        lib: [{ format: 'esm' }],
-      },
-    ],
-    doc: [{ root: 'docs' }],
-    test: [{ setupFiles: [path.join(cwd, 'setup.ts')] }],
-    lint: [
-      [
+  expect(result).toEqual({
+    configs: {
+      app: [
         {
-          rules: { 'no-debugger': 'error' },
+          source: {
+            define: { ENV: 'production' },
+          },
         },
       ],
-    ],
-    fmt: [{ semi: false, singleQuote: false, printWidth: 80 }],
-    staged: [{ '*.ts': 'rs lint' }],
+      lib: [
+        {
+          lib: [{ format: 'esm' }],
+        },
+      ],
+      doc: [{ root: 'docs' }],
+      test: [{ setupFiles: [path.join(cwd, 'setup.ts')] }],
+      lint: [
+        [
+          {
+            rules: { 'no-debugger': 'error' },
+          },
+        ],
+      ],
+      fmt: [{ semi: false, singleQuote: false, printWidth: 80 }],
+      staged: [{ '*.ts': 'rs lint' }],
+    },
+    filePath: path.join(cwd, 'rstack.config.ts'),
+    dependencies,
   });
-  expect(filePath).toBe(path.join(cwd, 'rstack.config.ts'));
-  expect(dependencies).toContain(path.join(cwd, 'shared.ts'));
 });
 
 test('preserves project priority regardless of call order and across reloads', async () => {

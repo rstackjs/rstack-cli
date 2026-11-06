@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { afterEach, expect, test } from 'rstack/test';
 import { define, loadRstackConfig } from '../../../src/config.ts';
@@ -6,33 +7,14 @@ import {
   loadCliRstackConfig,
 } from '../../../src/cli/config.ts';
 
-type Deferred = ReturnType<typeof Promise.withResolvers<void>>;
-
-type ConfigTestHooks = {
-  ready: Deferred;
-  release: Deferred;
-};
-
-declare global {
-  // rslint-disable-next-line no-var
-  var __rstackConfigTestHooks: ConfigTestHooks | undefined;
-}
-
 const state = getConfigState();
 const configPath = (fileName: string): string =>
   path.join(import.meta.dirname, fileName);
 const loadConfigFile = (fileName: string) =>
   loadRstackConfig({ configFilePath: configPath(fileName) });
 
-const createTestHooks = (): ConfigTestHooks =>
-  (globalThis.__rstackConfigTestHooks = {
-    ready: Promise.withResolvers<void>(),
-    release: Promise.withResolvers<void>(),
-  });
-
 afterEach(() => {
   delete state.configPath;
-  delete globalThis.__rstackConfigTestHooks;
 });
 
 test('should discard a config session after loading fails', async () => {
@@ -94,39 +76,28 @@ test('should search cwd without inheriting the CLI config path', async () => {
   );
 });
 
-test('should isolate parallel config sessions across top-level await', async () => {
-  const hooks = createTestHooks();
-  const firstLoad = loadConfigFile('parallel-first.config.ts');
-  await hooks.ready.promise;
+// Native loader hooks and the fixture's globals must share one Node realm.
+test('should isolate parallel config sessions across top-level await', () => {
+  const output = execFileSync(
+    process.execPath,
+    [configPath('parallel-load.ts'), 'success'],
+    { encoding: 'utf8', timeout: 10_000 },
+  );
 
-  const secondLoad = loadConfigFile('parallel-second.config.ts');
-  const parallelLoads = Promise.all([firstLoad, secondLoad]);
-
-  await secondLoad;
-  hooks.release.resolve();
-  const [firstResult, secondResult] = await parallelLoads;
-
-  expect(firstResult.configs).toEqual({
-    app: { root: 'first' },
-    test: {},
-  });
-  expect(secondResult.configs).toEqual({
-    app: { root: 'second' },
-    lib: {},
-  });
+  expect(JSON.parse(output)).toEqual([
+    { app: { root: 'first' }, test: {} },
+    { app: { root: 'second' }, lib: {} },
+  ]);
 });
 
-test('should keep a running session intact when another config fails', async () => {
-  const hooks = createTestHooks();
-  const successfulLoad = loadConfigFile('parallel-first.config.ts');
-  await hooks.ready.promise;
-
-  await expect(loadConfigFile('parallel-failing.config.ts')).rejects.toThrow(
-    'parallel config error',
+test('should keep a running session intact when another config fails', () => {
+  const output = execFileSync(
+    process.execPath,
+    [configPath('parallel-load.ts'), 'failure'],
+    { encoding: 'utf8', timeout: 10_000 },
   );
-  hooks.release.resolve();
 
-  expect((await successfulLoad).configs).toEqual({
+  expect(JSON.parse(output)).toEqual({
     app: { root: 'first' },
     test: {},
   });

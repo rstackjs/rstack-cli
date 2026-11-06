@@ -4,6 +4,7 @@ import { define } from 'rstack';
 
 define.test(() => {
   return {
+    pool: 'vmForks',
     // Temporary projects and fixture projects may contain files that match
     // Rstest's test glob.
     exclude: [
