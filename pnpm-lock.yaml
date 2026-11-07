@@ -184,11 +184,11 @@ catalogs:
       specifier: 0.10.0
       version: 0.10.0
     '@rspress/core':
-      specifier: 2.1.0
-      version: 2.1.0
+      specifier: 2.1.1
+      version: 2.1.1
     '@rspress/plugin-client-redirects':
-      specifier: 2.1.0
-      version: 2.1.0
+      specifier: 2.1.1
+      version: 2.1.1
     '@rstackjs/create-toolkit':
       specifier: 2.2.11
       version: 2.2.11
@@ -210,9 +210,6 @@ catalogs:
     '@rstest/core':
       specifier: ~0.12.6
       version: 0.12.6
-    '@shikijs/transformers':
-      specifier: ^4.6.0
-      version: 4.6.0
     '@swc-next/parser':
       specifier: 0.5.0
       version: 0.5.0
@@ -399,7 +396,7 @@ importers:
     devDependencies:
       '@rspress/core':
         specifier: 'catalog:'
-        version: 2.1.0(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
+        version: 2.1.1(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.6
@@ -546,7 +543,7 @@ importers:
         version: 3.10.12(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.6.6)(supports-color@8.1.1)
       '@rspress/core':
         specifier: 'catalog:'
-        version: 2.1.0(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
+        version: 2.1.1(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
       '@rstackjs/load-config':
         specifier: 'catalog:'
         version: 1.0.2(jiti@2.7.0)
@@ -615,16 +612,13 @@ importers:
         version: 2.0.1(@rsbuild/core@2.3.1)
       '@rspress/core':
         specifier: 'catalog:'
-        version: 2.1.0(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
+        version: 2.1.1(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
       '@rspress/plugin-client-redirects':
         specifier: 'catalog:'
-        version: 2.1.0(@rspress/core@2.1.0)
+        version: 2.1.1(@rspress/core@2.1.1)
       '@rstackjs/doc-ui':
         specifier: 'catalog:'
-        version: 1.14.11(@rspress/core@2.1.0)
-      '@shikijs/transformers':
-        specifier: 'catalog:'
-        version: 4.6.0
+        version: 1.14.11(@rspress/core@2.1.1)
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.6
@@ -645,7 +639,7 @@ importers:
         version: 1.1.3(@rsbuild/core@2.3.1)
       rspress-plugin-font-open-sans:
         specifier: 'catalog:'
-        version: 1.0.4(@rspress/core@2.1.0)
+        version: 1.0.4(@rspress/core@2.1.1)
       rstack:
         specifier: workspace:*
         version: link:../packages/rstack
@@ -654,7 +648,7 @@ importers:
         version: 7.0.2
       zephyr-rspress-plugin:
         specifier: 'catalog:'
-        version: 1.7.0(@rsbuild/core@2.3.1)(@rspack/core@2.3.1)(@rspress/core@2.1.0)(supports-color@8.1.1)
+        version: 1.7.0(@rsbuild/core@2.3.1)(@rspack/core@2.3.1)(@rspress/core@2.1.1)(supports-color@8.1.1)
 
 packages:
 
@@ -1624,19 +1618,19 @@ packages:
       '@rspack/core':
         optional: true
 
-  '@rspress/core@2.1.0':
-    resolution: {integrity: sha512-xw5iGhzLn4O8vGUj8+y7AiVo51Pd1l1GkIBF9q5btfXTYR0xkGY984rxMFOYI43etvlRRkMM2du+IwiyqUnPGA==}
+  '@rspress/core@2.1.1':
+    resolution: {integrity: sha512-GArybZxyifQ/wC8N2SzVyFi5JCJpUXgajITV4if8ylOImjZr8j9Cgy+6o55tXEtq85r6XYYE5fbcEz2nxxCpnA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
-  '@rspress/plugin-client-redirects@2.1.0':
-    resolution: {integrity: sha512-iqNZyaBe1lrAQSUIunzlYDLlDlE3Vmz7S7heVaNSqXZVWXtT3MdemqdR3qLo6FvFb7ZXcXqijpdWWpsflG4wNA==}
+  '@rspress/plugin-client-redirects@2.1.1':
+    resolution: {integrity: sha512-jrnh0UTczcTAk+xeJH6b2/LFLF2W7UzPYP992GxnW0mWJxPnvKQIk9v051bezD3gDuiGGRv8puFU7PMmwLOaHg==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
       '@rspress/core': ^2.1.0-beta.2
 
-  '@rspress/shared@2.1.0':
-    resolution: {integrity: sha512-D2wnLO4aV1eFxNbUqQaLY4QfZZktegM+lCIDbQ9H2wxNQHKde39U1hpRdZKIA4aCuPYf/RSb6EdmJiZOkoZaWw==}
+  '@rspress/shared@2.1.1':
+    resolution: {integrity: sha512-U+OEPt/Ze+ryJdLHvpJJv9hxiRp03rknn5pvhh6v0enjib9SuUrsku/cPzneal3EsNyDZB5kncghpH1iwVKxnA==}
 
   '@rstackjs/create-toolkit@2.2.11':
     resolution: {integrity: sha512-8HpHnU9k+kjQVoxNAtLJE4RLcrIZwkz7skViD41CQNfojoUfY/qEUu0BkVYZEWBu1Lnor1LurqO8JaWiknxaRg==}
@@ -4368,14 +4362,15 @@ snapshots:
     optionalDependencies:
       '@rspack/core': 2.3.1(@swc/helpers@0.5.23)
 
-  '@rspress/core@2.1.0(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)':
+  '@rspress/core@2.1.1(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)':
     dependencies:
       '@mdx-js/mdx': 3.1.1(supports-color@8.1.1)
       '@mdx-js/react': 3.1.1(@types/react@19.3.0)(react@19.3.1)
       '@rsbuild/core': 2.3.1
       '@rsbuild/plugin-react': 2.1.1(@rsbuild/core@2.3.1)(@rspack/core@2.3.1)
-      '@rspress/shared': 2.1.0(supports-color@8.1.1)
+      '@rspress/shared': 2.1.1(supports-color@8.1.1)
       '@shikijs/rehype': 4.3.1
+      '@shikijs/transformers': 4.6.0
       '@types/mdast': 4.0.4
       '@types/react': 19.3.0
       '@unhead/react': 2.1.17(react@19.3.1)
@@ -4416,11 +4411,11 @@ snapshots:
       - micromark-util-types
       - supports-color
 
-  '@rspress/plugin-client-redirects@2.1.0(@rspress/core@2.1.0)':
+  '@rspress/plugin-client-redirects@2.1.1(@rspress/core@2.1.1)':
     dependencies:
-      '@rspress/core': 2.1.0(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
+      '@rspress/core': 2.1.1(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
 
-  '@rspress/shared@2.1.0(supports-color@8.1.1)':
+  '@rspress/shared@2.1.1(supports-color@8.1.1)':
     dependencies:
       '@rsbuild/core': 2.3.1
       '@shikijs/rehype': 4.3.1
@@ -4434,9 +4429,9 @@ snapshots:
 
   '@rstackjs/create-toolkit@2.2.11': {}
 
-  '@rstackjs/doc-ui@1.14.11(@rspress/core@2.1.0)':
+  '@rstackjs/doc-ui@1.14.11(@rspress/core@2.1.1)':
     optionalDependencies:
-      '@rspress/core': 2.1.0(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
+      '@rspress/core': 2.1.1(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
 
   '@rstackjs/load-config@1.0.2(jiti@2.7.0)':
     optionalDependencies:
@@ -6166,9 +6161,9 @@ snapshots:
 
   rslog@2.3.0: {}
 
-  rspress-plugin-font-open-sans@1.0.4(@rspress/core@2.1.0):
+  rspress-plugin-font-open-sans@1.0.4(@rspress/core@2.1.1):
     dependencies:
-      '@rspress/core': 2.1.0(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
+      '@rspress/core': 2.1.1(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
 
   run-applescript@7.1.0: {}
 
@@ -6558,9 +6553,9 @@ snapshots:
       - kerberos
       - supports-color
 
-  zephyr-rspress-plugin@1.7.0(@rsbuild/core@2.3.1)(@rspack/core@2.3.1)(@rspress/core@2.1.0)(supports-color@8.1.1):
+  zephyr-rspress-plugin@1.7.0(@rsbuild/core@2.3.1)(@rspack/core@2.3.1)(@rspress/core@2.1.1)(supports-color@8.1.1):
     dependencies:
-      '@rspress/core': 2.1.0(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
+      '@rspress/core': 2.1.1(@rspack/core@2.3.1)(micromark-util-types@2.0.2)(micromark@4.0.2)(supports-color@8.1.1)
       zephyr-agent: 1.7.0(supports-color@8.1.1)
       zephyr-edge-contract: 1.7.0
       zephyr-rsbuild-plugin: 1.7.0(@rsbuild/core@2.3.1)(@rspack/core@2.3.1)(supports-color@8.1.1)

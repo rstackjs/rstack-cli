@@ -2,11 +2,6 @@
 import { pluginSass } from '@rsbuild/plugin-sass';
 import type { UserConfig } from '@rspress/core';
 import { pluginClientRedirects } from '@rspress/plugin-client-redirects';
-import {
-  transformerNotationDiff,
-  transformerNotationFocus,
-  transformerNotationHighlight,
-} from '@shikijs/transformers';
 import path from 'node:path';
 import { define } from 'rstack';
 import { pluginOpenGraph } from 'rsbuild-plugin-open-graph';
@@ -37,13 +32,6 @@ define.doc({
     link: {
       checkAnchors: true,
       checkDeadLinks: true,
-    },
-    shiki: {
-      transformers: [
-        transformerNotationDiff(),
-        transformerNotationHighlight(),
-        transformerNotationFocus(),
-      ],
     },
   },
   route: {
