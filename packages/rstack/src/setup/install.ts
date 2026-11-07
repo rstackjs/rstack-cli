@@ -26,6 +26,8 @@ import { createHookFiles, hookNames } from './hooks.ts';
 
 const defaultHooksDir = '.rstack/hooks';
 const gitignore = '*\n';
+const isError = (value: unknown): value is Error =>
+  Error.isError?.(value) ?? types.isNativeError(value);
 
 type InstallHooksOptions = {
   cwd?: string;
@@ -156,8 +158,7 @@ const claimOwner = (
     // Exclusive creation makes concurrent prepare scripts agree on one owner.
     writeFileSync(ownerPath, `${project}\n`, { flag: 'wx' });
   } catch (error) {
-    const code =
-      types.isNativeError(error) && 'code' in error ? error.code : undefined;
+    const code = isError(error) && 'code' in error ? error.code : undefined;
     if (code !== 'EEXIST') {
       throw error;
     }
@@ -286,7 +287,7 @@ export const installHooks = ({
       chmodSync(filePath, 0o755);
     }
   } catch (error) {
-    const message = types.isNativeError(error) ? error.message : String(error);
+    const message = isError(error) ? error.message : String(error);
     return fail('write-failed', `Failed to write Git hook files: ${message}`);
   }
 
