@@ -1,10 +1,7 @@
-# Shared by test workflows and, where available, ecosystem CI.
-# Exclude documentation by location: Markdown and metadata in fixtures and
-# scaffolding templates are executable inputs and must still trigger tests.
-# Consumers use token: '' for git-based PR detection without API permissions.
-# Use predicate-quantifier: some-with-excludes in every consumer.
+# Keep fixture and template Markdown/metadata covered; exclude docs by location.
+# Workflows use token: '' for git-based detection without PR API permissions.
+# All rules are exclusions, combined with predicate-quantifier: every.
 changed:
-  - '**'
   - '!*.{md,mdx}'
   - '!packages/*/{README*,CHANGELOG*,AGENTS}.md'
   - '!{.agents,.vscode}/**'
