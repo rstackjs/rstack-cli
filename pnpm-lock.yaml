@@ -178,8 +178,8 @@ catalogs:
       specifier: ^2.0.1
       version: 2.0.1
     '@rslib/core':
-      specifier: ~1.0.5
-      version: 1.0.5
+      specifier: ~1.0.6
+      version: 1.0.6
     '@rslint/core':
       specifier: 0.10.0
       version: 0.10.0
@@ -521,7 +521,7 @@ importers:
         version: 2.3.1
       '@rslib/core':
         specifier: 'catalog:'
-        version: 1.0.5(typescript@7.0.2)
+        version: 1.0.6(typescript@7.0.2)
       '@rslint/core':
         specifier: 'catalog:'
         version: 0.10.0(jiti@2.7.0)
@@ -555,7 +555,7 @@ importers:
         version: 0.12.6(@rsbuild/core@2.3.1)(@rstest/core@0.12.6)
       '@rstest/adapter-rslib':
         specifier: 'catalog:'
-        version: 0.12.6(@rslib/core@1.0.5)(@rstest/core@0.12.6)(typescript@7.0.2)
+        version: 0.12.6(@rslib/core@1.0.6)(@rstest/core@0.12.6)(typescript@7.0.2)
       '@types/micromatch':
         specifier: 'catalog:'
         version: 4.0.10
@@ -1451,8 +1451,8 @@ packages:
       '@rsbuild/core':
         optional: true
 
-  '@rslib/core@1.0.5':
-    resolution: {integrity: sha512-8sAu++AGYtq0uaro9Nk/C5IqvvN79jaaEWbM5Uu/OgGgYdv72AcfILJKaYtueTaOl29RIl47XNLxxIEZ9BrpMQ==}
+  '@rslib/core@1.0.6':
+    resolution: {integrity: sha512-EWBYwtq4UuONBvu0PdyH7ERfiFQkBnwkwPL38MqHIf3lB0VhsiKkU6wtLdbVxrl9wwhpaodbnaSVccM5V/y7Jw==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -3151,8 +3151,8 @@ packages:
     resolution: {integrity: sha512-XQBQ3I8W1Cge0Seh+6gjj03LbmRFWuoszgK9ooCpwYIrhhoO80pfq4cUkU5DkknwfOfFteRwlZ56PYOGYyFWdg==}
     engines: {node: '>= 4'}
 
-  rsbuild-plugin-dts@1.0.5:
-    resolution: {integrity: sha512-n7vHGdPxB3PWoDpLNP1fZ4WBmHEKqzKP0L++/HBDmSAznlah9mEHAXV1NEmGAaaJ3o4qLGYvEn/Z952Rni83ZQ==}
+  rsbuild-plugin-dts@1.0.6:
+    resolution: {integrity: sha512-KvSmhCfqZpNCF8F+xw40uFYZrp4SR264QvsjBLoXobMEuSVb/LffvfjAk/TqJ1LmWI9B7eGWeKMBOFIW5VIScQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
       '@microsoft/api-extractor': ^7
@@ -4241,10 +4241,10 @@ snapshots:
     optionalDependencies:
       '@rsbuild/core': 2.3.1
 
-  '@rslib/core@1.0.5(typescript@7.0.2)':
+  '@rslib/core@1.0.6(typescript@7.0.2)':
     dependencies:
       '@rsbuild/core': 2.3.1
-      rsbuild-plugin-dts: 1.0.5(@rsbuild/core@2.3.1)(typescript@7.0.2)
+      rsbuild-plugin-dts: 1.0.6(@rsbuild/core@2.3.1)(typescript@7.0.2)
     optionalDependencies:
       typescript: 7.0.2
     transitivePeerDependencies:
@@ -4444,9 +4444,9 @@ snapshots:
       '@rsbuild/core': 2.3.1
       '@rstest/core': 0.12.6(happy-dom@20.14.5)
 
-  '@rstest/adapter-rslib@0.12.6(@rslib/core@1.0.5)(@rstest/core@0.12.6)(typescript@7.0.2)':
+  '@rstest/adapter-rslib@0.12.6(@rslib/core@1.0.6)(@rstest/core@0.12.6)(typescript@7.0.2)':
     dependencies:
-      '@rslib/core': 1.0.5(typescript@7.0.2)
+      '@rslib/core': 1.0.6(typescript@7.0.2)
       '@rstest/core': 0.12.6(happy-dom@20.14.5)
     optionalDependencies:
       typescript: 7.0.2
@@ -6148,7 +6148,7 @@ snapshots:
 
   retry@0.13.1: {}
 
-  rsbuild-plugin-dts@1.0.5(@rsbuild/core@2.3.1)(typescript@7.0.2):
+  rsbuild-plugin-dts@1.0.6(@rsbuild/core@2.3.1)(typescript@7.0.2):
     dependencies:
       '@ast-grep/napi': 0.51.0
       '@rsbuild/core': 2.3.1
