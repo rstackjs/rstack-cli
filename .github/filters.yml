@@ -1,0 +1,12 @@
+# Keep fixture and template Markdown/metadata covered; exclude docs by location.
+# Workflows use token: '' for git-based detection without PR API permissions.
+# All rules are exclusions, combined with predicate-quantifier: every.
+changed:
+  - '!*.{md,mdx}'
+  - '!packages/*/{README*,CHANGELOG*,AGENTS}.md'
+  - '!{.agents,.vscode}/**'
+  - '!.github/ISSUE_TEMPLATE/**'
+  - '!.github/{FUNDING.yml,renovate.json,renovate.json5,PULL_REQUEST_TEMPLATE.md}'
+  - '!{skills-lock.json,skills.json,cspell.config.*}'
+  - '!scripts/dictionary.txt'
+  - '!website/**'
