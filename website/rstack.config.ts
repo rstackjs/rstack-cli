@@ -25,18 +25,6 @@ define.doc({
   logo: '/horizontal-logo.svg',
   description,
   lang: 'en',
-  search: {
-    codeBlocks: true,
-  },
-  markdown: {
-    link: {
-      checkAnchors: true,
-      checkDeadLinks: true,
-    },
-  },
-  route: {
-    cleanUrls: true,
-  },
   plugins: [
     ...(process.env.ZEPHYR_DEPLOY === 'true'
       ? [withZephyr<UserConfig>({ target: 'web' })]
