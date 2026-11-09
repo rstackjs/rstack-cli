@@ -25,9 +25,6 @@ define.doc({
   logo: '/horizontal-logo.svg',
   description,
   lang: 'en',
-  search: {
-    codeBlocks: true,
-  },
   plugins: [
     ...(process.env.ZEPHYR_DEPLOY === 'true'
       ? [withZephyr<UserConfig>({ target: 'web' })]
