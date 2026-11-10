@@ -12,9 +12,7 @@
     "@rsbuild/plugin-sass": "catalog:",
     "@rspress/core": "catalog:",
     "@rspress/plugin-client-redirects": "catalog:",
-    "@rspress/plugin-sitemap": "catalog:",
-    "@rstack-dev/doc-ui": "catalog:",
-    "@shikijs/transformers": "catalog:",
+    "@rstackjs/doc-ui": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
@@ -23,6 +21,7 @@
     "rsbuild-plugin-open-graph": "catalog:",
     "rspress-plugin-font-open-sans": "catalog:",
     "rstack": "workspace:*",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "zephyr-rspress-plugin": "catalog:"
   }
 }

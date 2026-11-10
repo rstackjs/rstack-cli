@@ -44,8 +44,18 @@
   },
   {
     "type": "file",
+    "name": "git-hooks",
+    "label": "Git hooks"
+  },
+  {
+    "type": "file",
     "name": "monorepo",
     "label": "Monorepo"
+  },
+  {
+    "type": "file",
+    "name": "ide-integration",
+    "label": "IDE 集成"
   },
   {
     "type": "dir-section-header",

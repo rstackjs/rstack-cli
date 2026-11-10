@@ -33,13 +33,14 @@ test('allows no files to match with --no-error-on-unmatched-pattern', () => {
 
 test('counts only supported files', () => {
   writeProjectFile('index.ts', 'const value = 1;\n');
+  writeProjectFile('other.ts', 'const other = 2;\n');
   writeProjectFile('notes.unknown', 'plain text');
 
-  const result = runFmt(['--check', 'index.ts', 'notes.unknown']);
+  const result = runFmt(['--check', 'index.ts', 'other.ts', 'notes.unknown']);
 
   expect(result.status).toBe(0);
   expect(normalizeDuration(result.stdout)).toBe(
-    'start   Checking formatting...\nsuccess Checked 1 file in <duration>. No issues found.\n',
+    'start   Checking formatting...\nsuccess Format check passed in <duration> (2 files)\n',
   );
   expect(result.stderr).toBe('');
 });

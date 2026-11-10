@@ -1,33 +1,81 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { loadConfig } from '@rstackjs/load-config';
-import type { RsbuildConfigDefinition } from '@rsbuild/core';
-import type { RslibConfigDefinition } from '@rslib/core';
+import { loadConfig, setJitiLoader } from '@rstackjs/load-config';
+import type {
+  defineConfig as defineAppConfig,
+  RsbuildConfigDefinition,
+} from '@rsbuild/core';
+import type {
+  defineConfig as defineRslibConfig,
+  RslibConfigDefinition,
+} from '@rslib/core';
 import type { RslintConfig } from '@rslint/core';
 import type { UserConfig, UserConfigAsyncFn } from '@rspress/core';
 import type { RstestConfigExport } from '@rstest/core';
 import type { FmtConfigDefinition } from './fmt/types.ts';
 import type { StagedConfig } from './staged.ts';
+import { composeConfigLayers, flattenConfigLayers } from './configLayers.ts';
 
-export type RslintConfigDefinition =
-  RslintConfig | (() => Promise<RslintConfig>);
+setJitiLoader(async () => {
+  const { createJiti } = await import('@rsbuild/core/jiti');
+
+  return {
+    createJiti: (...args: Parameters<typeof createJiti>) => {
+      const session = getConfigSessionStorage().getStore();
+      if (session?.active) {
+        // A native attempt may have registered configs before falling back.
+        // Reset per attempt, since the jiti importer itself is cached.
+        session.configs = {};
+        session.extends = undefined;
+      }
+      return createJiti(...args);
+    },
+  };
+});
+
 export type RspressConfigDefinition = UserConfig | UserConfigAsyncFn;
 
 type RslintConfigFactory = (
   lint: typeof import('@rslint/core'),
 ) => RslintConfig | Promise<RslintConfig>;
 
-export type Configs = {
+export type RslintConfigDefinition = RslintConfig | RslintConfigFactory;
+
+export type RstackConfigDefinitions = {
   app?: RsbuildConfigDefinition;
   lib?: RslibConfigDefinition;
   doc?: RspressConfigDefinition;
   test?: RstestConfigExport;
-  lint?: RslintConfigDefinition;
+  lint?: RslintConfig | (() => Promise<RslintConfig>);
   fmt?: FmtConfigDefinition;
   staged?: StagedConfig;
 };
 
+/** Shared configuration input; lint factories receive the tool exports. */
+export type RstackConfig = Omit<RstackConfigDefinitions, 'lint'> & {
+  extends?: readonly RstackConfig[];
+  lint?: RslintConfigDefinition;
+};
+
+const normalizeLintConfig = (
+  config: RslintConfigDefinition,
+): NonNullable<RstackConfigDefinitions['lint']> =>
+  typeof config === 'function'
+    ? async () => config(await import('@rslint/core'))
+    : config;
+
+/** Normalize one shared configuration without resolving factories or inheritance. */
+export const normalizeRstackConfig = ({
+  extends: _extends,
+  lint,
+  ...configs
+}: RstackConfig): RstackConfigDefinitions =>
+  lint === undefined
+    ? configs
+    : { ...configs, lint: normalizeLintConfig(lint) };
+
 export type LoadedRstackConfig = {
-  configs: Configs;
+  /** Effective tool definitions. Configuration factories remain unevaluated. */
+  configs: RstackConfigDefinitions;
   filePath: string | null;
   dependencies: string[];
 };
@@ -36,8 +84,7 @@ export type LoadRstackConfigOptions = {
   /**
    * The path to the Rstack config file, can be a relative or absolute path.
    * A relative path is resolved from `cwd`.
-   * If `configFilePath` is not provided, the config path set by the CLI is used.
-   * If neither path is provided, the function will search for the config file in `cwd`.
+   * If omitted, the function searches for the config file in `cwd`.
    */
   configFilePath?: string;
   /**
@@ -48,25 +95,15 @@ export type LoadRstackConfigOptions = {
 };
 
 type ConfigSession = {
-  configs: Configs;
+  configs: RstackConfigDefinitions;
+  extends?: readonly RstackConfig[];
   active: boolean;
-};
-
-type ConfigState = {
-  /**
-   * Config file path from the global `--config` flag. Always absolute: the CLI
-   * resolves it at parse time so it stays independent of later cwd choices
-   * (`loadRstackConfig` may be called with an LSP workspace root as `cwd`).
-   */
-  configPath?: string;
 };
 
 declare global {
   // rslint-disable-next-line no-var
   var __rstackConfigSessionStorage:
     AsyncLocalStorage<ConfigSession> | undefined;
-  // rslint-disable-next-line no-var
-  var __rstackCliState: ConfigState | undefined;
 }
 
 const getConfigSessionStorage = (): AsyncLocalStorage<ConfigSession> => {
@@ -81,17 +118,14 @@ const getConfigSessionStorage = (): AsyncLocalStorage<ConfigSession> => {
   return globalThis.__rstackConfigSessionStorage;
 };
 
-export const getConfigState = (): ConfigState => {
-  // The CLI and its internal tool config can also be loaded as separate module
-  // instances. Keep only the CLI config path in its own global state.
-  if (!globalThis.__rstackCliState) {
-    globalThis.__rstackCliState = {};
-  }
-
-  return globalThis.__rstackCliState;
-};
-
 type Define = {
+  /**
+   * Inherits shared configs from left to right, followed by the project's own
+   * definitions regardless of call order. May only be called once per config load.
+   *
+   * @see {@link https://rstack.rs/config | Configuration guide}
+   */
+  extends: (configs: readonly RstackConfig[]) => void;
   /**
    * Defines the Rsbuild config for the app.
    *
@@ -99,7 +133,7 @@ type Define = {
    *
    * @see {@link https://rstack.rs/config | Configuration guide}
    */
-  app: (config: RsbuildConfigDefinition) => void;
+  app: typeof defineAppConfig;
   /**
    * Defines the Rslib config for libraries.
    *
@@ -107,7 +141,7 @@ type Define = {
    *
    * @see {@link https://rstack.rs/config | Configuration guide}
    */
-  lib: (config: RslibConfigDefinition) => void;
+  lib: typeof defineRslibConfig;
   /**
    * Defines the Rspress config for documentation.
    *
@@ -136,7 +170,7 @@ type Define = {
    *
    * @see {@link https://rstack.rs/config | Configuration guide}
    */
-  lint: (config: RslintConfig | RslintConfigFactory) => void;
+  lint: (config: RslintConfigDefinition) => void;
   /**
    * Defines the Prettier config for formatting.
    *
@@ -155,9 +189,9 @@ type Define = {
   staged: (config: StagedConfig) => void;
 };
 
-const setConfig = <T extends keyof Configs>(
+const setConfig = <T extends keyof RstackConfigDefinitions>(
   type: T,
-  config: Configs[T],
+  config: RstackConfigDefinitions[T],
 ): void => {
   const session = getConfigSessionStorage().getStore();
 
@@ -174,17 +208,29 @@ const setConfig = <T extends keyof Configs>(
 };
 
 export const define: Define = {
-  app: (config) => setConfig('app', config),
-  lib: (config) => setConfig('lib', config),
+  extends: (configs) => {
+    const session = getConfigSessionStorage().getStore();
+    if (!session?.active) {
+      throw new Error(
+        'The "extends" config must be defined while loading an Rstack config.',
+      );
+    }
+    if (session.extends !== undefined) {
+      throw new Error('The "extends" config has already been defined.');
+    }
+    session.extends = configs;
+  },
+  app: ((config) => {
+    setConfig('app', config);
+    return config;
+  }) as typeof defineAppConfig,
+  lib: <Config extends RslibConfigDefinition>(config: Config) => {
+    setConfig('lib', config);
+    return config;
+  },
   doc: (config) => setConfig('doc', config),
   test: (config) => setConfig('test', config),
-  lint: (config) =>
-    setConfig(
-      'lint',
-      typeof config === 'function'
-        ? async () => config(await import('@rslint/core'))
-        : config,
-    ),
+  lint: (config) => setConfig('lint', normalizeLintConfig(config)),
   fmt: (config) => setConfig('fmt', config),
   staged: (config) => setConfig('staged', config),
 };
@@ -193,8 +239,6 @@ export const loadRstackConfig = async ({
   configFilePath,
   cwd,
 }: LoadRstackConfigOptions = {}): Promise<LoadedRstackConfig> => {
-  const state = getConfigState();
-  const configPath = configFilePath ?? state.configPath;
   const session: ConfigSession = {
     configs: {},
     active: true,
@@ -203,12 +247,12 @@ export const loadRstackConfig = async ({
   return getConfigSessionStorage().run(session, async () => {
     try {
       const { filePath, dependencies } = await loadConfig({
-        loader: 'native',
+        loader: 'auto',
         exportName: false,
         fresh: true,
         cwd,
-        ...(configPath !== undefined
-          ? { path: configPath }
+        ...(configFilePath !== undefined
+          ? { path: configFilePath }
           : {
               configFileNames: [
                 'rstack.config.ts',
@@ -220,13 +264,19 @@ export const loadRstackConfig = async ({
       });
 
       return {
-        configs: session.configs,
+        configs: session.extends?.length
+          ? await composeConfigLayers([
+              ...flattenConfigLayers(session.extends),
+              session.configs,
+            ])
+          : session.configs,
         filePath,
         dependencies,
       };
     } finally {
       session.active = false;
       session.configs = {};
+      session.extends = undefined;
     }
   });
 };

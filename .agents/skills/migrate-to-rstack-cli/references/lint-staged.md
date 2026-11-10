@@ -14,7 +14,7 @@ If staged tasks invoke Prettier, also read [prettier.md](prettier.md).
 4. Remove the old manifest key or config file.
 5. Remove the direct staged-file dependency only when no script, config, or programmatic API still uses it.
 
-## Config Pattern
+## Config pattern
 
 ```ts
 import { define } from 'rstack';
@@ -27,6 +27,6 @@ define.staged({
 
 Function configs are supported.
 
-## CLI Options
+## CLI options
 
 Run `rs staged -h` for supported options.

@@ -7,7 +7,7 @@
     "emitDeclarationOnly": true,
     "outDir": "dist",
     "skipLibCheck": true,
-    "types": ["rstack/types", "node"],
+    "types": ["rstack/types"],
     "jsxImportSource": "vue",
     "useDefineForClassFields": true,
     "rootDir": "src",

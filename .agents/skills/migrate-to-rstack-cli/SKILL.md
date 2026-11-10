@@ -1,13 +1,13 @@
 ---
 name: migrate-to-rstack-cli
-description: Use when migrating projects from standalone Rsbuild, Rslib, Rstest, Rslint, Rspress, Prettier, sort-package-json, lint-staged, husky, or simple-git-hooks tooling to the unified `rstack` package, `rs` commands, and `rstack.config.*`.
+description: Use when migrating projects from standalone Rsbuild, Rslib, Rstest, Rslint, Rspress, Prettier, sort-package-json, lint-staged, husky, lefthook, or simple-git-hooks tooling to the unified `rstack` package, `rs` commands, and `rstack.config.*`.
 ---
 
 # Migrate to Rstack CLI
 
 Rstack CLI is the `rstack` package, exposed through the `rs` binaries. It provides one CLI, one config file, and a consistent workflow for the Rstack JavaScript toolchain.
 
-## Tool References
+## Tool references
 
 Read every matching reference before editing. Load only the tools present in the project.
 
@@ -18,7 +18,7 @@ Read every matching reference before editing. Load only the tools present in the
 - `prettier`, `package.json#prettier`, `.prettierrc*`, `prettier.config.*`, `.prettierignore`, `.editorconfig`, `sort-package-json`, Prettier plugins, or formatting scripts: [prettier.md](references/prettier.md)
 - `@rspress/core`, `rspress.config.*`, `rspress` commands, themes, or plugins: [rspress.md](references/rspress.md)
 - `lint-staged`, `nano-staged`, their configs: [lint-staged.md](references/lint-staged.md)
-- `husky`, `.husky/`, `package.json#husky`, `simple-git-hooks`, `.simple-git-hooks.*`, or Git hook installer scripts: [git-hooks.md](references/git-hooks.md)
+- `husky`, `.husky/`, `package.json#husky`, `lefthook`, `simple-git-hooks`, `.simple-git-hooks.*`, or Git hook installer scripts: [git-hooks.md](references/git-hooks.md)
 
 ## Workflow
 
@@ -34,7 +34,30 @@ Read every matching reference before editing. Load only the tools present in the
 
 Rsbuild, Rslib, Rstest, Rslint, and Prettier remain transitive `rstack` dependencies. Remove obsolete direct dependencies and imports from the migrated scope; do not expect their names to disappear from the lockfile.
 
-## Configuration Rules
+### Ignore cleanup
+
+After migrating lint or formatting, remove exclusions from lint `ignores` and fmt `ignorePatterns` when the same paths are already covered by effective `.gitignore` rules; both commands read `.gitignore` automatically. For fmt, also remove `package-lock.json` and `pnpm-lock.yaml` from `ignorePatterns`; `rs fmt` ignores them by default.
+
+Keep negations and fmt exclusions that must apply to explicitly passed files, which bypass `.gitignore`.
+
+### Combined checks
+
+After migrating lint and formatting commands, prefer the shorter combined command when behavior is equivalent:
+
+| Separate commands                        | Preferred command       |
+| ---------------------------------------- | ----------------------- |
+| `rs lint && rs fmt --check`              | `rs check`              |
+| `rs lint --type-check && rs fmt --check` | `rs check --type-check` |
+
+`rs check` preserves the order and short-circuit behavior of these `&&` chains.
+
+Combine only commands that share the same working directory, config, scope, and execution behavior and have no extra inputs or command-specific options. Pass a shared `-c` or `--config` to `rs check`.
+
+## Configuration
+
+### Config files
+
+Treat each workspace or config root independently. A monorepo may need multiple Rstack config files when commands run from different package directories; validate config discovery from each directory.
 
 Use one of the default names: `rstack.config.ts`, `.js`, `.mts`, or `.mjs`.
 
@@ -53,21 +76,24 @@ define.test({
 });
 ```
 
-Use dynamic imports in async config functions only for external plugins, presets, and other dependencies:
+### Modules and imports
+
+Rstack loads every top-level import when it reads `rstack.config.*`. Prefer static imports when a config is only for an application and its tests, a library and its tests, or a documentation site.
+
+If the same config also includes lint, formatting, or staged-file checks, dynamically import dependencies inside the relevant async config function to avoid loading them during checks. Keep type-only and Node.js built-in imports at the top level.
 
 ```ts
 define.app(async () => {
   const { pluginReact } = await import('@rsbuild/plugin-react');
+
   return {
     plugins: [pluginReact()],
   };
 });
-```
 
-`define.lint` provides `@rslint/core` APIs to its config factory, so no manual import is needed:
-
-```ts
 define.lint(({ js }) => [js.configs.recommended]);
 ```
+
+`define.lint` provides `@rslint/core` APIs to its config factory, so no manual import is needed.
 
 Rstack loads TypeScript configs as native ESM. Preserve runtime-resolvable file extensions, replace CommonJS globals such as `__dirname`.

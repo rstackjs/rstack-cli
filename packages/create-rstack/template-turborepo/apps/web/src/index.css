@@ -1,0 +1,27 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  color: #202124;
+  background: #f8f9fa;
+}
+
+main {
+  max-width: 640px;
+  margin: 15vh auto;
+  padding: 24px;
+}
+
+button {
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 8px;
+  color: white;
+  background: #5755d9;
+  cursor: pointer;
+}
+
+nav {
+  display: flex;
+  gap: 20px;
+  margin-top: 24px;
+}

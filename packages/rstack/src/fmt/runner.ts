@@ -39,7 +39,7 @@ interface RunCache {
   hashOptions: ReturnType<typeof createOptionsHasher>;
 }
 
-interface FmtWorkerPoolResult {
+interface FmtFilesResult {
   files: FmtFileResult[];
   processedFileCount: number;
 }
@@ -193,13 +193,38 @@ const runPriorityTasks = async (
   return results;
 };
 
-/** Processes files in a worker pool while preserving input order. */
-const runWithWorkers = async (
+/** Collects per-file outcomes while preserving cache and processed-count semantics. */
+const collectFmtResults = (
+  results: FmtFileRun[],
+  cache?: RunCache,
+): FmtFilesResult => {
+  const processedFiles: FmtFileResult[] = [];
+  let processedFileCount = 0;
+
+  for (const { outcome, key, entry } of results) {
+    if (key !== undefined && entry) {
+      cache?.store.set(key, entry);
+    }
+    if (outcome === 'unsupported') {
+      continue;
+    }
+
+    processedFileCount++;
+    if (outcome !== 'unchanged') {
+      processedFiles.push(outcome);
+    }
+  }
+
+  return { files: processedFiles, processedFileCount };
+};
+
+/** Processes one pending file locally and multiple pending files in a worker pool. */
+const runFmtTasks = async (
   files: FmtFileRequest[],
   shouldWrite: boolean,
   maxWorkers?: number,
   cache?: RunCache,
-): Promise<FmtWorkerPoolResult> => {
+): Promise<FmtFilesResult> => {
   const tasks = files.map((file) => createRunTask(file, cache));
   const pendingFileCount = tasks.reduce(
     (count, task) => count + (isCachedUnsupported(task) ? 0 : 1),
@@ -207,6 +232,19 @@ const runWithWorkers = async (
   );
   if (pendingFileCount === 0) {
     return { files: [], processedFileCount: 0 };
+  }
+
+  // One pending file cannot benefit from parallelism, so avoid worker startup and IPC overhead.
+  if (pendingFileCount === 1) {
+    const { formatFile } = await import('./worker.ts');
+    const formatFileOnMainThread: FormatFile = (file, write, fileCache) =>
+      formatFile({ file, shouldWrite: write, cache: fileCache });
+    const results = await Promise.all(
+      tasks.map((task) =>
+        runFmtFile(task, shouldWrite, formatFileOnMainThread),
+      ),
+    );
+    return collectFmtResults(results, cache);
   }
 
   const { createWorkerPool } = await import('./workerPool.ts');
@@ -221,24 +259,7 @@ const runWithWorkers = async (
               runFmtFile(task, shouldWrite, workerPool.formatFile),
             ),
           );
-    const processedFiles: FmtFileResult[] = [];
-    let processedFileCount = 0;
-
-    for (const { outcome, key, entry } of results) {
-      if (key !== undefined && entry) {
-        cache?.store.set(key, entry);
-      }
-      if (outcome === 'unsupported') {
-        continue;
-      }
-
-      processedFileCount++;
-      if (outcome !== 'unchanged') {
-        processedFiles.push(outcome);
-      }
-    }
-
-    return { files: processedFiles, processedFileCount };
+    return collectFmtResults(results, cache);
   } finally {
     await workerPool.terminate();
   }
@@ -284,7 +305,7 @@ const runFmtFiles = async ({
   const result =
     files.length === 0
       ? { files: [], processedFileCount: 0 }
-      : await runWithWorkers(files, shouldWrite, maxWorkers, runCache);
+      : await runFmtTasks(files, shouldWrite, maxWorkers, runCache);
   await runCache?.store.save().catch(() => false);
 
   return {

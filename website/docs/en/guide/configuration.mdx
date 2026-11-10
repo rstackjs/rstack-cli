@@ -1,3 +1,7 @@
+---
+description: 'Configure Rstack tools with define APIs in rstack.config.ts, including application builds, tests, linting, and formatting.'
+---
+
 # Configuration
 
 import { PackageManagerTabs } from '@rspress/core/theme';
@@ -44,11 +48,14 @@ All `rs` commands accept the global `-c, --config` option for loading a file wit
 rs build --config ./configs/rstack.config.ts
 ```
 
-## Loading dependencies on demand
+## Importing dependencies \{#loading-dependencies-on-demand}
 
-Every `rs` command loads and executes the Rstack configuration file, then resolves only the configuration functions needed by that command.
+Rstack keeps a project's build, test, lint, formatting, and other settings in one `rstack.config.*` file. When a command loads the config file, it also loads every top-level import, even if it does not use the related configuration. Importing every tool and plugin at the top level can therefore add startup overhead to commands such as `rs lint` and `rs fmt`.
 
-When a configuration needs to import plugins or other tool-specific dependencies, use an async configuration function and load those dependencies with dynamic `import()` inside it. This ensures that they are loaded only when the configuration is resolved.
+Choose the import style based on the config contents:
+
+- Prefer simpler static imports when the config is only for an application and its tests, a library and its tests, or a documentation site.
+- If the same config also includes lint, formatting, or staged-file checks, consider dynamically importing dependencies inside the relevant async configuration function. This lets checks skip those dependencies.
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';
@@ -59,21 +66,28 @@ define.app(async () => {
     plugins: [pluginReact()],
   };
 });
+
+define.lint(({ js }) => [js.configs.recommended]);
+
+define.fmt({
+  singleQuote: true,
+});
 ```
 
 ## Configuration APIs
 
 Configuration options follow the formats of the underlying tools. When using APIs and helpers that Rstack CLI re-exports, prefer the `rstack/app`, `rstack/lib`, `rstack/test`, and `rstack/lint` entry points.
 
-| API                                 | Tool                                                                    | Commands                                                                        |
-| ----------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| [`define.app()`](#define-app)       | [Rsbuild](https://rsbuild.rs/config/)                                   | [`rs dev`](./cli/dev), [`rs build`](./cli/build), [`rs preview`](./cli/preview) |
-| [`define.lib()`](#define-lib)       | [Rslib](https://rslib.rs/config/)                                       | [`rs lib`](./cli/lib)                                                           |
-| [`define.doc()`](#define-doc)       | [Rspress](https://rspress.rs/api/config/config-basic)                   | [`rs doc`](./cli/doc)                                                           |
-| [`define.test()`](#define-test)     | [Rstest](https://rstest.rs/config/)                                     | [`rs test`](./cli/test)                                                         |
-| [`define.lint()`](#define-lint)     | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
-| [`define.fmt()`](#define-fmt)       | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
-| [`define.staged()`](#define-staged) | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
+| API                                   | Tool                                                                    | Commands                                                                        |
+| ------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [`define.app()`](#define-app)         | [Rsbuild](https://rsbuild.rs/config/)                                   | [`rs dev`](./cli/dev), [`rs build`](./cli/build), [`rs preview`](./cli/preview) |
+| [`define.lib()`](#define-lib)         | [Rslib](https://rslib.rs/config/)                                       | [`rs lib`](./cli/lib)                                                           |
+| [`define.doc()`](#define-doc)         | [Rspress](https://rspress.rs/api/config/config-basic)                   | [`rs doc`](./cli/doc)                                                           |
+| [`define.test()`](#define-test)       | [Rstest](https://rstest.rs/config/)                                     | [`rs test`](./cli/test)                                                         |
+| [`define.lint()`](#define-lint)       | [Rslint](https://rslint.rs/config/)                                     | [`rs lint`](./cli/lint)                                                         |
+| [`define.fmt()`](#define-fmt)         | [Prettier](https://prettier.io/docs/options)                            | [`rs fmt`](./cli/fmt)                                                           |
+| [`define.staged()`](#define-staged)   | [lint-staged](https://github.com/lint-staged/lint-staged#configuration) | [`rs staged`](./cli/staged)                                                     |
+| [`define.extends()`](#define-extends) | —                                                                       | —                                                                               |
 
 ### `define.app()` \{#define-app}
 
@@ -143,7 +157,9 @@ define.test({
 
 When `extends` is omitted, Rstack CLI automatically connects the test configuration to `define.app()` through the Rsbuild adapter. If no application configuration is defined, it falls back to `define.lib()` through the Rslib adapter. The application configuration takes precedence when both are defined. Set `extends` explicitly to opt out of this automatic inheritance.
 
-If the root test configuration does not define `extends` and contains `projects`, Rstack CLI applies automatic inheritance to each inline project that omits its own `extends`. A function-based application or library configuration is resolved once and shared by those projects. String project entries are passed to Rstest unchanged; they load their external configurations independently and do not inherit the current application or library configuration.
+If the root test configuration does not define `extends` and contains `projects`, Rstack CLI applies automatic inheritance to each inline project that omits its own `extends`. A function-based application or library configuration is resolved once and shared by those projects. String project entries use each project's own Rstack config instead of the root configuration.
+
+These rules also apply to [shared configurations](#shared-configurations): Rstack first merges the test settings, then determines whether to inherit the merged App or Lib configuration.
 
 > For more guidance on testing, see [Testing](./testing).
 
@@ -188,4 +204,127 @@ define.staged({
 });
 ```
 
-Unlike the other commands, `rs staged` requires a `define.staged()` configuration and reports an error when it is missing.
+Provide a staged configuration through `define.staged()` or a [shared configuration](#shared-configurations). `rs staged` reports an error if neither provides one.
+
+### `define.extends()` \{#define-extends}
+
+Accepts an array of shared configuration objects and applies their tool settings before merging the project's own `define.*()` configurations.
+
+**Type:** `(configs: readonly RstackConfig[]) => void`
+
+See [Shared configurations](#shared-configurations) for usage and merge rules.
+
+## Shared configurations
+
+Use `define.extends()` to share build, test, lint, and formatting settings across projects. A shared configuration is a plain object whose fields accept the same values as the corresponding `define.*()` APIs. In TypeScript, use `RstackConfig` to check its types:
+
+```ts title="shared.ts"
+import type { RstackConfig } from 'rstack';
+
+export const sharedConfig: RstackConfig = {
+  test: {
+    retry: 2,
+  },
+  lint: ({ js, ts }) => [js.configs.recommended, ts.configs.recommended],
+  fmt: {
+    singleQuote: true,
+    printWidth: 80,
+  },
+};
+```
+
+Import the shared configuration from a local module or npm package, then add any project-specific settings:
+
+```ts title="rstack.config.ts"
+import { define } from 'rstack';
+import { sharedConfig } from './shared.ts';
+
+define.extends([sharedConfig]);
+
+define.fmt({
+  printWidth: 100,
+});
+```
+
+The project inherits the shared settings and changes only `printWidth` to `100`.
+
+Call `define.extends()` at most once per configuration load, with all shared configurations in a single array.
+
+### Merge order
+
+Configurations are applied in this order:
+
+1. Shared configurations in the `define.extends()` array, from left to right.
+2. The project's own `define.*()` configurations, even if they appear before `define.extends()` in the file.
+
+Each tool's [merge rules](#merge-rules) determine which values are combined and which are replaced.
+
+Shared configurations can also extend other shared configurations:
+
+```ts title="team.ts"
+import type { RstackConfig } from 'rstack';
+import { sharedConfig } from './shared.ts';
+
+export const teamConfig: RstackConfig = {
+  extends: [sharedConfig],
+  test: {
+    retry: 3,
+  },
+};
+```
+
+Inherited configurations are applied first. With `define.extends([teamConfig])`, the order is `sharedConfig → teamConfig → project configuration`.
+
+Repeated references are not deduplicated. If both `a` and `b` extend `base`, `define.extends([a, b])` applies `base → a → base → b → project configuration`. Each tool handles duplicate plugins according to its own rules. Circular inheritance throws an error that identifies the circular reference.
+
+### Merge rules
+
+Rstack merges configurations separately for each tool:
+
+| Field    | Merge behavior                                                                                                                              |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app`    | Uses Rsbuild's `mergeRsbuildConfig`.                                                                                                        |
+| `lib`    | Uses Rslib's `mergeRslibConfig`.                                                                                                            |
+| `test`   | Uses Rstest's `mergeRstestConfig`.                                                                                                          |
+| `lint`   | Concatenates configuration arrays in order; Rslint applies their rules.                                                                     |
+| `fmt`    | Shallow merge: later values replace earlier values for the same option. Arrays and objects, including `overrides`, are replaced as a whole. |
+| `doc`    | Uses Rspress's `mergeDocConfig`: recursively merges objects, appends arrays, and replaces ordinary functions with later functions.          |
+| `staged` | Shallow merge by glob pattern: later tasks replace earlier tasks for the same pattern, including command arrays and task functions.         |
+
+The `doc` rules also apply to `builderConfig`: a later `builderConfig.tools.rspack` callback replaces an earlier one, while callback arrays are concatenated. When an array is merged with a defined non-array value, Rspress treats that value as a single array item.
+
+For `staged`, if either configuration is a top-level task-generator function, the later configuration replaces the earlier one entirely. For example, `glob mappings → function → new glob mappings` leaves only the new mappings. Task functions run when lint-staged supplies the staged file list.
+
+### Loading dependencies
+
+Shared configurations can also [import dependencies dynamically](#loading-dependencies-on-demand) inside tool configuration functions, so each command loads only what it needs.
+
+```ts title="shared.ts"
+import type { RstackConfig } from 'rstack';
+
+export const sharedConfig: RstackConfig = {
+  app: async () => {
+    const { pluginReact } = await import('@rsbuild/plugin-react');
+    return {
+      plugins: [pluginReact()],
+    };
+  },
+};
+```
+
+### Resolving paths
+
+Relative paths follow each tool's existing rules; they are not automatically resolved from the shared module's directory. Use an absolute path for files shipped with the shared configuration:
+
+```ts title="shared.ts"
+import { fileURLToPath } from 'node:url';
+import type { RstackConfig } from 'rstack';
+
+export const sharedConfig: RstackConfig = {
+  test: {
+    setupFiles: [fileURLToPath(new URL('./setup.ts', import.meta.url))],
+  },
+};
+```
+
+Make sure the published package includes the referenced file. If you compile it, update the path to match its output location.

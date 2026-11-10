@@ -1,22 +1,28 @@
 # Custom Dictionary Words
 applypatch
+bundleless
+bunx
 cdpath
 clippy
 dirents
 editmsg
 errexit
 esac
+esbenp
 extglob
+fileset
 fnames
 huskyrc
 indentable
 jsonline
 llms
+MJML
 napi
 noformat
 noprettier
 nosystem
 oxfmt
+precheck
 quasis
 rsbuild
 rslib
@@ -30,6 +36,7 @@ rstest
 shiki
 shikijs
 solidjs
+Trae
 turborepo
 typicode
 worktank

@@ -6,11 +6,6 @@ define.lib(async () => {
   return {
     bundle: false,
     dts: true,
-    source: {
-      entry: {
-        index: ['./src/**'],
-      },
-    },
     output: {
       target: 'web',
     },

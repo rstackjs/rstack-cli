@@ -1,6 +1,10 @@
 import path from 'node:path';
 import { afterEach, expect, test } from 'rstack/test';
-import { getConfigState, loadRstackConfig } from '../../../src/config.ts';
+import { define, loadRstackConfig } from '../../../src/config.ts';
+import {
+  getConfigState,
+  loadCliRstackConfig,
+} from '../../../src/cli/config.ts';
 
 type Deferred = ReturnType<typeof Promise.withResolvers<void>>;
 
@@ -34,22 +38,42 @@ afterEach(() => {
 test('should discard a config session after loading fails', async () => {
   state.configPath = configPath('rstack.config.ts');
 
-  await expect(loadRstackConfig()).rejects.toThrow('test config error');
+  await expect(loadCliRstackConfig()).rejects.toThrow('test config error');
 
   const { configs } = await loadConfigFile('explicit.config.ts');
-  expect(configs).toEqual({ app: {} });
+  expect(configs).toEqual({
+    app: {},
+  });
 });
 
 test('should prefer an explicit config path over the state config path', async () => {
   const explicitConfigPath = configPath('explicit.config.ts');
   state.configPath = configPath('rstack.config.ts');
 
-  const { configs, filePath } = await loadRstackConfig({
+  const { configs, filePath } = await loadCliRstackConfig({
     configFilePath: explicitConfigPath,
   });
 
   expect(configs.app).toEqual({});
   expect(filePath).toBe(explicitConfigPath);
+});
+
+test('should fall back to jiti for TypeScript syntax unsupported by the native loader', async () => {
+  const { configs } = await loadConfigFile('jiti.config.ts');
+
+  expect(configs.app).toEqual({ html: { title: 'jiti config' } });
+});
+
+test('should avoid duplicate definitions when falling back to jiti across repeated loads', async () => {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { configs } = await loadConfigFile('fallback.config.ts');
+
+    expect(configs).toEqual({
+      app: { html: { title: 'jiti config' } },
+      lib: {},
+      fmt: { singleQuote: true },
+    });
+  }
 });
 
 test('should resolve a relative explicit config path from cwd', async () => {
@@ -62,7 +86,9 @@ test('should resolve a relative explicit config path from cwd', async () => {
   expect(filePath).toBe(configPath('explicit.config.ts'));
 });
 
-test('should search for the config file in cwd', async () => {
+test('should search cwd without inheriting the CLI config path', async () => {
+  state.configPath = configPath('explicit.config.ts');
+
   await expect(loadRstackConfig({ cwd: import.meta.dirname })).rejects.toThrow(
     'test config error',
   );
@@ -109,5 +135,20 @@ test('should keep a running session intact when another config fails', async () 
 test('should reject duplicate definitions within the same session', async () => {
   await expect(loadConfigFile('duplicate.config.ts')).rejects.toThrow(
     'The "app" config has already been defined.',
+  );
+});
+
+test('rejects repeated extends calls even with empty arrays', async () => {
+  await expect(loadConfigFile('duplicate-extends.config.ts')).rejects.toThrow(
+    'The "extends" config has already been defined.',
+  );
+  expect((await loadConfigFile('explicit.config.ts')).configs).toEqual({
+    app: {},
+  });
+});
+
+test('rejects extends outside a config load', () => {
+  expect(() => define.extends([])).toThrow(
+    'The "extends" config must be defined while loading an Rstack config.',
   );
 });

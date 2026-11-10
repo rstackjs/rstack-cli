@@ -6,10 +6,10 @@ description: '使用 Rstack CLI 格式化文件，支持与 Prettier 兼容的�
 
 import { PackageManagerTabs } from '@rspress/core/theme';
 
-Rstack CLI 提供了基于 [Prettier](https://prettier.io/) 的格式化工具。相比直接使用 Prettier，`rs fmt` 的性能更好，主要得益于以下两点：
+Rstack CLI 提供了基于 [Prettier](https://prettier.io/) 的格式化工具。相比直接使用 Prettier，`rs fmt` 的性能更好，主要得益于以下三点：
 
 - **并行格式化**：通过 worker 池并行格式化文件。
-- **Yuku 解析器**：默认使用高性能的 [Yuku](https://yuku.fyi/) 解析器处理 JavaScript、JSX 和 TypeScript 文件。
+- **SWC Next 解析器**：默认使用高性能的 [SWC Next](https://www.npmjs.com/package/@swc-next/parser) 解析器处理 JavaScript、JSX 和 TypeScript 文件。
 - **持久化缓存**：基于文件内容缓存结果，后续运行可以跳过未变化文件的格式化。
 
 `rs fmt` 兼容 Prettier 的选项和插件，并提供更多内置能力，例如支持[排序 package.json 字段](#sort-package-json)。
@@ -54,6 +54,19 @@ define.fmt({
 
 :::
 
+## 支持的语言 \{#supported-languages}
+
+`rs fmt` 支持与 [Prettier](https://prettier.io/docs/) 相同的内置语言，通常会根据文件名自动推断语言：
+
+- [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)、[JSX](https://react.github.io/jsx/)、[Flow](https://flow.org/) 和 [TypeScript](https://www.typescriptlang.org/)
+- [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)、[Less](https://lesscss.org/) 和 [SCSS](https://sass-lang.com/)
+- [HTML](https://en.wikipedia.org/wiki/HTML)、[Angular](https://angular.dev/)、[Vue](https://vuejs.org/)、[Ember/Handlebars](https://emberjs.com/)、[Lightning Web Components（LWC）](https://developer.salesforce.com/developer-centers/lightning-web-components) 和 [MJML](https://mjml.io/)
+- [JSON](https://json.org/) 和 [YAML](https://yaml.org/)
+- [GraphQL](https://graphql.org/)
+- [Markdown](https://commonmark.org/)，包括 [GFM](https://github.github.com/gfm/) 和 [MDX v1](https://mdxjs.com/)
+
+你可以通过 [Prettier 插件](#prettier-plugins)支持其他语言。
+
 ## 格式化范围 \{#formatting-scope}
 
 `rs fmt` 根据命令行中传入的路径确定格式化范围。以下输入可以组合使用：
@@ -92,7 +105,7 @@ define.fmt({
 
 ### Lock 文件 \{#lock-files}
 
-`rs fmt` 默认忽略常见的 lock 文件，包括 `package-lock.json` 和 `pnpm-lock.yaml`。
+`rs fmt` 默认忽略常见的 lock 文件，包括 `package-lock.json`、`pnpm-lock.yaml` 和 `skills-lock.json`。
 
 如果你需要格式化这些文件，可以使用否定模式主动包含它们：
 
@@ -198,7 +211,9 @@ rs fmt --no-cache
 
 如果需要使用 Rstack CLI 未内置的格式化能力，可以安装相应的 [Prettier 插件](https://prettier.io/docs/plugins)，并添加到 `plugins` 中。插件支持通过包名、文件路径或 URL 引用，其中包名和相对路径基于 Rstack 配置文件所在的目录解析。
 
-由于 `rs fmt` 会在 worker 中加载插件，因此不支持直接传入插件对象。请通过包名、路径或 URL 引用插件。例如，安装并启用 [`prettier-plugin-tailwindcss`](https://github.com/tailwindlabs/prettier-plugin-tailwindcss)：
+由于 `rs fmt` 会在 worker 中加载插件，因此不支持直接传入插件对象。请通过包名、路径或 URL 引用插件。
+
+例如，安装并启用 [`prettier-plugin-tailwindcss`](https://github.com/tailwindlabs/prettier-plugin-tailwindcss)：
 
 <PackageManagerTabs command="install -D prettier-plugin-tailwindcss" />
 

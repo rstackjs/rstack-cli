@@ -1,3 +1,7 @@
+---
+description: 'Rstack 公共 API，包括配置辅助方法、各工具重新导出的 API 和 TypeScript 类型声明。'
+---
+
 # API 参考 \{#api-reference}
 
 Rstack CLI 提供统一的配置 API，并通过专用子路径重导出 Rsbuild、Rslib、Rstest 和 Rslint 的公开 API。建议优先从这些子路径导入，而不是直接从各工具的 core 包导入，以统一依赖入口，并确保 API 与 Rstack CLI 集成的工具版本匹配。
@@ -7,6 +11,7 @@ Rstack CLI 提供统一的配置 API，并通过专用子路径重导出 Rsbuild
 | 导入路径                 | 内容                                      | 使用场景                 |
 | ------------------------ | ----------------------------------------- | ------------------------ |
 | `rstack`                 | Rstack CLI 配置 API                       | 注册各项工具配置         |
+| `rstack/config`          | 配置加载器及其类型                        | 加载公共配置和项目配置   |
 | `rstack/app`             | `@rsbuild/core` 的公开 API                | 构建应用及扩展 Rsbuild   |
 | `rstack/lib`             | `@rslib/core` 的公开 API                  | 构建库及扩展 Rslib       |
 | `rstack/test`            | `@rstest/core` 的公开 API                 | 编写测试及配置测试项目   |
@@ -20,6 +25,36 @@ Rstack CLI 提供统一的配置 API，并通过专用子路径重导出 Rsbuild
 ### `define`
 
 从 `rstack` 导入 `define`，用于在 `rstack.config.ts` 中注册各项工具配置；详细用法请参阅[配置 API](./configuration#configuration-apis)。
+
+### `RstackConfig`
+
+`RstackConfig` 是[公共配置](./configuration#shared-configurations)的类型。所有字段均为可选，只需填写需要共享的配置。
+
+各工具字段接受与对应 `define.*()` 方法相同的配置，例如 `fmt` 对应 `define.fmt()`。
+
+```ts title="shared.ts"
+import type { RstackConfig } from 'rstack';
+
+export const sharedConfig: RstackConfig = {
+  fmt: {
+    singleQuote: true,
+  },
+};
+```
+
+还可以通过 `extends` 字段继承其他公共配置，该字段的类型为 `readonly RstackConfig[]`。
+
+```ts title="team.ts"
+import type { RstackConfig } from 'rstack';
+import { sharedConfig } from './shared.ts';
+
+export const teamConfig: RstackConfig = {
+  extends: [sharedConfig],
+  fmt: {
+    printWidth: 100,
+  },
+};
+```
 
 ## 重导出 \{#re-exports}
 
@@ -66,6 +101,36 @@ import { js, reactPlugin, ts } from 'rstack/lint';
 ```
 
 可用的预设和插件请参阅 [Rslint 规则和预设](https://rslint.rs/config/rules-and-presets)。
+
+## 加载配置 \{#loading-configurations}
+
+### `loadRstackConfig()` \{#loadrstackconfig}
+
+使用 `rstack/config` 导出的 `loadRstackConfig()`，可以在代码中加载 Rstack 配置：
+
+```ts
+import { loadRstackConfig } from 'rstack/config';
+
+const { configs, filePath, dependencies } = await loadRstackConfig({
+  cwd: process.cwd(),
+  configFilePath: './rstack.config.ts',
+});
+```
+
+支持以下可选参数：
+
+- `cwd`：查找配置文件的目录。`configFilePath` 为相对路径时，也以此目录为基准。默认为当前工作目录。
+- `configFilePath`：配置文件路径，可以是相对路径或绝对路径。省略时，在 `cwd` 中按[默认文件名](./configuration#configuration-file)查找配置。
+
+返回对象包含以下字段：
+
+- `configs`：各工具的配置对象或函数，包含项目配置及继承的[公共配置](./configuration#shared-configurations)。
+- `filePath`：加载的配置文件路径，未找到文件时为 `null`。
+- `dependencies`：加载器收集到的配置依赖路径列表。
+
+`loadRstackConfig()` 仅负责加载配置，不会执行工具配置函数。调用方仍需完成相应工具的配置解析和初始化，才能运行工具。
+
+`rstack/config` 还导出相关类型：`LoadRstackConfigOptions`（参数）、`LoadedRstackConfig`（返回值）和 `RstackConfigDefinitions`（工具配置）。
 
 ## TypeScript 类型 \{#typescript-types}
 

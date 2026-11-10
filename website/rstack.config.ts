@@ -1,6 +1,12 @@
 // Configuration guide: https://rstack.rs/config
+import { pluginSass } from '@rsbuild/plugin-sass';
+import type { UserConfig } from '@rspress/core';
+import { pluginClientRedirects } from '@rspress/plugin-client-redirects';
 import path from 'node:path';
 import { define } from 'rstack';
+import { pluginOpenGraph } from 'rsbuild-plugin-open-graph';
+import { pluginFontOpenSans } from 'rspress-plugin-font-open-sans';
+import { withZephyr } from 'zephyr-rspress-plugin';
 
 const title = 'Rstack CLI';
 const description =
@@ -9,114 +15,86 @@ const descriptionZh =
   'Rstack CLI 通过统一的命令行、配置和工作流整合 Rstack 工具链。';
 const injectLlmsHint = process.env.RSPRESS_INJECT_LLMS_HINT !== 'false';
 
-define.doc(async () => {
-  const { pluginSass } = await import('@rsbuild/plugin-sass');
-  const {
-    transformerNotationDiff,
-    transformerNotationFocus,
-    transformerNotationHighlight,
-  } = await import('@shikijs/transformers');
-  const { pluginClientRedirects } =
-    await import('@rspress/plugin-client-redirects');
-  const { pluginSitemap } = await import('@rspress/plugin-sitemap');
-  const { pluginOpenGraph } = await import('rsbuild-plugin-open-graph');
-  const { pluginFontOpenSans } = await import('rspress-plugin-font-open-sans');
-  const siteUrl = 'https://rstack.rs';
+const siteUrl = 'https://rstack.rs';
 
-  return {
-    root: path.join(import.meta.dirname, 'docs'),
-    title,
-    icon: 'https://assets.rspack.rs/rspack/rspack-claw-logo.svg',
-    logo: '/horizontal-logo.svg',
-    description,
-    lang: 'en',
-    llms: true,
-    search: {
-      codeBlocks: true,
+define.doc({
+  siteOrigin: siteUrl,
+  root: path.join(import.meta.dirname, 'docs'),
+  title,
+  icon: 'https://assets.rspack.rs/rspack/rspack-claw-logo.svg',
+  logo: '/horizontal-logo.svg',
+  description,
+  lang: 'en',
+  plugins: [
+    ...(process.env.ZEPHYR_DEPLOY === 'true'
+      ? [withZephyr<UserConfig>({ target: 'web' })]
+      : []),
+    // Keep a fallback for local dev/preview and deployments without Pages redirects.
+    pluginClientRedirects({
+      redirects: [
+        {
+          from: '^/config/?$',
+          to: '/guide/configuration',
+        },
+      ],
+    }),
+    pluginFontOpenSans(),
+  ],
+  locales: [
+    {
+      lang: 'en',
+      label: 'English',
+      title,
+      description,
     },
-    markdown: {
-      link: {
-        checkAnchors: true,
-        checkDeadLinks: true,
+    {
+      lang: 'zh',
+      label: '简体中文',
+      title,
+      description: descriptionZh,
+    },
+  ],
+  themeConfig: {
+    llmsUI: {
+      placement: 'outline',
+      injectLlmsHint,
+    },
+    socialLinks: [
+      {
+        icon: 'github',
+        mode: 'link',
+        content: 'https://github.com/rstackjs/rstack-cli',
       },
-      shiki: {
-        transformers: [
-          transformerNotationDiff(),
-          transformerNotationHighlight(),
-          transformerNotationFocus(),
-        ],
+      {
+        icon: 'discord',
+        mode: 'link',
+        content: 'https://discord.gg/XsaKEEk4mW',
       },
+    ],
+    editLink: {
+      docRepoBaseUrl:
+        'https://github.com/rstackjs/rstack-cli/tree/main/website/docs',
     },
-    route: {
-      cleanUrls: true,
-    },
+  },
+  builderConfig: {
     plugins: [
-      pluginClientRedirects({
-        redirects: [
-          {
-            from: '^/config/?$',
-            to: '/guide/configuration',
-          },
-        ],
-      }),
-      pluginFontOpenSans(),
-      pluginSitemap({ siteUrl }),
-    ],
-    locales: [
-      {
-        lang: 'en',
-        label: 'English',
+      pluginSass(),
+      pluginOpenGraph({
         title,
+        type: 'website',
+        url: siteUrl,
         description,
-      },
-      {
-        lang: 'zh',
-        label: '简体中文',
-        title,
-        description: descriptionZh,
-      },
+      }),
     ],
-    themeConfig: {
-      llmsUI: {
-        injectLlmsHint,
-      },
-      socialLinks: [
-        {
-          icon: 'github',
-          mode: 'link',
-          content: 'https://github.com/rstackjs/rstack-cli',
-        },
-        {
-          icon: 'discord',
-          mode: 'link',
-          content: 'https://discord.gg/XsaKEEk4mW',
-        },
-      ],
-      editLink: {
-        docRepoBaseUrl:
-          'https://github.com/rstackjs/rstack-cli/tree/main/website/docs',
-      },
+    server: {
+      open: true,
     },
-    builderConfig: {
-      plugins: [
-        pluginSass(),
-        pluginOpenGraph({
-          title,
-          type: 'website',
-          url: siteUrl,
-          description,
-        }),
-      ],
-      server: {
-        open: true,
-      },
-      tools: {
-        rspack: {
-          experiments: {
-            nativeWatcher: true,
-          },
+    tools: {
+      rspack: {
+        experiments: {
+          nativeWatcher: true,
         },
       },
     },
-  };
+  },
 });

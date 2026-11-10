@@ -2,7 +2,7 @@ import { expect, test } from 'rstack/test';
 import { normalizeHelpOutput } from '#test-helpers';
 import { setupFmtTest } from './fmt/helpers.ts';
 
-const { runCLI, writeProjectFile } = setupFmtTest();
+const { readProjectFile, runCLI, writeProjectFile } = setupFmtTest();
 const runCheck = (args: string[] = []) => runCLI(['check', ...args]);
 
 const writeLintConfig = (): void => {
@@ -36,14 +36,111 @@ test('runs lint followed by a formatting check', () => {
 
   expect(unformatted.status).toBe(1);
   expect(unformatted.stdout).toContain('Checking formatting...');
-  expect(unformatted.stderr).toContain('Formatting issues found in 1 file.');
+  expect(unformatted.stderr).toContain(
+    'Formatting issues found in 1 file. Rerun this command with --fix to fix.',
+  );
+  expect(readProjectFile('src/index.ts')).toBe('const value=true');
 
   writeProjectFile('src/index.ts', 'const value = true;\n');
   const formatted = runCheck();
 
   expect(formatted.status).toBe(0);
-  expect(formatted.stdout).toContain('No issues found.');
+  expect(formatted.stdout).toContain('Format check passed in');
   expect(formatted.stderr).toBe('');
+});
+
+test('applies shared lint and format config without reloading or resolving app', () => {
+  writeProjectFile(
+    'rstack.config.ts',
+    `import { define } from 'rstack';
+
+if (process.env.RSTACK_CHECK_CONFIG_LOADED) {
+  throw new Error('Config was loaded twice');
+}
+process.env.RSTACK_CHECK_CONFIG_LOADED = '1';
+
+define.extends([
+  {
+    app: () => {
+      throw new Error('App config must not run during check');
+    },
+    lint: [
+      {
+        files: ['**/*.ts'],
+        rules: { curly: 'error' },
+      },
+    ],
+    fmt: { singleQuote: true },
+  },
+]);
+`,
+  );
+  writeProjectFile(
+    'src/index.ts',
+    'const value = "hello";\nif (value) console.log(value);\n',
+  );
+
+  const result = runCheck(['--fix', 'src/index.ts']);
+
+  expect(result.status).toBe(0);
+  expect(result.stderr).toBe('');
+  expect(readProjectFile('src/index.ts')).toBe(
+    "const value = 'hello';\nif (value) {\n  console.log(value);\n}\n",
+  );
+});
+
+test('passes file arguments to lint and the formatting check', () => {
+  writeLintConfig();
+  writeProjectFile('src/selected-a.ts', 'const selectedA = true;\n');
+  writeProjectFile('src/selected-b.ts', 'const selectedB = true;\n');
+  writeProjectFile('src/unselected-lint-error.ts', 'debugger;\n');
+  writeProjectFile('src/unselected-format-error.ts', 'const value=true');
+
+  const result = runCheck(['src/selected-a.ts', 'src/selected-b.ts']);
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toContain('Format check passed in');
+  expect(result.stdout).toContain('(2 files)');
+  expect(result.stderr).toBe('');
+});
+
+test('fixes lint and formatting issues in the selected files', () => {
+  writeProjectFile(
+    'rstack.config.ts',
+    `import { define } from "rstack";
+
+define.lint([
+  {
+    files: ["**/*.{js,ts}"],
+    rules: { curly: "error" },
+  },
+]);
+`,
+  );
+  writeProjectFile('src/selected.ts', 'let value=true;if(value) value++');
+  writeProjectFile('src/unselected.ts', 'const unselected=true');
+
+  const result = runCheck(['--fix', 'src/selected.ts']);
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toContain('Formatting completed in');
+  expect(result.stderr).toBe('');
+  expect(readProjectFile('src/selected.ts')).toBe(
+    'let value = true;\nif (value) {\n  value++;\n}\n',
+  );
+  expect(readProjectFile('src/unselected.ts')).toBe('const unselected=true');
+});
+
+test('supports file arguments after the option terminator', () => {
+  writeLintConfig();
+  writeProjectFile('--selected.ts', 'const selected = true;\n');
+
+  const result = runCheck(['--', '--selected.ts']);
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toContain('Format check passed in');
+  expect(result.stdout).toContain('(1 file)');
+  expect(result.stderr).toBe('');
 });
 
 test('enables type checking only with --type-check', () => {
@@ -68,17 +165,117 @@ test('enables type checking only with --type-check', () => {
   expect(`${withTypeCheck.stdout}\n${withTypeCheck.stderr}`).toContain(
     'TS2322',
   );
+  expect(withTypeCheck.stdout).toContain('Format check passed in');
 });
 
-test('does not run the formatting check when lint fails', () => {
+test.each([true, false])(
+  'respects explicit projectService: %s with a root tsconfig',
+  (projectService) => {
+    writeProjectFile(
+      'rstack.config.ts',
+      `import { define } from 'rstack';
+
+define.lint([
+  {
+    files: ['**/*.ts'],
+    languageOptions: {
+      parserOptions: { projectService: ${projectService} },
+    },
+    rules: { 'no-debugger': 'error' },
+  },
+]);
+`,
+    );
+    writeProjectFile('tsconfig.json', '{"include":["src"]}\n');
+    writeProjectFile('src/index.ts', 'const value: string = 1;\n');
+
+    const result = runCheck(['--type-check', 'src/index.ts']);
+
+    expect(result.status).toBe(projectService ? 1 : 0);
+    const output = `${result.stdout}\n${result.stderr}`;
+    if (projectService) {
+      expect(output).toContain('TS2322');
+    } else {
+      expect(output).not.toContain('TS2322');
+    }
+    expect(result.stdout).toContain('Format check passed in');
+  },
+);
+
+test.each([
+  { source: 'debugger;\n', formatted: true },
+  { source: 'debugger;const value=true', formatted: false },
+])(
+  'checks formatting after lint fails (formatted: $formatted)',
+  ({ source, formatted }) => {
+    writeLintConfig();
+    writeProjectFile('src/index.js', source);
+
+    const result = runCheck(['src/index.js']);
+
+    expect(result.status).toBe(1);
+    expect(`${result.stdout}\n${result.stderr}`).toContain(
+      "Unexpected 'debugger' statement",
+    );
+    if (formatted) {
+      expect(result.stdout).toContain('Format check passed in');
+    } else {
+      expect(result.stderr).toContain('Formatting issues found in 1 file.');
+    }
+    expect(readProjectFile('src/index.js')).toBe(source);
+  },
+);
+
+test('preserves a formatter error exit code after lint fails', () => {
   writeLintConfig();
   writeProjectFile('src/index.js', 'debugger;\n');
+  writeProjectFile('src/broken.json', '{ "value": }');
 
-  const result = runCheck();
+  const result = runCheck(['src']);
+
+  expect(result.status).toBe(2);
+  expect(`${result.stdout}\n${result.stderr}`).toContain(
+    "Unexpected 'debugger' statement",
+  );
+  expect(result.stderr).toContain('broken.json');
+});
+
+test('formats lint fixes even when unfixable errors remain', () => {
+  writeProjectFile(
+    'rstack.config.ts',
+    `import { define } from 'rstack';
+define.lint([{
+  files: ['**/*.js'],
+  rules: { curly: 'error', 'no-debugger': 'error' },
+}]);
+`,
+  );
+  writeProjectFile('src/index.js', 'debugger;let value=true;if(value) value++');
+
+  const result = runCheck(['--fix', 'src/index.js']);
 
   expect(result.status).toBe(1);
   expect(`${result.stdout}\n${result.stderr}`).toContain(
     "Unexpected 'debugger' statement",
   );
-  expect(result.stdout).not.toContain('Checking formatting...');
+  expect(result.stdout).toContain('Formatting completed in');
+  expect(readProjectFile('src/index.js')).toBe(
+    'debugger;\nlet value = true;\nif (value) {\n  value++;\n}\n',
+  );
+});
+
+test('formats files even when type checking fails in fix mode', () => {
+  writeLintConfig();
+  writeProjectFile(
+    'tsconfig.json',
+    '{ "compilerOptions": { "strict": true }, "include": ["src"] }',
+  );
+  writeProjectFile('src/index.ts', 'const value: string=1');
+
+  const result = runCheck(['--fix', '--type-check', 'src/index.ts']);
+
+  expect(result.status).toBe(1);
+  expect(`${result.stdout}\n${result.stderr}`).toContain('TS2322');
+  expect(result.stdout).toContain('Formatting completed in');
+  expect(readProjectFile('src/index.ts')).toBe('const value: string = 1;\n');
 });

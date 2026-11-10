@@ -1,6 +1,7 @@
 import { useI18n, useLang } from '@rspress/core/runtime';
 import { Link } from '@rspress/core/theme-original';
 import { memo } from 'react';
+import { CopyRight } from './Copyright';
 import styles from './HomeFooter.module.scss';
 
 function useFooterData() {
@@ -19,6 +20,18 @@ function useFooterData() {
         {
           title: t('configuration'),
           link: getLink('/guide/configuration'),
+        },
+        {
+          title: t('apiReference'),
+          link: getLink('/guide/api-reference'),
+        },
+        {
+          title: t('ideIntegration'),
+          link: getLink('/guide/ide-integration'),
+        },
+        {
+          title: t('migration'),
+          link: getLink('/guide/migration'),
         },
       ],
     },
@@ -80,12 +93,20 @@ function useFooterData() {
           link: 'https://github.com/rstackjs/rstack-cli',
         },
         {
-          title: 'npm',
-          link: 'https://www.npmjs.com/package/rstack',
-        },
-        {
           title: 'Discord',
           link: 'https://discord.gg/XsaKEEk4mW',
+        },
+        {
+          title: 'Reddit',
+          link: 'https://www.reddit.com/r/Rspack/',
+        },
+        {
+          title: 'Bluesky',
+          link: 'https://bsky.app/profile/rspack.dev',
+        },
+        {
+          title: 'X',
+          link: 'https://x.com/rspack_dev',
         },
       ],
     },
@@ -96,8 +117,8 @@ export const HomeFooter = memo(() => {
   const footerData = useFooterData();
 
   return (
-    <div className={styles.footer}>
-      <div className={styles.container}>
+    <footer className={styles.footer}>
+      <div className={styles.links}>
         {footerData.map((item) => (
           <div key={item.title} className={styles.column}>
             <h2>{item.title}</h2>
@@ -113,6 +134,7 @@ export const HomeFooter = memo(() => {
           </div>
         ))}
       </div>
-    </div>
+      <CopyRight />
+    </footer>
   );
 });

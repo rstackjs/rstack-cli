@@ -2,7 +2,7 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "rootDir": "..",
-    "types": ["@testing-library/jest-dom"]
+    "types": ["rstack/types", "node", "@testing-library/jest-dom"]
   },
   "include": ["./"]
 }

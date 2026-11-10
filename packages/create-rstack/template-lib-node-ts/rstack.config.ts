@@ -2,7 +2,6 @@
 import { define } from 'rstack';
 
 define.lib({
-  syntax: ['node 22'],
   dts: true,
 });
 

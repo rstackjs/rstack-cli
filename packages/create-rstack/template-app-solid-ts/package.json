@@ -14,16 +14,16 @@
     "test:watch": "rs test --watch"
   },
   "dependencies": {
-    "solid-js": "^1.9.14"
+    "solid-js": "^1.9.18"
   },
   "devDependencies": {
-    "@rsbuild/plugin-babel": "^2.0.1",
+    "@rsbuild/plugin-babel": "^2.1.0",
     "@rsbuild/plugin-solid": "^1.2.2",
     "@solidjs/testing-library": "^0.8.10",
     "@testing-library/jest-dom": "^7.0.1",
-    "@types/node": "^24.13.3",
-    "happy-dom": "^20.11.2",
-    "rstack": "^0.6.1",
+    "@types/node": "^26.6.6",
+    "happy-dom": "^21.0.4",
+    "rstack": "^0.9.0",
     "typescript": "^7.0.2"
   }
 }

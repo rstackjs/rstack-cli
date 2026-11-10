@@ -45,7 +45,8 @@ export type HelpTopic =
   | 'lint'
   | 'fmt'
   | 'staged'
-  | 'setup';
+  | 'hooks'
+  | 'hooks uninstall';
 
 const CONFIG_OPTION: HelpItem = [
   '-c, --config <path>',
@@ -132,7 +133,7 @@ const HELP_DEFINITIONS = {
           ['check', 'Run static checks, including lint and format'],
           ['test', 'Run tests'],
           ['staged', 'Run tasks on staged Git files'],
-          ['setup', 'Install Git hooks'],
+          ['hooks', 'Manage Git hooks'],
         ],
       },
       {
@@ -147,12 +148,13 @@ const HELP_DEFINITIONS = {
     ],
   },
   check: {
-    usage: 'rs check [options]',
+    usage: 'rs check [options] [files...]',
     description: 'Run static checks, including lint and format',
     sections: [
       {
         title: 'Options',
         items: [
+          ['--fix', 'Automatically fix lint and formatting issues'],
           ['--type-check', 'Enable TypeScript type checking'],
           ...CONFIG_HELP_OPTIONS,
         ],
@@ -491,19 +493,38 @@ const HELP_DEFINITIONS = {
       },
     ],
   },
-  setup: {
-    usage: 'rs setup [options]',
-    description: 'Install Git hooks in the current repository',
+  hooks: {
+    usage: 'rs hooks [command] [options]',
+    description: 'Manage Git hooks in the current repository',
     sections: [
+      {
+        title: 'Commands',
+        items: [
+          ['[options]', 'Install or update Git hooks (default)'],
+          ['uninstall', 'Uninstall Git hooks'],
+        ],
+      },
+      commandHint('hooks'),
       {
         title: 'Options',
         items: [
+          ['-f, --force', 'Install despite an existing Git hooks setup'],
           [
             '--hooks-dir <path>',
             'Specify hooks directory relative to the Git repository root',
           ],
           HELP_OPTION,
         ],
+      },
+    ],
+  },
+  'hooks uninstall': {
+    usage: 'rs hooks uninstall [options]',
+    description: 'Uninstall Git hooks from the current repository',
+    sections: [
+      {
+        title: 'Options',
+        items: [HELP_OPTION],
       },
     ],
   },

@@ -1,15 +1,16 @@
 // Configuration guide: https://rstack.rs/config
+import { withRslibConfig } from '@rstest/adapter-rslib';
 import { define } from 'rstack';
 
-define.test(async () => {
-  const { withRslibConfig } = await import('@rstest/adapter-rslib');
-
-  // Disable color in test
-  process.env.NO_COLOR = '1';
-
+define.test(() => {
   return {
-    // Temporary projects may contain files that match Rstest's test glob.
-    exclude: ['**/test-temp-*/**'],
+    // Temporary projects and fixture projects may contain files that match
+    // Rstest's test glob.
+    exclude: [
+      '**/test-temp-*/**',
+      // Project-loader fixtures run the CLI with their own test globs.
+      '**/tests/config/project-loader/packages/**',
+    ],
     extends: withRslibConfig(),
     testTimeout: 30_000,
     source: {

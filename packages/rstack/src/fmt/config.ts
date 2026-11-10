@@ -1,15 +1,17 @@
 import { dirname } from 'node:path';
+// rslint-disable-next-line import/default -- micromatch is CommonJS; Node.js supports its default import.
 import micromatch from 'micromatch';
+import type { RstackConfigDefinitions } from '../config.ts';
+import { resolveFmtConfigLayers } from '../configLayers.ts';
 import { createRelativePathResolver } from './pathHelpers.ts';
 import type {
   FmtConfig,
-  FmtConfigDefinition,
   ResolvedFmtConfig,
   ResolvedFmtOptions,
 } from './types.ts';
 
 type ResolveFmtConfigOptions = {
-  definition: FmtConfigDefinition | undefined;
+  layers: readonly RstackConfigDefinitions[];
   configFilePath: string | null;
   cwd: string;
 };
@@ -150,14 +152,13 @@ const createOptionsResolver = (
   };
 };
 
-/** Resolves a formatter config definition and its project root. */
+/** Resolves formatter config layers and their project root. */
 const resolveFmtConfig = async ({
-  definition,
+  layers,
   configFilePath,
   cwd,
 }: ResolveFmtConfigOptions): Promise<ResolvedFmtConfig> => {
-  const config =
-    typeof definition === 'function' ? await definition() : definition;
+  const config = await resolveFmtConfigLayers(layers);
   const rootPath = configFilePath ? dirname(configFilePath) : cwd;
 
   return normalizeFmtConfig(config, rootPath);

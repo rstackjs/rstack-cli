@@ -1,7 +1,7 @@
 // Derived from @prettier/cli, see THIRD_PARTY_NOTICES.md
 
 import { availableParallelism } from 'node:os';
-import Tinypool from 'tinypool';
+import { Tinypool } from 'tinypool';
 import type { FmtFileCache, FmtFileRequest } from './types.ts';
 
 type FmtWorkerMethods = typeof import('./worker.ts');

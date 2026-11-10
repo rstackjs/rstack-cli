@@ -30,6 +30,7 @@ pnpm --filter rstack test
 
 ## Testing
 
+- Keep tests minimal and focused on observable behavior; avoid redundant coverage, implementation details, and unnecessary complexity.
 - Run `pnpm build` and `pnpm --filter rstack build:native` before `pnpm test`
 
 ## Native

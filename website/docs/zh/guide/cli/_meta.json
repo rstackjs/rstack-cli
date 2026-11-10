@@ -8,6 +8,6 @@
   "check",
   "lint",
   "fmt",
-  "setup",
+  "hooks",
   "staged"
 ]

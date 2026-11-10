@@ -1,4 +1,3 @@
-import { spawnSync } from 'node:child_process';
 import {
   chmodSync,
   existsSync,
@@ -8,23 +7,41 @@ import {
   writeFileSync,
 } from 'node:fs';
 import path from 'node:path';
+import { types } from 'node:util';
+import {
+  displayPath,
+  fail,
+  type FailedHooksResult,
+  generatedDirectoryName,
+  gitFailure,
+  isSamePath,
+  ownerFileName,
+  readOwner,
+  resolveGitContext,
+  resolveGitHooksPath,
+  resolveHooksPathScope,
+  runGit,
+} from './git.ts';
 import { createHookFiles, hookNames } from './hooks.ts';
 
 const defaultHooksDir = '.rstack/hooks';
-const generatedDirectoryName = '_';
-const ownerFileName = '.owner';
 const gitignore = '*\n';
+const isError = (value: unknown): value is Error =>
+  Error.isError?.(value) ?? types.isNativeError(value);
 
 type InstallHooksOptions = {
   cwd?: string;
+  force?: boolean;
   hooksDir?: string;
 };
 
-type FailedInstallResult = {
-  status: 'failed';
-  reason: string;
-  message: string;
+type InactiveHooks = {
+  hooks: string[];
+  path: string;
+  restore: 'configure' | 'unset';
 };
+
+type FailedInstallResult = FailedHooksResult;
 
 type SkippedInstallResult = {
   status: 'skipped';
@@ -33,23 +50,12 @@ type SkippedInstallResult = {
 };
 
 type InstallResult =
-  | { status: 'installed'; hooksPath: string }
+  | { status: 'installed'; hooksPath: string; inactiveHooks?: InactiveHooks }
   | { status: 'unchanged'; hooksPath: string }
   | SkippedInstallResult
   | FailedInstallResult;
 
-type GitContext = {
-  defaultHooksDirectory: string;
-  effectiveHooksDirectory: string;
-  gitRoot: string;
-  projectPath: string;
-};
-
-const fail = (reason: string, message: string): FailedInstallResult => ({
-  status: 'failed',
-  reason,
-  message,
-});
+type GitConfigScopeOption = '--local' | '--worktree';
 
 const skip = (reason: string, message?: string): SkippedInstallResult => ({
   status: 'skipped',
@@ -84,76 +90,23 @@ const resolveHooksDir = (hooksDir: string): string | FailedInstallResult => {
   return resolvedDir;
 };
 
-const runGit = (cwd: string, args: string[]) =>
-  spawnSync('git', args, { cwd, encoding: 'utf8' });
-
-const removeLineEnding = (value: string): string =>
-  value.replace(/\r?\n$/u, '');
-
-const gitFailure = (
-  error: NodeJS.ErrnoException | undefined,
-  stderr: string,
-): FailedInstallResult => {
-  if (error?.code === 'ENOENT') {
-    return fail('git-not-found', 'Git command not found.');
+const resolveInstallConfigScope = (
+  cwd: string,
+): GitConfigScopeOption | FailedInstallResult => {
+  const scope = resolveHooksPathScope(cwd);
+  if (typeof scope === 'object') {
+    return scope;
   }
-
-  return fail(
-    'git-command-failed',
-    `Failed to run Git: ${error?.message || stderr.trim()}`,
-  );
-};
-
-const resolveGitContext = (cwd: string): GitContext | InstallResult => {
-  // Resolve every repository path in one Git process. `--git-path hooks`
-  // accounts for an existing local or global core.hooksPath configuration.
-  const repository = runGit(cwd, [
-    'rev-parse',
-    '--is-inside-work-tree',
-    '--path-format=absolute',
-    '--show-toplevel',
-    '--show-prefix',
-    '--git-common-dir',
-    '--git-path',
-    'hooks',
-  ]);
-  if (repository.error || repository.status === null) {
-    return gitFailure(repository.error, repository.stderr);
+  if (scope === 'worktree') {
+    return '--worktree';
   }
-
-  const [
-    insideWorkTree = '',
-    gitRoot = '',
-    repositoryPrefix = '',
-    gitCommonDirectory = '',
-    effectiveHooksDirectory = '',
-  ] = removeLineEnding(repository.stdout).split(/\r?\n/u);
-
-  if (insideWorkTree !== 'true') {
-    return skip('not-git-repository');
-  }
-
-  if (repository.status !== 0) {
+  if (scope === 'command') {
     return fail(
-      'git-command-failed',
-      `Failed to resolve the Git repository paths: ${repository.stderr.trim()}`,
+      'hooks-path-command-scope',
+      "Cannot configure core.hooksPath because it is set in Git's command scope. Remove the command-scoped override and rerun rs hooks.",
     );
   }
-
-  if (!gitRoot || !gitCommonDirectory || !effectiveHooksDirectory) {
-    return fail(
-      'git-command-failed',
-      'Failed to resolve the Git repository paths.',
-    );
-  }
-
-  return {
-    defaultHooksDirectory: path.join(gitCommonDirectory, 'hooks'),
-    effectiveHooksDirectory,
-    gitRoot,
-    projectPath:
-      repositoryPrefix.replaceAll('\\', '/').replace(/\/$/u, '') || '.',
-  };
+  return '--local';
 };
 
 const isCurrentFile = (
@@ -172,30 +125,6 @@ const isCurrentFile = (
   } catch {
     return false;
   }
-};
-
-const isSamePath = (first: string, second: string): boolean =>
-  path.resolve(first) === path.resolve(second);
-
-const readOwner = (directory: string): string | undefined => {
-  try {
-    const content = readFileSync(path.join(directory, ownerFileName), 'utf8');
-    const owner = removeLineEnding(content);
-    return content === `${owner}\n` &&
-      owner.length > 0 &&
-      !/[\r\n]/u.test(owner)
-      ? owner
-      : undefined;
-  } catch {
-    return undefined;
-  }
-};
-
-const displayPath = (gitRoot: string, filePath: string): string => {
-  const relativePath = path.relative(gitRoot, filePath).replaceAll('\\', '/');
-  return relativePath.length > 0 && !relativePath.startsWith('../')
-    ? relativePath
-    : filePath;
 };
 
 const ownerConflict = (project: string): SkippedInstallResult =>
@@ -229,8 +158,7 @@ const claimOwner = (
     // Exclusive creation makes concurrent prepare scripts agree on one owner.
     writeFileSync(ownerPath, `${project}\n`, { flag: 'wx' });
   } catch (error) {
-    const code =
-      error instanceof Error && 'code' in error ? error.code : undefined;
+    const code = isError(error) && 'code' in error ? error.code : undefined;
     if (code !== 'EEXIST') {
       throw error;
     }
@@ -252,6 +180,7 @@ const findExistingHooks = (directory: string): string[] =>
 
 export const installHooks = ({
   cwd = process.cwd(),
+  force = false,
   hooksDir = defaultHooksDir,
 }: InstallHooksOptions = {}): InstallResult => {
   if (process.env.RSTACK_HOOKS === '0') {
@@ -282,16 +211,24 @@ export const installHooks = ({
     effectiveHooksDirectory,
     defaultHooksDirectory,
   );
+  let inactiveHooks: InactiveHooks | undefined;
 
   if (!hooksPathMatches && !usesDefaultHooks) {
     const activeOwner = readOwner(effectiveHooksDirectory);
     if (!activeOwner) {
-      return skip(
-        'hooks-path-conflict',
-        `Git hooks are already configured at "${displayPath(gitRoot, effectiveHooksDirectory)}"`,
-      );
-    }
-    if (activeOwner !== projectPath) {
+      if (!force) {
+        return skip(
+          'hooks-path-conflict',
+          `Git hooks are already configured at "${displayPath(gitRoot, effectiveHooksDirectory)}"`,
+        );
+      }
+
+      inactiveHooks = {
+        hooks: findExistingHooks(effectiveHooksDirectory),
+        path: displayPath(gitRoot, effectiveHooksDirectory),
+        restore: 'configure',
+      };
+    } else if (activeOwner !== projectPath) {
       return ownerConflict(activeOwner);
     }
   }
@@ -299,11 +236,27 @@ export const installHooks = ({
   if (usesDefaultHooks) {
     const existingHooks = findExistingHooks(defaultHooksDirectory);
     if (existingHooks.length > 0) {
-      return skip(
-        'existing-git-hooks',
-        `existing Git hooks were found: ${existingHooks.join(', ')}`,
-      );
+      if (!force) {
+        return skip(
+          'existing-git-hooks',
+          `existing Git hooks were found: ${existingHooks.join(', ')}`,
+        );
+      }
+
+      inactiveHooks = {
+        hooks: existingHooks,
+        path: displayPath(gitRoot, defaultHooksDirectory),
+        restore: 'unset',
+      };
     }
+  }
+
+  // Preserve a worktree-scoped override instead of writing a shadowed local value.
+  const configScope = hooksPathMatches
+    ? '--local'
+    : resolveInstallConfigScope(cwd);
+  if (typeof configScope !== 'string') {
+    return configScope;
   }
 
   const files = Object.entries(createHookFiles());
@@ -334,7 +287,7 @@ export const installHooks = ({
       chmodSync(filePath, 0o755);
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = isError(error) ? error.message : String(error);
     return fail('write-failed', `Failed to write Git hook files: ${message}`);
   }
 
@@ -346,7 +299,7 @@ export const installHooks = ({
   // Point Git at the generated directory only after every runtime file is ready.
   const configured = runGit(cwd, [
     'config',
-    '--local',
+    configScope,
     'core.hooksPath',
     hooksPath,
   ]);
@@ -360,5 +313,20 @@ export const installHooks = ({
     );
   }
 
-  return { status: 'installed', hooksPath };
+  const configuredHooksPath = resolveGitHooksPath(cwd);
+  if (typeof configuredHooksPath !== 'string') {
+    return configuredHooksPath;
+  }
+  if (!isSamePath(configuredHooksPath, directory)) {
+    return fail(
+      'git-config-failed',
+      `Failed to activate Rstack Git hooks: core.hooksPath resolves to "${displayPath(gitRoot, configuredHooksPath)}" instead of "${hooksPath}".`,
+    );
+  }
+
+  return {
+    status: 'installed',
+    hooksPath,
+    ...(inactiveHooks ? { inactiveHooks } : {}),
+  };
 };

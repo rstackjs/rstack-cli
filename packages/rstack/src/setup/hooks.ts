@@ -50,7 +50,7 @@ rs_init="\${XDG_CONFIG_HOME:-$HOME/.config}/rstack/hooks-init.sh"
 IFS= read -r rs_project_path < "$rs_dir/.owner" || exit 1
 [ -n "$rs_project_path" ] || exit 1
 
-# Fall back to the Node.js executable that ran rs setup when GUI clients omit
+# Fall back to the Node.js executable that ran rs hooks when GUI clients omit
 # it from PATH. Keep an existing Node.js environment ahead of this fallback.
 rs_node_fallback=${quoteShellPath(nodeExecutable)}
 if ! command -v node >/dev/null 2>&1 && [ -x "$rs_node_fallback" ]; then

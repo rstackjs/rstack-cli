@@ -1,5 +1,6 @@
 import { join, resolve } from 'node:path';
-import { getConfigState } from '../config.ts';
+import { pathToFileURL } from 'node:url';
+import { CLI_CONFIG_PATH_ENV, getConfigState } from './config.ts';
 import { insertConfigArg, parseArgs, parseCliArgs } from './args.ts';
 import { hasHelpFlag, printCommandHelp } from './help.ts';
 
@@ -57,7 +58,14 @@ async function runRstestCLI(args: string[]): Promise<void> {
     ),
   ];
 
-  const { runCLI } = await import('@rstest/core');
+  type RunCLI = (options: { argv: string[] }) => void;
+  const rstestCore = (await import('@rstest/core')) as unknown as {
+    runCLI?: RunCLI;
+  };
+  const runCLI =
+    rstestCore.runCLI ??
+    ((await import('@rstest/core/api')) as unknown as { runCLI: RunCLI })
+      .runCLI;
   runCLI({ argv });
 }
 
@@ -138,19 +146,26 @@ async function runRspressCLI(args: string[]): Promise<void> {
   }
 }
 
+const RSLINT_CONFIG_PATH = join(import.meta.dirname, 'rslintConfig.js');
+
 async function runRslintCLI(args: string[]): Promise<void> {
   if (hasHelpFlag(args)) {
     return printCommandHelp('lint');
   }
 
+  // Rslint's JS plugin workers inherit `process.env`. Clear an inherited path so
+  // that a run without `--config` still searches cwd.
+  const { configPath } = getConfigState();
+  if (configPath === undefined) {
+    delete process.env[CLI_CONFIG_PATH_ENV];
+  } else {
+    process.env[CLI_CONFIG_PATH_ENV] = configPath;
+  }
+
   const argv = [
     process.execPath,
     'rslint',
-    ...insertConfigArg(
-      args,
-      '--config',
-      join(import.meta.dirname, 'rslintConfig.js'),
-    ),
+    ...insertConfigArg(args, '--config', RSLINT_CONFIG_PATH),
   ];
 
   const { runCLI } = await import('@rslint/core');
@@ -158,13 +173,14 @@ async function runRslintCLI(args: string[]): Promise<void> {
 }
 
 async function runCheckCLI(args: string[]): Promise<void> {
-  const { values } = parseArgs({
+  const { values, positionals } = parseArgs({
     args,
     options: {
+      fix: { type: 'boolean' },
       'type-check': { type: 'boolean' },
       help: { type: 'boolean', short: 'h' },
     },
-    allowPositionals: false,
+    allowPositionals: true,
     strict: true,
   });
 
@@ -172,16 +188,37 @@ async function runCheckCLI(args: string[]): Promise<void> {
     return printCommandHelp('check');
   }
 
-  await runRslintCLI(values.typeCheck ? ['--type-check'] : []);
-  if (process.exitCode) {
-    return;
-  }
+  // Keep file arguments after `--` when forwarding them so names beginning
+  // with a hyphen are not reinterpreted as child-command options.
+  const fileArgs = positionals.length > 0 ? ['--', ...positionals] : [];
+  await runRslintCLI([
+    ...(values.fix ? ['--fix'] : []),
+    ...(values.typeCheck ? ['--type-check'] : []),
+    ...fileArgs,
+  ]);
 
+  const lintExitCode = Number(process.exitCode ?? 0);
+
+  // Rslint loads its one-shot config through Node's module cache. Import the
+  // same URL to read the Rstack config exported for the following fmt phase.
+  const { loadedConfig } = (await import(
+    pathToFileURL(RSLINT_CONFIG_PATH).href
+  )) as typeof import('../rslintConfig.ts');
   const { runFmtCLI } = await import(
     /* rspackChunkName: 'fmt' */
     '../fmt/cli.ts'
   );
-  await runFmtCLI(['--check']);
+
+  // Keep each phase's status separate: fmt may succeed or return without
+  // setting an exit code, but neither should clear a lint failure.
+  process.exitCode = 0;
+
+  await runFmtCLI([values.fix ? '--write' : '--check', ...fileArgs], {
+    fixOption: '--fix',
+    loadedConfig,
+  });
+
+  process.exitCode = Math.max(lintExitCode, Number(process.exitCode ?? 0));
 }
 
 export async function setupCommands(): Promise<void> {
@@ -248,12 +285,12 @@ export async function setupCommands(): Promise<void> {
     return;
   }
 
-  if (command === 'setup') {
-    const { runSetupCLI } = await import(
-      /* rspackChunkName: 'setup' */
+  if (command === 'hooks') {
+    const { runHooksCLI } = await import(
+      /* rspackChunkName: 'hooks' */
       '../setup/index.ts'
     );
-    await runSetupCLI(args.slice(1));
+    await runHooksCLI(args.slice(1));
     return;
   }
 

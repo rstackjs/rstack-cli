@@ -1,16 +1,56 @@
-import { loadRstackConfig } from './config.ts';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { CLI_CONFIG_PATH_ENV, loadCliRstackConfig } from './cli/config.ts';
+import type { LoadedRstackConfig } from './config.ts';
 import type { RslintConfig } from '@rslint/core';
+import { color, logger } from 'rslog';
+import { resolveRslintConfig } from './configLayers.ts';
 
-const { configs } = await loadRstackConfig();
-const lintDefinition = configs.lint ?? [];
+// Expose the loaded config so `rs check` can pass it to fmt instead of loading
+// and executing the Rstack config a second time. Rslint also imports this
+// module in its JS plugin workers, which get `--config` from the environment.
+export const loadedConfig: LoadedRstackConfig = await loadCliRstackConfig({
+  configFilePath: process.env[CLI_CONFIG_PATH_ENV],
+});
+const { configs } = loadedConfig;
+const lintConfig = await resolveRslintConfig([configs]);
 
-let lintConfig: RslintConfig;
-
-// TODO: support function in Rslint core
-if (typeof lintDefinition === 'function') {
-  lintConfig = await lintDefinition();
-} else {
-  lintConfig = lintDefinition;
+if (lintConfig === undefined) {
+  logger.error(
+    `No lint configuration found. Add ${color.cyan('define.lint(...)')} to your Rstack config file.`,
+  );
+  process.exit(1);
 }
 
-export default lintConfig;
+const basePath = process.cwd();
+const lintEntries = lintConfig.flat();
+
+// Rslint resolves entries without a basePath from the explicit config file.
+// Rstack's explicit config is this internal module, so preserve the historical
+// behavior of resolving user-authored paths from the invocation directory.
+const resolvedLintConfig: RslintConfig = lintEntries.map((entry) => ({
+  basePath,
+  ...entry,
+}));
+
+const hasExplicitProjectMode = lintEntries.some((entry) => {
+  const options = entry.languageOptions?.parserOptions;
+  return (
+    options?.project !== undefined || options?.projectService !== undefined
+  );
+});
+
+// Rslint's implicit tsconfig lookup also follows the internal config directory.
+// Preserve the CWD lookup only when neither project option is explicitly set.
+if (!hasExplicitProjectMode && existsSync(join(basePath, 'tsconfig.json'))) {
+  resolvedLintConfig.push({
+    basePath,
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.json'],
+      },
+    },
+  });
+}
+
+export default resolvedLintConfig;

@@ -4,12 +4,16 @@
     "zh": "快速上手"
   },
   "getStarted": {
-    "en": "Get Started",
+    "en": "Get started",
     "zh": "开始使用"
   },
   "github": {
     "en": "GitHub",
     "zh": "GitHub"
+  },
+  "latestRelease": {
+    "en": "Latest release",
+    "zh": "最新版本"
   },
   "title": {
     "en": "Unified Toolchain for",
@@ -23,38 +27,6 @@
     "en": "One CLI unifies development, builds, testing, linting, and formatting across all your JavaScript projects. Powered by the Rspack ecosystem.",
     "zh": "只需一个 CLI，即可统一所有 JavaScript 项目的开发、构建、测试、代码检查与格式化。由 Rspack 生态驱动。"
   },
-  "unifiedCli": {
-    "en": "One CLI",
-    "zh": "统一命令行"
-  },
-  "unifiedCliDesc": {
-    "en": "Develop, build, test, lint, format code, build libraries, and serve docs with the rs command.",
-    "zh": "通过 rs 命令完成开发、构建、测试、检查、格式化、库构建和文档开发。"
-  },
-  "oneConfig": {
-    "en": "One Configuration",
-    "zh": "统一配置"
-  },
-  "oneConfigDesc": {
-    "en": "Configure the whole toolchain from a single rstack.config.ts file.",
-    "zh": "在一份 rstack.config.ts 中配置完整工具链。"
-  },
-  "ecosystemPowered": {
-    "en": "Rstack Powered",
-    "zh": "Rstack 驱动"
-  },
-  "ecosystemPoweredDesc": {
-    "en": "Built on Rspack, Rsbuild, Rslib, Rstest, Rslint, and Rspress.",
-    "zh": "基于 Rspack、Rsbuild、Rslib、Rstest、Rslint 和 Rspress。"
-  },
-  "workflowFriendly": {
-    "en": "Workflow Friendly",
-    "zh": "融入现有工作流"
-  },
-  "workflowFriendlyDesc": {
-    "en": "Keep using your preferred runtime, package manager, and task runner.",
-    "zh": "继续使用你熟悉的运行时、包管理器和任务编排工具。"
-  },
   "guide": {
     "en": "Guide",
     "zh": "指南"
@@ -66,6 +38,18 @@
   "configuration": {
     "en": "Configuration",
     "zh": "配置"
+  },
+  "apiReference": {
+    "en": "API reference",
+    "zh": "API 参考"
+  },
+  "ideIntegration": {
+    "en": "IDE integration",
+    "zh": "IDE 集成"
+  },
+  "migration": {
+    "en": "Migration",
+    "zh": "迁移"
   },
   "ecosystem": {
     "en": "Ecosystem",

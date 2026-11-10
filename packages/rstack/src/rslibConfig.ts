@@ -1,53 +1,27 @@
-import type { WatchFiles } from '@rsbuild/core';
-import type {
-  ConfigParams,
-  RslibConfig,
-  RslibConfigDefinition,
+import {
+  type ConfigParams,
+  type RslibConfig,
+  type RslibConfigDefinition,
+  mergeRslibConfig,
 } from '@rslib/core';
-import { loadRstackConfig, type Configs } from './config.ts';
+import { withConfigMeta } from '@rstackjs/load-config';
+import type { RstackConfigDefinitions } from './config.ts';
+import { loadCliRstackConfig } from './cli/config.ts';
+import { resolveConfigLayers } from './configLayers.ts';
 
-const resolveRslibConfig = async (
-  configs: Configs,
+export const resolveRslibConfig = async (
+  layers: readonly RstackConfigDefinitions[],
   params: ConfigParams,
 ): Promise<RslibConfig> => {
-  const libConfig = configs.lib;
-  if (!libConfig) {
-    return {};
-  }
-  if (typeof libConfig === 'function') {
-    return libConfig(params);
-  }
-  return libConfig;
+  const configs = await resolveConfigLayers(layers, 'lib', params);
+  return configs.length > 1 ? mergeRslibConfig(...configs) : (configs[0] ?? {});
 };
 
 const loadRslibConfig = (async (params: ConfigParams) => {
-  const { configs, filePath, dependencies } = await loadRstackConfig();
-  const config = await resolveRslibConfig(configs, params);
+  const { configs, filePath, dependencies } = await loadCliRstackConfig();
+  const config = await resolveRslibConfig([configs], params);
 
-  if (!filePath) {
-    return config;
-  }
-
-  const watchFiles = config.dev?.watchFiles;
-  const watchConfig: WatchFiles = {
-    paths: [filePath, ...dependencies],
-    type: 'restart',
-  };
-
-  return {
-    ...config,
-    dev: {
-      ...config.dev,
-      watchFiles: [
-        ...(watchFiles
-          ? Array.isArray(watchFiles)
-            ? watchFiles
-            : [watchFiles]
-          : []),
-        watchConfig,
-      ],
-    },
-  };
+  return withConfigMeta(config, { filePath, dependencies });
 }) as RslibConfigDefinition;
 
 export default loadRslibConfig;

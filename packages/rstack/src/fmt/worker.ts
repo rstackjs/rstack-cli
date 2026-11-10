@@ -2,6 +2,7 @@
 
 import { hash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
+import { cachedImport } from '../cachedImport.ts';
 import type { FmtCacheEntry } from './cacheStore.ts';
 import { hasDottedBasename } from './pathHelpers.ts';
 import type { FmtFileCache, FmtFileRequest, FmtWorkerResult } from './types.ts';
@@ -12,12 +13,14 @@ interface FormatFileTask {
   cache?: FmtFileCache;
 }
 
+const getFormatModule = cachedImport(() => import('./format.ts'));
+
 const hashContent = (content: string | Uint8Array): string =>
   hash('sha256', content, 'base64url').slice(0, 16);
 
 /**
- * Use synchronous direct I/O inside the dedicated worker to avoid libuv
- * scheduling overhead. This prioritizes throughput over crash-safe replacement.
+ * Synchronous file I/O avoids libuv scheduling overhead in workers and single-file
+ * main-thread runs. This favors throughput over crash-safe file replacement.
  */
 const formatFile = async ({
   file,
@@ -65,7 +68,7 @@ const formatFile = async ({
     }
   }
 
-  const { formatFmtSource } = await import('./format.ts');
+  const { formatFmtSource } = await getFormatModule();
   const result = await formatFmtSource(file, () => (source ??= readSource()));
   if (result.status === 'unsupported') {
     return cache
@@ -94,14 +97,13 @@ const formatFile = async ({
     return { status };
   }
 
-  const cacheHash =
-    shouldWrite && !unchanged
-      ? hashContent(result.formatted)
-      : (contentHash ?? hashContent(result.source));
+  // Cache only the input we actually checked. Prettier or a plugin may produce
+  // non-idempotent output, so writing it does not prove that it is clean.
+  // Keeping the input hash makes the next run verify the newly written content.
   const cacheEntry: FmtCacheEntry = [
-    cacheHash,
+    contentHash ?? hashContent(result.source),
     cache.optionsHash,
-    shouldWrite || unchanged ? 'clean' : 'dirty',
+    unchanged ? 'clean' : 'dirty',
   ];
   return { status, cacheEntry };
 };

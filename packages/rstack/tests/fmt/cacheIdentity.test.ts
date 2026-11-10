@@ -15,8 +15,7 @@ import type { ResolvedFmtOptions } from '../../src/fmt/types.ts';
 
 const rootPath = path.join(import.meta.dirname, 'project');
 
-const asOptions = (value: Record<string, unknown>): ResolvedFmtOptions =>
-  value as ResolvedFmtOptions;
+const asOptions = (value: Record<string, unknown>): ResolvedFmtOptions => value;
 
 test('creates stable SHA-256-derived option hashes', () => {
   const hashOptions = createOptionsHasher();

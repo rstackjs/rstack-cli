@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { getRandomPort } from '@rstackjs/test-utils';
+import { getRandomPort, waitFor } from '@rstackjs/test-utils';
 import { test } from '#test-helpers';
 
 test('should restart doc dev server when Rstack config changes', async ({
@@ -25,6 +25,8 @@ define.doc({
   root: 'docs',
   title: '${title}',
   builderConfig: {
+    // Avoid disk cache contention between dev server processes in this fixture.
+    performance: { buildCache: false },
     dev: {
       watchFiles: {
         paths: ${JSON.stringify(userWatchFile)},
@@ -43,6 +45,8 @@ define.doc({
     `doc --config test-temp-rstack.config.ts --port ${await getRandomPort()}`,
   );
   await logHelper.expectBuildEnd();
+  // The build log can arrive before the restart watcher finishes its initial scan.
+  await waitFor(100);
   logHelper.clearLogs();
 
   await writeConfig('after config change');
@@ -51,6 +55,7 @@ define.doc({
     'restarting server as test-temp-rstack.config.ts changed',
   );
   await logHelper.expectBuildEnd();
+  await waitFor(100);
   logHelper.clearLogs();
 
   await writeFile(userWatchFile, 'changed\n');
@@ -83,6 +88,9 @@ import { title } from './test-temp-imported.ts';
 define.doc({
   root: 'docs',
   title,
+  builderConfig: {
+    performance: { buildCache: false },
+  },
 });
 `,
   );
@@ -91,6 +99,7 @@ define.doc({
     `doc --config test-temp-import.config.ts --port ${await getRandomPort()}`,
   );
   await logHelper.expectBuildEnd();
+  await waitFor(100);
   logHelper.clearLogs();
 
   await writeFile(
@@ -102,4 +111,64 @@ define.doc({
     'restarting server as test-temp-imported.ts changed',
   );
   await logHelper.expectBuildEnd();
+});
+
+test('should restart doc dev server when an imported shared config changes', async ({
+  execCliAsync,
+  logHelper,
+  expect,
+}) => {
+  const configFile = path.join(
+    import.meta.dirname,
+    'test-temp-shared.config.ts',
+  );
+  const importedFile = path.join(import.meta.dirname, 'test-temp-shared.ts');
+  const port = await getRandomPort();
+  const url = `http://localhost:${port}`;
+
+  await writeFile(
+    importedFile,
+    `export const sharedConfig = {
+  doc: { title: 'before import change' },
+};
+`,
+  );
+  await writeFile(
+    configFile,
+    `import { define } from 'rstack';
+import { sharedConfig } from './test-temp-shared.ts';
+
+define.extends([sharedConfig]);
+define.doc({
+  root: 'docs',
+  builderConfig: {
+    performance: { buildCache: false },
+  },
+});
+`,
+  );
+
+  execCliAsync(`doc --config test-temp-shared.config.ts --port ${port}`);
+  await logHelper.expectBuildEnd();
+  const initialResponse = await fetch(url);
+  expect(await initialResponse.text()).toContain(
+    '<title>before import change</title>',
+  );
+  await waitFor(100);
+  logHelper.clearLogs();
+
+  await writeFile(
+    importedFile,
+    `export const sharedConfig = {
+  doc: { title: 'after import change' },
+};
+`,
+  );
+
+  await logHelper.expectLog('restarting server as test-temp-shared.ts changed');
+  await logHelper.expectBuildEnd();
+  const updatedResponse = await fetch(url);
+  expect(await updatedResponse.text()).toContain(
+    '<title>after import change</title>',
+  );
 });

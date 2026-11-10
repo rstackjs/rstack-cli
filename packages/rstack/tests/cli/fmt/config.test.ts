@@ -211,6 +211,31 @@ define.fmt({
   expect(readProjectFile('second.fixture')).toBe('{ "second": true }\n');
 });
 
+test('runs prettier-plugin-tailwindcss for JavaScript and TypeScript', () => {
+  writeProjectFile(
+    'rstack.config.ts',
+    `import { define } from 'rstack';
+
+define.fmt({
+  plugins: ['prettier-plugin-tailwindcss'],
+  tailwindFunctions: ['cn'],
+});
+`,
+  );
+  const unsortedClasses = `const classes = cn("px-4 flex items-center");\n`;
+  writeProjectFile('index.js', unsortedClasses);
+  writeProjectFile('index.ts', unsortedClasses);
+
+  const result = runFmt(['index.js', 'index.ts']);
+
+  expect(result.status).toBe(0);
+  expectWriteSummary(result.stdout, 2, 2);
+  expect(result.stderr).toBe('');
+  const sortedClasses = `const classes = cn("flex items-center px-4");\n`;
+  expect(readProjectFile('index.js')).toBe(sortedClasses);
+  expect(readProjectFile('index.ts')).toBe(sortedClasses);
+});
+
 test('formats mixed plugin overrides in workers', () => {
   writeProjectFile(
     'rstack.config.ts',

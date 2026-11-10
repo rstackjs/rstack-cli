@@ -3,11 +3,13 @@ import { performance } from 'node:perf_hooks';
 import { color, logger } from 'rslog';
 import { parseArgs } from '../cli/args.ts';
 import { printCommandHelp } from '../cli/help.ts';
-import { loadRstackConfig } from '../config.ts';
+import type { LoadedRstackConfig } from '../config.ts';
+import { loadCliRstackConfig } from '../cli/config.ts';
 import { ensureProjectCacheDir } from '../projectCache.ts';
 import { fmtCacheFileName } from './cacheStore.ts';
 import { resolveFmtConfig } from './config.ts';
 import { discoverFmtFiles } from './discovery.ts';
+import { formatDuration } from './duration.ts';
 import { createRelativePathResolver, toPosixPath } from './pathHelpers.ts';
 import { runFmtFiles } from './runner.ts';
 import type { FmtMode, FmtRunResult, ResolvedFmtConfig } from './types.ts';
@@ -28,6 +30,13 @@ interface ParsedFmtCLIArgs {
   /** Serve formatting over the Language Server Protocol instead of exiting. */
   lsp: boolean;
 }
+
+type RunFmtCLIOptions = {
+  /** Option shown to fix issues by rerunning the current command. */
+  fixOption?: string;
+  /** Rstack config already loaded by the lint phase of `rs check`. */
+  loadedConfig?: LoadedRstackConfig;
+};
 
 const parseMaxWorkers = (value: string | undefined): number | undefined => {
   if (value === undefined) {
@@ -150,35 +159,6 @@ const createDisplayPathResolver = (
   return (filePath) => toPosixPath(resolveRelativePath(filePath));
 };
 
-const prettyTime = (seconds: number): string => {
-  const format = (time: string, unit: 'm' | 's') =>
-    color.bold(`${time}${unit}`);
-
-  if (seconds < 10) {
-    const digits = seconds >= 0.01 ? 2 : 3;
-    return format(seconds.toFixed(digits), 's');
-  }
-
-  if (seconds < 60) {
-    return format(seconds.toFixed(1), 's');
-  }
-
-  const minutes = Math.floor(seconds / 60);
-  const minutesLabel = format(minutes.toFixed(0), 'm');
-  const remainingSeconds = seconds % 60;
-
-  if (remainingSeconds === 0) {
-    return minutesLabel;
-  }
-
-  const secondsLabel = format(
-    remainingSeconds.toFixed(remainingSeconds % 1 === 0 ? 0 : 1),
-    's',
-  );
-
-  return `${minutesLabel} ${secondsLabel}`;
-};
-
 const formatCount = (count: number): string => color.bold(count);
 const formatFileCount = (count: number, isError = false): string => {
   const formattedCount = formatCount(count);
@@ -200,7 +180,8 @@ const logFmtResult = (
   mode: FmtMode,
   cwd: string,
   processedFileCount: number,
-  durationSeconds: number,
+  durationMilliseconds: number,
+  fixOption?: string,
 ): void => {
   let writtenCount = 0;
   let differentCount = 0;
@@ -221,51 +202,68 @@ const logFmtResult = (
     }
   }
 
+  if (mode === 'list-different') {
+    return;
+  }
+
+  const time = formatDuration(durationMilliseconds);
+
   if (mode === 'write') {
     if (writtenCount === 0 && result.exitCode !== 0) {
       return;
     }
 
-    const processedFiles = formatFileCount(processedFileCount);
-    const time = prettyTime(durationSeconds);
-    const message =
-      writtenCount > 0
-        ? `Formatted ${formatCount(writtenCount)} of ${processedFiles} in ${time}.`
-        : `Checked ${processedFiles} in ${time}. No changes needed.`;
-    logger[result.exitCode === 0 ? 'success' : 'info'](message);
-    return;
-  }
+    if (result.exitCode === 0) {
+      const files = `${processedFileCount} ${processedFileCount === 1 ? 'file' : 'files'}`;
+      const details =
+        writtenCount > 0
+          ? `${files}, ${writtenCount} formatted`
+          : `${files}, no changes`;
+      logger.success(
+        `Formatting completed in ${time} ${color.dim(`(${details})`)}`,
+      );
+      return;
+    }
 
-  if (mode !== 'check') {
+    const processedFiles = formatFileCount(processedFileCount);
+    logger.info(
+      `Formatted ${formatCount(writtenCount)} of ${processedFiles} in ${time}.`,
+    );
     return;
   }
 
   if (differentCount > 0) {
     const differentFiles = formatFileCount(differentCount, true);
     const processedFiles = formatFileCount(processedFileCount);
-    const checkOption = color.cyan('--check');
-    logger.error(
-      `Formatting issues found in ${differentFiles}. Run without ${checkOption} to fix.`,
-    );
-    logger.info(`Checked ${processedFiles} in ${prettyTime(durationSeconds)}.`);
+    const fixHint = fixOption
+      ? `Rerun this command with ${color.cyan(fixOption)} to fix.`
+      : `Rerun this command without ${color.cyan('--check')} to fix.`;
+    logger.error(`Formatting issues found in ${differentFiles}. ${fixHint}`);
+    logger.info(`Checked ${processedFiles} in ${time}.`);
   } else if (result.exitCode === 0) {
-    logger.success(
-      `Checked ${formatFileCount(processedFileCount)} in ${prettyTime(durationSeconds)}. No issues found.`,
-    );
+    const files = `${processedFileCount} ${processedFileCount === 1 ? 'file' : 'files'}`;
+    logger.success(`Format check passed in ${time} ${color.dim(`(${files})`)}`);
   }
 };
 
-const loadFmtConfig = async (cwd: string): Promise<ResolvedFmtConfig> => {
-  const { configs, filePath } = await loadRstackConfig({ cwd });
+const loadFmtConfig = async (
+  cwd: string,
+  loadedConfig?: LoadedRstackConfig,
+): Promise<ResolvedFmtConfig> => {
+  const { configs, filePath } =
+    loadedConfig ?? (await loadCliRstackConfig({ cwd }));
 
   return resolveFmtConfig({
-    definition: configs.fmt,
+    layers: [configs],
     configFilePath: filePath,
     cwd,
   });
 };
 
-const runFmtCLI = async (args: string[]): Promise<void> => {
+const runFmtCLI = async (
+  args: string[],
+  { fixOption, loadedConfig }: RunFmtCLIOptions = {},
+): Promise<void> => {
   const cwd = process.cwd();
   const startTime = performance.now();
 
@@ -337,7 +335,7 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       }
     }
 
-    const config = await loadFmtConfig(cwd);
+    const config = await loadFmtConfig(cwd, loadedConfig);
     const files = await discoverFmtFiles({
       cwd,
       patterns,
@@ -400,8 +398,15 @@ const runFmtCLI = async (args: string[]): Promise<void> => {
       return;
     }
 
-    const durationSeconds = (performance.now() - startTime) / 1000;
-    logFmtResult(result, mode, cwd, result.processedFileCount, durationSeconds);
+    const durationMilliseconds = performance.now() - startTime;
+    logFmtResult(
+      result,
+      mode,
+      cwd,
+      result.processedFileCount,
+      durationMilliseconds,
+      fixOption,
+    );
     process.exitCode = result.exitCode;
   } catch (error) {
     logger.error(error);

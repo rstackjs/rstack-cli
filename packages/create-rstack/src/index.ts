@@ -15,6 +15,9 @@ import {
 import path from 'node:path';
 
 const packageRoot = path.join(import.meta.dirname, '..');
+const { version } = JSON.parse(
+  await readFile(path.join(packageRoot, 'package.json'), 'utf-8'),
+) as { version: string };
 
 const templateNames = [
   'app-vanilla',
@@ -43,6 +46,9 @@ const templateNames = [
   'lib-solid-ts',
   'doc',
   'doc-i18n',
+  'pnpm',
+  'turborepo',
+  'nx',
 ];
 
 const resolveTemplateName = (template: string): string => {
@@ -55,7 +61,7 @@ const resolveTemplateName = (template: string): string => {
 
 const getTemplateName = async ({ template }: Argv): Promise<string> => {
   if (typeof template === 'string') {
-    if (/^(?:app|lib|doc)(?:-|$)/u.test(template)) {
+    if (/^(?:app|lib|doc|pnpm|turborepo|nx)(?:-|$)/u.test(template)) {
       return resolveTemplateName(template);
     }
 
@@ -69,9 +75,25 @@ const getTemplateName = async ({ template }: Argv): Promise<string> => {
         { value: 'app', label: 'Web Application' },
         { value: 'lib', label: 'Library' },
         { value: 'doc', label: 'Documentation' },
+        { value: 'monorepo', label: 'Monorepo' },
       ],
     }),
   );
+
+  if (projectType === 'monorepo') {
+    const monorepoType = checkCancel<string>(
+      await select({
+        message: 'Select monorepo tool',
+        options: [
+          { value: 'pnpm', label: 'pnpm workspace' },
+          { value: 'turborepo', label: 'Turborepo', hint: 'pnpm' },
+          { value: 'nx', label: 'Nx', hint: 'pnpm' },
+        ],
+      }),
+    );
+
+    return resolveTemplateName(monorepoType);
+  }
 
   if (projectType === 'doc') {
     const documentationType = checkCancel<string>(
@@ -198,7 +220,7 @@ const injectStagedSetup = async ({
   };
 
   packageJson.scripts = Object.fromEntries(
-    Object.entries({ ...packageJson.scripts, prepare: 'rs setup' }).sort(
+    Object.entries({ ...packageJson.scripts, prepare: 'rs hooks' }).sort(
       ([left], [right]) => left.localeCompare(right),
     ),
   );
@@ -218,8 +240,11 @@ const injectStagedSetup = async ({
 await create({
   root: packageRoot,
   name: 'rstack',
+  banner: `create-rstack v${version}`,
   templates: templateNames,
   builtinTools: [],
   getTemplateName,
+  getPackageManager: ({ templateName }) =>
+    ['pnpm', 'turborepo', 'nx'].includes(templateName) ? 'pnpm' : undefined,
   onGitResolved: injectStagedSetup,
 });

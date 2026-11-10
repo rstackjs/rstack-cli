@@ -23,7 +23,7 @@ It also covers local development needs outside Rstack's scope, with Prettier for
 | [`rs check`](https://rstack.rs/guide/cli/check)     | Run static checks, including lint and format |
 | [`rs lib`](https://rstack.rs/guide/cli/lib)         | Build library                                |
 | [`rs doc`](https://rstack.rs/guide/cli/doc)         | Serve or build docs                          |
-| [`rs setup`](https://rstack.rs/guide/cli/setup)     | Install Git hooks                            |
+| [`rs hooks`](https://rstack.rs/guide/cli/hooks)     | Manage Git hooks                             |
 | [`rs staged`](https://rstack.rs/guide/cli/staged)   | Run tasks on staged Git files                |
 
 Rstack CLI fits into your existing project workflow. It does not replace your runtime, package manager, or task runner, such as [pnpm](https://github.com/pnpm/pnpm), [Bun](https://github.com/oven-sh/bun), [Turborepo](https://github.com/vercel/turborepo), [Nx](https://github.com/nrwl/nx), and [Nub](https://github.com/nubjs/nub).
@@ -63,7 +63,7 @@ bun add -d rstack
     "lib": "rs lib",
     "doc": "rs doc",
     "format": "rs fmt",
-    "prepare": "rs setup"
+    "prepare": "rs hooks"
   }
 }
 ```

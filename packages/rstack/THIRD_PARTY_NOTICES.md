@@ -29,9 +29,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## Prettier yuku parser adapter
+## Prettier SWC next parser adapter
 
-The local Yuku parser adapter includes portions derived from
+The local SWC Next parser adapter includes portions derived from
 [@prettier/plugin-yuku](https://github.com/prettier/prettier/tree/main/packages/plugin-yuku)
 and Prettier's JavaScript parser postprocessing. The adapter reuses the public
 ESTree printer, formatter options, and parser utilities from the installed

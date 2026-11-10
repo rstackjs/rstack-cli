@@ -1,6 +1,6 @@
 {
   "name": "rstack",
-  "version": "0.6.1",
+  "version": "0.9.0",
   "description": "One CLI for JavaScript development, powered by Rstack.",
   "homepage": "https://rstack.rs",
   "bugs": {
@@ -77,9 +77,9 @@
     "@rslib/core": "catalog:",
     "@rslint/core": "catalog:",
     "@rstest/core": "catalog:",
+    "@swc-next/parser": "catalog:",
     "prettier": "catalog:",
-    "tinypool": "catalog:",
-    "yuku-parser": "catalog:"
+    "tinypool": "catalog:"
   },
   "devDependencies": {
     "@napi-rs/cli": "catalog:",
@@ -96,6 +96,7 @@
     "lint-staged": "catalog:",
     "micromatch": "catalog:",
     "prettier-plugin-svelte": "catalog:",
+    "prettier-plugin-tailwindcss": "catalog:",
     "rslog": "catalog:",
     "sort-package-json": "catalog:",
     "svelte": "catalog:",
@@ -105,7 +106,7 @@
     "vscode-languageserver-textdocument": "catalog:"
   },
   "peerDependencies": {
-    "@rspress/core": "^2.0.17"
+    "@rspress/core": "^2.0.17 || ^2.1.0-beta.1"
   },
   "peerDependenciesMeta": {
     "@rspress/core": {
@@ -113,7 +114,7 @@
     }
   },
   "engines": {
-    "node": ">=22.12.0"
+    "node": "^20.19.0 || >=22.12.0"
   },
   "publishConfig": {
     "access": "public",

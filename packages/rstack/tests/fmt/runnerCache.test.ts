@@ -311,7 +311,7 @@ test('does not cache formatting errors', async () => {
   });
 });
 
-test('write persists clean results for misses and hits', async () => {
+test('write persists checked input results for misses and hits', async () => {
   await withTempProject(async (rootPath) => {
     const cleanPath = path.join(rootPath, 'clean.ts');
     const dirtyPath = path.join(rootPath, 'dirty.ts');
@@ -333,9 +333,9 @@ test('write persists clean results for misses and hits', async () => {
       'clean',
     ]);
     expect(store.get('dirty.ts')).toEqual([
-      createCacheHash(readFileSync(dirtyPath)),
+      createCacheHash('const dirty=1'),
       expect.any(String),
-      'clean',
+      'dirty',
     ]);
 
     const timestamps = files.map((file) => statSync(file.path).mtimeMs);
@@ -350,7 +350,7 @@ test('write persists clean results for misses and hits', async () => {
   });
 });
 
-test('write converts a dirty entry to clean', async () => {
+test('write keeps a dirty entry until the output is checked', async () => {
   await withTempProject(async (rootPath) => {
     const filePath = path.join(rootPath, 'index.ts');
     const cache = createFmtCacheContext(rootPath);
@@ -367,13 +367,39 @@ test('write converts a dirty entry to clean', async () => {
 
     const store = await loadFmtCacheStore(cache.filePath, cacheNamespace);
     expect(store.get('index.ts')).toEqual([
-      createCacheHash(readFileSync(filePath)),
+      createCacheHash('const value=1'),
       expect.any(String),
-      'clean',
+      'dirty',
     ]);
     await expect(run([file], 'check', cache)).resolves.toMatchObject({
       exitCode: 0,
       files: [],
     });
+  });
+});
+
+test('cached check matches uncached check after writing non-idempotent output', async () => {
+  await withTempProject(async (rootPath) => {
+    // Preserve these line breaks: this input needs two passes in Prettier 3.9.6.
+    const filePath = writeProjectFile(
+      rootPath,
+      'example.ts',
+      `const fetch = rs.fn<typeof globalThis.fetch>().mockImplementation(() => Promise.resolve(
+  new Response('cached pixels', { headers: { 'content-type': 'image/webp' } }),
+));
+`,
+    );
+    const files = [
+      createFmtRequest(filePath, {
+        parser: 'typescript',
+        singleQuote: true,
+        trailingComma: 'all',
+      }),
+    ];
+    const cache = createFmtCacheContext(rootPath);
+
+    await run(files, 'write', cache);
+    const uncached = await runFmtFiles({ files, mode: 'check' });
+    await expect(run(files, 'check', cache)).resolves.toEqual(uncached);
   });
 });

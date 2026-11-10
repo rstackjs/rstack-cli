@@ -6,10 +6,10 @@ description: 'Format files with Rstack CLI using Prettier-compatible options, pl
 
 import { PackageManagerTabs } from '@rspress/core/theme';
 
-Rstack CLI includes a formatter built on [Prettier](https://prettier.io/). Compared with running Prettier directly, `rs fmt` offers better performance in two ways:
+Rstack CLI includes a formatter built on [Prettier](https://prettier.io/). Compared with running Prettier directly, `rs fmt` offers better performance in three ways:
 
 - **Parallel formatting**: Files are formatted concurrently in a worker pool.
-- **Yuku parser**: The high-performance [Yuku](https://yuku.fyi/) parser is used by default for JavaScript, JSX, and TypeScript files.
+- **SWC Next parser**: The high-performance [SWC Next](https://www.npmjs.com/package/@swc-next/parser) parser is used by default for JavaScript, JSX, and TypeScript files.
 - **Persistent cache**: Content-based results let later runs skip formatting unchanged files.
 
 `rs fmt` supports Prettier options and plugins and adds built-in capabilities such as [sorting package.json fields](#sort-package-json).
@@ -54,6 +54,19 @@ In addition to Prettier options and `overrides`, Rstack CLI provides two options
 
 :::
 
+## Supported languages
+
+`rs fmt` supports the same built-in languages as [Prettier](https://prettier.io/docs/) and normally infers the language from the file name:
+
+- [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript), [JSX](https://react.github.io/jsx/), [Flow](https://flow.org/), and [TypeScript](https://www.typescriptlang.org/)
+- [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS), [Less](https://lesscss.org/), and [SCSS](https://sass-lang.com/)
+- [HTML](https://en.wikipedia.org/wiki/HTML), [Angular](https://angular.dev/), [Vue](https://vuejs.org/), [Ember/Handlebars](https://emberjs.com/), [Lightning Web Components (LWC)](https://developer.salesforce.com/developer-centers/lightning-web-components), and [MJML](https://mjml.io/)
+- [JSON](https://json.org/) and [YAML](https://yaml.org/)
+- [GraphQL](https://graphql.org/)
+- [Markdown](https://commonmark.org/), including [GFM](https://github.github.com/gfm/) and [MDX v1](https://mdxjs.com/)
+
+You can add support for other languages with [Prettier plugins](#prettier-plugins).
+
 ## Formatting scope
 
 `rs fmt` determines the formatting scope from the paths passed on the command line. You can combine the following inputs:
@@ -92,7 +105,7 @@ Patterns follow Gitignore syntax and are resolved relative to the directory cont
 
 ### Lock files
 
-By default, `rs fmt` ignores common lock files, including `package-lock.json` and `pnpm-lock.yaml`.
+By default, `rs fmt` ignores common lock files, including `package-lock.json`, `pnpm-lock.yaml`, and `skills-lock.json`.
 
 To format these files, use a negated pattern to explicitly include them:
 
@@ -198,7 +211,9 @@ You can safely delete `.rstack/cache` to clear cached results. Do not treat the 
 
 To add formatting capabilities that are not built into Rstack CLI, install the corresponding [Prettier plugin](https://prettier.io/docs/plugins) and add it to `plugins`. Plugins can be referenced by package name, file path, or URL. Package names and relative paths are resolved from the directory containing the Rstack configuration file.
 
-Because `rs fmt` loads plugins in workers, plugin objects cannot be passed directly. Reference each plugin by package name, path, or URL instead. For example, install and enable [`prettier-plugin-tailwindcss`](https://github.com/tailwindlabs/prettier-plugin-tailwindcss):
+Because `rs fmt` loads plugins in workers, plugin objects cannot be passed directly. Reference each plugin by package name, path, or URL instead.
+
+For example, install and enable [`prettier-plugin-tailwindcss`](https://github.com/tailwindlabs/prettier-plugin-tailwindcss):
 
 <PackageManagerTabs command="install -D prettier-plugin-tailwindcss" />
 

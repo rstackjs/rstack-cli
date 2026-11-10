@@ -1,36 +1,65 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { IgnoreSource } from '../../binding.cjs';
+import type {
+  IgnoreMatcher as NativeIgnoreMatcher,
+  IgnoreSource,
+} from '../../binding.cjs';
 import { loadNativeBinding } from '../native/index.ts';
 import type { ResolvedFmtConfig } from './types.ts';
 
 /**
- * Common lock files that Prettier can format but `rs fmt` leaves to package managers.
+ * Common lock files that Prettier can format but `rs fmt` leaves to their generating tools.
  *
  * Prettier already skips other generated lock files when it cannot infer a parser, so this list
  * contains only the additional defaults owned by `rs fmt`.
  */
-const defaultIgnoreNames = ['package-lock.json', 'pnpm-lock.yaml'];
+const defaultIgnorePatterns = [
+  'package-lock.json',
+  'pnpm-lock.yaml',
+  'skills-lock.json',
+];
 
 type IgnorePredicate = (filePath: string, isDirectory?: boolean) => boolean;
+
+type BatchIgnoreMatcher = Pick<
+  NativeIgnoreMatcher,
+  'isIgnoredBatch' | 'isIgnoredBatchMask' | 'isIgnoredChild'
+>;
+
+interface BatchIgnoreContext {
+  readonly matcher: BatchIgnoreMatcher;
+  /** Cheap JavaScript checks applied before crossing into the native matcher. */
+  readonly precheck?: IgnorePredicate;
+}
+
+type IgnoreMatcher = IgnorePredicate & {
+  readonly batch?: BatchIgnoreContext;
+};
 
 interface CreateIgnoreMatcherOptions {
   config: ResolvedFmtConfig;
   /** Base directory for relative ignore paths. */
   cwd: string;
   ignorePaths?: string[];
+  precheck?: IgnorePredicate;
 }
 
-const createDefaultMatcher = (): IgnorePredicate => {
-  const suffixes = defaultIgnoreNames.map((name) => `${path.sep}${name}`);
-
-  return (filePath) => suffixes.some((suffix) => filePath.endsWith(suffix));
-};
-
-const createSourceMatcher = (sources: IgnoreSource[]): IgnorePredicate => {
+const createSourceMatcher = (
+  sources: IgnoreSource[],
+  precheck?: IgnorePredicate,
+): IgnoreMatcher => {
   const matcher = new (loadNativeBinding().IgnoreMatcher)(sources);
-  return (filePath, isDirectory = false) =>
-    matcher.isIgnored(filePath, isDirectory);
+  const isIgnored: IgnorePredicate = precheck
+    ? (filePath, isDirectory = false) =>
+        precheck(filePath, isDirectory) ||
+        matcher.isIgnored(filePath, isDirectory)
+    : (filePath, isDirectory = false) =>
+        matcher.isIgnored(filePath, isDirectory);
+
+  return Object.assign(
+    isIgnored,
+    precheck ? { batch: { matcher, precheck } } : { batch: { matcher } },
+  );
 };
 
 const loadIgnoreSource = async (
@@ -59,29 +88,24 @@ const createIgnoreMatcher = async ({
   config,
   cwd,
   ignorePaths = [],
-}: CreateIgnoreMatcherOptions): Promise<IgnorePredicate> => {
+  precheck,
+}: CreateIgnoreMatcherOptions): Promise<IgnoreMatcher> => {
   const ignoreFileSources = await Promise.all(
     ignorePaths.map((ignorePath) => loadIgnoreSource(cwd, ignorePath)),
   );
-  if (config.ignorePatterns.length) {
-    return createSourceMatcher([
+  return createSourceMatcher(
+    [
       {
         rootPath: config.rootPath,
-        patterns: [...defaultIgnoreNames, ...config.ignorePatterns].join('\n'),
+        patterns: [...defaultIgnorePatterns, ...config.ignorePatterns].join(
+          '\n',
+        ),
       },
       ...ignoreFileSources,
-    ]);
-  }
-
-  const defaultMatcher = createDefaultMatcher();
-  if (ignoreFileSources.length === 0) {
-    return defaultMatcher;
-  }
-
-  const cliMatcher = createSourceMatcher(ignoreFileSources);
-  return (filePath, isDirectory = false) =>
-    defaultMatcher(filePath, isDirectory) || cliMatcher(filePath, isDirectory);
+    ],
+    precheck,
+  );
 };
 
 export { createIgnoreMatcher };
-export type { IgnorePredicate };
+export type { BatchIgnoreContext, IgnoreMatcher, IgnorePredicate };

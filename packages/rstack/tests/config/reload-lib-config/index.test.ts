@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { waitForFile } from '@rstackjs/test-utils';
+import { waitFor, waitForFile } from '@rstackjs/test-utils';
 import { test } from '#test-helpers';
 
 test('should restart lib watch build when Rstack config changes', async ({
@@ -44,6 +44,8 @@ define.lib({
   execCliAsync('lib --watch --config test-temp-rstack.config.ts');
   await logHelper.expectLog('build completed, watching for changes...');
   await waitForFile(path.join(dist1, 'index.js'));
+  // The build log precedes the restart watcher's initial filesystem scan.
+  await waitFor(100);
   logHelper.clearLogs();
 
   await writeConfig('dist-2');
@@ -53,6 +55,7 @@ define.lib({
   );
   await logHelper.expectLog('build completed, watching for changes...');
   await waitForFile(path.join(dist2, 'index.js'));
+  await waitFor(100);
   logHelper.clearLogs();
 
   await writeFile(userWatchFile, 'changed\n');
@@ -93,6 +96,7 @@ define.lib({
   execCliAsync('lib --watch --config test-temp-import.config.ts');
   await logHelper.expectLog('build completed, watching for changes...');
   await waitForFile(path.join(dist1, 'index.js'));
+  await waitFor(100);
   logHelper.clearLogs();
 
   await writeFile(importedFile, "export const distPath = 'dist-import-2';\n");
@@ -100,6 +104,58 @@ define.lib({
   await logHelper.expectLog(
     'restarting build as test-temp-imported.ts changed',
   );
+  await logHelper.expectLog('build completed, watching for changes...');
+  await waitForFile(path.join(dist2, 'index.js'));
+});
+
+test('should restart lib watch build when an imported shared config changes', async ({
+  prepareDist,
+  execCliAsync,
+  logHelper,
+}) => {
+  const dist1 = await prepareDist('dist-import-1');
+  const dist2 = await prepareDist('dist-import-2');
+  const configFile = path.join(
+    import.meta.dirname,
+    'test-temp-shared.config.ts',
+  );
+  const importedFile = path.join(import.meta.dirname, 'test-temp-shared.ts');
+
+  await writeFile(
+    importedFile,
+    `export const sharedConfig = {
+  lib: {
+    output: { distPath: 'dist-import-1' },
+  },
+};
+`,
+  );
+  await writeFile(
+    configFile,
+    `import { define } from 'rstack';
+import { sharedConfig } from './test-temp-shared.ts';
+
+define.extends([sharedConfig]);
+`,
+  );
+
+  execCliAsync('lib --watch --config test-temp-shared.config.ts');
+  await logHelper.expectLog('build completed, watching for changes...');
+  await waitForFile(path.join(dist1, 'index.js'));
+  await waitFor(100);
+  logHelper.clearLogs();
+
+  await writeFile(
+    importedFile,
+    `export const sharedConfig = {
+  lib: {
+    output: { distPath: 'dist-import-2' },
+  },
+};
+`,
+  );
+
+  await logHelper.expectLog('restarting build as test-temp-shared.ts changed');
   await logHelper.expectLog('build completed, watching for changes...');
   await waitForFile(path.join(dist2, 'index.js'));
 });

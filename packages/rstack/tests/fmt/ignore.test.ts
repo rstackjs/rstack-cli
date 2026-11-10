@@ -78,7 +78,7 @@ test('ignores common lock files by default and allows explicit negation', async 
     true,
   );
   expect(isIgnored(path.join(rootPath, 'packages/app/PNPM-LOCK.YAML'))).toBe(
-    false,
+    true,
   );
   expect(isIgnored(path.join(rootPath, '../shared/pnpm-lock.yaml'))).toBe(true);
   expect(isIgnored(path.join(rootPath, 'pnpm-lock.yaml.backup'))).toBe(false);

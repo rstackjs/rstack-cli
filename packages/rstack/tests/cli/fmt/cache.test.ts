@@ -130,7 +130,7 @@ test('excludes the custom cache directory from formatting', () => {
 
 test('uses an explicit config root cache from a subdirectory', () => {
   const appPath = resolveProjectPath('packages/app');
-  writeProjectFile('packages/app/index.ts', 'const value=1');
+  writeProjectFile('packages/app/index.ts', 'const value = 1;\n');
 
   const result = runFmt(
     ['index.ts', '--config', '../../rstack.config.ts'],

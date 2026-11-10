@@ -21,6 +21,8 @@ const templatesWithoutTypeCheck = new Set([
 type ProjectPackage = {
   name: string;
   scripts: Record<string, string>;
+  packageManager?: string;
+  dependencies?: Record<string, string>;
 };
 
 type SourceTemplate = {
@@ -137,7 +139,7 @@ const expectStagedSetup = async (
   configExtension: string,
   scripts: Record<string, string>,
 ): Promise<void> => {
-  expect(scripts.prepare).toBe('rs setup');
+  expect(scripts.prepare).toBe('rs hooks');
   expect(
     await readFile(
       path.join(projectDirectory, '.rstack', 'hooks', 'pre-commit'),
@@ -208,9 +210,11 @@ const createProject = async (
   {
     args = [],
     initializeGitIn,
+    userAgent = 'pnpm/11.20.0',
   }: {
     args?: string[];
     initializeGitIn?: 'parent' | 'project';
+    userAgent?: string;
   } = {},
 ) => {
   const tempDirectory = await mkdtemp(path.join(tmpdir(), 'create-rstack-'));
@@ -231,7 +235,7 @@ const createProject = async (
       cwd: tempDirectory,
       env: {
         ...process.env,
-        npm_config_user_agent: 'pnpm/11.20.0',
+        npm_config_user_agent: userAgent,
       },
     },
   );
@@ -291,5 +295,43 @@ test.each(docTemplates)(
 
     await expectProjectSetup(projectDirectory, template, 'ts', true);
     await expectFiles(projectDirectory, files);
+  },
+);
+
+test.each(['pnpm', 'turborepo', 'nx'])(
+  'creates the %s template with pnpm when invoked using npm',
+  async (template) => {
+    const projectDirectory = await createProject(template, {
+      userAgent: 'npm/11.0.0',
+    });
+    const packageJson = await readProjectPackage(projectDirectory);
+    const appPackage = await readProjectPackage(
+      path.join(projectDirectory, 'apps/web'),
+    );
+
+    await expectStagedSetup(projectDirectory, 'ts', packageJson.scripts);
+    expect(packageJson.packageManager).toMatch(/^pnpm@/u);
+    expect(appPackage.dependencies?.['@repo/ui']).toBe('workspace:^');
+    await expectFiles(projectDirectory, [
+      'pnpm-workspace.yaml',
+      ...(template === 'pnpm'
+        ? []
+        : [template === 'nx' ? 'nx.json' : 'turbo.json']),
+      'apps/web/src/index.tsx',
+      'packages/ui/src/button.tsx',
+    ]);
+  },
+);
+
+test.each(['pnpm', 'turborepo', 'nx'])(
+  'configures %s when Git initialization is disabled',
+  async (template) => {
+    const projectDirectory = await createProject(template, {
+      args: ['--no-git'],
+    });
+    const packageJson = await readProjectPackage(projectDirectory);
+
+    expect(packageJson.packageManager).toMatch(/^pnpm@/u);
+    await expectNoStagedSetup(projectDirectory, 'ts', packageJson.scripts);
   },
 );

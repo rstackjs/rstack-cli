@@ -1,4 +1,4 @@
-# Rsbuild Migration
+# Rsbuild migration
 
 Read this reference when the project uses `@rsbuild/core`, `rsbuild.config.*`, `rsbuild` commands, Rsbuild client types, or `@rsbuild/core/types`.
 
@@ -15,20 +15,20 @@ Read this reference when the project uses `@rsbuild/core`, `rsbuild.config.*`, `
 6. Search for remaining direct `@rsbuild/core` imports. Remove the direct dependency when no source or runtime API still needs it.
 7. Delete `rsbuild.config.*` after the migrated app commands load equivalent config.
 
-## Config Pattern
+## Config pattern
 
 ```ts
+import { pluginReact } from '@rsbuild/plugin-react';
 import { define } from 'rstack';
 
-define.app(async () => {
-  const { pluginReact } = await import('@rsbuild/plugin-react');
-  return {
-    plugins: [pluginReact()],
-  };
+define.app({
+  plugins: [pluginReact()],
 });
 ```
 
 If tests also use Rstest, read [rstest.md](rstest.md). `rs test` derives an Rsbuild test extension from `define.app` unless `define.test` sets `extends`.
+
+Follow [Modules and imports](../SKILL.md#modules-and-imports) when the config imports plugins or themes.
 
 ## Validate
 

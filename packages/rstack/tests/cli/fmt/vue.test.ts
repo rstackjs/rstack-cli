@@ -18,6 +18,13 @@ test.each([
     expected:
       '<script setup lang="tsx">\nconst view = <Component value={1} />;\n</script>\n',
   },
+  {
+    name: 'JavaScript template bindings',
+    source:
+      '<template>\n<div v-for="item in list.filter( Boolean )">{{item}}</div>\n</template>\n',
+    expected:
+      '<template>\n  <div v-for="item in list.filter(Boolean)">{{ item }}</div>\n</template>\n',
+  },
 ])('formats $name embedded in Vue files', ({ source, expected }) => {
   writeProjectFile('App.vue', source);
 

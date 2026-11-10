@@ -18,19 +18,20 @@ const discoverFmtFiles = async ({
   withNodeModules,
   config,
 }: DiscoverFmtFilesOptions): Promise<FmtFileRequest[]> => {
-  const isIgnored = await createIgnoreMatcher({ config, cwd, ignorePaths });
   const isExcluded = excludedDirPath
     ? createDirMatcher(excludedDirPath)
     : undefined;
-  const shouldIgnore = isExcluded
-    ? (filePath: string, isDirectory = false) =>
-        isExcluded(filePath) || isIgnored(filePath, isDirectory)
-    : isIgnored;
+  const isIgnored = await createIgnoreMatcher({
+    config,
+    cwd,
+    ignorePaths,
+    precheck: isExcluded,
+  });
   const filePaths = await discoverFmtPaths({
     cwd,
     patterns,
     withNodeModules,
-    isIgnored: shouldIgnore,
+    isIgnored,
   });
   if (filePaths.length === 0) {
     return [];

@@ -50,10 +50,13 @@ npx create-rstack --dir my-project --template app-vanilla-ts --no-git
 - `lib-solid-ts` - TypeScript Solid library
 - `doc` - Basic documentation site
 - `doc-i18n` - Multilingual documentation site
+- `pnpm` - pnpm workspace
+- `turborepo` - Turborepo
+- `nx` - Nx
 
 ## Documentation
 
-See the [Rstack CLI documentation](https://rstack.rs).
+See the [Quick start documentation](https://rstack.rs/guide/quick-start).
 
 ## License
 

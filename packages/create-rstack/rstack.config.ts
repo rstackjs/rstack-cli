@@ -3,6 +3,13 @@ import { define } from 'rstack';
 
 define.lib({
   syntax: 'es2023',
+  tools: {
+    rspack: {
+      experiments: {
+        runtimeMode: 'rspack',
+      },
+    },
+  },
 });
 
 define.test({

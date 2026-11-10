@@ -321,6 +321,102 @@ test('applies an external ignore matcher to traversed and explicit paths', async
   });
 });
 
+test('batches external ignore matching after gitignore short-circuiting', async () => {
+  await withTempProject(async (rootPath) => {
+    writeProjectFile(rootPath, '.gitignore', 'git-ignored.ts\n');
+    writeProjectFile(rootPath, 'config-ignored.ts');
+    writeProjectFile(rootPath, 'git-ignored.ts');
+    writeProjectFile(rootPath, 'image.png');
+    writeProjectFile(rootPath, 'not-included.js');
+    writeProjectFile(rootPath, 'visible.ts');
+
+    const scalarIgnore = rs.fn(() => false);
+    const maskIgnore = rs.fn(
+      (
+        _parentPath: string,
+        names: string[],
+        _directoryMask: number,
+        candidateMask: number,
+      ): number => {
+        const index = names.indexOf('config-ignored.ts');
+        return candidateMask & (1 << index);
+      },
+    );
+    const isIgnored = Object.assign(scalarIgnore, {
+      batch: {
+        matcher: {
+          isIgnoredBatch: rs.fn(() => new Uint8Array()),
+          isIgnoredBatchMask: maskIgnore,
+          isIgnoredChild: rs.fn(() => false),
+        },
+      },
+    });
+
+    const files = await discoverFmtPaths({
+      cwd: rootPath,
+      patterns: ['*.ts'],
+      isIgnored,
+    });
+
+    expect(relativePaths(rootPath, files)).toEqual(['visible.ts']);
+    expect(scalarIgnore).toHaveBeenCalledTimes(1);
+    expect(scalarIgnore).toHaveBeenCalledWith(rootPath, true);
+    expect(maskIgnore).toHaveBeenCalledTimes(1);
+
+    const names = maskIgnore.mock.calls[0][1];
+    const candidateMask = maskIgnore.mock.calls[0][3];
+    expect(candidateMask & (1 << names.indexOf('.git'))).toBe(0);
+    expect(candidateMask & (1 << names.indexOf('git-ignored.ts'))).toBe(0);
+    expect(candidateMask & (1 << names.indexOf('image.png'))).toBe(0);
+    expect(candidateMask & (1 << names.indexOf('not-included.js'))).toBe(0);
+    expect(candidateMask & (1 << names.indexOf('visible.ts'))).not.toBe(0);
+  });
+});
+
+test('uses array batches for directories with more than 32 entries', async () => {
+  await withTempProject(async (rootPath) => {
+    for (let index = 0; index < 33; index++) {
+      writeProjectFile(rootPath, `${index}.ts`);
+    }
+
+    const arrayIgnore = rs.fn(
+      (
+        _parentPath: string,
+        names: string[],
+        _directoryFlags: Uint8Array,
+        candidateFlags: Uint8Array,
+      ): Uint8Array => {
+        const ignored = new Uint8Array(names.length);
+        const index = names.indexOf('32.ts');
+        ignored[index] = candidateFlags[index];
+        return ignored;
+      },
+    );
+    const isIgnored = Object.assign(
+      rs.fn(() => false),
+      {
+        batch: {
+          matcher: {
+            isIgnoredBatch: arrayIgnore,
+            isIgnoredBatchMask: rs.fn(() => 0),
+            isIgnoredChild: rs.fn(() => false),
+          },
+        },
+      },
+    );
+
+    const files = await discoverFmtPaths({ cwd: rootPath, isIgnored });
+
+    expect(files).toHaveLength(32);
+    expect(files).not.toContain(path.join(rootPath, '32.ts'));
+    expect(arrayIgnore).toHaveBeenCalledTimes(1);
+    const names = arrayIgnore.mock.calls[0][1];
+    const candidateFlags = arrayIgnore.mock.calls[0][3];
+    expect(candidateFlags[names.indexOf('.git')]).toBe(0);
+    expect(candidateFlags[names.indexOf('0.ts')]).toBe(1);
+  });
+});
+
 test.runIf(process.platform !== 'win32')(
   'does not follow file or directory symlinks',
   async () => {
