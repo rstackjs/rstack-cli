@@ -258,6 +258,9 @@ catalogs:
     micromatch:
       specifier: 4.0.8
       version: 4.0.8
+    pkg-pr-new:
+      specifier: 0.0.87
+      version: 0.0.87
     prettier:
       specifier: 3.9.10
       version: 3.9.10
@@ -320,6 +323,9 @@ importers:
       heading-case:
         specifier: 'catalog:'
         version: 2.0.3(prettier@3.9.10)
+      pkg-pr-new:
+        specifier: 'catalog:'
+        version: 0.0.87
       prettier:
         specifier: 'catalog:'
         version: 3.9.10
@@ -2916,6 +2922,10 @@ packages:
   picomatch@4.0.7:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
+
+  pkg-pr-new@0.0.87:
+    resolution: {integrity: sha512-nm+30Py1csXWfyMH1ueQyTR11IZGHS5oW8Qok/MxMwjPx9g1jX3wMRrJf8TgEvNo0a0M4i14T0zQsEPWdZfAhg==}
+    hasBin: true
 
   postcss@8.5.19:
     resolution: {integrity: sha512-Mz8SaolMd8nB+G13WkORcxQKHZ/NE4xXevtkJHVuG+guo9/wYKlIMTKAqGdEmYOXR2ijPjTYNHssizdaVSUNdQ==}
@@ -5931,6 +5941,8 @@ snapshots:
   picomatch@2.3.2: {}
 
   picomatch@4.0.7: {}
+
+  pkg-pr-new@0.0.87: {}
 
   postcss@8.5.19:
     dependencies:

@@ -45,6 +45,7 @@ catalog:
   is-binary-path: 3.0.0
   'lint-staged': '^17.6.0'
   'micromatch': '4.0.8'
+  pkg-pr-new: 0.0.87
   prettier: '3.9.10'
   'prettier-plugin-tailwindcss': '0.8.1'
   'prettier-plugin-svelte': '^4.1.1'

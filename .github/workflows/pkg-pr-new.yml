@@ -1,0 +1,31 @@
+name: Publish Package Previews
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24.19.0
+          package-manager-cache: false
+
+      - name: Install Pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        with:
+          run_install: true
+
+      - name: Build Packages
+        run: node --run build
+
+      - name: Publish Package Previews
+        run: pnpm exec pkg-pr-new publish --pnpm --previewVersion --no-template './packages/rstack' './packages/create-rstack'
