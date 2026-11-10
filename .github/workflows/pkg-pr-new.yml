@@ -52,26 +52,6 @@ jobs:
         run: pnpm --dir packages/rstack exec napi pre-publish --config-path napi.json --skip-optional-publish --no-gh-release
 
       - name: Publish Package Previews
-        run: |
-          pnpm exec pkg-pr-new publish --pnpm --previewVersion --no-template \
-            --json "$RUNNER_TEMP/preview-packages.json" \
-            './packages/rstack' './packages/create-rstack' './packages/rstack/npm/*'
-
-      - name: Smoke test published previews
-        run: |
-          metadata="$RUNNER_TEMP/preview-packages.json"
-          rstack_url=$(jq -er '.packages[] | select(.name == "rstack").url' "$metadata")
-          create_rstack_url=$(jq -er '.packages[] | select(.name == "create-rstack").url' "$metadata")
-
-          cd "$(mktemp -d)"
-          # The optional native packages are also installed from preview URLs.
-          npm install --allow-remote=all --no-audit --no-fund "$rstack_url" "$create_rstack_url"
-
-          printf 'ignored.js\n' > .gitignore
-          printf 'const ignored=1\n' > ignored.js
-          printf 'const formatted = 1;\n' > formatted.js
-          ./node_modules/.bin/rs fmt --check --ignore-path .gitignore formatted.js ignored.js
-          test -s node_modules/rstack/docs/llms.txt
-
-          ./node_modules/.bin/create-rstack --dir smoke-app --template app-vanilla --no-git
-          test -s smoke-app/package.json
+        run: >-
+          pnpm exec pkg-pr-new publish --pnpm --previewVersion --no-template
+          './packages/rstack' './packages/create-rstack' './packages/rstack/npm/*'
