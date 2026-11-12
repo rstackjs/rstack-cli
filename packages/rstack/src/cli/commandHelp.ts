@@ -448,6 +448,7 @@ const HELP_DEFINITIONS = {
           ['-u, --ignore-unknown', 'Ignore unknown files'],
           ['--no-cache', 'Disable the formatting cache'],
           ['--cache-location <path>', 'Path to the formatting cache directory'],
+          ['--clear-cache', 'Delete the formatting cache and exit'],
           [
             '--no-error-on-unmatched-pattern',
             'Do not error when no files match',

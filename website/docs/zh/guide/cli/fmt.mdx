@@ -165,6 +165,24 @@ rs fmt --cache-location .cache/rs-fmt
 
 同时使用两个选项时，优先使用 `--no-cache`，且不会从文件发现中排除自定义目录。
 
+### `--clear-cache`
+
+删除格式化缓存后退出，不执行格式化或检查：
+
+```bash
+rs fmt --clear-cache
+```
+
+默认清理 Rstack 配置根目录下的缓存。使用 `--cache-location` 可以清理自定义位置的缓存：
+
+```bash
+rs fmt --clear-cache --cache-location .cache/rs-fmt
+```
+
+命令只删除 formatter 的 `cache.json` 文件，保留目录和其他文件。即使缓存不存在，命令也会成功退出。
+
+`--clear-cache` 不能与文件参数，或 `--write`、`--check`、`--list-different`、`--stdin-filepath`、`--lsp`、`--no-cache` 同时使用。
+
 ### `--no-error-on-unmatched-pattern`
 
 如果传入的路径或 glob 没有匹配任何文件（包括所有匹配文件均被忽略的情况），则不输出诊断信息并成功退出：

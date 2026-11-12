@@ -1,3 +1,4 @@
+import { rm } from 'node:fs/promises';
 import path from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { color, logger } from 'rslog';
@@ -5,7 +6,7 @@ import { parseArgs } from '../cli/args.ts';
 import { printCommandHelp } from '../cli/help.ts';
 import type { LoadedRstackConfig } from '../config.ts';
 import { loadCliRstackConfig } from '../cli/config.ts';
-import { ensureProjectCacheDir } from '../projectCache.ts';
+import { ensureProjectCacheDir, getProjectCacheDir } from '../projectCache.ts';
 import { fmtCacheFileName } from './cacheStore.ts';
 import { resolveFmtConfig } from './config.ts';
 import { discoverFmtFiles } from './discovery.ts';
@@ -17,6 +18,7 @@ import type { FmtMode, FmtRunResult, ResolvedFmtConfig } from './types.ts';
 interface ParsedFmtCLIArgs {
   cache: boolean;
   cacheLocation?: string;
+  clearCache: boolean;
   mode: FmtMode;
   patterns: string[];
   ignorePaths: string[];
@@ -57,7 +59,7 @@ const parseMaxWorkers = (value: string | undefined): number | undefined => {
   return maxWorkers;
 };
 
-/** Rejects the mode flags and file arguments that a server-like option replaces. */
+/** Rejects formatting modes and file arguments for standalone operations. */
 const assertExclusiveMode = (
   option: string,
   hasMode: boolean,
@@ -85,6 +87,7 @@ const parseFmtArgs = (args: string[]): ParsedFmtCLIArgs => {
       'ignore-unknown': { type: 'boolean', short: 'u' },
       'no-cache': { type: 'boolean' },
       'cache-location': { type: 'string' },
+      'clear-cache': { type: 'boolean' },
       'no-error-on-unmatched-pattern': { type: 'boolean' },
       'with-node-modules': { type: 'boolean' },
       'parallel-workers': { type: 'string' },
@@ -122,6 +125,16 @@ const parseFmtArgs = (args: string[]): ParsedFmtCLIArgs => {
   const help = values.help ?? false;
   const stdinFilepath = values.stdinFilepath;
   const lsp = values.lsp ?? false;
+  const clearCache = values.clearCache ?? false;
+
+  if (clearCache) {
+    assertExclusiveMode('--clear-cache', modes.length > 0, positionals);
+    if (lsp || stdinFilepath !== undefined || !cache) {
+      throw new Error(
+        'The --clear-cache option cannot be used with --lsp, --stdin-filepath, or --no-cache.',
+      );
+    }
+  }
 
   if (lsp) {
     assertExclusiveMode('--lsp', modes.length > 0, positionals);
@@ -138,6 +151,7 @@ const parseFmtArgs = (args: string[]): ParsedFmtCLIArgs => {
   return {
     cache,
     cacheLocation,
+    clearCache,
     mode,
     patterns: positionals,
     ignorePaths,
@@ -273,6 +287,7 @@ const runFmtCLI = async (
     const {
       cache,
       cacheLocation,
+      clearCache,
       help,
       ignorePaths,
       ignoreUnknown,
@@ -333,6 +348,21 @@ const runFmtCLI = async (
           'The --cache-location directory cannot be the current working directory or an ancestor.',
         );
       }
+    }
+
+    if (clearCache) {
+      let directory = cacheDirPath;
+      if (directory === undefined) {
+        const { filePath } =
+          loadedConfig ?? (await loadCliRstackConfig({ cwd }));
+        const rootPath = filePath ? path.dirname(filePath) : cwd;
+        directory = path.join(getProjectCacheDir(rootPath), 'fmt');
+      }
+      const cacheFilePath = path.join(directory, fmtCacheFileName);
+      // Custom cache directories may contain files that do not belong to us.
+      await rm(cacheFilePath, { force: true });
+      logger.success(`Formatting cache cleared: ${color.dim(cacheFilePath)}`);
+      return;
     }
 
     const config = await loadFmtConfig(cwd, loadedConfig);

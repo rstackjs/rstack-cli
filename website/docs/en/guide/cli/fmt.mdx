@@ -165,6 +165,24 @@ Relative paths are resolved from the current working directory, while absolute p
 
 When both options are provided, `--no-cache` takes precedence and the custom directory is not excluded from file discovery.
 
+### `--clear-cache`
+
+Delete the formatting cache and exit without formatting or checking files:
+
+```bash
+rs fmt --clear-cache
+```
+
+By default, this clears the cache under the Rstack configuration root. Use `--cache-location` to clear a custom location:
+
+```bash
+rs fmt --clear-cache --cache-location .cache/rs-fmt
+```
+
+Only the formatter's `cache.json` file is deleted; the directory and other files are preserved. The command succeeds even if the cache does not exist.
+
+`--clear-cache` cannot be combined with file arguments, `--write`, `--check`, `--list-different`, `--stdin-filepath`, `--lsp`, or `--no-cache`.
+
 ### `--no-error-on-unmatched-pattern`
 
 Exit successfully without diagnostics when no files match the provided paths or globs, including when all matching files are ignored:
