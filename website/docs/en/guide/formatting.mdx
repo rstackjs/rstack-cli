@@ -193,19 +193,45 @@ define.fmt({
 
 ## Cache
 
-`rs fmt` uses a persistent cache by default for file-based `--write`, `--check`, and `--list-different` runs. Formatting results use file content and final formatting options, so changing either causes the file to be formatted again. Unsupported parser lookups normally use the file path and final options. For filenames without an extension, they also use file content because Prettier may infer a parser from the shebang. Installed Prettier plugins are identified by their package name, version, and entry point; local, linked, or unversioned plugins bypass the cache.
+`rs fmt` caches results by default to speed up repeated runs on unchanged files. The cache is shared by `--write`, `--check`, and `--list-different`.
 
-The default cache directory is `.rstack/cache/fmt` under the Rstack configuration root. When a command runs from a subdirectory, it continues to use the cache next to the resolved `rstack.config.*` file. Stdin formatting does not use this cache.
+### Cache behavior
 
-Use [`--cache-location <path>`](./cli/fmt#--cache-location-path) to store the cache in a different directory. Relative paths are resolved from the current working directory. Custom directories are excluded from file discovery but are not automatically ignored by Git.
+Cached results are reused when the file content and formatting options are unchanged. The cache also accounts for Rstack and Prettier versions, as well as the package name, version, and entry point of installed Prettier plugins. Changes to any of these cause the file to be processed again.
 
-Use [`--no-cache`](./cli/fmt#--no-cache) to run without reading, creating, or updating the cache:
+The cache is stored in `.rstack/cache/fmt` under the Rstack configuration root. Running from a subdirectory uses the same cache as long as the command resolves to the same `rstack.config.*` file.
+
+### CLI options
+
+Use [`--no-cache`](./cli/fmt#--no-cache) to disable the cache for the current run. Existing cache files are left unchanged:
 
 ```bash
 rs fmt --no-cache
 ```
 
-You can safely delete `.rstack/cache` to clear cached results. Do not treat the entire `.rstack` directory as disposable because it may also contain user-maintained Git hook scripts.
+Use [`--cache-location <path>`](./cli/fmt#--cache-location-path) to choose a different cache directory. Relative paths are resolved from the current working directory:
+
+```bash
+rs fmt --cache-location .cache/rs-fmt
+```
+
+The custom directory is excluded from formatting. Add it to `.gitignore` if you do not want to commit it.
+
+### Cache exceptions
+
+`rs fmt` bypasses the persistent cache in the following cases:
+
+- Input comes from stdin or an editor buffer through `--lsp`.
+- A file uses a local or linked Prettier plugin, or a plugin without package version information.
+- A file uses `prettier-plugin-tailwindcss`. Its class sorting can depend on external stylesheets and configuration files that the cache does not track.
+
+If you enable these plugins only for specific files through `overrides`, only those files bypass the cache. Other files can still use it.
+
+### Clearing the cache
+
+To clear the formatting cache, delete `.rstack/cache/fmt` or the directory specified by `--cache-location`. `rs fmt` recreates the cache as needed.
+
+Keep the rest of `.rstack`: it may contain Git hook scripts maintained by your project.
 
 ## Prettier plugins
 
