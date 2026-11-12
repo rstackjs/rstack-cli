@@ -82,6 +82,46 @@ test('--no-cache bypasses cache reads and writes', () => {
   expect(projectFileExists('.rstack/cache/.gitignore')).toBe(false);
 });
 
+test('bypasses the cache for files using the Tailwind plugin', () => {
+  writeProjectFile(
+    'rstack.config.ts',
+    `import { define } from 'rstack';
+
+define.fmt({
+  overrides: [{
+    files: '*.html',
+    options: {
+      plugins: ['prettier-plugin-tailwindcss'],
+      tailwindStylesheet: ${JSON.stringify(resolveProjectPath('app.css'))},
+    },
+  }],
+});
+`,
+  );
+  writeProjectFile('index.html', '<div class="alpha beta"></div>\n');
+  writeProjectFile('index.ts', 'const value = 1;\n');
+  writeProjectFile(
+    'app.css',
+    '@utility alpha { display: flex; }\n@utility beta { padding: 1rem; }\n',
+  );
+
+  expect(runFmt(['--check', 'index.html', 'index.ts']).status).toBe(0);
+
+  writeProjectFile(
+    'app.css',
+    '@utility alpha { padding: 1rem; }\n@utility beta { display: flex; }\n',
+  );
+  expect(runFmt(['--check', 'index.html']).status).toBe(1);
+  expect(runFmt(['index.html']).status).toBe(0);
+  expect(readProjectFile('index.html')).toBe(
+    '<div class="beta alpha"></div>\n',
+  );
+  expectSingleCleanEntry(
+    readFmtCache('.rstack/cache/fmt/cache.json'),
+    'index.ts',
+  );
+});
+
 test.each(['relative', 'absolute'] as const)(
   'uses a %s custom cache location',
   (kind) => {

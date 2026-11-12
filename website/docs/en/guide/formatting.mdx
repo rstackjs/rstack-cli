@@ -195,6 +195,8 @@ define.fmt({
 
 `rs fmt` uses a persistent cache by default for file-based `--write`, `--check`, and `--list-different` runs. Formatting results use file content and final formatting options, so changing either causes the file to be formatted again. Unsupported parser lookups normally use the file path and final options. For filenames without an extension, they also use file content because Prettier may infer a parser from the shebang. Installed Prettier plugins are identified by their package name, version, and entry point; local, linked, or unversioned plugins bypass the cache.
 
+Files configured with `prettier-plugin-tailwindcss` also bypass the cache because class sorting can depend on external stylesheets and configuration files that the cache does not track.
+
 The default cache directory is `.rstack/cache/fmt` under the Rstack configuration root. When a command runs from a subdirectory, it continues to use the cache next to the resolved `rstack.config.*` file. Stdin formatting does not use this cache.
 
 Use [`--cache-location <path>`](./cli/fmt#--cache-location-path) to store the cache in a different directory. Relative paths are resolved from the current working directory. Custom directories are excluded from file discovery but are not automatically ignored by Git.

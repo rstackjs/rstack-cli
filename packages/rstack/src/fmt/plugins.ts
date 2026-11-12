@@ -79,6 +79,12 @@ const fingerprintPlugin = async (
       return undefined;
     }
 
+    // Tailwind sorting can depend on stylesheets and auto-discovered configs,
+    // including their transitive dependencies, which our cache does not track.
+    if (pkg.name === 'prettier-plugin-tailwindcss') {
+      return undefined;
+    }
+
     return JSON.stringify([
       'package',
       pkg.name,
