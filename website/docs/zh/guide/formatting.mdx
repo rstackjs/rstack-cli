@@ -225,7 +225,7 @@ rs fmt --cache-location .cache/rs-fmt
 - 文件使用了本地或链接的 Prettier 插件，或插件缺少包版本信息。
 - 文件使用了 `prettier-plugin-tailwindcss`。它的类名排序可能依赖外部样式表和配置文件，而缓存不会追踪这些依赖。
 
-插件相关的例外在应用 `overrides` 后判断，仅影响使用了这些插件的文件。其他文件仍可使用缓存。
+如果通过 `overrides` 仅为部分文件启用上述插件，只有这些文件会跳过缓存，其他文件仍可使用缓存。
 
 ### 清理缓存 \{#clearing-the-cache}
 

@@ -225,7 +225,7 @@ The custom directory is excluded from formatting. Add it to `.gitignore` if you 
 - A file uses a local or linked Prettier plugin, or a plugin without package version information.
 - A file uses `prettier-plugin-tailwindcss`. Its class sorting can depend on external stylesheets and configuration files that the cache does not track.
 
-Plugin exceptions are checked after applying `overrides` and only affect files that use those plugins. Other files can still use the cache.
+If you enable these plugins only for specific files through `overrides`, only those files bypass the cache. Other files can still use it.
 
 ### Clearing the cache
 
