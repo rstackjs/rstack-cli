@@ -193,39 +193,45 @@ define.fmt({
 
 ## 缓存 \{#cache}
 
-`rs fmt` 默认会在基于文件的 `--write`、`--check` 和 `--list-different` 调用中使用持久化缓存。
+`rs fmt` 默认会缓存结果，加快对未修改文件的重复处理。`--write`、`--check` 和 `--list-different` 共用这份缓存。
 
 ### 缓存行为 \{#cache-behavior}
 
-格式化结果基于文件内容和最终格式化选项；任意一项发生变化时，文件都会重新格式化。已安装的 Prettier 插件通过包名、版本和入口进行识别。
+文件内容和格式化选项未变时，会复用缓存结果。缓存还会记录 Rstack 和 Prettier 的版本，以及已安装 Prettier 插件的包名、版本和入口。以上任意一项发生变化时，都会重新处理文件。
 
-不支持的 parser 查询结果通常基于文件路径和最终选项。对于没有扩展名的文件，还会基于文件内容，因为 Prettier 可能从 shebang 推断 parser。
-
-默认缓存目录位于 Rstack 配置根目录下的 `.rstack/cache/fmt`。从子目录运行命令时，仍会使用解析到的 `rstack.config.*` 文件旁的缓存。
+缓存默认保存在 Rstack 配置根目录下的 `.rstack/cache/fmt`。从子目录运行命令时，只要解析到同一个 `rstack.config.*` 文件，就会使用同一份缓存。
 
 ### CLI 选项 \{#cli-options}
 
-- [`--no-cache`](./cli/fmt#--no-cache)：运行时跳过缓存读取、创建和更新。
-- [`--cache-location <path>`](./cli/fmt#--cache-location-path)：将缓存保存到其他目录。相对路径基于当前工作目录解析。自定义目录会从文件发现中排除，但不会被 Git 自动忽略。
+使用 [`--no-cache`](./cli/fmt#--no-cache) 可以在本次运行中禁用缓存，已有的缓存文件不会被修改：
 
 ```bash
 rs fmt --no-cache
+```
+
+使用 [`--cache-location <path>`](./cli/fmt#--cache-location-path) 可以指定其他缓存目录。相对路径基于当前工作目录解析：
+
+```bash
 rs fmt --cache-location .cache/rs-fmt
 ```
 
+自定义缓存目录不会参与格式化。如果不希望将其提交到 Git，请将它添加到 `.gitignore`。
+
 ### 不使用缓存的场景 \{#cache-exceptions}
 
-以下场景不会使用持久化缓存：
+以下场景中，`rs fmt` 会跳过持久化缓存：
 
-- 格式化 stdin 输入，或通过 `--lsp` 格式化编辑器缓冲区。
-- 文件配置了本地插件、链接插件或缺少版本信息的 Prettier 插件。
-- 文件配置了 `prettier-plugin-tailwindcss`，因为类名排序可能依赖缓存未追踪的外部样式表和配置文件。
+- 输入来自 stdin，或通过 `--lsp` 传入的编辑器缓冲区。
+- 文件使用了本地或链接的 Prettier 插件，或插件缺少包版本信息。
+- 文件使用了 `prettier-plugin-tailwindcss`。它的类名排序可能依赖外部样式表和配置文件，而缓存不会追踪这些依赖。
 
-插件相关的例外按每个文件的最终选项判断，包括 `overrides`。其他文件仍可使用缓存。
+插件相关的例外在应用 `overrides` 后判断，仅影响使用了这些插件的文件。其他文件仍可使用缓存。
 
 ### 清理缓存 \{#clearing-the-cache}
 
-可以安全删除 `.rstack/cache` 来清理缓存结果。不要将整个 `.rstack` 目录视为可随意删除的内容，因为其中还可能包含用户维护的 Git hook 脚本。
+删除 `.rstack/cache/fmt` 或通过 `--cache-location` 指定的目录，即可清理格式化缓存。`rs fmt` 会在需要时重新生成缓存。
+
+请保留 `.rstack` 中的其他内容，其中可能包含项目维护的 Git hook 脚本。
 
 ## Prettier 插件 \{#prettier-plugins}
 
