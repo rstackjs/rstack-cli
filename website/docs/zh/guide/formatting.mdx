@@ -229,9 +229,15 @@ rs fmt --cache-location .cache/rs-fmt
 
 ### 清理缓存 \{#clearing-the-cache}
 
-删除 `.rstack/cache/fmt` 或通过 `--cache-location` 指定的目录，即可清理格式化缓存。`rs fmt` 会在需要时重新生成缓存。
+使用 [`--clear-cache`](./cli/fmt#--clear-cache) 可以清理缓存，不执行格式化：
 
-请保留 `.rstack` 中的其他内容，其中可能包含项目维护的 Git hook 脚本。
+```bash
+rs fmt --clear-cache
+```
+
+清理自定义缓存目录时，添加 `--cache-location <path>`。
+
+命令只删除缓存文件，缓存不存在时也会成功退出。后续格式化时会按需重新生成缓存。
 
 ## Prettier 插件 \{#prettier-plugins}
 

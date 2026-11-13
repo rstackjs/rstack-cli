@@ -163,7 +163,25 @@ rs fmt --cache-location .cache/rs-fmt
 
 Relative paths are resolved from the current working directory, while absolute paths are used as-is. The directory is created as needed and excluded from file discovery. Unlike the default cache location, a custom directory does not receive an automatic `.gitignore`; exclude it from version control or manage it through your CI cache configuration.
 
-When both options are provided, `--no-cache` takes precedence and the custom directory is not excluded from file discovery.
+When used with `--no-cache`, this option is ignored and the custom directory is not excluded from file discovery.
+
+### `--clear-cache`
+
+Clear cached formatting results and exit without formatting or checking files:
+
+```bash
+rs fmt --clear-cache
+```
+
+By default, the command clears `.rstack/cache/fmt` under the Rstack configuration root. To clear a custom cache directory, add `--cache-location`:
+
+```bash
+rs fmt --clear-cache --cache-location .cache/rs-fmt
+```
+
+Only the cache file is removed. The directory and other files are left unchanged. A missing cache is treated as already cleared.
+
+`--clear-cache` cannot be combined with file arguments, `--write`, `--check`, `--list-different`, `--stdin-filepath`, `--lsp`, or `--no-cache`.
 
 ### `--no-error-on-unmatched-pattern`
 
