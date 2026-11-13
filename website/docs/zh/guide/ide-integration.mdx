@@ -68,7 +68,7 @@ Rstack 目前通过 [Rstack 扩展](https://github.com/rstackjs/rstack-editor) �
 
 ### 自定义安装路径 \{#custom-installation-path}
 
-默认情况下，扩展会从工作区目录及其父目录的 `node_modules` 中查找 `rstack`。如果 `rstack` 包安装在其他位置，例如安装在 `infra/` 目录中而非工作区根目录，可以设置 `rstack.rstackCli.packagePath`：
+默认情况下，扩展会先在工作区目录的 `node_modules` 中查找 `rstack`，然后向父目录逐级查找。如果 `rstack` 包安装在其他位置，可以通过 `rstack.rstackCli.packagePath` 指定安装路径，例如：
 
 ```json title=".vscode/settings.json"
 {
@@ -76,9 +76,9 @@ Rstack 目前通过 [Rstack 扩展](https://github.com/rstackjs/rstack-editor) �
 }
 ```
 
-该值可以指向已安装的 `rstack` 包目录或其 `package.json`。相对路径以工作区目录为基准，也支持绝对路径和 `${workspaceFolder}` 占位符。
+路径可以指向 `rstack` 包目录或其中的 `package.json` 文件。相对路径以工作区目录为基准，也支持绝对路径和 `${workspaceFolder}` 占位符。
 
-这是编辑器设置，不会配置终端命令、TypeScript 的模块解析或第三方插件解析。
+该设置用于告诉编辑器扩展到哪里查找 `rstack` 包。终端命令、TypeScript 和第三方插件仍按各自的规则解析依赖。
 
 ## 支持能力 \{#features}
 
