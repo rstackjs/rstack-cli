@@ -66,6 +66,22 @@ Rstack 目前通过 [Rstack 扩展](https://github.com/rstackjs/rstack-editor) �
 }
 ```
 
+### 自定义安装路径 \{#custom-installation-path}
+
+默认情况下，扩展会从工作区目录及其父目录的 `node_modules` 中查找 `rstack`。如果共享工具安装在其他位置，例如安装在 `infra/` 目录中而非工作区根目录，可以设置 `rstack.rstackCli.packagePath`：
+
+```json title=".vscode/settings.json"
+{
+  "rstack.rstackCli.packagePath": "infra/node_modules/rstack"
+}
+```
+
+该值可以指向已安装的 `rstack` 包目录或其 `package.json`。相对路径以工作区目录为基准，也支持绝对路径和 `${workspaceFolder}` 占位符。使用扩展前，请先在对应位置安装依赖。
+
+此设置适用于格式化，以及使用工作区根目录 `rstack.config.*` 的代码检查和测试。这些工具仍从工作区目录运行并加载其中的配置。如果使用独立的 Rslint 或 Rstest 配置，并且需要指定安装位置，请使用 `rstack.rslint.corePath` 或 `rstack.rstest.corePath`。
+
+这是编辑器设置，不会配置终端命令、TypeScript 的模块解析或第三方插件解析。
+
 ## 支持能力 \{#features}
 
 ### 代码检查 \{#linting}

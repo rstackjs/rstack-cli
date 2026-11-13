@@ -66,6 +66,22 @@ To recommend the extension to team members who open the repository, add it to th
 }
 ```
 
+### Custom installation path
+
+By default, the extension looks for `rstack` in `node_modules` at the workspace folder or its parent directories. If shared tooling is installed elsewhere, such as in an `infra/` directory instead of the workspace root, set `rstack.rstackCli.packagePath`:
+
+```json title=".vscode/settings.json"
+{
+  "rstack.rstackCli.packagePath": "infra/node_modules/rstack"
+}
+```
+
+The value can point to the installed `rstack` package directory or its `package.json`. Relative paths are resolved from the workspace folder; absolute paths and the `${workspaceFolder}` placeholder are also supported. Install the dependencies at that location before using the extension.
+
+This setting applies to formatting, and to linting and testing when they use the workspace root's `rstack.config.*`. These tools still run from the workspace folder and load its configuration. For standalone Rslint or Rstest configurations, use `rstack.rslint.corePath` or `rstack.rstest.corePath` if a custom installation is needed.
+
+This is an editor setting: it does not configure terminal commands, TypeScript's module resolution, or third-party plugin resolution.
+
 ## Features
 
 ### Linting
