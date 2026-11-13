@@ -165,6 +165,12 @@ const parseFmtArgs = (args: string[]): ParsedFmtCLIArgs => {
   };
 };
 
+const getFmtCacheFilePath = (rootPath: string, cacheDirPath?: string): string =>
+  path.join(
+    cacheDirPath ?? path.join(getProjectCacheDir(rootPath), 'fmt'),
+    fmtCacheFileName,
+  );
+
 const createDisplayPathResolver = (
   cwd: string,
 ): ((filePath: string) => string) => {
@@ -355,10 +361,7 @@ const runFmtCLI = async (
       // Clearing the cache only needs that location, not the config contents.
       const configPath = loadedConfig?.filePath ?? getConfigState().configPath;
       const rootPath = configPath ? path.dirname(configPath) : cwd;
-      const cacheFilePath = path.join(
-        cacheDirPath ?? path.join(getProjectCacheDir(rootPath), 'fmt'),
-        fmtCacheFileName,
-      );
+      const cacheFilePath = getFmtCacheFilePath(rootPath, cacheDirPath);
       // Custom cache directories may contain files that do not belong to us.
       await rm(cacheFilePath, { force: true });
       logger.success(`Formatting cache cleared: ${color.dim(cacheFilePath)}`);
@@ -389,14 +392,14 @@ const runFmtCLI = async (
     let cacheContext;
     if (cacheDirPath) {
       cacheContext = {
-        filePath: path.join(cacheDirPath, fmtCacheFileName),
+        filePath: getFmtCacheFilePath(config.rootPath, cacheDirPath),
         rootPath: config.rootPath,
       };
     } else if (cache) {
       const cacheDir = await ensureProjectCacheDir(config.rootPath);
       if (cacheDir.status === 'available') {
         cacheContext = {
-          filePath: path.join(cacheDir.path, 'fmt', fmtCacheFileName),
+          filePath: getFmtCacheFilePath(config.rootPath),
           rootPath: config.rootPath,
         };
       }
