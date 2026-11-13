@@ -66,6 +66,18 @@ To recommend the extension to team members who open the repository, add it to th
 }
 ```
 
+### Custom installation path
+
+By default, the extension looks for `rstack` in the workspace folder’s `node_modules` and then searches parent directories. If the `rstack` package is installed elsewhere, use `rstack.rstackCli.packagePath` to specify its location. For example:
+
+```json title=".vscode/settings.json"
+{
+  "rstack.rstackCli.packagePath": "infra/node_modules/rstack"
+}
+```
+
+Set the path to the `rstack` package directory or its `package.json` file. Relative paths are resolved from the workspace folder. Absolute paths and the `${workspaceFolder}` placeholder are also supported.
+
 ## Features
 
 ### Linting
