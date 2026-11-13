@@ -77,6 +77,9 @@ define.doc({
     },
   },
   builderConfig: {
+    output: {
+      module: true,
+    },
     plugins: [
       pluginSass(),
       pluginOpenGraph({
