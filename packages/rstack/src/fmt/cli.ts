@@ -5,7 +5,7 @@ import { color, logger } from 'rslog';
 import { parseArgs } from '../cli/args.ts';
 import { printCommandHelp } from '../cli/help.ts';
 import type { LoadedRstackConfig } from '../config.ts';
-import { loadCliRstackConfig } from '../cli/config.ts';
+import { getConfigState, loadCliRstackConfig } from '../cli/config.ts';
 import { ensureProjectCacheDir, getProjectCacheDir } from '../projectCache.ts';
 import { fmtCacheFileName } from './cacheStore.ts';
 import { resolveFmtConfig } from './config.ts';
@@ -351,14 +351,14 @@ const runFmtCLI = async (
     }
 
     if (clearCache) {
-      let directory = cacheDirPath;
-      if (directory === undefined) {
-        const { filePath } =
-          loadedConfig ?? (await loadCliRstackConfig({ cwd }));
-        const rootPath = filePath ? path.dirname(filePath) : cwd;
-        directory = path.join(getProjectCacheDir(rootPath), 'fmt');
-      }
-      const cacheFilePath = path.join(directory, fmtCacheFileName);
+      // Config discovery stays in cwd unless --config points elsewhere.
+      // Clearing the cache only needs that location, not the config contents.
+      const configPath = loadedConfig?.filePath ?? getConfigState().configPath;
+      const rootPath = configPath ? path.dirname(configPath) : cwd;
+      const cacheFilePath = path.join(
+        cacheDirPath ?? path.join(getProjectCacheDir(rootPath), 'fmt'),
+        fmtCacheFileName,
+      );
       // Custom cache directories may contain files that do not belong to us.
       await rm(cacheFilePath, { force: true });
       logger.success(`Formatting cache cleared: ${color.dim(cacheFilePath)}`);

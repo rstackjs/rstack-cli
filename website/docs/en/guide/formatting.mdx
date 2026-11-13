@@ -209,8 +209,6 @@ Use [`--no-cache`](./cli/fmt#--no-cache) to disable the cache for the current ru
 rs fmt --no-cache
 ```
 
-To delete cached results, use [`--clear-cache`](./cli/fmt#--clear-cache). See [Clearing the cache](#clearing-the-cache).
-
 Use [`--cache-location <path>`](./cli/fmt#--cache-location-path) to choose a different cache directory. Relative paths are resolved from the current working directory:
 
 ```bash
@@ -231,19 +229,15 @@ If you enable these plugins only for specific files through `overrides`, only th
 
 ### Clearing the cache
 
-Use `--clear-cache` to delete the formatting cache and exit without formatting files:
+Use [`--clear-cache`](./cli/fmt#--clear-cache) to clear cached results without formatting files:
 
 ```bash
 rs fmt --clear-cache
 ```
 
-To clear a custom cache location, pass `--cache-location` as well:
+For a custom cache directory, add `--cache-location <path>`.
 
-```bash
-rs fmt --clear-cache --cache-location .cache/rs-fmt
-```
-
-The command only deletes the formatter's cache file, preserving the directory and other files. It succeeds even if the cache does not exist. `rs fmt` recreates the cache as needed on subsequent runs.
+The command removes only the cache file and succeeds even if it is already absent. Subsequent formatting runs recreate the cache as needed.
 
 ## Prettier plugins
 

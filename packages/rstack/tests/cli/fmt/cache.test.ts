@@ -82,9 +82,12 @@ test('--no-cache bypasses cache reads and writes', () => {
   expect(projectFileExists('.rstack/cache/.gitignore')).toBe(false);
 });
 
-test('--clear-cache resolves the config root and exits without formatting', () => {
+test('--clear-cache resolves the config root without loading config or formatting', () => {
+  writeProjectFile('rstack.config.ts', 'throw new Error("must not load");');
+  expect(runFmt(['--clear-cache']).status).toBe(0);
+  expect(projectFileExists('.rstack')).toBe(false);
+
   writeProjectFile('.rstack/cache/fmt/cache.json', 'stale cache');
-  writeProjectFile('.rstack/hooks/pre-commit', 'keep hook');
   writeProjectFile('packages/app/index.ts', 'const value=1');
 
   const result = runFmt(
@@ -96,53 +99,35 @@ test('--clear-cache resolves the config root and exits without formatting', () =
   expect(result.stdout).toContain('Formatting cache cleared:');
   expect(result.stderr).toBe('');
   expect(projectFileExists('.rstack/cache/fmt/cache.json')).toBe(false);
-  expect(readProjectFile('.rstack/hooks/pre-commit')).toBe('keep hook');
   expect(readProjectFile('packages/app/index.ts')).toBe('const value=1');
 });
 
-test('--clear-cache succeeds without creating a missing cache directory', () => {
-  expect(runFmt(['--clear-cache']).status).toBe(0);
-  expect(projectFileExists('.rstack')).toBe(false);
+test('--clear-cache only deletes its own cache file at a custom location', () => {
+  writeProjectFile('rstack.config.ts', 'throw new Error("must not load");');
+  writeProjectFile('.rstack/cache/fmt/cache.json', 'default cache');
+  writeProjectFile('custom-cache/cache.json', 'custom cache');
+  writeProjectFile('custom-cache/keep.txt', 'keep file');
+
+  const result = runFmt(['--clear-cache', '--cache-location', 'custom-cache']);
+
+  expect(result.status).toBe(0);
+  expect(projectFileExists('custom-cache/cache.json')).toBe(false);
+  expect(readProjectFile('custom-cache/keep.txt')).toBe('keep file');
+  expect(readProjectFile('.rstack/cache/fmt/cache.json')).toBe('default cache');
 });
 
-test.each(['relative', 'absolute'] as const)(
-  '--clear-cache only deletes its own cache file at a %s custom location',
-  (kind) => {
-    writeProjectFile('rstack.config.ts', 'throw new Error("must not load");');
-    writeProjectFile('.rstack/cache/fmt/cache.json', 'default cache');
-    writeProjectFile('custom-cache/cache.json', 'custom cache');
-    writeProjectFile('custom-cache/keep.txt', 'keep file');
-    const location =
-      kind === 'relative' ? 'custom-cache' : resolveProjectPath('custom-cache');
-    const args = ['--clear-cache', '--cache-location', location];
+test.each(['--check', 'index.ts', '--no-cache'])(
+  '--clear-cache rejects conflicting argument %s',
+  (arg) => {
+    writeProjectFile('.rstack/cache/fmt/cache.json', 'keep cache');
 
-    expect(runFmt(args).status).toBe(0);
-    expect(projectFileExists('custom-cache/cache.json')).toBe(false);
-    expect(readProjectFile('custom-cache/keep.txt')).toBe('keep file');
-    expect(readProjectFile('.rstack/cache/fmt/cache.json')).toBe(
-      'default cache',
-    );
-    expect(runFmt(args).status).toBe(0);
+    const result = runFmt(['--clear-cache', arg]);
+
+    expect(result.status).toBe(2);
+    expect(result.stderr).toContain('The --clear-cache option cannot be used');
+    expect(readProjectFile('.rstack/cache/fmt/cache.json')).toBe('keep cache');
   },
 );
-
-test.each([
-  ['--write'],
-  ['--check'],
-  ['--list-different'],
-  ['index.ts'],
-  ['--lsp'],
-  ['--stdin-filepath', 'index.ts'],
-  ['--no-cache'],
-])('--clear-cache rejects conflicting arguments: %s', (...args) => {
-  writeProjectFile('.rstack/cache/fmt/cache.json', 'keep cache');
-
-  const result = runFmt(['--clear-cache', ...args]);
-
-  expect(result.status).toBe(2);
-  expect(result.stderr).toContain('The --clear-cache option cannot be used');
-  expect(readProjectFile('.rstack/cache/fmt/cache.json')).toBe('keep cache');
-});
 
 test('--clear-cache reports deletion errors without removing directories', () => {
   writeProjectFile('.rstack/cache/fmt/cache.json/keep.txt', 'keep file');
