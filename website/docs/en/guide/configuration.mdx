@@ -33,7 +33,7 @@ define.fmt({
 });
 ```
 
-The configuration file does not require a default export. Each `define.*()` API can be called at most once; defining the same configuration type more than once throws an error.
+The configuration file does not require a default export. Call each `define.*()` API at most once.
 
 By default, Rstack CLI looks for a file with one of the following names:
 
@@ -50,7 +50,7 @@ rs build --config ./configs/rstack.config.ts
 
 ## Importing dependencies \{#loading-dependencies-on-demand}
 
-Rstack keeps a project's build, test, lint, formatting, and other settings in one `rstack.config.*` file. When a command loads the config file, it also loads every top-level import, even if it does not use the related configuration. Importing every tool and plugin at the top level can therefore add startup overhead to commands such as `rs lint` and `rs fmt`.
+Tools and plugins imported at the top level of `rstack.config.*` are loaded with the config, even if the current command does not use them. This can add startup overhead to commands such as `rs lint` and `rs fmt`.
 
 Choose the import style based on the config contents:
 

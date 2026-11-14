@@ -33,7 +33,7 @@ define.fmt({
 });
 ```
 
-配置文件无需默认导出。每个 `define.*()` API 最多调用一次；重复定义同一类型的配置会抛出错误。
+配置文件无需默认导出，每个 `define.*()` API 最多调用一次。
 
 Rstack CLI 默认会查找使用以下任一文件名的配置文件：
 
@@ -50,7 +50,7 @@ rs build --config ./configs/rstack.config.ts
 
 ## 导入依赖 \{#loading-dependencies-on-demand}
 
-Rstack 将项目的构建、测试、代码检查、格式化等配置集中在一个 `rstack.config.*` 文件中。命令加载配置文件时，会同时加载所有顶层 `import`，即使当前命令用不到对应的配置。因此，在顶层导入所有工具和插件可能会增加 `rs lint`、`rs fmt` 等命令的启动开销。
+在 `rstack.config.*` 顶层导入的工具和插件会随配置一起加载，即使当前命令用不到它们。这可能增加 `rs lint`、`rs fmt` 等命令的启动开销。
 
 请根据配置内容选择导入方式：
 

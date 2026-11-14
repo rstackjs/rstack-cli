@@ -95,7 +95,7 @@ When using a custom directory, add the full command to the `prepare` script of t
 }
 ```
 
-> The path must not contain `..`. This prevents hook files from being created or overwritten outside the repository through a parent directory path.
+> The path must not contain `..`.
 
 ### `--help`
 
@@ -136,7 +136,7 @@ The default directory structure is:
         └── ...
 ```
 
-Files alongside `_` are repository hook scripts. The `_` directory contains generated files and is ignored by Git. `rs hooks` points `core.hooksPath` to `.rstack/hooks/_`.
+`rs hooks` points `core.hooksPath` to `.rstack/hooks/_`.
 
 ## Supported hooks
 
@@ -189,7 +189,7 @@ Use it to initialize a Node.js version manager, update `PATH`, or set `RSTACK_HO
 
 ## Ownership safety
 
-Each generated hooks directory records its owning project. Only that project should include `rs hooks` in its `prepare` script. Rstack skips installation from any other project, even with `--force`, and refuses to remove hooks owned by another project.
+Each hooks directory is managed by one project. Include `rs hooks` only in that project's `prepare` script. Installation from other projects is skipped, even with `--force`; uninstallation from other projects is rejected.
 
 To transfer ownership:
 

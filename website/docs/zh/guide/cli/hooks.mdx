@@ -95,7 +95,7 @@ rs hooks --hooks-dir "config/git hooks"
 }
 ```
 
-> 路径中不能包含 `..`，以免通过父目录路径在仓库之外创建或覆盖 hook 文件。
+> 路径中不能包含 `..`。
 
 ### `--help`
 
@@ -136,7 +136,7 @@ Rstack 会自动定位当前生效的 hooks，并移除 `core.hooksPath` 配置�
         └── ...
 ```
 
-与 `_` 同级的文件是仓库 hook 脚本。`_` 目录包含生成文件，并由 Git 忽略。`rs hooks` 会将 `core.hooksPath` 指向 `.rstack/hooks/_`。
+`rs hooks` 会将 `core.hooksPath` 指向 `.rstack/hooks/_`。
 
 ## 支持的 hooks \{#supported-hooks}
 
@@ -189,7 +189,7 @@ ${XDG_CONFIG_HOME:-$HOME/.config}/rstack/hooks-init.sh
 
 ## 所有权保护 \{#ownership-safety}
 
-每个生成的 hooks 目录都会记录所属项目。只有该项目应在 `prepare` 脚本中调用 `rs hooks`。其他项目即使使用 `--force` 调用安装命令，也会被跳过；卸载命令同样会拒绝删除其他项目的 hooks。
+每个 hooks 目录由一个项目管理，请仅在该项目的 `prepare` 脚本中调用 `rs hooks`。其他项目运行安装命令时会跳过安装，即使传入 `--force` 也不例外；运行卸载命令时则会拒绝删除这组 hooks。
 
 如需转移所有权：
 
