@@ -229,15 +229,15 @@ rs fmt --cache-location .cache/rs-fmt
 
 ### 清理缓存 \{#clearing-the-cache}
 
-使用 [`--clear-cache`](./cli/fmt#--clear-cache) 可以清理缓存，不执行格式化：
+运行以下命令可以清理格式化缓存：
 
 ```bash
 rs fmt --clear-cache
 ```
 
-清理自定义缓存目录时，添加 `--cache-location <path>`。
+如果使用了自定义缓存目录，同时传入 `--cache-location <path>` 即可。
 
-命令只删除缓存文件，缓存不存在时也会成功退出。后续格式化时会按需重新生成缓存。
+命令只删除缓存文件，随后退出，不执行格式化。下次运行 `rs fmt` 时，会按需重新生成缓存。更多用法见 [`--clear-cache`](./cli/fmt#--clear-cache)。
 
 ## Prettier 插件 \{#prettier-plugins}
 

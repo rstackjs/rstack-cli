@@ -229,15 +229,15 @@ If you enable these plugins only for specific files through `overrides`, only th
 
 ### Clearing the cache
 
-Use [`--clear-cache`](./cli/fmt#--clear-cache) to clear cached results without formatting files:
+To clear the formatting cache, run:
 
 ```bash
 rs fmt --clear-cache
 ```
 
-For a custom cache directory, add `--cache-location <path>`.
+If you use a custom cache directory, include `--cache-location <path>`.
 
-The command removes only the cache file and succeeds even if it is already absent. Subsequent formatting runs recreate the cache as needed.
+The command deletes only the cache file, then exits without formatting files. The cache is recreated as needed the next time you run `rs fmt`. See [`--clear-cache`](./cli/fmt#--clear-cache) for details.
 
 ## Prettier plugins
 
