@@ -173,15 +173,13 @@ rs fmt --cache-location .cache/rs-fmt
 rs fmt --clear-cache
 ```
 
-默认删除 Rstack 配置根目录下 `.rstack/cache/fmt` 中的缓存文件。如果使用了自定义缓存目录，可以通过 `--cache-location` 指定：
+命令只删除缓存文件，保留目录和其他文件。默认缓存位于 Rstack 配置根目录下的 `.rstack/cache/fmt`，也可以通过 `--cache-location` 指定自定义缓存目录：
 
 ```bash
 rs fmt --clear-cache --cache-location .cache/rs-fmt
 ```
 
-目录和其他文件会保留。
-
-`--clear-cache` 不能与文件参数或 `--write`、`--check`、`--list-different`、`--stdin-filepath`、`--lsp`、`--no-cache` 同时使用。
+`--clear-cache` 仅用于清理缓存，不接受文件参数或其他运行模式选项。
 
 ### `--no-error-on-unmatched-pattern`
 

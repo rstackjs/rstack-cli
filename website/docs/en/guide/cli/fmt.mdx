@@ -173,15 +173,13 @@ Clear the formatting cache and exit without formatting or checking files:
 rs fmt --clear-cache
 ```
 
-By default, the command removes the cache file from `.rstack/cache/fmt` under the Rstack configuration root. Use `--cache-location` to clear the cache in a custom directory:
+The command removes only the cache file, preserving the directory and other files. The default cache location is `.rstack/cache/fmt` under the Rstack configuration root. Use `--cache-location` to specify a custom cache directory:
 
 ```bash
 rs fmt --clear-cache --cache-location .cache/rs-fmt
 ```
 
-The directory and other files are preserved.
-
-`--clear-cache` cannot be combined with file arguments, `--write`, `--check`, `--list-different`, `--stdin-filepath`, `--lsp`, or `--no-cache`.
+`--clear-cache` only clears the cache; it does not accept file arguments or other mode options.
 
 ### `--no-error-on-unmatched-pattern`
 
