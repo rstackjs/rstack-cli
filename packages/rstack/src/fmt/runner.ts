@@ -170,11 +170,7 @@ const runFmtFile = async (
 };
 
 /** Starts slower Markdown parsers first while preserving order within both priority groups. */
-const runPriorityTasks = async (
-  tasks: FmtFileRunTask[],
-  shouldWrite: boolean,
-  formatFile: FormatFile,
-): Promise<FmtFileRun[]> => {
+const getPriorityOrder = (tasks: FmtFileRunTask[]): number[] => {
   const priority: number[] = [];
   const rest: number[] = [];
 
@@ -182,14 +178,36 @@ const runPriorityTasks = async (
     (isMarkdown(tasks[index].file) ? priority : rest).push(index);
   }
 
-  const order = priority.concat(rest);
-  const outcomes = await Promise.all(
-    order.map((index) => runFmtFile(tasks[index], shouldWrite, formatFile)),
-  );
+  return priority.concat(rest);
+};
+
+/** Bounds queued work while keeping results in the original file order. */
+const runScheduledTasks = async (
+  tasks: FmtFileRunTask[],
+  shouldWrite: boolean,
+  formatFile: FormatFile,
+  concurrency: number,
+): Promise<FmtFileRun[]> => {
+  const order =
+    concurrency >= minPriorityWorkers ? getPriorityOrder(tasks) : undefined;
   const results = new Array<FmtFileRun>(tasks.length);
-  for (let index = 0; index < order.length; index++) {
-    results[order[index]] = outcomes[index];
-  }
+  let nextIndex = 0;
+
+  const consume = async (): Promise<void> => {
+    while (nextIndex < tasks.length) {
+      const index = nextIndex++;
+      const taskIndex = order?.[index] ?? index;
+      results[taskIndex] = await runFmtFile(
+        tasks[taskIndex],
+        shouldWrite,
+        formatFile,
+      );
+    }
+  };
+
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, tasks.length) }, consume),
+  );
   return results;
 };
 
@@ -239,10 +257,11 @@ const runFmtTasks = async (
     const { formatFile } = await import('./worker.ts');
     const formatFileOnMainThread: FormatFile = (file, write, fileCache) =>
       formatFile({ file, shouldWrite: write, cache: fileCache });
-    const results = await Promise.all(
-      tasks.map((task) =>
-        runFmtFile(task, shouldWrite, formatFileOnMainThread),
-      ),
+    const results = await runScheduledTasks(
+      tasks,
+      shouldWrite,
+      formatFileOnMainThread,
+      1,
     );
     return collectFmtResults(results, cache);
   }
@@ -251,14 +270,12 @@ const runFmtTasks = async (
   const workerPool = await createWorkerPool(pendingFileCount, maxWorkers);
 
   try {
-    const results =
-      workerPool.workerCount >= minPriorityWorkers
-        ? await runPriorityTasks(tasks, shouldWrite, workerPool.formatFile)
-        : await Promise.all(
-            tasks.map((task) =>
-              runFmtFile(task, shouldWrite, workerPool.formatFile),
-            ),
-          );
+    const results = await runScheduledTasks(
+      tasks,
+      shouldWrite,
+      workerPool.formatFile,
+      workerPool.workerCount,
+    );
     return collectFmtResults(results, cache);
   } finally {
     await workerPool.terminate();
