@@ -55,7 +55,7 @@ The command uses the following exit codes:
 
 ### `-h, --help`
 
-Display usage and option information without formatting files:
+Display usage and options:
 
 ```bash
 rs fmt --help
@@ -79,7 +79,7 @@ If `config/format.ignore` contains this rule:
 generated/**
 ```
 
-Here, `config/format.ignore` is located relative to the project root. The `generated/**` rule is relative to `config/`. It therefore ignores `config/generated/**` instead of `generated/**` in the project root.
+The `generated/**` rule is relative to `config/`, where the ignore file is located. It excludes `config/generated/**`, not `generated/**` in the project root.
 
 Loaded rules apply to scanned paths, explicitly passed files, `--stdin-filepath`, and documents formatted through `--lsp`.
 
@@ -133,9 +133,11 @@ Run a language server that formats editor buffers over the [Language Server Prot
 rs fmt --lsp
 ```
 
-The server only advertises document formatting and formats the buffer held by the editor, not the file on disk. Formatting options sent by the editor, such as tab size, are ignored: the Rstack config is the single source of truth. Ignored, unsupported, and unparsable documents produce no edits rather than an error.
+The server supports document formatting only and works on the editor's buffer. Formatting rules come from the Rstack config; editor options such as tab size are ignored. Ignored, unsupported, and unparsable documents produce no formatting edits.
 
-The server loads a single config for the workspace root reported by the editor and does not discover nested configs per file; launch one server per config root when a project contains several. The config is loaded on the first formatting request and reused for the lifetime of the server; restart the server after changing it. Besides the global [`--config`](../configuration#configuration-file) option, only [`--ignore-path`](#--ignore-path-path) affects the server. Relative values for both are resolved from the directory the server was launched in.
+The server uses the config at the workspace root reported by the editor and does not discover nested configs for individual files. If a project has multiple configs, launch a server for each config root. Restart the server after changing its config.
+
+Besides the global [`--config`](../configuration#configuration-file) option, only [`--ignore-path`](#--ignore-path-path) affects the server's formatting behavior. Relative paths for both are resolved from the directory where the server was launched.
 
 Register `rs fmt --lsp` as a custom language server in any editor with LSP support to format on demand or on save.
 
@@ -161,7 +163,7 @@ Store the persistent cache in a custom directory:
 rs fmt --cache-location .cache/rs-fmt
 ```
 
-Relative paths are resolved from the current working directory, while absolute paths are used as-is. The directory is created as needed and excluded from file discovery. Unlike the default cache location, a custom directory does not receive an automatic `.gitignore`; exclude it from version control or manage it through your CI cache configuration.
+Relative paths are resolved from the current working directory. The custom cache directory is excluded from formatting and does not receive an automatic `.gitignore`. Add the directory to `.gitignore` if you do not want to commit the cache to Git.
 
 If you also pass `--no-cache`, `--cache-location` is ignored and the directory follows the normal file discovery rules.
 

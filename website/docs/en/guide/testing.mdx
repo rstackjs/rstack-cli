@@ -88,7 +88,7 @@ When both configurations are registered, Rstack CLI gives `define.app()` precede
 
 ### Disable automatic inheritance
 
-To keep the test configuration independent, set `extends` explicitly. An empty object disables automatic inheritance without extending another configuration:
+Set `extends` to an empty object to prevent tests from inheriting the application or library configuration:
 
 ```ts title="rstack.config.ts"
 import { define } from 'rstack';

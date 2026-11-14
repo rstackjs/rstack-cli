@@ -4,7 +4,7 @@ description: 'Public Rstack APIs, including configuration helpers, tool API re-e
 
 # API reference
 
-Rstack CLI provides a unified configuration API and re-exports the public APIs of Rsbuild, Rslib, Rstest, and Rslint through dedicated subpaths. Prefer these subpaths to direct imports from each tool's core package so that dependency entry points stay unified and APIs match the tool versions integrated by Rstack CLI.
+Rstack CLI provides a unified configuration API and re-exports the public APIs of Rsbuild, Rslib, Rstest, and Rslint through the subpaths below. Import from these entry points to use APIs that match the tool versions in Rstack CLI.
 
 ## Import paths
 
@@ -57,8 +57,6 @@ export const teamConfig: RstackConfig = {
 ```
 
 ## Re-exports
-
-The tool-specific subpaths below re-export the public APIs from their corresponding core packages. Using these entry points keeps imports unified and APIs aligned with the tool versions integrated by Rstack CLI.
 
 ### `rstack/app`
 
