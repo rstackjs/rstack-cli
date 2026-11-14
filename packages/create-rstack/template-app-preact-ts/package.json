@@ -14,7 +14,7 @@
     "test:watch": "rs test --watch"
   },
   "dependencies": {
-    "preact": "^11.1.1"
+    "preact": "^11.2.0"
   },
   "devDependencies": {
     "@rsbuild/plugin-preact": "^2.1.0",

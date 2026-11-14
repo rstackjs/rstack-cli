@@ -12,9 +12,9 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
-    "nx": "^24.0.4",
+    "nx": "^24.0.6",
     "rstack": "^0.9.1",
     "typescript": "^7.0.2"
   },
-  "packageManager": "pnpm@12.16.1"
+  "packageManager": "pnpm@12.18.0"
 }
