@@ -229,9 +229,15 @@ If you enable these plugins only for specific files through `overrides`, only th
 
 ### Clearing the cache
 
-To clear the formatting cache, delete `.rstack/cache/fmt` or the directory specified by `--cache-location`. `rs fmt` recreates the cache as needed.
+To clear the formatting cache, run:
 
-Keep the rest of `.rstack`: it may contain Git hook scripts maintained by your project.
+```bash
+rs fmt --clear-cache
+```
+
+If you use a custom cache directory, include `--cache-location <path>`.
+
+The command deletes only the cache file, then exits without formatting files. See [`--clear-cache`](./cli/fmt#--clear-cache) for details.
 
 ## Prettier plugins
 
