@@ -139,10 +139,6 @@ const runFmtFile = async (
   shouldWrite: boolean,
   formatFile: FormatFile,
 ): Promise<FmtFileRun> => {
-  if (isCachedUnsupported(task)) {
-    return { outcome: 'unsupported' };
-  }
-
   const { file, key, cache } = task;
   try {
     const result = await formatFile(file, shouldWrite, cache);
@@ -243,31 +239,32 @@ const runFmtTasks = async (
   maxWorkers?: number,
   cache?: RunCache,
 ): Promise<FmtFilesResult> => {
-  const tasks = files.map((file) => createRunTask(file, cache));
-  const pendingFileCount = tasks.reduce(
-    (count, task) => count + (isCachedUnsupported(task) ? 0 : 1),
-    0,
-  );
-  if (pendingFileCount === 0) {
+  const tasks: FmtFileRunTask[] = [];
+  for (const file of files) {
+    const task = createRunTask(file, cache);
+    if (!isCachedUnsupported(task)) {
+      tasks.push(task);
+    }
+  }
+  if (tasks.length === 0) {
     return { files: [], processedFileCount: 0 };
   }
 
   // One pending file cannot benefit from parallelism, so avoid worker startup and IPC overhead.
-  if (pendingFileCount === 1) {
+  if (tasks.length === 1) {
     const { formatFile } = await import('./worker.ts');
     const formatFileOnMainThread: FormatFile = (file, write, fileCache) =>
       formatFile({ file, shouldWrite: write, cache: fileCache });
-    const results = await runScheduledTasks(
-      tasks,
+    const result = await runFmtFile(
+      tasks[0],
       shouldWrite,
       formatFileOnMainThread,
-      1,
     );
-    return collectFmtResults(results, cache);
+    return collectFmtResults([result], cache);
   }
 
   const { createWorkerPool } = await import('./workerPool.ts');
-  const workerPool = await createWorkerPool(pendingFileCount, maxWorkers);
+  const workerPool = await createWorkerPool(tasks.length, maxWorkers);
 
   try {
     const results = await runScheduledTasks(
