@@ -70,6 +70,10 @@ test('does not start the worker pool when every parser result is cached as unsup
 
 test('rechecks a path-only unsupported entry on the main thread', async () => {
   await withTempProject(async (rootPath) => {
+    const { file: ignored } = await createCachedUnsupportedFile(
+      rootPath,
+      'ignored.unknown',
+    );
     const { cache, file } = await createCachedUnsupportedFile(
       rootPath,
       'script',
@@ -78,7 +82,7 @@ test('rechecks a path-only unsupported entry on the main thread', async () => {
 
     await expect(
       runFmtFiles({
-        files: [file],
+        files: [ignored, file],
         mode: 'check',
         cache,
       }),

@@ -139,10 +139,6 @@ const runFmtFile = async (
   shouldWrite: boolean,
   formatFile: FormatFile,
 ): Promise<FmtFileRun> => {
-  if (isCachedUnsupported(task)) {
-    return { outcome: 'unsupported' };
-  }
-
   const { file, key, cache } = task;
   try {
     const result = await formatFile(file, shouldWrite, cache);
@@ -170,11 +166,7 @@ const runFmtFile = async (
 };
 
 /** Starts slower Markdown parsers first while preserving order within both priority groups. */
-const runPriorityTasks = async (
-  tasks: FmtFileRunTask[],
-  shouldWrite: boolean,
-  formatFile: FormatFile,
-): Promise<FmtFileRun[]> => {
+const getPriorityOrder = (tasks: FmtFileRunTask[]): number[] => {
   const priority: number[] = [];
   const rest: number[] = [];
 
@@ -182,14 +174,36 @@ const runPriorityTasks = async (
     (isMarkdown(tasks[index].file) ? priority : rest).push(index);
   }
 
-  const order = priority.concat(rest);
-  const outcomes = await Promise.all(
-    order.map((index) => runFmtFile(tasks[index], shouldWrite, formatFile)),
-  );
+  return priority.concat(rest);
+};
+
+/** Bounds queued work while keeping results in the original file order. */
+const runScheduledTasks = async (
+  tasks: FmtFileRunTask[],
+  shouldWrite: boolean,
+  formatFile: FormatFile,
+  concurrency: number,
+): Promise<FmtFileRun[]> => {
+  const order =
+    concurrency >= minPriorityWorkers ? getPriorityOrder(tasks) : undefined;
   const results = new Array<FmtFileRun>(tasks.length);
-  for (let index = 0; index < order.length; index++) {
-    results[order[index]] = outcomes[index];
-  }
+  let nextIndex = 0;
+
+  const consume = async (): Promise<void> => {
+    while (nextIndex < tasks.length) {
+      const index = nextIndex++;
+      const taskIndex = order?.[index] ?? index;
+      results[taskIndex] = await runFmtFile(
+        tasks[taskIndex],
+        shouldWrite,
+        formatFile,
+      );
+    }
+  };
+
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, tasks.length) }, consume),
+  );
   return results;
 };
 
@@ -225,40 +239,40 @@ const runFmtTasks = async (
   maxWorkers?: number,
   cache?: RunCache,
 ): Promise<FmtFilesResult> => {
-  const tasks = files.map((file) => createRunTask(file, cache));
-  const pendingFileCount = tasks.reduce(
-    (count, task) => count + (isCachedUnsupported(task) ? 0 : 1),
-    0,
-  );
-  if (pendingFileCount === 0) {
+  const tasks: FmtFileRunTask[] = [];
+  for (const file of files) {
+    const task = createRunTask(file, cache);
+    if (!isCachedUnsupported(task)) {
+      tasks.push(task);
+    }
+  }
+  if (tasks.length === 0) {
     return { files: [], processedFileCount: 0 };
   }
 
   // One pending file cannot benefit from parallelism, so avoid worker startup and IPC overhead.
-  if (pendingFileCount === 1) {
+  if (tasks.length === 1) {
     const { formatFile } = await import('./worker.ts');
     const formatFileOnMainThread: FormatFile = (file, write, fileCache) =>
       formatFile({ file, shouldWrite: write, cache: fileCache });
-    const results = await Promise.all(
-      tasks.map((task) =>
-        runFmtFile(task, shouldWrite, formatFileOnMainThread),
-      ),
+    const result = await runFmtFile(
+      tasks[0],
+      shouldWrite,
+      formatFileOnMainThread,
     );
-    return collectFmtResults(results, cache);
+    return collectFmtResults([result], cache);
   }
 
   const { createWorkerPool } = await import('./workerPool.ts');
-  const workerPool = await createWorkerPool(pendingFileCount, maxWorkers);
+  const workerPool = await createWorkerPool(tasks.length, maxWorkers);
 
   try {
-    const results =
-      workerPool.workerCount >= minPriorityWorkers
-        ? await runPriorityTasks(tasks, shouldWrite, workerPool.formatFile)
-        : await Promise.all(
-            tasks.map((task) =>
-              runFmtFile(task, shouldWrite, workerPool.formatFile),
-            ),
-          );
+    const results = await runScheduledTasks(
+      tasks,
+      shouldWrite,
+      workerPool.formatFile,
+      workerPool.workerCount,
+    );
     return collectFmtResults(results, cache);
   } finally {
     await workerPool.terminate();
