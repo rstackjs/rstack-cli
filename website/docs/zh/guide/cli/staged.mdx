@@ -4,9 +4,7 @@ description: '使用 rs staged 命令对 Git 暂存文件运行 lint-staged 任�
 
 # staged
 
-`rs staged` 命令使用 [lint-staged](https://github.com/lint-staged/lint-staged) 对 Git 暂存文件运行任务。
-
-`rs staged` 可用于在提交代码前，对暂存文件运行 linter、格式化工具或其他检查。
+`rs staged` 使用 [lint-staged](https://github.com/lint-staged/lint-staged) 对 Git 暂存文件运行 lint、格式化或其他检查任务。
 
 常见做法是将 `rs staged` 与 [`rs hooks`](./hooks) 配合使用，通过 `pre-commit` hook 运行暂存文件任务。
 
@@ -30,9 +28,7 @@ rs staged --allow-empty
 
 ### `--concurrent`
 
-`--concurrent` 用于控制同时运行的任务数量，可设置为 `true`、`false` 或正整数。
-
-省略该选项时，默认值为 `true`，`rs staged` 会并发运行任务且不设置固定的并发上限。设为 `false` 时会逐个运行任务；设为正整数时，会限制同时运行的任务数量。
+`--concurrent` 控制任务的并发数量：`true`（默认）表示不限制并发数量，`false` 表示逐个运行，正整数表示最多同时运行的任务数。
 
 ```bash
 # 使用默认行为：并发运行任务，不设置固定的并发上限

@@ -6,8 +6,6 @@ description: 'Use Rstack CLI to configure shared checks, formatting, staged task
 
 This guide explains how to use Rstack CLI in a monorepo, including how it works with task orchestrators such as [Turborepo](https://turborepo.com/docs) and [Nx](https://nx.dev/docs/getting-started/intro).
 
-It covers managing the Rstack CLI dependency, configuring lint, formatting, and staged-file tasks at the root, and defining separate configurations for web applications and libraries.
-
 ## Project structure
 
 The recommended setup has two levels:
@@ -29,7 +27,7 @@ The recommended setup has two levels:
         └── rstack.config.ts
 ```
 
-This structure keeps the Rstack CLI version in one place while keeping build and test configuration close to the project that uses it.
+This structure centralizes tool versions and check rules while letting each project maintain its own build and test configuration.
 
 ## Rstack CLI dependency management \{#rstack-dependency-management}
 

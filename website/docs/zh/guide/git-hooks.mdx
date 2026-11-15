@@ -49,8 +49,6 @@ git config --get core.hooksPath
 
 ## 提交前检查 \{#pre-commit-checks}
 
-通过 `pre-commit` hook 可以检查和格式化本次提交的暂存文件。
-
 ### 配置任务 \{#configure-tasks}
 
 在 Rstack 配置文件中添加暂存文件任务，根据项目实际使用的语言来调整 glob 模式：
@@ -76,6 +74,6 @@ rs staged
 
 运行 `git commit` 时，Git 会调用 `rs hooks` 安装的 hook。该 hook 会执行 `.rstack/hooks/pre-commit`，再由 `rs staged` 对暂存文件运行配置的任务。
 
-`rs staged` 会将匹配的暂存文件传给对应命令，数组中的命令按顺序执行，[`rs lint --fix`](./cli/lint) 先修复可自动处理的问题，再由 [`rs fmt`](./cli/fmt) 统一格式。如果只希望代码检查阻止提交而不修改文件，可以移除 `--fix`。
+`rs staged` 会将匹配的暂存文件传给对应命令。数组中的命令按顺序执行：[`rs lint --fix`](./cli/lint) 先自动修复 lint 问题，再由 [`rs fmt`](./cli/fmt) 格式化文件。如果不希望自动修复 lint 问题，可以移除 `--fix`。
 
-全部任务通过后，提交会继续，并包含修复和格式化结果。任一任务失败都会中止提交，解决问题后重新提交即可。
+全部任务通过后，提交会包含修复和格式化结果。任一任务失败都会中止提交。

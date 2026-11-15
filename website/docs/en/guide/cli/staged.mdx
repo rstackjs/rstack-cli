@@ -4,9 +4,7 @@ description: 'Run lint-staged tasks against Git-staged files with the rs staged 
 
 # staged
 
-The `rs staged` command uses [lint-staged](https://github.com/lint-staged/lint-staged) to run tasks against files staged in Git.
-
-`rs staged` can run linters, formatters, or other checks on staged files before committing code.
+`rs staged` uses [lint-staged](https://github.com/lint-staged/lint-staged) to run linters, formatters, or other checks on files staged in Git.
 
 A common pattern is to pair `rs staged` with [`rs hooks`](./hooks) and run staged-file tasks from a `pre-commit` hook.
 
@@ -30,9 +28,7 @@ rs staged --allow-empty
 
 ### `--concurrent`
 
-`--concurrent` controls how many tasks may run at the same time. It accepts `true`, `false`, or a positive integer.
-
-When the option is omitted, it defaults to `true`, so `rs staged` runs tasks concurrently without a fixed limit. Set it to `false` to run one task at a time, or use a positive integer to limit the number of concurrent tasks.
+`--concurrent` controls how many tasks run at once: `true` (the default) allows unlimited concurrency, `false` runs one task at a time, and a positive integer sets the maximum.
 
 ```bash
 # Use the default: run tasks concurrently without a fixed limit

@@ -49,8 +49,6 @@ git config --get core.hooksPath
 
 ## Pre-commit checks
 
-A `pre-commit` hook can lint and format the files staged for the current commit.
-
 ### Configure tasks
 
 Add staged-file tasks to the Rstack config file. Adjust the glob patterns for the languages used by your project:
@@ -76,6 +74,6 @@ rs staged
 
 When you run `git commit`, Git invokes the hook installed by `rs hooks`. The hook executes `.rstack/hooks/pre-commit`, and `rs staged` then runs the configured tasks on the staged files.
 
-`rs staged` passes matching staged files to each command. Commands in an array run in order: [`rs lint --fix`](./cli/lint) first applies available fixes, then [`rs fmt`](./cli/fmt) formats the result. Remove `--fix` if lint errors should block the commit without changing files.
+`rs staged` passes matching staged files to each command. Commands in an array run in order: [`rs lint --fix`](./cli/lint) first applies available lint fixes, then [`rs fmt`](./cli/fmt) formats the files. Remove `--fix` if you do not want lint issues fixed automatically.
 
-After every task passes, the commit continues and includes the fixed and formatted results. If any task fails, the commit stops; fix the issue and then try again.
+If all tasks pass, the commit includes the fixed and formatted results. If any task fails, the commit stops.
