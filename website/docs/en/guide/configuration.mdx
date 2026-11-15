@@ -33,7 +33,7 @@ define.fmt({
 });
 ```
 
-The configuration file does not require a default export. Call each `define.*()` API at most once.
+The configuration file does not require a default export. Call each `define.*()` API at most once; repeated calls throw an error.
 
 By default, Rstack CLI looks for a file with one of the following names:
 

@@ -135,7 +135,7 @@ rs fmt --lsp
 
 The server supports document formatting only and works on the editor's buffer. Formatting rules come from the Rstack config; editor options such as tab size are ignored. Ignored, unsupported, and unparsable documents produce no formatting edits.
 
-The server uses the config at the workspace root reported by the editor and does not discover nested configs for individual files. If a project has multiple configs, launch a server for each config root. Restart the server after changing its config.
+The server uses the config at the workspace root reported by the editor and does not discover nested configs for individual files. If a project has multiple configs, launch a server for each config root. The server reuses the loaded config, so restart it after changing the config.
 
 Besides the global [`--config`](../configuration#configuration-file) option, only [`--ignore-path`](#--ignore-path-path) affects the server's formatting behavior. Relative paths for both are resolved from the directory where the server was launched.
 
