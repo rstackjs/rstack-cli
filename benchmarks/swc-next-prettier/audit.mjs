@@ -38,7 +38,12 @@ const loaded = await loadRstackConfig({ cwd: input });
 const config = normalizeFmtConfig(loaded.configs.fmt, input);
 const files = await discoverFmtFiles({
   cwd: input,
-  patterns: ['.', ...(report.exclude ?? []).map((p) => `!${p}`)],
+  patterns: [
+    ...(report.inputSelection?.fileList
+      ? JSON.parse(readFileSync(join(results, 'files.json'), 'utf8'))
+      : ['.']),
+    ...(report.exclude ?? []).map((p) => `!${p}`),
+  ],
   config,
 });
 const prettier = await from(after, 'node_modules/prettier/index.mjs');
@@ -103,7 +108,30 @@ for (const entry of report.outputAudit.filter((item) => item.outputsDiffer)) {
       JSON.stringify(normalize(right.comments)),
   });
 }
+const beforePrettier = await from(before, 'node_modules/prettier/index.mjs');
+const { getPrettierPlugins: getBeforePlugins } = await from(
+  before,
+  'packages/rstack/src/fmt/prettierPlugins.ts',
+);
+const beforeInventory = [];
+for (const file of files) {
+  const info = await beforePrettier.getFileInfo(file.path, {
+    resolveConfig: false,
+    plugins: await getBeforePlugins(file.options, file.path),
+  });
+  beforeInventory.push({
+    path: relative(input, file.path),
+    parser: info.inferredParser,
+  });
+}
 const summary = {
+  beforeSupportedCount: beforeInventory.filter((entry) => entry.parser).length,
+  beforeParserCounts: Object.fromEntries(
+    [...new Set(beforeInventory.map((entry) => entry.parser))].map((parser) => [
+      parser ?? 'unsupported',
+      beforeInventory.filter((entry) => entry.parser === parser).length,
+    ]),
+  ),
   total: inventory.length,
   byFormatter: Object.fromEntries(
     ['swc', 'prettier', 'unsupported'].map((formatter) => [

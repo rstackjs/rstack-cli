@@ -1,0 +1,291 @@
+{
+  "rsbuildCommit": "ad8388c5befec29f5ccf765857faf126c1f05d5d",
+  "beforeCommit": "d1efeb312051868b29c7f5077fb021996b4da866",
+  "afterCommit": "27a2b603ce9f9a8aebbea980bcd6cd4653558a5e",
+  "afterDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "archiveSha256": "daa43836f99668564759c341832ce0ce699e64fd1d04fd394ba17dc229d9cf2e",
+  "node": "v24.20.0",
+  "pnpm": {
+    "before": "12.18.0",
+    "after": "12.18.0"
+  },
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "cpu": "Apple M5 Max",
+  "logicalCpus": 18,
+  "memoryBytes": 68719476736,
+  "workspace": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-rsbuild-bench-odtez9zq",
+  "versions": {
+    "before": {
+      "rstack": "0.9.2",
+      "prettier": "3.10.1",
+      "swc": "0.7.0"
+    },
+    "after": {
+      "rstack": "0.9.2",
+      "prettier": "3.9.9",
+      "swc": "0.7.0"
+    }
+  },
+  "workers": 4,
+  "exclude": [],
+  "warmupsPerVariant": 2,
+  "samples": [
+    {
+      "label": "before",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 560.225708,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 499ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "after",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 781.940375,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 701ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "after",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 680.552708,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 610ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "before",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 472.522625,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 417ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "before",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 462.192375,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 406ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "after",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 661.963334,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 591ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "after",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 674.90275,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 604ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "before",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 496.2275,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 438ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "before",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 475.8505,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 421ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "after",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 675.4625,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 613ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "after",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 675.35725,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 610ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "before",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 459.864125,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 401ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "before",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 527.32775,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 474ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "after",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 751.114541,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 668ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "after",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 720.286875,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 647ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "before",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 471.644583,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 417ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "before",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 467.426875,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 409ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "after",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 672.535917,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 607ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "before",
+      "phase": "output-audit",
+      "iteration": 1,
+      "wallMs": 475.845291,
+      "exitCode": 0,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 379ms (462 files, no changes)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "before",
+      "phase": "idempotence-audit",
+      "iteration": 1,
+      "wallMs": 430.036333,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 375ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "after",
+      "phase": "output-audit",
+      "iteration": 1,
+      "wallMs": 642.534208,
+      "exitCode": 0,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 574ms (462 files, no changes)\n",
+      "stderr": "",
+      "fileCount": 462
+    },
+    {
+      "label": "after",
+      "phase": "idempotence-audit",
+      "iteration": 1,
+      "wallMs": 630.980208,
+      "exitCode": 0,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 565ms (462 files)\n",
+      "stderr": "",
+      "fileCount": 462
+    }
+  ],
+  "commands": {
+    "before": [
+      "/Users/bytedance/.local/share/fnm/aliases/default/bin/node",
+      "/Users/bytedance/Documents/codes/rstack-cli-worktrees/swc-next-prettier-before/packages/rstack/bin/rs.js",
+      "fmt",
+      "<each path in files.json as one argument>",
+      "--check",
+      "--no-cache",
+      "--parallel-workers",
+      "4"
+    ],
+    "after": [
+      "/Users/bytedance/.local/share/fnm/aliases/default/bin/node",
+      "/Users/bytedance/Documents/codes/rstack-cli-worktrees/official-swc-next-prettier-plugin/packages/rstack/bin/rs.js",
+      "fmt",
+      "<each path in files.json as one argument>",
+      "--check",
+      "--no-cache",
+      "--parallel-workers",
+      "4"
+    ]
+  },
+  "inputSelection": {
+    "fileList": "/Users/bytedance/Documents/codes/rstack-cli-worktrees/official-swc-next-prettier-plugin/benchmarks/swc-next-prettier/results-groups/js-ts-fallback/files.json",
+    "count": 462
+  },
+  "builtDistSha256": {
+    "before": "bdfe9211ce732fe11e022c2eafcae596224f616e00f7763c963d8e44fd01b04a",
+    "after": "0b8e8f00e0f06048ee15d0ff498e147a4d30202967fe12202d31075be3229aae"
+  },
+  "mediansMs": {
+    "before": 471.644583,
+    "after": 675.35725
+  },
+  "afterChangePercent": 43.19198700518099,
+  "beforeOverAfter": 0.6983631004183342,
+  "outputAudit": []
+}

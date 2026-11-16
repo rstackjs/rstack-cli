@@ -1,0 +1,36 @@
+{
+  "beforeSupportedCount": 1036,
+  "beforeParserCounts": {
+    "markdown": 43,
+    "yaml": 17,
+    "json": 141,
+    "json-stringify": 87,
+    "html": 47,
+    "css": 170,
+    "less": 37,
+    "scss": 35,
+    "vue": 25,
+    "mdx": 434
+  },
+  "total": 1036,
+  "byFormatter": {
+    "swc": 0,
+    "prettier": 1036,
+    "unsupported": 0
+  },
+  "byExtension": {
+    ".css": 170,
+    ".html": 47,
+    ".json": 227,
+    ".less": 37,
+    ".md": 43,
+    ".mdx": 434,
+    ".scss": 35,
+    ".vue": 25,
+    ".webmanifest": 1,
+    ".yaml": 5,
+    ".yml": 12
+  },
+  "jsTsFallback": 0,
+  "comparisons": []
+}
