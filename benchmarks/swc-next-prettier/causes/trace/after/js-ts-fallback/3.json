@@ -1,0 +1,26 @@
+{
+  "threadId": 3,
+  "calls": 100,
+  "infoCalls": 200,
+  "infoMs": 4.665201999999908,
+  "formatMs": 503.02662500000054,
+  "firstFormatMs": 15.424082999999996,
+  "moduleWaitMs": 23.678124999998545,
+  "routeCalls": 200,
+  "routeMs": 14.399910000000887,
+  "parse": {
+    "prettier-typescript:typescript": {
+      "calls": 95,
+      "ms": 187.51190900000006,
+      "firstMs": 7.116125000000011
+    },
+    "prettier-babel:babel": {
+      "calls": 5,
+      "ms": 4.6845839999999725,
+      "firstMs": 2.6630420000000186
+    }
+  },
+  "nativeLibraries": [
+    "/private/tmp/rstack-cause-variants/after-trace/packages/rstack/rstack.darwin-arm64.node"
+  ]
+}

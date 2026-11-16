@@ -1,0 +1,43 @@
+{
+  "threadId": 4,
+  "calls": 599,
+  "infoCalls": 713,
+  "infoMs": 10.781602999998086,
+  "formatMs": 425.03604100000086,
+  "firstFormatMs": 5.050749999999994,
+  "moduleWaitMs": 31.225374000001807,
+  "routeCalls": 713,
+  "routeMs": 21.196087999997076,
+  "parse": {
+    "official-swc:swc": {
+      "calls": 220,
+      "ms": 14.63186599999949,
+      "firstMs": 2.670500000000061
+    },
+    "official-swc:swc-ts": {
+      "calls": 249,
+      "ms": 34.50057099999981,
+      "firstMs": 0.13708299999996143
+    },
+    "old-swc:typescript": {
+      "calls": 106,
+      "ms": 25.311122000000296,
+      "firstMs": 1.923041000000012
+    },
+    "old-swc:babel": {
+      "calls": 8,
+      "ms": 1.3080420000002277,
+      "firstMs": 0.737583000000086
+    },
+    "official-swc:swc-tsx": {
+      "calls": 16,
+      "ms": 1.4335829999999987,
+      "firstMs": 0.0677499999999327
+    }
+  },
+  "nativeLibraries": [
+    "/private/tmp/rstack-cause-variants/after-old-fallback-trace-trace-hybrid/packages/rstack/rstack.darwin-arm64.node",
+    "/Users/bytedance/Documents/codes/rstack-cli-worktrees/swc-next-prettier-before/node_modules/.pnpm/@swc-next+parser-binding-darwin-arm64@0.7.0/node_modules/@swc-next/parser-binding-darwin-arm64/swc-next-parser.darwin-arm64.node",
+    "/Users/bytedance/Documents/codes/rstack-cli-worktrees/official-swc-next-prettier-plugin/node_modules/.pnpm/@swc-next+formatter-js-binding-darwin-arm64@0.7.0/node_modules/@swc-next/formatter-js-binding-darwin-arm64/swc-next-formatter-js.darwin-arm64.node"
+  ]
+}

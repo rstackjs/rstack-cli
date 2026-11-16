@@ -154,6 +154,26 @@ are in each `results-groups/<group>/results.json`. `files.json`, `inventory.tsv`
 `audit.json` and `output.diff` preserve the selection, formatter route and output
 evidence. `results-groups/summary.json` provides the four comparisons.
 
+## Follow-up: why the migration is slower
+
+The [cause investigation](causes/README.md) uses same-version parser controls,
+separate worker traces and an isolated recovery experiment. It confirms that
+fallback loses the old SWC parser/ESTree adapter, switching to Prettier's native
+Babel/TypeScript parsers. Other-language files also lose the adapter for their
+3,136 embedded JS/TS parser calls. At Prettier 3.9.9, that parser-route change
+adds 193.08 ms on the 462 fallback files and 102.74 ms on 1,036 other files.
+The Prettier downgrade and unused plugin loading do not explain the main gap.
+
+Restoring only the old fallback adapter in an isolated after variant reduces
+all-JS/TS time from 955.64 to 759.81 ms (-20.49%) and the complete supported
+manifest from 1896.45 to 1656.04 ms (-12.68%). Outputs and coverage match after.
+This remedy is diagnostic only: shipping it would retain the old adapter and
+parser dependency. It does not resolve import-source support. The report also
+corrects the earlier 1,941 SWC coverage figure: 1,941 files select that route,
+but 16 empty files short-circuit in Prettier, leaving 1,925 native parser calls.
+Earlier measurements above are preserved; new raw controls and traces are in
+`causes/`.
+
 ## Reproduce
 
 Create a detached checkout at the before commit and check out this PR separately.

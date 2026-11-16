@@ -1,0 +1,72 @@
+{
+  "threadId": 1,
+  "calls": 857,
+  "infoCalls": 1085,
+  "infoMs": 14.653459000002272,
+  "formatMs": 1450.5553969999987,
+  "firstFormatMs": 19.918000000000006,
+  "moduleWaitMs": 17.854983999999945,
+  "routeCalls": 1085,
+  "routeMs": 28.197002999999825,
+  "parse": {
+    "project:markdown": {
+      "calls": 9,
+      "ms": 29.251792000000194,
+      "firstMs": 4.976167000000004
+    },
+    "prettier-babel:json": {
+      "calls": 53,
+      "ms": 4.8217499999993265,
+      "firstMs": 1.6738750000000095
+    },
+    "official-swc:swc": {
+      "calls": 207,
+      "ms": 11.584659999999275,
+      "firstMs": 2.0634999999999764
+    },
+    "prettier-typescript:typescript": {
+      "calls": 704,
+      "ms": 219.58850800000403,
+      "firstMs": 5.378416999999985
+    },
+    "official-swc:swc-ts": {
+      "calls": 258,
+      "ms": 29.696701000001326,
+      "firstMs": 0.7046250000000214
+    },
+    "project:json-stringify": {
+      "calls": 20,
+      "ms": 1.6651269999995861,
+      "firstMs": 0.11945899999994936
+    },
+    "prettier-babel:__vue_expression": {
+      "calls": 8,
+      "ms": 0.9337100000003034,
+      "firstMs": 0.5647080000000528
+    },
+    "prettier-babel:babel": {
+      "calls": 176,
+      "ms": 18.894041000000584,
+      "firstMs": 1.248125000000016
+    },
+    "official-swc:swc-tsx": {
+      "calls": 18,
+      "ms": 1.4016660000002048,
+      "firstMs": 0.19974999999999454
+    },
+    "prettier-babel:__js_expression": {
+      "calls": 50,
+      "ms": 2.9422540000006165,
+      "firstMs": 0.09283300000004147
+    },
+    "project:mdx": {
+      "calls": 113,
+      "ms": 111.8012070000002,
+      "firstMs": 6.018584000000146
+    }
+  },
+  "nativeLibraries": [
+    "/private/tmp/rstack-cause-variants/after-trace-trace-hybrid/packages/rstack/rstack.darwin-arm64.node",
+    "/Users/bytedance/Documents/codes/rstack-cli-worktrees/official-swc-next-prettier-plugin/node_modules/.pnpm/@swc-next+formatter-js-binding-darwin-arm64@0.7.0/node_modules/@swc-next/formatter-js-binding-darwin-arm64/swc-next-formatter-js.darwin-arm64.node"
+  ]
+}

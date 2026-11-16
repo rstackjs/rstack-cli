@@ -1,0 +1,73 @@
+{
+  "threadId": 1,
+  "calls": 871,
+  "infoCalls": 1104,
+  "infoMs": 15.562421000004463,
+  "formatMs": 1353.0017450000023,
+  "firstFormatMs": 22.067834000000005,
+  "moduleWaitMs": 24.668660000001708,
+  "routeCalls": 1104,
+  "routeMs": 32.23997000000119,
+  "parse": {
+    "project:markdown": {
+      "calls": 11,
+      "ms": 31.371207999999996,
+      "firstMs": 6.9544170000000065
+    },
+    "prettier-babel:json": {
+      "calls": 66,
+      "ms": 5.892374000000046,
+      "firstMs": 1.1911249999999995
+    },
+    "official-swc:swc": {
+      "calls": 211,
+      "ms": 13.138750999998791,
+      "firstMs": 3.480041
+    },
+    "old-swc:typescript": {
+      "calls": 680,
+      "ms": 43.84841999999955,
+      "firstMs": 1.2804160000000024
+    },
+    "official-swc:swc-ts": {
+      "calls": 254,
+      "ms": 31.81937600000097,
+      "firstMs": 0.16087500000000432
+    },
+    "project:json-stringify": {
+      "calls": 29,
+      "ms": 2.4040820000001872,
+      "firstMs": 0.20654100000001563
+    },
+    "prettier-babel:__vue_expression": {
+      "calls": 6,
+      "ms": 1.1504150000000095,
+      "firstMs": 0.6566249999999627
+    },
+    "old-swc:babel": {
+      "calls": 160,
+      "ms": 6.29816699999958,
+      "firstMs": 0.5843750000000227
+    },
+    "official-swc:swc-tsx": {
+      "calls": 18,
+      "ms": 1.4756240000001526,
+      "firstMs": 0.036291000000005624
+    },
+    "prettier-babel:__js_expression": {
+      "calls": 37,
+      "ms": 3.393915999998967,
+      "firstMs": 0.2082910000000311
+    },
+    "project:mdx": {
+      "calls": 117,
+      "ms": 136.88774700000147,
+      "firstMs": 8.211832999999956
+    }
+  },
+  "nativeLibraries": [
+    "/private/tmp/rstack-cause-variants/after-old-fallback-trace-trace-hybrid/packages/rstack/rstack.darwin-arm64.node",
+    "/Users/bytedance/Documents/codes/rstack-cli-worktrees/swc-next-prettier-before/node_modules/.pnpm/@swc-next+parser-binding-darwin-arm64@0.7.0/node_modules/@swc-next/parser-binding-darwin-arm64/swc-next-parser.darwin-arm64.node",
+    "/Users/bytedance/Documents/codes/rstack-cli-worktrees/official-swc-next-prettier-plugin/node_modules/.pnpm/@swc-next+formatter-js-binding-darwin-arm64@0.7.0/node_modules/@swc-next/formatter-js-binding-darwin-arm64/swc-next-formatter-js.darwin-arm64.node"
+  ]
+}

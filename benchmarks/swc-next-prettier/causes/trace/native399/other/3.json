@@ -1,0 +1,57 @@
+{
+  "threadId": 3,
+  "calls": 259,
+  "infoCalls": 259,
+  "infoMs": 12.625910000000502,
+  "formatMs": 987.7316160000003,
+  "firstFormatMs": 10.69658299999999,
+  "moduleWaitMs": 18.934298000000638,
+  "routeCalls": 0,
+  "routeMs": 0,
+  "parse": {
+    "project:markdown": {
+      "calls": 12,
+      "ms": 26.36416700000001,
+      "firstMs": 3.5501250000000084
+    },
+    "prettier-babel:json": {
+      "calls": 55,
+      "ms": 5.1658779999995375,
+      "firstMs": 1.8537500000000193
+    },
+    "prettier-babel:__js_expression": {
+      "calls": 78,
+      "ms": 3.6871629999995434,
+      "firstMs": 0.5813330000000008
+    },
+    "prettier-babel:babel": {
+      "calls": 203,
+      "ms": 16.98991500000028,
+      "firstMs": 0.8780000000000143
+    },
+    "project:json-stringify": {
+      "calls": 22,
+      "ms": 1.8371239999999887,
+      "firstMs": 0.10999999999998522
+    },
+    "prettier-babel:__vue_expression": {
+      "calls": 3,
+      "ms": 0.08262499999997885,
+      "firstMs": 0.03595799999999372
+    },
+    "project:mdx": {
+      "calls": 112,
+      "ms": 113.58366800000056,
+      "firstMs": 12.01929100000001
+    },
+    "prettier-typescript:typescript": {
+      "calls": 641,
+      "ms": 92.48923900000023,
+      "firstMs": 4.6598749999999995
+    }
+  },
+  "nativeLibraries": [
+    "/private/tmp/rstack-cause-variants/native399-trace/packages/rstack/rstack.darwin-arm64.node",
+    "/Users/bytedance/Documents/codes/rstack-cli-worktrees/swc-next-prettier-before/node_modules/.pnpm/@swc-next+parser-binding-darwin-arm64@0.7.0/node_modules/@swc-next/parser-binding-darwin-arm64/swc-next-parser.darwin-arm64.node"
+  ]
+}

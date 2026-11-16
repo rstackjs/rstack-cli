@@ -1,0 +1,56 @@
+{
+  "threadId": 4,
+  "calls": 246,
+  "infoCalls": 349,
+  "infoMs": 6.600944999999413,
+  "formatMs": 1022.7534079999989,
+  "firstFormatMs": 20.083041999999992,
+  "moduleWaitMs": 18.044711000000035,
+  "routeCalls": 349,
+  "routeMs": 17.246512000000195,
+  "parse": {
+    "project:markdown": {
+      "calls": 10,
+      "ms": 35.80720800000009,
+      "firstMs": 6.349084000000005
+    },
+    "prettier-babel:json": {
+      "calls": 63,
+      "ms": 5.741794999999684,
+      "firstMs": 1.3868750000000034
+    },
+    "project:json-stringify": {
+      "calls": 16,
+      "ms": 1.7627069999999776,
+      "firstMs": 0.20258300000000418
+    },
+    "prettier-babel:babel": {
+      "calls": 159,
+      "ms": 14.316494000000262,
+      "firstMs": 1.0844999999999914
+    },
+    "prettier-babel:__js_expression": {
+      "calls": 68,
+      "ms": 3.0971239999998943,
+      "firstMs": 0.22825000000000273
+    },
+    "prettier-babel:__vue_expression": {
+      "calls": 1,
+      "ms": 0.06283299999995506,
+      "firstMs": 0.06283299999995506
+    },
+    "project:mdx": {
+      "calls": 99,
+      "ms": 106.57341399999984,
+      "firstMs": 9.974375000000009
+    },
+    "prettier-typescript:typescript": {
+      "calls": 630,
+      "ms": 101.11479800000029,
+      "firstMs": 4.750208000000043
+    }
+  },
+  "nativeLibraries": [
+    "/private/tmp/rstack-cause-variants/after-trace/packages/rstack/rstack.darwin-arm64.node"
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "threadId": 3,
+  "calls": 847,
+  "infoCalls": 1072,
+  "infoMs": 15.742555999999183,
+  "formatMs": 1443.5571329999964,
+  "firstFormatMs": 10.384084000000001,
+  "moduleWaitMs": 17.379407000001038,
+  "routeCalls": 1072,
+  "routeMs": 30.615434000001528,
+  "parse": {
+    "project:markdown": {
+      "calls": 11,
+      "ms": 35.99850200000043,
+      "firstMs": 3.589082999999988
+    },
+    "official-swc:swc": {
+      "calls": 224,
+      "ms": 13.912748999999991,
+      "firstMs": 3.788583999999986
+    },
+    "official-swc:swc-ts": {
+      "calls": 237,
+      "ms": 34.236876000000194,
+      "firstMs": 0.9421250000000043
+    },
+    "prettier-typescript:typescript": {
+      "calls": 694,
+      "ms": 222.9063750000005,
+      "firstMs": 8.719250000000017
+    },
+    "official-swc:swc-tsx": {
+      "calls": 21,
+      "ms": 2.2390860000001283,
+      "firstMs": 0.026667000000003327
+    },
+    "prettier-babel:babel": {
+      "calls": 188,
+      "ms": 20.387038000000985,
+      "firstMs": 2.0090829999999755
+    },
+    "prettier-babel:__js_expression": {
+      "calls": 73,
+      "ms": 3.2204580000004626,
+      "firstMs": 0.1479580000000169
+    },
+    "prettier-babel:json": {
+      "calls": 63,
+      "ms": 4.454376999999624,
+      "firstMs": 0.3739590000000135
+    },
+    "project:json-stringify": {
+      "calls": 19,
+      "ms": 2.295541000000071,
+      "firstMs": 0.19775000000004184
+    },
+    "prettier-babel:__vue_expression": {
+      "calls": 3,
+      "ms": 0.28691600000001927,
+      "firstMs": 0.17600000000004457
+    },
+    "prettier-babel:__ts_expression": {
+      "calls": 1,
+      "ms": 0.9785830000000715,
+      "firstMs": 0.9785830000000715
+    },
+    "prettier-babel:__vue_ts_expression": {
+      "calls": 2,
+      "ms": 0.12449999999989814,
+      "firstMs": 0.05095799999992323
+    },
+    "project:mdx": {
+      "calls": 106,
+      "ms": 102.1072920000006,
+      "firstMs": 6.087792000000036
+    }
+  },
+  "nativeLibraries": [
+    "/private/tmp/rstack-cause-variants/after-trace-trace-hybrid/packages/rstack/rstack.darwin-arm64.node",
+    "/Users/bytedance/Documents/codes/rstack-cli-worktrees/official-swc-next-prettier-plugin/node_modules/.pnpm/@swc-next+formatter-js-binding-darwin-arm64@0.7.0/node_modules/@swc-next/formatter-js-binding-darwin-arm64/swc-next-formatter-js.darwin-arm64.node"
+  ]
+}
