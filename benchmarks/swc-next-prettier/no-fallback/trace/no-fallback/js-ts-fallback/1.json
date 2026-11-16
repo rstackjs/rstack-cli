@@ -1,0 +1,32 @@
+{
+  "threadId": 1,
+  "calls": 117,
+  "infoCalls": 117,
+  "infoMs": 2.9173709999999318,
+  "formatMs": 123.42137699999958,
+  "firstFormatMs": 8.053292000000013,
+  "moduleWaitMs": 18.937503000000078,
+  "routeCalls": 0,
+  "routeMs": 0,
+  "parse": {
+    "official-swc:swc-ts": {
+      "calls": 104,
+      "ms": 49.3465030000001,
+      "firstMs": 4.377583000000001
+    },
+    "official-swc:swc": {
+      "calls": 12,
+      "ms": 4.082416999999992,
+      "firstMs": 0.4495420000000081
+    },
+    "official-swc:swc-tsx": {
+      "calls": 1,
+      "ms": 0.3775839999999562,
+      "firstMs": 0.3775839999999562
+    }
+  },
+  "nativeLibraries": [
+    "/private/tmp/rstack-no-fallback-final-variants/no-fallback-trace-trace/packages/rstack/rstack.darwin-arm64.node",
+    "/Users/bytedance/Documents/codes/rstack-cli-worktrees/official-swc-next-prettier-plugin/node_modules/.pnpm/@swc-next+formatter-js-binding-darwin-arm64@0.7.0/node_modules/@swc-next/formatter-js-binding-darwin-arm64/swc-next-formatter-js.darwin-arm64.node"
+  ]
+}

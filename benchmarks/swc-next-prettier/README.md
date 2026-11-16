@@ -1,9 +1,12 @@
 # SWC Next formatter POC: Rsbuild CLI benchmark
 
 This POC replaces the local SWC Next parser/ESTree adapter with the published
-`@swc-next/formatter-prettier-plugin@0.7.0`. On this machine and input, the
-migration is slower overall and does not yet format the complete repository successfully.
-The follow-up below isolates a faster SWC subset and a slower JS/TS fallback subset.
+`@swc-next/formatter-prettier-plugin@0.7.0`. The measurements below preserve the
+original migration with automatic fallback, which was slower overall. The latest
+[no-fallback experiment](no-fallback/README.md) implements direct SWCFMT for all
+default top-level JS/TS, with separate capability controls, concurrency scanning,
+output audits and explicit unsupported-option errors. Import-source remains
+unsupported. Historical results below are not measurements of the latest route.
 
 ## Environment and method
 

@@ -1,0 +1,28 @@
+{
+  "before310": {
+    "root": "/private/tmp/rstack-no-fallback-final-variants/before310",
+    "distSha256": "bdfe9211ce732fe11e022c2eafcae596224f616e00f7763c963d8e44fd01b04a",
+    "formatSha256": "6cd72226451c19d3cbc31cf40bcb25671fb2821586cb1348ea281dd98a15332d",
+    "prettier": "3.10.1"
+  },
+  "before399": {
+    "root": "/private/tmp/rstack-no-fallback-final-variants/before399",
+    "distSha256": "bdfe9211ce732fe11e022c2eafcae596224f616e00f7763c963d8e44fd01b04a",
+    "formatSha256": "6cd72226451c19d3cbc31cf40bcb25671fb2821586cb1348ea281dd98a15332d",
+    "prettier": "3.9.9"
+  },
+  "fallback": {
+    "root": "/private/tmp/rstack-no-fallback-final-variants/fallback",
+    "distSha256": "0b8e8f00e0f06048ee15d0ff498e147a4d30202967fe12202d31075be3229aae",
+    "formatSha256": "0a3e3ae76eee153424b4c14b5dac7738450b003482e26240c0dfb9969adbc1a7",
+    "prettier": "3.9.9"
+  },
+  "no-fallback": {
+    "root": "/private/tmp/rstack-no-fallback-final-variants/no-fallback",
+    "distSha256": "d516a3b3e75473e9225cff0f193f7dd3b15e5aa58fc48b6dcb3de6958de5a7f0",
+    "formatSha256": "0e19ad43000169b63df6af242dfba71745dc21f3250cefedb92338752bcd5bd9",
+    "prettier": "3.9.9",
+    "sourceBase": "dbf75f42f13b51528f5fbd723770602b2f71e3cf",
+    "runtimePatchSha256": "ea8bc7a136b478c6b718cd2118192a922fa214a53317f86a26e30b933744a280"
+  }
+}

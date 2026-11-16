@@ -1,0 +1,216 @@
+{
+  "before310": {
+    "files": 2403,
+    "changed": 0,
+    "mismatches": [],
+    "diagnostics": [],
+    "records": []
+  },
+  "before399": {
+    "files": 2403,
+    "changed": 0,
+    "mismatches": [],
+    "diagnostics": [],
+    "records": []
+  },
+  "fallback": {
+    "files": 2403,
+    "changed": 6,
+    "mismatches": [],
+    "diagnostics": [],
+    "records": [
+      {
+        "file": "e2e/cases/config/bundler-chain/index.test.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "e2e/cases/plugin-solid/ssr/rsbuild.config.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "e2e/cases/server/hot-update-fallback/rsbuild.config.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "packages/core/src/plugins/progress.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "packages/core/tests/pluginDependencies.test.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "packages/plugin-solid/src/solidLoader.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      }
+    ]
+  },
+  "no-fallback": {
+    "files": 2403,
+    "changed": 17,
+    "mismatches": [],
+    "diagnostics": [],
+    "records": [
+      {
+        "file": "e2e/cases/config/bundler-chain/index.test.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "e2e/cases/plugin-solid/ssr/rsbuild.config.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "e2e/cases/server/compress-stream/index.test.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "e2e/cases/server/hot-update-fallback/rsbuild.config.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "e2e/cases/server/print-urls/index.test.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "packages/core/src/plugins/css.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "packages/core/src/plugins/fileSize.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "packages/core/src/plugins/html.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "packages/core/src/plugins/progress.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "packages/core/src/plugins/sourceMap.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "packages/core/src/plugins/target.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "packages/core/src/server/assets-middleware/middleware.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "packages/core/src/server/runner/esm.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "packages/core/tests/pluginDependencies.test.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "packages/core/tests/server.test.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "packages/plugin-preact/src/index.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      },
+      {
+        "file": "packages/plugin-solid/src/solidLoader.ts",
+        "changed": true,
+        "inputDiagnostics": [],
+        "outputDiagnostics": [],
+        "astEqual": true,
+        "commentsEqual": true
+      }
+    ]
+  }
+}

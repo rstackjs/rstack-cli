@@ -1,0 +1,72 @@
+{
+  "threadId": 1,
+  "calls": 868,
+  "infoCalls": 868,
+  "infoMs": 19.401246999995635,
+  "formatMs": 1546.8505610000018,
+  "firstFormatMs": 24.726500000000016,
+  "moduleWaitMs": 21.826187999999206,
+  "routeCalls": 0,
+  "routeMs": 0,
+  "parse": {
+    "project:markdown": {
+      "calls": 8,
+      "ms": 25.603125999999833,
+      "firstMs": 6.420291999999989
+    },
+    "prettier-babel:json": {
+      "calls": 61,
+      "ms": 6.584208000001155,
+      "firstMs": 1.1747499999999889
+    },
+    "official-swc:swc": {
+      "calls": 215,
+      "ms": 21.812082999999888,
+      "firstMs": 6.162333000000018
+    },
+    "official-swc:swc-ts": {
+      "calls": 379,
+      "ms": 90.79224799999824,
+      "firstMs": 1.0140839999999969
+    },
+    "project:json-stringify": {
+      "calls": 28,
+      "ms": 2.9330430000005663,
+      "firstMs": 0.31466700000004266
+    },
+    "official-swc:swc-tsx": {
+      "calls": 18,
+      "ms": 2.5831670000006284,
+      "firstMs": 0.14145800000000008
+    },
+    "prettier-babel:__vue_expression": {
+      "calls": 4,
+      "ms": 0.8362489999999525,
+      "firstMs": 0.6469579999999269
+    },
+    "prettier-babel:babel": {
+      "calls": 185,
+      "ms": 24.028290999998944,
+      "firstMs": 1.285082999999986
+    },
+    "prettier-babel:__js_expression": {
+      "calls": 44,
+      "ms": 3.520789999999238,
+      "firstMs": 0.16312500000003638
+    },
+    "project:mdx": {
+      "calls": 106,
+      "ms": 134.89641799999936,
+      "firstMs": 10.413749999999936
+    },
+    "prettier-typescript:typescript": {
+      "calls": 594,
+      "ms": 114.96358799999894,
+      "firstMs": 4.416625000000067
+    }
+  },
+  "nativeLibraries": [
+    "/private/tmp/rstack-no-fallback-final-variants/no-fallback-trace-trace/packages/rstack/rstack.darwin-arm64.node",
+    "/Users/bytedance/Documents/codes/rstack-cli-worktrees/official-swc-next-prettier-plugin/node_modules/.pnpm/@swc-next+formatter-js-binding-darwin-arm64@0.7.0/node_modules/@swc-next/formatter-js-binding-darwin-arm64/swc-next-formatter-js.darwin-arm64.node"
+  ]
+}

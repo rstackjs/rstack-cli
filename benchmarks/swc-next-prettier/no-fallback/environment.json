@@ -1,0 +1,10 @@
+{
+  "time": 1794856513.918506,
+  "machine": "Apple M5 Max",
+  "logicalCpus": 18,
+  "macOS": "26.6.2",
+  "memoryBytes": "68719476736",
+  "node": "v24.20.0",
+  "pnpm": "12.18.0",
+  "sourceCommit": "e3d1c22c77eb4b25801803ee90c8994e38fab07d"
+}

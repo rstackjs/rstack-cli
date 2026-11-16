@@ -1,0 +1,5151 @@
+{
+  "commit": "ad8388c5befec29f5ccf765857faf126c1f05d5d",
+  "archiveSha256": "daa43836f99668564759c341832ce0ce699e64fd1d04fd394ba17dc229d9cf2e",
+  "configSha256": "78e24fb5651f787ecb2fcc7142cf7966c67dc98143a3eafb324b066596cfa4f4",
+  "workspace": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-no-fallback-input-oqs007wf",
+  "variants": {
+    "before310": {
+      "root": "/private/tmp/rstack-no-fallback-final-variants/before310",
+      "distSha256": "bdfe9211ce732fe11e022c2eafcae596224f616e00f7763c963d8e44fd01b04a",
+      "formatSha256": "6cd72226451c19d3cbc31cf40bcb25671fb2821586cb1348ea281dd98a15332d",
+      "prettier": "3.10.1"
+    },
+    "before399": {
+      "root": "/private/tmp/rstack-no-fallback-final-variants/before399",
+      "distSha256": "bdfe9211ce732fe11e022c2eafcae596224f616e00f7763c963d8e44fd01b04a",
+      "formatSha256": "6cd72226451c19d3cbc31cf40bcb25671fb2821586cb1348ea281dd98a15332d",
+      "prettier": "3.9.9"
+    },
+    "fallback": {
+      "root": "/private/tmp/rstack-no-fallback-final-variants/fallback",
+      "distSha256": "0b8e8f00e0f06048ee15d0ff498e147a4d30202967fe12202d31075be3229aae",
+      "formatSha256": "0a3e3ae76eee153424b4c14b5dac7738450b003482e26240c0dfb9969adbc1a7",
+      "prettier": "3.9.9"
+    },
+    "no-fallback": {
+      "root": "/private/tmp/rstack-no-fallback-final-variants/no-fallback",
+      "distSha256": "d516a3b3e75473e9225cff0f193f7dd3b15e5aa58fc48b6dcb3de6958de5a7f0",
+      "formatSha256": "0e19ad43000169b63df6af242dfba71745dc21f3250cefedb92338752bcd5bd9",
+      "prettier": "3.9.9",
+      "sourceBase": "dbf75f42f13b51528f5fbd723770602b2f71e3cf",
+      "runtimePatchSha256": "ea8bc7a136b478c6b718cd2118192a922fa214a53317f86a26e30b933744a280"
+    }
+  },
+  "node": "v24.20.0",
+  "pnpm": "12.18.0",
+  "embedding": "off",
+  "workers": [4],
+  "warmups": 2,
+  "runs": 7,
+  "samples": [
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 740.739875,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 652ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 735.346291,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 644ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 509.246042,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 428ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 524.12225,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 439ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 739.853667,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 652ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 496.712375,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 417ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 513.668542,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 430ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 733.980209,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 649ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 734.64675,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 648ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 711.548791,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 622ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 525.857334,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 449ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 515.26675,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 437ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 745.323583,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 661ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 536.938292,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 458ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 509.655208,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 422ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 722.3755,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 636ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 506.023375,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 415ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 505.35525,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 417ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 725.147917,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 632ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 708.160542,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 613ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 491.446542,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 408ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 713.933375,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 620ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 712.047042,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 618ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 490.637292,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 406ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 711.429791,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 617ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 715.931417,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 628ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 502.15225,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 416ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 492.437583,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 408ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 717.245292,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 628ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 495.43025,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 406ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 503.032458,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 416ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 711.568959,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 615ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 494.093083,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 415ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 492.133458,
+      "exitCode": 1,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\ninfo    Checked 2403 files in 408ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 714.226042,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 622ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 707.431959,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 618ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 761.723291,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 627ms (2403 files, no changes)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 720.132625,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 627ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 740.144292,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 621ms (2403 files, no changes)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 707.421375,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 614ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 532.303833,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 434ms (2403 files, 17 formatted)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 501.163041,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 412ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 530.361625,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 421ms (2403 files, 17 formatted)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 488.594,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 409ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 390.700583,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 337ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 376.121125,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 327ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 264.732208,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 211ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 261.511125,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 211ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 391.271375,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 340ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 263.748125,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 211ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 264.347667,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 213ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 393.775333,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 341ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 386.621708,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 334ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 384.092833,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 333ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 269.582666,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 218ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 257.435541,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 206ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 381.949,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 330ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 273.093375,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 221ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 272.816292,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 220ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 388.543458,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 337ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 269.135084,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 218ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 262.763959,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 209ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 382.527375,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 332ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 389.55525,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 340ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 265.820084,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 215ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 396.158458,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 341ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 390.238375,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 337ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 268.637208,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 217ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 388.592917,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 335ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 382.139125,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 330ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 268.059,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 219ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 263.228666,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 212ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 396.34775,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 348ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 265.913292,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 215ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 263.756375,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 214ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 392.274041,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 339ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 261.813667,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 211ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 265.099459,
+      "exitCode": 1,
+      "files": 462,
+      "stdout": "start   Checking formatting...\ninfo    Checked 462 files in 218ms.\n",
+      "stderr": "error   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   Formatting issues found in 11 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 394.529042,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 338ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [
+        {
+          "pid": 80815,
+          "command": "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python scripts/init-control.py"
+        }
+      ],
+      "valid": false,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 391.59375,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 337ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 388.465291,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 330ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 440.422208,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 343ms (462 files, no changes)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 383.439792,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 329ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 405.470083,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 340ms (462 files, no changes)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 395.312333,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 343ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 306.321292,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 227ms (462 files, 11 formatted)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 261.882583,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 211ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 256.270375,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 212ms (462 files, 11 formatted)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "js-ts-fallback",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 269.408375,
+      "exitCode": 0,
+      "files": 462,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 221ms (462 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 1291.690083,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.18s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 1293.465459,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.18s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 1095.628333,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 978ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 1103.199917,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 988ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 1296.0215,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.18s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 1106.246583,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 985ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 1152.614208,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.04s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 1331.752375,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.23s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 1302.697875,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.20s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 1288.266125,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.17s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 1101.899084,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 981ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 1095.940916,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 984ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 1316.384167,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.19s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 1129.509458,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.02s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 1130.033792,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.01s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 1328.661166,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.23s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 1131.94775,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.02s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 1129.582042,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.01s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 1319.83375,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.20s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 1291.621291,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.18s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 1119.473875,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.00s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 1317.679417,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.20s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 1309.042208,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.19s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 1173.898875,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.06s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 1337.446917,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.22s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 1319.515459,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.20s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 1114.851708,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 997ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 1122.735125,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.01s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 1325.614208,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.21s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 1134.307542,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.02s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 1127.751416,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.01s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 1362.468334,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.24s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 1140.012792,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.02s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 1130.250584,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.02s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 1339.486208,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.22s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 1330.617333,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.21s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "supported",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 1363.780458,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 1.22s (3439 files, no changes)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 4,
+      "group": "supported",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 1335.319416,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.22s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "supported",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 1421.517833,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 1.32s (3439 files, no changes)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 4,
+      "group": "supported",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 1326.696,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.21s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 1142.523167,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 999ms (3439 files, 17 formatted)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 1113.302458,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.00s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 1137.731208,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 990ms (3439 files, 17 formatted)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 4,
+      "group": "supported",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 1094.411625,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 979ms (3439 files)\n",
+      "stderr": ""
+    }
+  ],
+  "groups": {
+    "js-ts": {
+      "files": 2403,
+      "manifestSha256": "f6769cffd753cd18ac21870940be2b522db4500c17b7b1540df9913c533c438a",
+      "command": [
+        "/Users/bytedance/.local/share/fnm/aliases/default/bin/node",
+        "<variant>/packages/rstack/bin/rs.js",
+        "fmt",
+        "<manifest paths>",
+        "--check",
+        "--no-cache",
+        "--parallel-workers",
+        "<workers>"
+      ],
+      "statistics": {
+        "before310:4": {
+          "medianMs": 717.245292,
+          "minMs": 711.429791,
+          "maxMs": 745.323583,
+          "exitCodes": [0]
+        },
+        "before399:4": {
+          "medianMs": 711.568959,
+          "minMs": 707.431959,
+          "maxMs": 722.3755,
+          "exitCodes": [0]
+        },
+        "fallback:4": {
+          "medianMs": 503.032458,
+          "minMs": 491.446542,
+          "maxMs": 525.857334,
+          "exitCodes": [1]
+        },
+        "no-fallback:4": {
+          "medianMs": 495.43025,
+          "minMs": 490.637292,
+          "maxMs": 536.938292,
+          "exitCodes": [1]
+        }
+      },
+      "outputs": {
+        "before310": {
+          "sha256": "a8e02e5a64754a1fe6ed1c8d39fd0746539019441bb044221b12555317a6979c",
+          "changed": [],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-before310-s544gg_j",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        },
+        "before399": {
+          "sha256": "a8e02e5a64754a1fe6ed1c8d39fd0746539019441bb044221b12555317a6979c",
+          "changed": [],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-before399-_e3lws6n",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        },
+        "fallback": {
+          "sha256": "9b1c408fe39a7ef41b09cbdd03a1fe7476c44f13353103d2e5ca13c313b3fd62",
+          "changed": [
+            "e2e/cases/config/bundler-chain/index.test.ts",
+            "e2e/cases/plugin-solid/ssr/rsbuild.config.ts",
+            "e2e/cases/server/compress-stream/index.test.ts",
+            "e2e/cases/server/hot-update-fallback/rsbuild.config.ts",
+            "e2e/cases/server/print-urls/index.test.ts",
+            "packages/core/src/plugins/css.ts",
+            "packages/core/src/plugins/fileSize.ts",
+            "packages/core/src/plugins/html.ts",
+            "packages/core/src/plugins/progress.ts",
+            "packages/core/src/plugins/sourceMap.ts",
+            "packages/core/src/plugins/target.ts",
+            "packages/core/src/server/assets-middleware/middleware.ts",
+            "packages/core/src/server/runner/esm.ts",
+            "packages/core/tests/pluginDependencies.test.ts",
+            "packages/core/tests/server.test.ts",
+            "packages/plugin-preact/src/index.ts",
+            "packages/plugin-solid/src/solidLoader.ts"
+          ],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-fallback-ycmwbe6h",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        },
+        "no-fallback": {
+          "sha256": "9b1c408fe39a7ef41b09cbdd03a1fe7476c44f13353103d2e5ca13c313b3fd62",
+          "changed": [
+            "e2e/cases/config/bundler-chain/index.test.ts",
+            "e2e/cases/plugin-solid/ssr/rsbuild.config.ts",
+            "e2e/cases/server/compress-stream/index.test.ts",
+            "e2e/cases/server/hot-update-fallback/rsbuild.config.ts",
+            "e2e/cases/server/print-urls/index.test.ts",
+            "packages/core/src/plugins/css.ts",
+            "packages/core/src/plugins/fileSize.ts",
+            "packages/core/src/plugins/html.ts",
+            "packages/core/src/plugins/progress.ts",
+            "packages/core/src/plugins/sourceMap.ts",
+            "packages/core/src/plugins/target.ts",
+            "packages/core/src/server/assets-middleware/middleware.ts",
+            "packages/core/src/server/runner/esm.ts",
+            "packages/core/tests/pluginDependencies.test.ts",
+            "packages/core/tests/server.test.ts",
+            "packages/plugin-preact/src/index.ts",
+            "packages/plugin-solid/src/solidLoader.ts"
+          ],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-no-fallback-4hh4nnax",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        }
+      }
+    },
+    "js-ts-fallback": {
+      "files": 462,
+      "manifestSha256": "f3a66a621a256a41820d51e01db624bb1cc684ac7b5198adebf85b1b6b9026ff",
+      "command": [
+        "/Users/bytedance/.local/share/fnm/aliases/default/bin/node",
+        "<variant>/packages/rstack/bin/rs.js",
+        "fmt",
+        "<manifest paths>",
+        "--check",
+        "--no-cache",
+        "--parallel-workers",
+        "<workers>"
+      ],
+      "statistics": {
+        "before310:4": {
+          "medianMs": 388.592917,
+          "minMs": 381.949,
+          "maxMs": 396.34775,
+          "exitCodes": [0]
+        },
+        "before399:4": {
+          "medianMs": 388.543458,
+          "minMs": 382.139125,
+          "maxMs": 396.158458,
+          "exitCodes": [0]
+        },
+        "fallback:4": {
+          "medianMs": 268.059,
+          "minMs": 261.813667,
+          "maxMs": 272.816292,
+          "exitCodes": [1]
+        },
+        "no-fallback:4": {
+          "medianMs": 265.099459,
+          "minMs": 257.435541,
+          "maxMs": 273.093375,
+          "exitCodes": [1]
+        }
+      },
+      "outputs": {
+        "before310": {
+          "sha256": "d41228b82e37274447ffc80292c5173293193816e6a8d83f90c7cdf4ee8dc3ac",
+          "changed": [],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-before310-9hrdwlqh",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        },
+        "before399": {
+          "sha256": "d41228b82e37274447ffc80292c5173293193816e6a8d83f90c7cdf4ee8dc3ac",
+          "changed": [],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-before399-a1g05cwy",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        },
+        "fallback": {
+          "sha256": "3bb52c2f461206104b9cc7aa9b52b5a61dd820f4179be4952943da63f3cc57a8",
+          "changed": [
+            "e2e/cases/server/compress-stream/index.test.ts",
+            "e2e/cases/server/print-urls/index.test.ts",
+            "packages/core/src/plugins/css.ts",
+            "packages/core/src/plugins/fileSize.ts",
+            "packages/core/src/plugins/html.ts",
+            "packages/core/src/plugins/sourceMap.ts",
+            "packages/core/src/plugins/target.ts",
+            "packages/core/src/server/assets-middleware/middleware.ts",
+            "packages/core/src/server/runner/esm.ts",
+            "packages/core/tests/server.test.ts",
+            "packages/plugin-preact/src/index.ts"
+          ],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-fallback-z_ug2bl_",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        },
+        "no-fallback": {
+          "sha256": "3bb52c2f461206104b9cc7aa9b52b5a61dd820f4179be4952943da63f3cc57a8",
+          "changed": [
+            "e2e/cases/server/compress-stream/index.test.ts",
+            "e2e/cases/server/print-urls/index.test.ts",
+            "packages/core/src/plugins/css.ts",
+            "packages/core/src/plugins/fileSize.ts",
+            "packages/core/src/plugins/html.ts",
+            "packages/core/src/plugins/sourceMap.ts",
+            "packages/core/src/plugins/target.ts",
+            "packages/core/src/server/assets-middleware/middleware.ts",
+            "packages/core/src/server/runner/esm.ts",
+            "packages/core/tests/server.test.ts",
+            "packages/plugin-preact/src/index.ts"
+          ],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-no-fallback-9mjqdchg",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        }
+      }
+    },
+    "supported": {
+      "files": 3439,
+      "manifestSha256": "4a79f0fa08cb931d674e04552fd23df048b06d70b26dc0e1205b54a92254a832",
+      "command": [
+        "/Users/bytedance/.local/share/fnm/aliases/default/bin/node",
+        "<variant>/packages/rstack/bin/rs.js",
+        "fmt",
+        "<manifest paths>",
+        "--check",
+        "--no-cache",
+        "--parallel-workers",
+        "<workers>"
+      ],
+      "statistics": {
+        "before310:4": {
+          "medianMs": 1319.83375,
+          "minMs": 1302.697875,
+          "maxMs": 1339.486208,
+          "exitCodes": [0]
+        },
+        "before399:4": {
+          "medianMs": 1319.515459,
+          "minMs": 1288.266125,
+          "maxMs": 1362.468334,
+          "exitCodes": [0]
+        },
+        "fallback:4": {
+          "medianMs": 1127.751416,
+          "minMs": 1101.899084,
+          "maxMs": 1140.012792,
+          "exitCodes": [1]
+        },
+        "no-fallback:4": {
+          "medianMs": 1129.582042,
+          "minMs": 1095.940916,
+          "maxMs": 1173.898875,
+          "exitCodes": [1]
+        }
+      },
+      "outputs": {
+        "before310": {
+          "sha256": "591633d3c02aa306a10f18c7e323d97adb7b4e65136bbc7b5c3d04f7d8af162b",
+          "changed": [],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-before310-zw456ox9",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        },
+        "before399": {
+          "sha256": "591633d3c02aa306a10f18c7e323d97adb7b4e65136bbc7b5c3d04f7d8af162b",
+          "changed": [],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-before399-yp99m91d",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        },
+        "fallback": {
+          "sha256": "ad135fc2aa488840dd210bfdeeeb1fa0e2299cbddd72b17c62a45fa8f365dfa2",
+          "changed": [
+            "e2e/cases/config/bundler-chain/index.test.ts",
+            "e2e/cases/plugin-solid/ssr/rsbuild.config.ts",
+            "e2e/cases/server/compress-stream/index.test.ts",
+            "e2e/cases/server/hot-update-fallback/rsbuild.config.ts",
+            "e2e/cases/server/print-urls/index.test.ts",
+            "packages/core/src/plugins/css.ts",
+            "packages/core/src/plugins/fileSize.ts",
+            "packages/core/src/plugins/html.ts",
+            "packages/core/src/plugins/progress.ts",
+            "packages/core/src/plugins/sourceMap.ts",
+            "packages/core/src/plugins/target.ts",
+            "packages/core/src/server/assets-middleware/middleware.ts",
+            "packages/core/src/server/runner/esm.ts",
+            "packages/core/tests/pluginDependencies.test.ts",
+            "packages/core/tests/server.test.ts",
+            "packages/plugin-preact/src/index.ts",
+            "packages/plugin-solid/src/solidLoader.ts"
+          ],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-fallback-wfnyp3l7",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        },
+        "no-fallback": {
+          "sha256": "ad135fc2aa488840dd210bfdeeeb1fa0e2299cbddd72b17c62a45fa8f365dfa2",
+          "changed": [
+            "e2e/cases/config/bundler-chain/index.test.ts",
+            "e2e/cases/plugin-solid/ssr/rsbuild.config.ts",
+            "e2e/cases/server/compress-stream/index.test.ts",
+            "e2e/cases/server/hot-update-fallback/rsbuild.config.ts",
+            "e2e/cases/server/print-urls/index.test.ts",
+            "packages/core/src/plugins/css.ts",
+            "packages/core/src/plugins/fileSize.ts",
+            "packages/core/src/plugins/html.ts",
+            "packages/core/src/plugins/progress.ts",
+            "packages/core/src/plugins/sourceMap.ts",
+            "packages/core/src/plugins/target.ts",
+            "packages/core/src/server/assets-middleware/middleware.ts",
+            "packages/core/src/server/runner/esm.ts",
+            "packages/core/tests/pluginDependencies.test.ts",
+            "packages/core/tests/server.test.ts",
+            "packages/plugin-preact/src/index.ts",
+            "packages/plugin-solid/src/solidLoader.ts"
+          ],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-no-fallback-hfw4j786",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        }
+      }
+    }
+  },
+  "environment": [
+    {
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 1,
+      "time": 1794857196.435203,
+      "loadAverage": [7.18017578125, 5.98828125, 6.2939453125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 22.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 590,
+          "cpu": 128.2,
+          "process": "/Applications/Microsoft Defender.app/Contents/MacOS/wdavdaemon"
+        },
+        {
+          "pid": 600,
+          "cpu": 15.5,
+          "process": "/Library/SystemExtensions/B9D329AD-3541-4950-AC2F-E1B65658B2C8/com.microsoft.wdav.epsext.systemextension/Contents/MacOS/epsext"
+        },
+        {
+          "pid": 644,
+          "cpu": 74.8,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        },
+        {
+          "pid": 852,
+          "cpu": 108.9,
+          "process": "/Applications/Microsoft Defender.app/Contents/MacOS/wdavdaemon_enterprise.app/Contents/MacOS/wdavdaemon_enterprise"
+        },
+        {
+          "pid": 1640,
+          "cpu": 20.5,
+          "process": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper"
+        },
+        {
+          "pid": 14334,
+          "cpu": 76.5,
+          "process": "/Applications/Microsoft Defender.app/Contents/MacOS/wdavdaemon_unprivileged.app/Contents/MacOS/wdavdaemon_unprivileged"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857197.343911,
+      "loadAverage": [7.18017578125, 5.98828125, 6.2939453125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.1,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 644,
+          "cpu": 40.9,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857198.255158,
+      "loadAverage": [7.18017578125, 5.98828125, 6.2939453125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.9,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 644,
+          "cpu": 36.0,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857198.9377348,
+      "loadAverage": [7.18017578125, 5.98828125, 6.2939453125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 644,
+          "cpu": 44.1,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.4,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857199.63749,
+      "loadAverage": [7.18017578125, 5.98828125, 6.2939453125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.3,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 644,
+          "cpu": 44.3,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 2,
+      "time": 1794857199.768081,
+      "loadAverage": [7.18017578125, 5.98828125, 6.2939453125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 644,
+          "cpu": 43.1,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857200.683137,
+      "loadAverage": [6.84521484375, 5.9384765625, 6.2744140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 644,
+          "cpu": 47.8,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857201.354891,
+      "loadAverage": [6.84521484375, 5.9384765625, 6.2744140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 22.9,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 644,
+          "cpu": 46.4,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857202.0406668,
+      "loadAverage": [6.84521484375, 5.9384765625, 6.2744140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 644,
+          "cpu": 50.1,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.8,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857202.948808,
+      "loadAverage": [6.84521484375, 5.9384765625, 6.2744140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 644,
+          "cpu": 50.9,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        },
+        {
+          "pid": 80060,
+          "cpu": 69.0,
+          "process": "/usr/libexec/replayd"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 1,
+      "time": 1794857203.071563,
+      "loadAverage": [6.84521484375, 5.9384765625, 6.2744140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 27.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 644,
+          "cpu": 46.2,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.3,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        },
+        {
+          "pid": 80060,
+          "cpu": 80.2,
+          "process": "/usr/libexec/replayd"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857203.980096,
+      "loadAverage": [6.84521484375, 5.9384765625, 6.2744140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 644,
+          "cpu": 24.6,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        },
+        {
+          "pid": 80060,
+          "cpu": 51.0,
+          "process": "/usr/libexec/replayd"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857204.8640609,
+      "loadAverage": [6.84521484375, 5.9384765625, 6.2744140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 650,
+          "cpu": 32.5,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.3,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857205.566632,
+      "loadAverage": [6.84521484375, 5.9384765625, 6.2744140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.9,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 80078,
+          "cpu": 91.0,
+          "process": "top"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857206.257087,
+      "loadAverage": [6.697265625, 5.9228515625, 6.2666015625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 22.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.5,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        },
+        {
+          "pid": 80078,
+          "cpu": 97.5,
+          "process": "top"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 2,
+      "time": 1794857206.3901598,
+      "loadAverage": [6.697265625, 5.9228515625, 6.2666015625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.1,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        },
+        {
+          "pid": 80078,
+          "cpu": 98.7,
+          "process": "top"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857207.3059,
+      "loadAverage": [6.697265625, 5.9228515625, 6.2666015625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 22.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 80078,
+          "cpu": 100.0,
+          "process": "top"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857208.018388,
+      "loadAverage": [6.697265625, 5.9228515625, 6.2666015625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 14334,
+          "cpu": 48.3,
+          "process": "/Applications/Microsoft Defender.app/Contents/MacOS/wdavdaemon_unprivileged.app/Contents/MacOS/wdavdaemon_unprivileged"
+        },
+        {
+          "pid": 80078,
+          "cpu": 64.6,
+          "process": "top"
+        },
+        {
+          "pid": 80102,
+          "cpu": 30.3,
+          "process": "/System/Library/Frameworks/CoreTelephony.framework/Support/CommCenter"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857208.703996,
+      "loadAverage": [6.697265625, 5.9228515625, 6.2666015625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857209.602292,
+      "loadAverage": [6.697265625, 5.9228515625, 6.2666015625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 22.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 3,
+      "time": 1794857209.727722,
+      "loadAverage": [6.697265625, 5.9228515625, 6.2666015625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.3,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857210.405536,
+      "loadAverage": [6.697265625, 5.9228515625, 6.2666015625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.4,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857211.084696,
+      "loadAverage": [6.32080078125, 5.857421875, 6.2412109375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.3,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 647,
+          "cpu": 16.2,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.2,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857211.985396,
+      "loadAverage": [6.32080078125, 5.857421875, 6.2412109375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 27.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.2,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": [
+        {
+          "pid": 80144,
+          "command": "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python -"
+        }
+      ]
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857222.956474,
+      "loadAverage": [5.5888671875, 5.7138671875, 6.185546875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 28.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.2,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 4,
+      "time": 1794857223.077814,
+      "loadAverage": [5.5888671875, 5.7138671875, 6.185546875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 27.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.6,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857223.7390158,
+      "loadAverage": [5.5888671875, 5.7138671875, 6.185546875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 647,
+          "cpu": 16.1,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.1,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857224.626824,
+      "loadAverage": [5.5888671875, 5.7138671875, 6.185546875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.4,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857225.511774,
+      "loadAverage": [5.5888671875, 5.7138671875, 6.185546875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.4,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857226.174701,
+      "loadAverage": [5.38134765625, 5.66845703125, 6.16650390625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 22.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.0,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 5,
+      "time": 1794857226.298184,
+      "loadAverage": [5.38134765625, 5.66845703125, 6.16650390625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.1,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857227.1791098,
+      "loadAverage": [5.38134765625, 5.66845703125, 6.16650390625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.5,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857228.063045,
+      "loadAverage": [5.38134765625, 5.66845703125, 6.16650390625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 28.1,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.2,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857228.731484,
+      "loadAverage": [5.38134765625, 5.66845703125, 6.16650390625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 647,
+          "cpu": 15.9,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        },
+        {
+          "pid": 7103,
+          "cpu": 17.3,
+          "process": "/Users/bytedance/.local/share/kaboo/bin/kaboo-cli"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857229.3941061,
+      "loadAverage": [5.38134765625, 5.66845703125, 6.16650390625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 647,
+          "cpu": 16.2,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 6,
+      "time": 1794857229.51648,
+      "loadAverage": [5.38134765625, 5.66845703125, 6.16650390625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.5,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857230.398098,
+      "loadAverage": [5.38134765625, 5.66845703125, 6.16650390625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.9,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857231.060589,
+      "loadAverage": [5.5908203125, 5.70703125, 6.17724609375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.1,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857231.731785,
+      "loadAverage": [5.5908203125, 5.70703125, 6.17724609375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 647,
+          "cpu": 16.5,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.9,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857232.613205,
+      "loadAverage": [5.5908203125, 5.70703125, 6.17724609375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.9,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.7,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        },
+        {
+          "pid": 80265,
+          "cpu": 34.0,
+          "process": "/opt/puppetlabs/puppet/bin/ruby"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 7,
+      "time": 1794857232.742047,
+      "loadAverage": [5.5908203125, 5.70703125, 6.17724609375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 80265,
+          "cpu": 54.7,
+          "process": "/opt/puppetlabs/puppet/bin/ruby"
+        },
+        {
+          "pid": 88804,
+          "cpu": 23.8,
+          "process": "/System/Library/PrivateFrameworks/EcosystemAnalytics.framework/Support/ecosystemanalyticsd"
+        },
+        {
+          "pid": 88806,
+          "cpu": 34.1,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857233.40355,
+      "loadAverage": [5.5908203125, 5.70703125, 6.17724609375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 80265,
+          "cpu": 89.4,
+          "process": "/opt/puppetlabs/puppet/bin/ruby"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857234.066414,
+      "loadAverage": [5.5908203125, 5.70703125, 6.17724609375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.9,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857234.952278,
+      "loadAverage": [5.5908203125, 5.70703125, 6.17724609375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 27.1,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.0,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857235.830909,
+      "loadAverage": [6.10400390625, 5.81103515625, 6.2109375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 27.3,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.9,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 1,
+      "time": 1794857269.172095,
+      "loadAverage": [5.08642578125, 5.60205078125, 6.12109375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 29.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 590,
+          "cpu": 58.7,
+          "process": "/Applications/Microsoft Defender.app/Contents/MacOS/wdavdaemon"
+        },
+        {
+          "pid": 600,
+          "cpu": 25.4,
+          "process": "/Library/SystemExtensions/B9D329AD-3541-4950-AC2F-E1B65658B2C8/com.microsoft.wdav.epsext.systemextension/Contents/MacOS/epsext"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.9,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        },
+        {
+          "pid": 80009,
+          "cpu": 32.6,
+          "process": "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857269.72335,
+      "loadAverage": [5.08642578125, 5.60205078125, 6.12109375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.6,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857270.268333,
+      "loadAverage": [5.08642578125, 5.60205078125, 6.12109375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1125,
+          "cpu": 21.6,
+          "process": "/Applications/magpie.app/Contents/MacOS/magpie"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857270.7007968,
+      "loadAverage": [4.8388671875, 5.5419921875, 6.0966796875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 27.3,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857271.129161,
+      "loadAverage": [4.8388671875, 5.5419921875, 6.0966796875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.1,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.1,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        },
+        {
+          "pid": 1395,
+          "cpu": 37.3,
+          "process": "/Applications/CorpLink.app/Contents/Frameworks/CorpLink Helper (Renderer).app/Contents/MacOS/CorpLink Helper (Renderer)"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 2,
+      "time": 1794857271.250528,
+      "loadAverage": [4.8388671875, 5.5419921875, 6.0966796875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.7,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        },
+        {
+          "pid": 1395,
+          "cpu": 27.2,
+          "process": "/Applications/CorpLink.app/Contents/Frameworks/CorpLink Helper (Renderer).app/Contents/MacOS/CorpLink Helper (Renderer)"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857271.809823,
+      "loadAverage": [4.8388671875, 5.5419921875, 6.0966796875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.3,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857272.246322,
+      "loadAverage": [4.8388671875, 5.5419921875, 6.0966796875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.2,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857272.678346,
+      "loadAverage": [4.8388671875, 5.5419921875, 6.0966796875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.0,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857273.2415218,
+      "loadAverage": [4.8388671875, 5.5419921875, 6.0966796875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 652,
+          "cpu": 85.8,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.5,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 1,
+      "time": 1794857273.3644311,
+      "loadAverage": [4.8388671875, 5.5419921875, 6.0966796875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 652,
+          "cpu": 68.4,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.1,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857273.914238,
+      "loadAverage": [4.8388671875, 5.5419921875, 6.0966796875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.4,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857274.4673688,
+      "loadAverage": [4.8388671875, 5.5419921875, 6.0966796875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857274.908318,
+      "loadAverage": [4.8388671875, 5.5419921875, 6.0966796875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857275.3357172,
+      "loadAverage": [4.8388671875, 5.5419921875, 6.0966796875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 2,
+      "time": 1794857275.456696,
+      "loadAverage": [4.8388671875, 5.5419921875, 6.0966796875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857276.004473,
+      "loadAverage": [5.091796875, 5.58251953125, 6.107421875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857276.446708,
+      "loadAverage": [5.091796875, 5.58251953125, 6.107421875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857276.888982,
+      "loadAverage": [5.091796875, 5.58251953125, 6.107421875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857277.4497762,
+      "loadAverage": [5.091796875, 5.58251953125, 6.107421875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.9,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.6,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 3,
+      "time": 1794857277.574046,
+      "loadAverage": [5.091796875, 5.58251953125, 6.107421875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.1,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857278.013891,
+      "loadAverage": [5.091796875, 5.58251953125, 6.107421875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.1,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.3,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857278.447343,
+      "loadAverage": [5.091796875, 5.58251953125, 6.107421875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.3,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857279.0028212,
+      "loadAverage": [5.091796875, 5.58251953125, 6.107421875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 27.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857279.560249,
+      "loadAverage": [5.091796875, 5.58251953125, 6.107421875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.0,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 4,
+      "time": 1794857279.681727,
+      "loadAverage": [5.091796875, 5.58251953125, 6.107421875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.8,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857280.114259,
+      "loadAverage": [5.091796875, 5.58251953125, 6.107421875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1125,
+          "cpu": 36.3,
+          "process": "/Applications/magpie.app/Contents/MacOS/magpie"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857280.6808069,
+      "loadAverage": [5.00390625, 5.55615234375, 6.0947265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 43.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.7,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857281.245339,
+      "loadAverage": [5.00390625, 5.55615234375, 6.0947265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 41.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1125,
+          "cpu": 15.0,
+          "process": "/Applications/magpie.app/Contents/MacOS/magpie"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857281.687608,
+      "loadAverage": [5.00390625, 5.55615234375, 6.0947265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 41.3,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 5,
+      "time": 1794857281.812428,
+      "loadAverage": [5.00390625, 5.55615234375, 6.0947265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 37.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857282.36853,
+      "loadAverage": [5.00390625, 5.55615234375, 6.0947265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 27.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857282.932189,
+      "loadAverage": [5.00390625, 5.55615234375, 6.0947265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 27.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.1,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857283.382827,
+      "loadAverage": [5.00390625, 5.55615234375, 6.0947265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.9,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.7,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857283.821517,
+      "loadAverage": [5.00390625, 5.55615234375, 6.0947265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 6,
+      "time": 1794857283.942187,
+      "loadAverage": [5.00390625, 5.55615234375, 6.0947265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857284.504981,
+      "loadAverage": [5.00390625, 5.55615234375, 6.0947265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.1,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        },
+        {
+          "pid": 1395,
+          "cpu": 16.7,
+          "process": "/Applications/CorpLink.app/Contents/Frameworks/CorpLink Helper (Renderer).app/Contents/MacOS/CorpLink Helper (Renderer)"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857284.941107,
+      "loadAverage": [5.00390625, 5.55615234375, 6.0947265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857285.3718789,
+      "loadAverage": [5.00390625, 5.55615234375, 6.0947265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 22.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.3,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857285.931838,
+      "loadAverage": [5.40380859375, 5.6298828125, 6.1171875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.4,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        },
+        {
+          "pid": 85277,
+          "cpu": 25.4,
+          "process": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer)"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 7,
+      "time": 1794857286.053925,
+      "loadAverage": [5.40380859375, 5.6298828125, 6.1171875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 85277,
+          "cpu": 15.7,
+          "process": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer)"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857286.484204,
+      "loadAverage": [5.40380859375, 5.6298828125, 6.1171875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857286.917438,
+      "loadAverage": [5.40380859375, 5.6298828125, 6.1171875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857287.484652,
+      "loadAverage": [5.40380859375, 5.6298828125, 6.1171875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.3,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.6,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "js-ts-fallback",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857298.618253,
+      "loadAverage": [7.2373046875, 6.0322265625, 6.2548828125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 29.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.9,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "time": 1794857318.645001,
+      "loadAverage": [6.205078125, 5.8681640625, 6.18994140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 35.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 590,
+          "cpu": 76.9,
+          "process": "/Applications/Microsoft Defender.app/Contents/MacOS/wdavdaemon"
+        },
+        {
+          "pid": 600,
+          "cpu": 29.2,
+          "process": "/Library/SystemExtensions/B9D329AD-3541-4950-AC2F-E1B65658B2C8/com.microsoft.wdav.epsext.systemextension/Contents/MacOS/epsext"
+        },
+        {
+          "pid": 80009,
+          "cpu": 26.6,
+          "process": "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857320.09784,
+      "loadAverage": [6.205078125, 5.8681640625, 6.18994140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.3,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857321.5603058,
+      "loadAverage": [6.4287109375, 5.919921875, 6.2060546875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 27.1,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857322.825053,
+      "loadAverage": [6.4287109375, 5.919921875, 6.2060546875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857324.102144,
+      "loadAverage": [6.4287109375, 5.919921875, 6.2060546875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.9,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.5,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "time": 1794857324.224375,
+      "loadAverage": [6.4287109375, 5.919921875, 6.2060546875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 21.3,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.5,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857325.689677,
+      "loadAverage": [6.15380859375, 5.87109375, 6.18701171875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857326.967595,
+      "loadAverage": [6.15380859375, 5.87109375, 6.18701171875],
+      "busyProcesses": [
+        {
+          "pid": 1,
+          "cpu": 18.8,
+          "process": "/sbin/launchd"
+        },
+        {
+          "pid": 410,
+          "cpu": 26.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857328.294433,
+      "loadAverage": [6.15380859375, 5.87109375, 6.18701171875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 80952,
+          "cpu": 93.4,
+          "process": "top"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857329.804765,
+      "loadAverage": [6.15380859375, 5.87109375, 6.18701171875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.1,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        },
+        {
+          "pid": 80952,
+          "cpu": 99.1,
+          "process": "top"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "time": 1794857329.9355452,
+      "loadAverage": [6.15380859375, 5.87109375, 6.18701171875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.1,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 80952,
+          "cpu": 100.0,
+          "process": "top"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857331.413862,
+      "loadAverage": [6.38134765625, 5.9228515625, 6.203125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857332.880584,
+      "loadAverage": [6.38134765625, 5.9228515625, 6.203125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857334.1526651,
+      "loadAverage": [6.38134765625, 5.9228515625, 6.203125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.7,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857335.4199538,
+      "loadAverage": [6.38134765625, 5.9228515625, 6.203125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 17.0,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "time": 1794857335.5442328,
+      "loadAverage": [6.38134765625, 5.9228515625, 6.203125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.3,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857337.0333471,
+      "loadAverage": [6.1103515625, 5.8740234375, 6.18408203125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.2,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857338.336885,
+      "loadAverage": [6.1103515625, 5.8740234375, 6.18408203125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857339.642087,
+      "loadAverage": [6.1103515625, 5.8740234375, 6.18408203125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857341.144659,
+      "loadAverage": [6.18115234375, 5.892578125, 6.1884765625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 40.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.7,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "time": 1794857341.2704692,
+      "loadAverage": [6.18115234375, 5.892578125, 6.1884765625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 39.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.4,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        },
+        {
+          "pid": 1108,
+          "cpu": 34.4,
+          "process": "/System/Applications/Weather.app/Contents/PlugIns/WeatherWidget.appex/Contents/MacOS/WeatherWidget"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857342.57036,
+      "loadAverage": [6.18115234375, 5.892578125, 6.1884765625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 27.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.4,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857343.8734488,
+      "loadAverage": [6.18115234375, 5.892578125, 6.1884765625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857345.3663979,
+      "loadAverage": [6.18115234375, 5.892578125, 6.1884765625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.3,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.0,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857346.832618,
+      "loadAverage": [6.56689453125, 5.97705078125, 6.21630859375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.1,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.6,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "time": 1794857346.95663,
+      "loadAverage": [6.56689453125, 5.97705078125, 6.21630859375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.3,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857348.2443461,
+      "loadAverage": [6.56689453125, 5.97705078125, 6.21630859375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.1,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        },
+        {
+          "pid": 56347,
+          "cpu": 71.5,
+          "process": "/usr/libexec/sysmond"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857349.735442,
+      "loadAverage": [6.56689453125, 5.97705078125, 6.21630859375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.1,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.2,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857351.218478,
+      "loadAverage": [6.921875, 6.06005859375, 6.244140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857352.563659,
+      "loadAverage": [6.921875, 6.06005859375, 6.244140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.2,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "time": 1794857352.690112,
+      "loadAverage": [6.921875, 6.06005859375, 6.244140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.9,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.1,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857354.199357,
+      "loadAverage": [6.921875, 6.06005859375, 6.244140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1436,
+          "cpu": 32.3,
+          "process": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer)"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857355.694185,
+      "loadAverage": [6.6875, 6.025390625, 6.23095703125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857356.98288,
+      "loadAverage": [6.6875, 6.025390625, 6.23095703125],
+      "busyProcesses": [
+        {
+          "pid": 1,
+          "cpu": 19.2,
+          "process": "/sbin/launchd"
+        },
+        {
+          "pid": 410,
+          "cpu": 26.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.4,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857358.2791839,
+      "loadAverage": [6.6875, 6.025390625, 6.23095703125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "time": 1794857358.402755,
+      "loadAverage": [6.6875, 6.025390625, 6.23095703125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.2,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857359.8970728,
+      "loadAverage": [6.6875, 6.025390625, 6.23095703125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.0,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857361.202744,
+      "loadAverage": [7.03271484375, 6.10791015625, 6.2587890625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.1,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857362.505761,
+      "loadAverage": [7.03271484375, 6.10791015625, 6.2587890625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.0,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857364.049492,
+      "loadAverage": [7.03271484375, 6.10791015625, 6.2587890625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.1,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "time": 1794857364.173426,
+      "loadAverage": [7.03271484375, 6.10791015625, 6.2587890625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.1,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "fallback",
+      "workers": 4,
+      "time": 1794857365.483063,
+      "loadAverage": [7.03271484375, 6.10791015625, 6.2587890625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.9,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 15.3,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "no-fallback",
+      "workers": 4,
+      "time": 1794857366.7847219,
+      "loadAverage": [6.78955078125, 6.07275390625, 6.2451171875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 25.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "before310",
+      "workers": 4,
+      "time": 1794857368.2961621,
+      "loadAverage": [6.78955078125, 6.07275390625, 6.2451171875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 22.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "before399",
+      "workers": 4,
+      "time": 1794857369.800883,
+      "loadAverage": [6.78955078125, 6.07275390625, 6.2451171875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 26.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1053,
+          "cpu": 16.1,
+          "process": "/Applications/WeChat.app/Contents/MacOS/WeChat"
+        }
+      ],
+      "competingWorkloads": []
+    }
+  ],
+  "completed": true
+}

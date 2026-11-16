@@ -1,0 +1,126 @@
+--- original/e2e/cases/config/bundler-chain/index.test.ts
++++ fallback/e2e/cases/config/bundler-chain/index.test.ts
+@@ -59,11 +59,13 @@
+             join(import.meta.dirname, 'src/common'),
+           );
+ 
+-          chain.plugin('extra-define').use(rspack.DefinePlugin, [
+-            {
+-              ENABLE_TEST: JSON.stringify(true),
+-            },
+-          ]);
++          chain
++            .plugin('extra-define')
++            .use(rspack.DefinePlugin, [
++              {
++                ENABLE_TEST: JSON.stringify(true),
++              },
++            ]);
+         },
+       },
+     },
+--- original/e2e/cases/plugin-solid/ssr/rsbuild.config.ts
++++ fallback/e2e/cases/plugin-solid/ssr/rsbuild.config.ts
+@@ -18,11 +18,11 @@
+         const bundle =
+           action === 'dev'
+             ? await server.environments.node.loadBundle<ServerBundle>('index')
+-            : ((await import(
++            : (await import(
+                 pathToFileURL(
+                   path.join(environments.node.distPath, 'index.mjs'),
+                 ).href
+-              )) as ServerBundle);
++              )) as ServerBundle;
+         const template =
+           action === 'dev'
+             ? await server.environments.web.getTransformedHtml('index')
+--- original/e2e/cases/server/hot-update-fallback/rsbuild.config.ts
++++ fallback/e2e/cases/server/hot-update-fallback/rsbuild.config.ts
+@@ -4,8 +4,7 @@
+   server: {
+     // Let OPTIONS reach the HMR fallback instead of being handled by CORS.
+     cors: false,
+-    setup:
+-      ({ server }) =>
++    setup: ({ server }) =>
+       () => {
+         // Simulate SSR handling requests that pass through the HMR fallback.
+         server.middlewares.use((_req, res) => {
+--- original/packages/core/src/plugins/progress.ts
++++ fallback/packages/core/src/plugins/progress.ts
+@@ -17,12 +17,14 @@
+           ? options.id
+           : environment.name;
+ 
+-      chain.plugin(CHAIN_ID.PLUGIN.PROGRESS).use(rspack.ProgressPlugin, [
+-        {
+-          prefix,
+-          ...(options === true ? {} : options),
+-        },
+-      ]);
++      chain
++        .plugin(CHAIN_ID.PLUGIN.PROGRESS)
++        .use(rspack.ProgressPlugin, [
++          {
++            prefix,
++            ...(options === true ? {} : options),
++          },
++        ]);
+     });
+   },
+ });
+--- original/packages/core/tests/pluginDependencies.test.ts
++++ fallback/packages/core/tests/pluginDependencies.test.ts
+@@ -70,15 +70,11 @@
+       })),
+     );
+     expect(result).toEqual(
+-      [
+-        { name: '1' },
+-        { name: '3' },
+-        { name: '2', pre: ['3'] },
+-        { name: '4' },
+-      ].map((p) => ({
+-        environment: '',
+-        instance: p,
+-      })),
++      [{ name: '1' }, { name: '3' }, { name: '2', pre: ['3'] }, { name: '4' }]
++        .map((p) => ({
++          environment: '',
++          instance: p,
++        })),
+     );
+   });
+ 
+--- original/packages/plugin-solid/src/solidLoader.ts
++++ fallback/packages/plugin-solid/src/solidLoader.ts
+@@ -28,7 +28,7 @@
+   sourceMap: Rspack.RawSourceMap | string | null | undefined,
+ ): Rspack.RawSourceMap | undefined =>
+   typeof sourceMap === 'string'
+-    ? (JSON.parse(sourceMap) as Rspack.RawSourceMap)
++    ? JSON.parse(sourceMap) as Rspack.RawSourceMap
+     : (sourceMap ?? undefined);
+ 
+ const mergeSourceMaps = (
+@@ -100,11 +100,14 @@
+         return;
+       }
+ 
+-      const result = await nativeTransformAsync(String(source), {
+-        ...solid,
+-        filename,
+-        sourceMap: true,
+-      } as NativeTransformOptions);
++      const result = await nativeTransformAsync(
++        String(source),
++        {
++          ...solid,
++          filename,
++          sourceMap: true,
++        } as NativeTransformOptions,
++      );
+ 
+       callback(
+         null,

@@ -1,0 +1,1708 @@
+{
+  "commit": "ad8388c5befec29f5ccf765857faf126c1f05d5d",
+  "archiveSha256": "daa43836f99668564759c341832ce0ce699e64fd1d04fd394ba17dc229d9cf2e",
+  "configSha256": "b5f839aba764d40bd6c7b833d5ebd6053b05efe421a11620d272955588d0b22d",
+  "workspace": "/tmp/rstack-no-fallback-input-tvvnjp85",
+  "variants": {
+    "before310": {
+      "root": "/private/tmp/rstack-no-fallback-final-variants/before310",
+      "distSha256": "bdfe9211ce732fe11e022c2eafcae596224f616e00f7763c963d8e44fd01b04a",
+      "formatSha256": "6cd72226451c19d3cbc31cf40bcb25671fb2821586cb1348ea281dd98a15332d",
+      "prettier": "3.10.1"
+    },
+    "before399": {
+      "root": "/private/tmp/rstack-no-fallback-final-variants/before399",
+      "distSha256": "bdfe9211ce732fe11e022c2eafcae596224f616e00f7763c963d8e44fd01b04a",
+      "formatSha256": "6cd72226451c19d3cbc31cf40bcb25671fb2821586cb1348ea281dd98a15332d",
+      "prettier": "3.9.9"
+    },
+    "fallback": {
+      "root": "/private/tmp/rstack-no-fallback-final-variants/fallback",
+      "distSha256": "0b8e8f00e0f06048ee15d0ff498e147a4d30202967fe12202d31075be3229aae",
+      "formatSha256": "0a3e3ae76eee153424b4c14b5dac7738450b003482e26240c0dfb9969adbc1a7",
+      "prettier": "3.9.9"
+    },
+    "no-fallback": {
+      "root": "/private/tmp/rstack-no-fallback-final-variants/no-fallback",
+      "distSha256": "d516a3b3e75473e9225cff0f193f7dd3b15e5aa58fc48b6dcb3de6958de5a7f0",
+      "formatSha256": "0e19ad43000169b63df6af242dfba71745dc21f3250cefedb92338752bcd5bd9",
+      "prettier": "3.9.9",
+      "sourceBase": "dbf75f42f13b51528f5fbd723770602b2f71e3cf",
+      "runtimePatchSha256": "ea8bc7a136b478c6b718cd2118192a922fa214a53317f86a26e30b933744a280"
+    }
+  },
+  "node": "v24.20.0",
+  "pnpm": "12.18.0",
+  "embedding": "original",
+  "workers": [12],
+  "warmups": 2,
+  "runs": 7,
+  "samples": [
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 12,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 1237.5175,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.05s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 12,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 1172.927584,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.03s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 1283.926417,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.13s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 6 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "wallMs": 1209.889958,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.04s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 12,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 1168.962959,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.00s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 1175.919916,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 994ms.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 1335.191041,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.14s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 6 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 12,
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "wallMs": 1228.336916,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.03s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 1194.232708,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.02s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 1206.695458,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.03s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 1386.903916,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.21s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 6 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "wallMs": 1185.726,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.04s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 1248.962708,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.06s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 1213.591167,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.03s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 1356.16525,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.16s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 6 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "wallMs": 1234.689125,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.04s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 1360.355083,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.19s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 6 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 1214.071708,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.06s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 1161.029375,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.02s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "wallMs": 1208.703709,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.06s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 1398.489,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.25s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 6 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 1204.244,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.07s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 1279.458125,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.11s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "wallMs": 1170.098959,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.03s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 1165.6555,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.03s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 1176.932958,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.04s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 1384.130875,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.22s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 6 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "wallMs": 1241.122167,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.07s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 1293.714167,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.15s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 1192.431042,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.04s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 1376.664167,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.21s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 6 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "wallMs": 1247.234458,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.10s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 1363.677542,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.20s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 6 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 1210.151459,
+      "exitCode": 1,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\ninfo    Checked 3439 files in 1.06s.\n",
+      "stderr": "error   e2e/cases/config/bundler-chain/index.test.ts\nerror   e2e/cases/plugin-solid/ssr/rsbuild.config.ts\nerror   e2e/cases/server/compress-stream/index.test.ts\nerror   e2e/cases/server/hot-update-fallback/rsbuild.config.ts\nerror   e2e/cases/server/print-urls/index.test.ts\nerror   packages/core/src/plugins/css.ts\nerror   packages/core/src/plugins/fileSize.ts\nerror   packages/core/src/plugins/html.ts\nerror   packages/core/src/plugins/progress.ts\nerror   packages/core/src/plugins/sourceMap.ts\nerror   packages/core/src/plugins/target.ts\nerror   packages/core/src/server/assets-middleware/middleware.ts\nerror   packages/core/src/server/runner/esm.ts\nerror   packages/core/tests/pluginDependencies.test.ts\nerror   packages/core/tests/server.test.ts\nerror   packages/plugin-preact/src/index.ts\nerror   packages/plugin-solid/src/solidLoader.ts\nerror   Formatting issues found in 17 files. Rerun this command without --check to fix.\n"
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 1264.248417,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.11s (3439 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 12,
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "wallMs": 1202.859375,
+      "exitCode": 0,
+      "files": 3439,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 1.07s (3439 files)\n",
+      "stderr": ""
+    }
+  ],
+  "groups": {
+    "supported": {
+      "files": 3439,
+      "manifestSha256": "4a79f0fa08cb931d674e04552fd23df048b06d70b26dc0e1205b54a92254a832",
+      "command": [
+        "/Users/bytedance/.local/share/fnm/aliases/default/bin/node",
+        "<variant>/packages/rstack/bin/rs.js",
+        "fmt",
+        "<manifest paths>",
+        "--check",
+        "--no-cache",
+        "--parallel-workers",
+        "<workers>"
+      ],
+      "statistics": {
+        "before310:12": {
+          "medianMs": 1248.962708,
+          "minMs": 1161.029375,
+          "maxMs": 1293.714167,
+          "exitCodes": [0]
+        },
+        "before399:12": {
+          "medianMs": 1206.695458,
+          "minMs": 1176.932958,
+          "maxMs": 1247.234458,
+          "exitCodes": [0]
+        },
+        "fallback:12": {
+          "medianMs": 1376.664167,
+          "minMs": 1356.16525,
+          "maxMs": 1398.489,
+          "exitCodes": [1]
+        },
+        "no-fallback:12": {
+          "medianMs": 1210.151459,
+          "minMs": 1170.098959,
+          "maxMs": 1241.122167,
+          "exitCodes": [1]
+        }
+      }
+    }
+  },
+  "environment": [
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "time": 1794859638.873703,
+      "loadAverage": [6.75830078125, 6.48876953125, 6.26708984375],
+      "busyProcesses": [
+        {
+          "pid": 340,
+          "cpu": 18.2,
+          "process": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/FSEvents.framework/Versions/A/Support/fseventsd"
+        },
+        {
+          "pid": 410,
+          "cpu": 19.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 590,
+          "cpu": 348.7,
+          "process": "/Applications/Microsoft Defender.app/Contents/MacOS/wdavdaemon"
+        },
+        {
+          "pid": 600,
+          "cpu": 55.9,
+          "process": "/Library/SystemExtensions/B9D329AD-3541-4950-AC2F-E1B65658B2C8/com.microsoft.wdav.epsext.systemextension/Contents/MacOS/epsext"
+        },
+        {
+          "pid": 644,
+          "cpu": 44.6,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        },
+        {
+          "pid": 852,
+          "cpu": 154.4,
+          "process": "/Applications/Microsoft Defender.app/Contents/MacOS/wdavdaemon_enterprise.app/Contents/MacOS/wdavdaemon_enterprise"
+        },
+        {
+          "pid": 84391,
+          "cpu": 83.2,
+          "process": "/Applications/Microsoft Defender.app/Contents/MacOS/wdavdaemon_unprivileged.app/Contents/MacOS/wdavdaemon_unprivileged"
+        },
+        {
+          "pid": 95160,
+          "cpu": 60.4,
+          "process": "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "before310",
+      "workers": 12,
+      "time": 1794859644.105288,
+      "loadAverage": [6.45703125, 6.4306640625, 6.24755859375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 17.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 644,
+          "cpu": 44.6,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "before399",
+      "workers": 12,
+      "time": 1794859646.3107111,
+      "loadAverage": [7.46142578125, 6.63916015625, 6.322265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 18.9,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 644,
+          "cpu": 50.1,
+          "process": "/Library/CorpLink/CorpLink System Extension.app/Contents/MacOS/CorpLinkExtension"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "fallback",
+      "workers": 12,
+      "time": 1794859648.599961,
+      "loadAverage": [7.46142578125, 6.63916015625, 6.322265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 19.9,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 1,
+      "afterVariant": "no-fallback",
+      "workers": 12,
+      "time": 1794859650.840121,
+      "loadAverage": [7.46142578125, 6.63916015625, 6.322265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 19.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1125,
+          "cpu": 40.6,
+          "process": "/Applications/magpie.app/Contents/MacOS/magpie"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "time": 1794859650.9640262,
+      "loadAverage": [7.46142578125, 6.63916015625, 6.322265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 21.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1125,
+          "cpu": 25.0,
+          "process": "/Applications/magpie.app/Contents/MacOS/magpie"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "before310",
+      "workers": 12,
+      "time": 1794859653.13324,
+      "loadAverage": [7.18408203125, 6.59521484375, 6.30859375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 20.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1395,
+          "cpu": 17.2,
+          "process": "/Applications/CorpLink.app/Contents/Frameworks/CorpLink Helper (Renderer).app/Contents/MacOS/CorpLink Helper (Renderer)"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "no-fallback",
+      "workers": 12,
+      "time": 1794859656.930219,
+      "loadAverage": [7.8896484375, 6.7509765625, 6.365234375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 21.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "fallback",
+      "workers": 12,
+      "time": 1794859660.788799,
+      "loadAverage": [7.8896484375, 6.7509765625, 6.365234375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 22.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "warmup",
+      "iteration": 2,
+      "afterVariant": "before399",
+      "workers": 12,
+      "time": 1794859664.711814,
+      "loadAverage": [7.8984375, 6.771484375, 6.37451171875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 19.9,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "time": 1794859664.837866,
+      "loadAverage": [7.8984375, 6.771484375, 6.37451171875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 21.3,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "before310",
+      "workers": 12,
+      "time": 1794859667.059765,
+      "loadAverage": [8.70703125, 6.95751953125, 6.4423828125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 20.9,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "before399",
+      "workers": 12,
+      "time": 1794859669.3068218,
+      "loadAverage": [8.70703125, 6.95751953125, 6.4423828125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 20.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "fallback",
+      "workers": 12,
+      "time": 1794859672.585471,
+      "loadAverage": [8.41015625, 6.9248046875, 6.43359375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 20.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 95340,
+          "cpu": 99.9,
+          "process": "top"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 1,
+      "afterVariant": "no-fallback",
+      "workers": 12,
+      "time": 1794859674.779785,
+      "loadAverage": [8.41015625, 6.9248046875, 6.43359375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 20.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 95340,
+          "cpu": 23.7,
+          "process": "top"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "time": 1794859674.9110909,
+      "loadAverage": [8.41015625, 6.9248046875, 6.43359375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 22.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "before310",
+      "workers": 12,
+      "time": 1794859677.495095,
+      "loadAverage": [7.81640625, 6.826171875, 6.4013671875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 21.1,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "no-fallback",
+      "workers": 12,
+      "time": 1794859681.36722,
+      "loadAverage": [8.9521484375, 7.07763671875, 6.49267578125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 28.3,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 95488,
+          "cpu": 32.1,
+          "process": "/opt/puppetlabs/puppet/bin/ruby"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "fallback",
+      "workers": 12,
+      "time": 1794859686.781251,
+      "loadAverage": [9.67626953125, 7.2587890625, 6.56005859375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 22.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 2,
+      "afterVariant": "before399",
+      "workers": 12,
+      "time": 1794859690.624558,
+      "loadAverage": [9.67626953125, 7.2587890625, 6.56005859375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 20.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 95516,
+          "cpu": 15.9,
+          "process": "puppet agent: applying configuration"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "time": 1794859690.7501252,
+      "loadAverage": [9.67626953125, 7.2587890625, 6.56005859375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "fallback",
+      "workers": 12,
+      "time": 1794859693.115401,
+      "loadAverage": [9.3818359375, 7.23779296875, 6.556640625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 18.7,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 95516,
+          "cpu": 62.9,
+          "process": "puppet agent: applying configuration"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "no-fallback",
+      "workers": 12,
+      "time": 1794859695.639408,
+      "loadAverage": [9.3818359375, 7.23779296875, 6.556640625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 24.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1142,
+          "cpu": 15.1,
+          "process": "/usr/libexec/trustd"
+        },
+        {
+          "pid": 92470,
+          "cpu": 22.0,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "before310",
+      "workers": 12,
+      "time": 1794859697.82515,
+      "loadAverage": [9.11083984375, 7.216796875, 6.55322265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 21.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 3,
+      "afterVariant": "before399",
+      "workers": 12,
+      "time": 1794859700.032474,
+      "loadAverage": [9.11083984375, 7.216796875, 6.55322265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 20.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "time": 1794859700.1639879,
+      "loadAverage": [9.11083984375, 7.216796875, 6.55322265625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 21.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "fallback",
+      "workers": 12,
+      "time": 1794859702.5602748,
+      "loadAverage": [8.78125, 7.1796875, 6.5439453125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 21.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 95673,
+          "cpu": 89.9,
+          "process": "/usr/bin/top"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "before399",
+      "workers": 12,
+      "time": 1794859704.760437,
+      "loadAverage": [8.78125, 7.1796875, 6.5439453125],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 19.9,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "before310",
+      "workers": 12,
+      "time": 1794859707.111885,
+      "loadAverage": [10.15966796875, 7.49169921875, 6.65771484375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 19.2,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1142,
+          "cpu": 17.4,
+          "process": "/usr/libexec/trustd"
+        },
+        {
+          "pid": 2234,
+          "cpu": 18.8,
+          "process": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)"
+        },
+        {
+          "pid": 92469,
+          "cpu": 23.3,
+          "process": "/System/Library/PrivateFrameworks/EcosystemAnalytics.framework/Support/ecosystemanalyticsd"
+        },
+        {
+          "pid": 92470,
+          "cpu": 23.1,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 4,
+      "afterVariant": "no-fallback",
+      "workers": 12,
+      "time": 1794859709.3214421,
+      "loadAverage": [10.15966796875, 7.49169921875, 6.65771484375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 18.6,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1142,
+          "cpu": 28.6,
+          "process": "/usr/libexec/trustd"
+        },
+        {
+          "pid": 92470,
+          "cpu": 47.5,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        },
+        {
+          "pid": 95897,
+          "cpu": 47.3,
+          "process": "/usr/sbin/system_profiler"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "time": 1794859709.454714,
+      "loadAverage": [10.15966796875, 7.49169921875, 6.65771484375],
+      "busyProcesses": [
+        {
+          "pid": 365,
+          "cpu": 17.6,
+          "process": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds"
+        },
+        {
+          "pid": 410,
+          "cpu": 20.1,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1142,
+          "cpu": 33.1,
+          "process": "/usr/libexec/trustd"
+        },
+        {
+          "pid": 92470,
+          "cpu": 53.2,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        },
+        {
+          "pid": 95897,
+          "cpu": 45.7,
+          "process": "/usr/sbin/system_profiler"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "before310",
+      "workers": 12,
+      "time": 1794859711.62447,
+      "loadAverage": [10.8671875, 7.6826171875, 6.72998046875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 20.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "before399",
+      "workers": 12,
+      "time": 1794859713.783371,
+      "loadAverage": [10.8671875, 7.6826171875, 6.72998046875],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 20.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1142,
+          "cpu": 30.1,
+          "process": "/usr/libexec/trustd"
+        },
+        {
+          "pid": 92469,
+          "cpu": 23.0,
+          "process": "/System/Library/PrivateFrameworks/EcosystemAnalytics.framework/Support/ecosystemanalyticsd"
+        },
+        {
+          "pid": 92470,
+          "cpu": 26.3,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "fallback",
+      "workers": 12,
+      "time": 1794859716.165289,
+      "loadAverage": [10.47705078125, 7.654296875, 6.7255859375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 20.1,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1142,
+          "cpu": 19.6,
+          "process": "/usr/libexec/trustd"
+        },
+        {
+          "pid": 92470,
+          "cpu": 30.2,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        },
+        {
+          "pid": 95516,
+          "cpu": 33.7,
+          "process": "puppet agent: applying configuration"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 5,
+      "afterVariant": "no-fallback",
+      "workers": 12,
+      "time": 1794859718.430083,
+      "loadAverage": [10.47705078125, 7.654296875, 6.7255859375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 22.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1142,
+          "cpu": 20.6,
+          "process": "/usr/libexec/trustd"
+        },
+        {
+          "pid": 92469,
+          "cpu": 18.0,
+          "process": "/System/Library/PrivateFrameworks/EcosystemAnalytics.framework/Support/ecosystemanalyticsd"
+        },
+        {
+          "pid": 92470,
+          "cpu": 25.2,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        },
+        {
+          "pid": 96092,
+          "cpu": 28.0,
+          "process": "/usr/local/bin/mdatp"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "time": 1794859718.564859,
+      "loadAverage": [10.47705078125, 7.654296875, 6.7255859375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 22.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 590,
+          "cpu": 17.4,
+          "process": "/Applications/Microsoft Defender.app/Contents/MacOS/wdavdaemon"
+        },
+        {
+          "pid": 1142,
+          "cpu": 15.9,
+          "process": "/usr/libexec/trustd"
+        },
+        {
+          "pid": 92470,
+          "cpu": 17.7,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        },
+        {
+          "pid": 96092,
+          "cpu": 20.2,
+          "process": "/usr/local/bin/mdatp"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "before310",
+      "workers": 12,
+      "time": 1794859720.892159,
+      "loadAverage": [10.47705078125, 7.654296875, 6.7255859375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.3,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 590,
+          "cpu": 33.5,
+          "process": "/Applications/Microsoft Defender.app/Contents/MacOS/wdavdaemon"
+        },
+        {
+          "pid": 1142,
+          "cpu": 36.3,
+          "process": "/usr/libexec/trustd"
+        },
+        {
+          "pid": 92469,
+          "cpu": 35.2,
+          "process": "/System/Library/PrivateFrameworks/EcosystemAnalytics.framework/Support/ecosystemanalyticsd"
+        },
+        {
+          "pid": 92470,
+          "cpu": 29.0,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        },
+        {
+          "pid": 96120,
+          "cpu": 17.5,
+          "process": "(wdavdaemonclient)"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "no-fallback",
+      "workers": 12,
+      "time": 1794859723.103008,
+      "loadAverage": [10.1181640625, 7.62646484375, 6.72119140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 19.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1142,
+          "cpu": 22.0,
+          "process": "/usr/libexec/trustd"
+        },
+        {
+          "pid": 92469,
+          "cpu": 23.0,
+          "process": "/System/Library/PrivateFrameworks/EcosystemAnalytics.framework/Support/ecosystemanalyticsd"
+        },
+        {
+          "pid": 92470,
+          "cpu": 31.8,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "fallback",
+      "workers": 12,
+      "time": 1794859725.509265,
+      "loadAverage": [10.1181640625, 7.62646484375, 6.72119140625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 21.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1142,
+          "cpu": 15.8,
+          "process": "/usr/libexec/trustd"
+        },
+        {
+          "pid": 92470,
+          "cpu": 24.3,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 6,
+      "afterVariant": "before399",
+      "workers": 12,
+      "time": 1794859727.79157,
+      "loadAverage": [9.7080078125, 7.58251953125, 6.7109375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 21.1,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1142,
+          "cpu": 26.2,
+          "process": "/usr/libexec/trustd"
+        },
+        {
+          "pid": 92469,
+          "cpu": 34.9,
+          "process": "/System/Library/PrivateFrameworks/EcosystemAnalytics.framework/Support/ecosystemanalyticsd"
+        },
+        {
+          "pid": 92470,
+          "cpu": 32.2,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        },
+        {
+          "pid": 95516,
+          "cpu": 16.4,
+          "process": "puppet agent: applying configuration"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "time": 1794859727.922382,
+      "loadAverage": [9.7080078125, 7.58251953125, 6.7109375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 22.0,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1142,
+          "cpu": 36.6,
+          "process": "/usr/libexec/trustd"
+        },
+        {
+          "pid": 92469,
+          "cpu": 46.1,
+          "process": "/System/Library/PrivateFrameworks/EcosystemAnalytics.framework/Support/ecosystemanalyticsd"
+        },
+        {
+          "pid": 92470,
+          "cpu": 42.9,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        },
+        {
+          "pid": 95516,
+          "cpu": 16.4,
+          "process": "puppet agent: applying configuration"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "fallback",
+      "workers": 12,
+      "time": 1794859730.2862878,
+      "loadAverage": [9.7080078125, 7.58251953125, 6.7109375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 19.5,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1142,
+          "cpu": 30.6,
+          "process": "/usr/libexec/trustd"
+        },
+        {
+          "pid": 92469,
+          "cpu": 23.5,
+          "process": "/System/Library/PrivateFrameworks/EcosystemAnalytics.framework/Support/ecosystemanalyticsd"
+        },
+        {
+          "pid": 92470,
+          "cpu": 31.7,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "no-fallback",
+      "workers": 12,
+      "time": 1794859732.513119,
+      "loadAverage": [9.49072265625, 7.57275390625, 6.71240234375],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 23.8,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 1142,
+          "cpu": 19.8,
+          "process": "/usr/libexec/trustd"
+        },
+        {
+          "pid": 1442,
+          "cpu": 25.7,
+          "process": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Renderer).app/Contents/MacOS/Code Helper (Renderer)"
+        },
+        {
+          "pid": 92469,
+          "cpu": 23.3,
+          "process": "/System/Library/PrivateFrameworks/EcosystemAnalytics.framework/Support/ecosystemanalyticsd"
+        },
+        {
+          "pid": 92470,
+          "cpu": 27.8,
+          "process": "/System/Library/PrivateFrameworks/Ecosystem.framework/Support/ecosystemd"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "before310",
+      "workers": 12,
+      "time": 1794859736.466839,
+      "loadAverage": [10.33203125, 7.77880859375, 6.7900390625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 20.9,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 95516,
+          "cpu": 18.3,
+          "process": "puppet agent: applying configuration"
+        },
+        {
+          "pid": 96478,
+          "cpu": 97.9,
+          "process": "top"
+        }
+      ],
+      "competingWorkloads": []
+    },
+    {
+      "group": "supported",
+      "phase": "measure",
+      "iteration": 7,
+      "afterVariant": "before399",
+      "workers": 12,
+      "time": 1794859738.701252,
+      "loadAverage": [10.33203125, 7.77880859375, 6.7900390625],
+      "busyProcesses": [
+        {
+          "pid": 410,
+          "cpu": 20.4,
+          "process": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+        },
+        {
+          "pid": 95516,
+          "cpu": 71.0,
+          "process": "puppet agent: applying configuration"
+        },
+        {
+          "pid": 96622,
+          "cpu": 20.7,
+          "process": "/usr/sbin/system_profiler"
+        }
+      ],
+      "competingWorkloads": []
+    }
+  ],
+  "completed": true
+}

@@ -1,0 +1,228 @@
+{
+  "commit": "ad8388c5befec29f5ccf765857faf126c1f05d5d",
+  "archiveSha256": "daa43836f99668564759c341832ce0ce699e64fd1d04fd394ba17dc229d9cf2e",
+  "configSha256": "b5f839aba764d40bd6c7b833d5ebd6053b05efe421a11620d272955588d0b22d",
+  "workspace": "/tmp/rstack-no-fallback-input-cuc4s8va",
+  "variants": {
+    "before310": {
+      "root": "/private/tmp/rstack-no-fallback-final-variants/before310",
+      "distSha256": "bdfe9211ce732fe11e022c2eafcae596224f616e00f7763c963d8e44fd01b04a",
+      "formatSha256": "6cd72226451c19d3cbc31cf40bcb25671fb2821586cb1348ea281dd98a15332d",
+      "prettier": "3.10.1"
+    },
+    "before399": {
+      "root": "/private/tmp/rstack-no-fallback-final-variants/before399",
+      "distSha256": "bdfe9211ce732fe11e022c2eafcae596224f616e00f7763c963d8e44fd01b04a",
+      "formatSha256": "6cd72226451c19d3cbc31cf40bcb25671fb2821586cb1348ea281dd98a15332d",
+      "prettier": "3.9.9"
+    },
+    "fallback": {
+      "root": "/private/tmp/rstack-no-fallback-final-variants/fallback",
+      "distSha256": "0b8e8f00e0f06048ee15d0ff498e147a4d30202967fe12202d31075be3229aae",
+      "formatSha256": "0a3e3ae76eee153424b4c14b5dac7738450b003482e26240c0dfb9969adbc1a7",
+      "prettier": "3.9.9"
+    },
+    "no-fallback": {
+      "root": "/private/tmp/rstack-no-fallback-final-variants/no-fallback",
+      "distSha256": "d516a3b3e75473e9225cff0f193f7dd3b15e5aa58fc48b6dcb3de6958de5a7f0",
+      "formatSha256": "0e19ad43000169b63df6af242dfba71745dc21f3250cefedb92338752bcd5bd9",
+      "prettier": "3.9.9",
+      "sourceBase": "dbf75f42f13b51528f5fbd723770602b2f71e3cf",
+      "runtimePatchSha256": "ea8bc7a136b478c6b718cd2118192a922fa214a53317f86a26e30b933744a280"
+    }
+  },
+  "node": "v24.20.0",
+  "pnpm": "12.18.0",
+  "embedding": "original",
+  "workers": [18],
+  "warmups": 2,
+  "runs": 7,
+  "samples": [
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 18,
+      "group": "js-ts",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 620.480416,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 497ms (2403 files, no changes)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before310",
+      "workers": 18,
+      "group": "js-ts",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 552.679333,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 466ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 18,
+      "group": "js-ts",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 634.92725,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 523ms (2403 files, no changes)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "before399",
+      "workers": 18,
+      "group": "js-ts",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 562.426333,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 476ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 18,
+      "group": "js-ts",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 710.322167,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 604ms (2403 files, 6 formatted)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "fallback",
+      "workers": 18,
+      "group": "js-ts",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 704.147833,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 602ms (2403 files)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 18,
+      "group": "js-ts",
+      "phase": "write",
+      "iteration": 1,
+      "wallMs": 485.23725,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Formatting...\nsuccess Formatting completed in 341ms (2403 files, 17 formatted)\n",
+      "stderr": ""
+    },
+    {
+      "competingWorkloadsAfter": [],
+      "valid": true,
+      "variant": "no-fallback",
+      "workers": 18,
+      "group": "js-ts",
+      "phase": "idempotence",
+      "iteration": 1,
+      "wallMs": 406.808542,
+      "exitCode": 0,
+      "files": 2403,
+      "stdout": "start   Checking formatting...\nsuccess Format check passed in 329ms (2403 files)\n",
+      "stderr": ""
+    }
+  ],
+  "groups": {
+    "js-ts": {
+      "files": 2403,
+      "manifestSha256": "f6769cffd753cd18ac21870940be2b522db4500c17b7b1540df9913c533c438a",
+      "command": [
+        "/Users/bytedance/.local/share/fnm/aliases/default/bin/node",
+        "<variant>/packages/rstack/bin/rs.js",
+        "fmt",
+        "<manifest paths>",
+        "--check",
+        "--no-cache",
+        "--parallel-workers",
+        "<workers>"
+      ],
+      "statistics": {},
+      "outputs": {
+        "before310": {
+          "sha256": "18df67fd692d8fcd556285c53c5361b4f64b3f5b10ae5767f9eb512604bb88c8",
+          "changed": [],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-before310-v__nz1tu",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        },
+        "before399": {
+          "sha256": "18df67fd692d8fcd556285c53c5361b4f64b3f5b10ae5767f9eb512604bb88c8",
+          "changed": [],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-before399-86kqc5sp",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        },
+        "fallback": {
+          "sha256": "8dbb4b987cb88b05a08d9e22a8e77734e2b2e399c0a6fc37d137316872f8fbd4",
+          "changed": [
+            "e2e/cases/config/bundler-chain/index.test.ts",
+            "e2e/cases/plugin-solid/ssr/rsbuild.config.ts",
+            "e2e/cases/server/hot-update-fallback/rsbuild.config.ts",
+            "packages/core/src/plugins/progress.ts",
+            "packages/core/tests/pluginDependencies.test.ts",
+            "packages/plugin-solid/src/solidLoader.ts"
+          ],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-fallback-kqkqygk5",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        },
+        "no-fallback": {
+          "sha256": "5fd0961dc87c1849e82a2e36b98b1efdb971a02cf7ed9723de988cc75ed2ddaa",
+          "changed": [
+            "e2e/cases/config/bundler-chain/index.test.ts",
+            "e2e/cases/plugin-solid/ssr/rsbuild.config.ts",
+            "e2e/cases/server/compress-stream/index.test.ts",
+            "e2e/cases/server/hot-update-fallback/rsbuild.config.ts",
+            "e2e/cases/server/print-urls/index.test.ts",
+            "packages/core/src/plugins/css.ts",
+            "packages/core/src/plugins/fileSize.ts",
+            "packages/core/src/plugins/html.ts",
+            "packages/core/src/plugins/progress.ts",
+            "packages/core/src/plugins/sourceMap.ts",
+            "packages/core/src/plugins/target.ts",
+            "packages/core/src/server/assets-middleware/middleware.ts",
+            "packages/core/src/server/runner/esm.ts",
+            "packages/core/tests/pluginDependencies.test.ts",
+            "packages/core/tests/server.test.ts",
+            "packages/plugin-preact/src/index.ts",
+            "packages/plugin-solid/src/solidLoader.ts"
+          ],
+          "changedOutputRoot": "/var/folders/8l/b0tx9tms147fr5tsrkhhgwym0000gn/T/rstack-audit-no-fallback-0u3s31iw",
+          "writeExitCode": 0,
+          "idempotenceExitCode": 0
+        }
+      }
+    }
+  },
+  "environment": [],
+  "completed": true
+}
