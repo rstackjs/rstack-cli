@@ -17,11 +17,10 @@ const fmtOptionsPlugin = {
 
 const defaultFmtPlugins: PrettierPlugins = [swcNextPlugin, fmtOptionsPlugin];
 
-/** Uses Prettier for features and plugin ASTs the SWC formatter does not support. */
+/** Selects SWC for JS/TS unless a parser or project plugin explicitly overrides it. */
 const getPrettierPlugins = async (
   options: ResolvedFmtOptions,
   filePath: string,
-  source?: string,
 ): Promise<PrettierPlugins> => {
   const projectPlugins = await Promise.all(
     (options.plugins ?? []).map(async (plugin): Promise<Plugin> => {
@@ -47,17 +46,33 @@ const getPrettierPlugins = async (
   const isSwcDefault =
     !options.parser &&
     /\.(?:[cm]?[jt]s|[jt]sx)$/i.test(filePath) &&
-    !hasJavaScriptPlugin &&
-    !options.requirePragma &&
-    !options.insertPragma &&
-    !options.checkIgnorePragma &&
-    !options.rangeStart &&
-    (options.rangeEnd === undefined || options.rangeEnd === Infinity) &&
-    !options.experimentalTernaries &&
-    options.experimentalOperatorPosition !== 'start' &&
-    options.objectWrap !== 'collapse' &&
-    // Template literals can contain embedded languages handled by Prettier.
-    !(options.embeddedLanguageFormatting !== 'off' && source?.includes('`'));
+    !hasJavaScriptPlugin;
+  // Validate before Prettier can skip empty files or files without a pragma.
+  // Unsupported SWC options must fail instead of silently selecting another parser.
+  if (isSwcParser || isSwcDefault) {
+    if (
+      options.requirePragma ||
+      options.insertPragma ||
+      options.checkIgnorePragma
+    ) {
+      throw new Error('SWCFMT does not yet support pragma options');
+    }
+    if (
+      (options.rangeStart ?? 0) > 0 ||
+      (options.rangeEnd !== undefined && options.rangeEnd !== Infinity)
+    ) {
+      throw new Error('SWCFMT currently supports whole-file formatting only');
+    }
+    if (
+      options.experimentalTernaries ||
+      options.experimentalOperatorPosition === 'start' ||
+      options.objectWrap === 'collapse'
+    ) {
+      throw new Error(
+        'SWCFMT does not yet support the requested layout option',
+      );
+    }
+  }
   const defaultPlugins =
     isSwcParser || isSwcDefault ? defaultFmtPlugins : [fmtOptionsPlugin];
   const plugins =

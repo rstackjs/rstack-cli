@@ -36,6 +36,7 @@ rstest
 shiki
 shikijs
 solidjs
+SWCFMT
 Trae
 turborepo
 typicode

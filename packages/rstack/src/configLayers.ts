@@ -120,7 +120,7 @@ export const resolveFmtConfigLayers = async (
 ): Promise<FmtConfig | undefined> => {
   const configs = await resolveConfigLayers(layers, 'fmt');
   return configs.length > 1
-    ? (Object.assign({}, ...configs) as FmtConfig)
+    ? Object.assign({}, ...configs) as FmtConfig
     : configs[0];
 };
 

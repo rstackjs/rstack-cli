@@ -174,25 +174,20 @@ test.each([
   { objectWrap: 'collapse' as const },
   { experimentalTernaries: true },
   { experimentalOperatorPosition: 'start' as const },
-])('preserves Prettier behavior for %j', async (options) => {
-  const source = '/** @format */\nconst value={answer:"yes"}';
-  const result = await formatFmtSource(
-    { path: 'example.js', options: { ...options, singleQuote: true } },
-    () => source,
-  );
-  expect(result).toEqual({
-    status: 'formatted',
-    source,
-    formatted: await format(source, {
-      ...options,
-      singleQuote: true,
-      parser: 'babel',
-    }),
-  });
-});
+])(
+  'rejects unsupported SWC options instead of changing parsers: %j',
+  async (options) => {
+    await expect(
+      formatFmtSource({ path: 'example.js', options }, () => ''),
+    ).rejects.toThrow('SWCFMT');
+  },
+);
 
-test('formats embedded languages in JavaScript templates', async () => {
-  const source = 'const query = /* GraphQL */ `query{user{id name}}`';
+test.each([
+  '// a ` marker\nconst value={answer:42}',
+  'const value=`answer: ${42}`',
+  'const query = /* GraphQL */ `query{user{id name}}`',
+])('uses SWCFMT for templates and comments: %s', async (source) => {
   const result = await formatFmtSource(
     { path: 'example.js', options: {} },
     () => source,
@@ -200,8 +195,51 @@ test('formats embedded languages in JavaScript templates', async () => {
   expect(result).toEqual({
     status: 'formatted',
     source,
+    formatted: await formatWithSwcNext(source, { parser: 'swc-next' }),
+  });
+});
+
+test('leaves embedded template contents unchanged unless Prettier is explicitly selected', async () => {
+  const source = 'const query = /* GraphQL */ `query{user{id name}}`';
+  const result = await formatFmtSource(
+    { path: 'example.js', options: {} },
+    () => source,
+  );
+  expect(result).toMatchObject({ formatted: `${source};\n` });
+  const explicit = await formatFmtSource(
+    { path: 'example.js', options: { parser: 'babel' } },
+    () => source,
+  );
+  expect(explicit).toMatchObject({
     formatted: await format(source, { parser: 'babel' }),
   });
+  expect(explicit).not.toEqual(result);
+});
+
+test('honors a project parser plugin and its embedded-language support', async () => {
+  const source = 'const query = /* GraphQL */ `query{user{id name}}`';
+  const result = await formatFmtSource(
+    {
+      path: 'example.js',
+      options: {
+        plugins: [await import('prettier/plugins/babel')],
+        rangeEnd: 1000,
+      },
+    },
+    () => source,
+  );
+  expect(result).toMatchObject({
+    formatted: await format(source, { parser: 'babel' }),
+  });
+});
+
+test('reports unsupported import-source syntax instead of retrying another parser', async () => {
+  await expect(
+    formatFmtSource(
+      { path: 'example.js', options: {} },
+      () => 'import source mod from "./module.wasm";',
+    ),
+  ).rejects.toThrow('formatting import phase');
 });
 
 test('supports CommonJS source semantics for .cjs files', async () => {

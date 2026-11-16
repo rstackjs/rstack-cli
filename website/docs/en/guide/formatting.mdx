@@ -14,7 +14,7 @@ Rstack CLI includes a formatter built on [Prettier](https://prettier.io/). Compa
 
 `rs fmt` supports Prettier options and plugins and adds built-in capabilities such as [sorting package.json fields](#sort-package-json).
 
-The SWC Next formatter is experimental, and its output can differ from Prettier. Rstack uses Prettier's built-in formatters when project plugins override JavaScript or TypeScript parsers, when range, pragma, or unsupported layout options are enabled, and for files containing template literals when embedded-language formatting is enabled. Vue and Svelte scripts also use Prettier's parsers. Set `parser: 'babel'` or `parser: 'typescript'` in `define.fmt()` or an override to explicitly use Prettier for JavaScript or TypeScript.
+The SWC Next formatter is experimental, and its output can differ from Prettier. JavaScript and TypeScript files, including templates and comments containing backticks, use SWC without automatic fallback. HTML, CSS, GraphQL, and other embedded languages inside templates are not formatted, even when `embeddedLanguageFormatting` is enabled. Range formatting (any finite `rangeEnd`), pragma, and unsupported layout options produce an explicit error. Project plugins that override JavaScript or TypeScript parsers retain precedence; other host languages, including Vue and Svelte scripts, continue using their Prettier formatters. Set `parser: 'babel'` or `parser: 'typescript'` in `define.fmt()` or an override to explicitly use Prettier and its embedded-language support.
 
 ## Basic usage
 
