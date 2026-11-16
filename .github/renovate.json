@@ -10,7 +10,7 @@
         "@rslib/core",
         "@rslint/core",
         "@rstest/core",
-        "@swc-next/parser",
+        "@swc-next/formatter-prettier-plugin",
         "prettier"
       ],
       "groupName": null,

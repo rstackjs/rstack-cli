@@ -29,7 +29,7 @@ catalog:
   '@rstest/adapter-rsbuild': '~0.12.6'
   '@rstest/adapter-rslib': '~0.12.6'
   '@rstest/core': '~0.12.6'
-  '@swc-next/parser': '0.7.0'
+  '@swc-next/formatter-prettier-plugin': '0.7.0'
   '@testing-library/dom': '^10.4.2'
   '@testing-library/jest-dom': '^7.0.1'
   '@testing-library/react': '^16.3.3'
@@ -46,7 +46,8 @@ catalog:
   'lint-staged': '^17.6.0'
   'micromatch': '4.0.8'
   pkg-pr-new: 0.0.93
-  prettier: '3.10.1'
+  # Match the formatter plugin's exact Prettier peer dependency.
+  prettier: '3.9.9'
   'prettier-plugin-tailwindcss': '0.8.1'
   'prettier-plugin-svelte': '^4.1.1'
   'react': '^19.3.1'

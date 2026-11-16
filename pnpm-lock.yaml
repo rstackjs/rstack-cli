@@ -210,7 +210,7 @@ catalogs:
     '@rstest/core':
       specifier: ~0.12.6
       version: 0.12.6
-    '@swc-next/parser':
+    '@swc-next/formatter-prettier-plugin':
       specifier: 0.7.0
       version: 0.7.0
     '@testing-library/dom':
@@ -262,8 +262,8 @@ catalogs:
       specifier: 0.0.93
       version: 0.0.93
     prettier:
-      specifier: 3.10.1
-      version: 3.10.1
+      specifier: 3.9.9
+      version: 3.9.9
     prettier-plugin-svelte:
       specifier: ^4.1.1
       version: 4.1.1
@@ -322,13 +322,13 @@ importers:
         version: 0.0.4
       heading-case:
         specifier: 'catalog:'
-        version: 2.0.3(prettier@3.10.1)
+        version: 2.0.3(prettier@3.9.9)
       pkg-pr-new:
         specifier: 'catalog:'
         version: 0.0.93
       prettier:
         specifier: 'catalog:'
-        version: 3.10.1
+        version: 3.9.9
       rstack:
         specifier: workspace:*
         version: link:packages/rstack
@@ -534,12 +534,12 @@ importers:
       '@rstest/core':
         specifier: 'catalog:'
         version: 0.12.6(happy-dom@20.14.5)
-      '@swc-next/parser':
+      '@swc-next/formatter-prettier-plugin':
         specifier: 'catalog:'
-        version: 0.7.0
+        version: 0.7.0(prettier@3.9.9)
       prettier:
         specifier: 'catalog:'
-        version: 3.10.1
+        version: 3.9.9
       tinypool:
         specifier: 'catalog:'
         version: 2.2.0
@@ -585,10 +585,10 @@ importers:
         version: 4.0.8
       prettier-plugin-svelte:
         specifier: 'catalog:'
-        version: 4.1.1(prettier@3.10.1)(svelte@5.57.3)
+        version: 4.1.1(prettier@3.9.9)(svelte@5.57.3)
       prettier-plugin-tailwindcss:
         specifier: 'catalog:'
-        version: 0.8.1(prettier-plugin-svelte@4.1.1)(prettier@3.10.1)
+        version: 0.8.1(prettier-plugin-svelte@4.1.1)(prettier@3.9.9)
       rslog:
         specifier: 'catalog:'
         version: 2.3.0
@@ -1731,89 +1731,91 @@ packages:
     peerDependencies:
       acorn: ^8.9.0
 
-  '@swc-next/parser-binding-darwin-arm64@0.7.0':
-    resolution: {integrity: sha512-JfycoXuNEFgmXU5oBfYVC+wjIL9EGJadXyw01VW7T8iYhv0a/aPdAwfqIAWzvPFPBWAmmKKF/0CzlCLKhHabjQ==}
+  '@swc-next/formatter-js-binding-darwin-arm64@0.7.0':
+    resolution: {integrity: sha512-k2c8QSVqdDqk8lWjl1yagbxl5cqHqI5UjeQGFZfoDZzPC/9I6vKjQ0A0DeYXuBEayIsVJMF27lrmmUf4hyy5pQ==}
     cpu: [arm64]
     os: [darwin]
 
-  '@swc-next/parser-binding-darwin-x64@0.7.0':
-    resolution: {integrity: sha512-xIK0tfTG0YV2GkYGRbCd7M8FomfxnG9kJ8P768qTcjZg8qYqM4OqxPPDkKiK2uR7Tc0D6DGd9E/vrpqCdTGyCA==}
+  '@swc-next/formatter-js-binding-darwin-x64@0.7.0':
+    resolution: {integrity: sha512-EhoIK2qhCaL0LuQ23gvBwD7buqVbUqC6UQvOKyWFQZaKz9fGGYcXekAj5QqI+fvKin58dRwpiRtWf6g8tFC4hQ==}
     cpu: [x64]
     os: [darwin]
 
-  '@swc-next/parser-binding-linux-arm64-gnu@0.7.0':
-    resolution: {integrity: sha512-OW9w4PQjdBLjVWCRlBeswLINu5Sf+5c1A8SCru9jKW9VTHoq++9orof7lWGAUlqcZS1PVhaALGSzu6QceexcFg==}
+  '@swc-next/formatter-js-binding-linux-arm64-gnu@0.7.0':
+    resolution: {integrity: sha512-JjWi+kWNT0SqNM7ORf+tYh4ooRavOtuCjUqclZOSoVQf9ya6Aqm8I1myosHwBvdkfI0KUJRNe608BVYHXviIHA==}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@swc-next/parser-binding-linux-arm64-musl@0.7.0':
-    resolution: {integrity: sha512-LiOlOdJRupb1LSurX2ACnCMXsp817p4Jpo3P1aUnL/BccTM3M8jPgNSapy8vEwyOExNYpOeHm8tJeWmhdN63KA==}
+  '@swc-next/formatter-js-binding-linux-arm64-musl@0.7.0':
+    resolution: {integrity: sha512-CbsJzoWAQ9m4gbqeLq7Rv2izvCOXiETFxipf3cPp2kQIKoiHcf4oE2z+FdeVETBD/ak0pK+6eo2VjbSNPBk11Q==}
     cpu: [arm64]
     os: [linux]
     libc: [musl]
 
-  '@swc-next/parser-binding-linux-ppc64-gnu@0.7.0':
-    resolution: {integrity: sha512-wUBwFcPZhiUnh/1/341Y94erFrWu6uJOcWx79IszSMfi3w+P7PumpJufcm8gDy6uzbrPgsGHnTmr5AF2QcLfmQ==}
+  '@swc-next/formatter-js-binding-linux-ppc64-gnu@0.7.0':
+    resolution: {integrity: sha512-2CrDz0rKdEbp60xBUgMVZwVSmzkrBZfCW3IOr0gNyQJAg9gHrT+8QbI2Qy2gmaH+IW4gI8RgcM7A/vLssuPfFQ==}
     cpu: [ppc64]
     os: [linux]
     libc: [glibc]
 
-  '@swc-next/parser-binding-linux-riscv64-gnu@0.7.0':
-    resolution: {integrity: sha512-wGBlnDeimrU4o4d+lMPAi4Qoa/EltyXPJr7G4DP9hDUKJj6a4lMx/IFYy93MTlAwRobJjSgx1qYpNfxRDssxfw==}
+  '@swc-next/formatter-js-binding-linux-riscv64-gnu@0.7.0':
+    resolution: {integrity: sha512-JsLZgLspqD+xPpdmTPHWRegfVji321dbaotc2+uam1+5kJfm/gliMbVY7gBPsawXMEyIX5pgcP8l7Pa7/oRnFg==}
     cpu: [riscv64]
     os: [linux]
     libc: [glibc]
 
-  '@swc-next/parser-binding-linux-riscv64-musl@0.7.0':
-    resolution: {integrity: sha512-ebz+9KvGm2fyit+oRQ0ckNPa7UitIExfQw7FgFGTEsYIjyFSFSAat7WDd8QcH5YUXhSl0kOdCvx/Hw3eq0GnHA==}
+  '@swc-next/formatter-js-binding-linux-riscv64-musl@0.7.0':
+    resolution: {integrity: sha512-MxkKb9wf44+tN3TOXDw5pJ/frdBFtQk5KAC6DTzdEjx+eDsnQ5eVh1Z6XNZxB+LZwFzMBMKXmCkEZeaFCfMtcA==}
     cpu: [riscv64]
     os: [linux]
     libc: [musl]
 
-  '@swc-next/parser-binding-linux-s390x-gnu@0.7.0':
-    resolution: {integrity: sha512-bhWFopzo7OY9Cxa0nz6a5RZD+rbmwRDCxfVUPzVWytDb9i7EPQrVPlIXaBSYJac0geY2dWqcEbG47Fop+R3iYA==}
+  '@swc-next/formatter-js-binding-linux-s390x-gnu@0.7.0':
+    resolution: {integrity: sha512-h48emgvc6+JYcwVrgcK1lfKXrT/zykS+4FbYt75tPaiznDEwucSarkGrg0pxpBr4FenL4S9fjPz8+H1XnIYRBw==}
     cpu: [s390x]
     os: [linux]
     libc: [glibc]
 
-  '@swc-next/parser-binding-linux-x64-gnu@0.7.0':
-    resolution: {integrity: sha512-qdT9jCf+SDfn9Ugw0gJJScXalv7oJHgLJKqqe+wu+kCDEgyUEqMI29cYJWYKxkYKMAx9yNb/yOUy9ZjIZX4NnA==}
+  '@swc-next/formatter-js-binding-linux-x64-gnu@0.7.0':
+    resolution: {integrity: sha512-AvNJrw/1161u8bW9yQR04ouDlzp41JGmXkpX/lVinG0U6KoPR0jb90qaVLkgC6zEauWIzYiobfNtiaGihXCgdQ==}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@swc-next/parser-binding-linux-x64-musl@0.7.0':
-    resolution: {integrity: sha512-qwJJDsyY+78Dayxy3FwsjByu0KwGVyV7OwsIAGyDJgBJx9w6iBm8f+bLzzhXGewm7bpy9AzXZ1iJsdqfjzoSOg==}
+  '@swc-next/formatter-js-binding-linux-x64-musl@0.7.0':
+    resolution: {integrity: sha512-k7tGTq2Ry+3Bba0vz82oyjWn2wsZRNeNQzsqnuP7I0W2/mmruQRltpiy+KrSzDFkiFeCnx/zYxWA/u2BHyczIw==}
     cpu: [x64]
     os: [linux]
     libc: [musl]
 
-  '@swc-next/parser-binding-win32-arm64-msvc@0.7.0':
-    resolution: {integrity: sha512-OXc5L/b+tpnaMh8Emh1VSjw25Gx94eJQeWcINTxUSVl5pUwVlAhMyyP17ciqSROpv4zTiyvWYsOce9+kBpvSwQ==}
+  '@swc-next/formatter-js-binding-win32-arm64-msvc@0.7.0':
+    resolution: {integrity: sha512-PRiOQZirHK1pBYZnsWeeMpNrf9noqgPeghhrsZ/0jVawEYSNaLjge2z7OXh/Zu0ku/WMNmZ/YPx9RDxBPovTrg==}
     cpu: [arm64]
     os: [win32]
 
-  '@swc-next/parser-binding-win32-ia32-msvc@0.7.0':
-    resolution: {integrity: sha512-9PLpgidEgLla3ZemTihm/hB0AxpkAtvF7opmIcHxUR81cJwq5XBNd97WKD+/g4Hwogw+nPxGh5M3wUfux7oRkQ==}
+  '@swc-next/formatter-js-binding-win32-ia32-msvc@0.7.0':
+    resolution: {integrity: sha512-QIjfL+QN8eGt8r3FiIiK0V5EiAQ7mEB19gg4wd1FiEjwTPTRKixG1uftZsTKrWHyve8U2NaL6p6+JKelrdbqxQ==}
     cpu: [ia32]
     os: [win32]
 
-  '@swc-next/parser-binding-win32-x64-msvc@0.7.0':
-    resolution: {integrity: sha512-g4nEBoTjkRFR/in+fUx7So/YPAN5HjH5C6VeXet68+rtnBcreuF+eynncxVJtPqIWDSHw5d/NI11PJn4vUaUXA==}
+  '@swc-next/formatter-js-binding-win32-x64-msvc@0.7.0':
+    resolution: {integrity: sha512-98C1FQY82YUNzsWPuZprZ5gpb8MrHEr7dK8dPO1adcFaJCy8dF9OXk6rHK4yWanQKLepguPpCgNBoMn4T358ow==}
     cpu: [x64]
     os: [win32]
 
-  '@swc-next/parser@0.7.0':
-    resolution: {integrity: sha512-nQuKQi+zg4EieOK4flkBNxTpJ3Y5ohnelhf/aCNhMFlvs0yUDS78RwuDFKALOHOTZhO3AiDKxU20bZ3nAz3NBQ==}
+  '@swc-next/formatter-js@0.7.0':
+    resolution: {integrity: sha512-QNLhRyYaTkFK/PaU3dmUd0I2cKZxDVHgRV6lX3CfjyGSErowr2gEQhD/MGBjZbW0mm+XSUhHmwVIMA+mJQ3nEg==}
     peerDependencies:
-      '@swc-next/parser-binding-wasm': 0.7.0
+      '@swc-next/formatter-js-binding-wasm': 0.7.0
     peerDependenciesMeta:
-      '@swc-next/parser-binding-wasm':
+      '@swc-next/formatter-js-binding-wasm':
         optional: true
 
-  '@swc-next/types@0.7.0':
-    resolution: {integrity: sha512-1PJpYfi0ST0b0+iZu/+YGbQu+aPNi2LHIdFSDtMn8Oh7gJV1dN2eRFHDYbSMKKKyb4k3a6EbYu5XuQefRBGL6g==}
+  '@swc-next/formatter-prettier-plugin@0.7.0':
+    resolution: {integrity: sha512-r+8JPt1Il+gCG8Tof53k3ajm//8y/4gOLJEHudUg8ZPQVTgJkiVcOklzVbBQTkLOMnF4XNNHW1KRzzsUpJe5EQ==}
+    peerDependencies:
+      prettier: 3.9.9
 
   '@swc/helpers@0.5.24':
     resolution: {integrity: sha512-6tcXo4kA8HgGO7AVmawB57RYi/piBPYVHVcO6dXjX+SZw8GoHmi262sp4v2Ha2kNP9Cx84qei27yT+fjS1lxgg==}
@@ -2983,8 +2985,8 @@ packages:
       prettier-plugin-svelte:
         optional: true
 
-  prettier@3.10.1:
-    resolution: {integrity: sha512-70vp3ZUYoPlFbF9uiTdXHUUCGEIp7d4+6p+8DYbkm2jP7x/3i/paXVF6dopSI3zd/CEitrZN1rc4i85xWmmXlg==}
+  prettier@3.9.9:
+    resolution: {integrity: sha512-Z/CJHIkdujO/OtN7nXUii0Rf3VT5SRuhjBA82Xvu2XhBUgX3nhP67T0LHceBdQLex7OOFGTox+Q5Yg8Jk2Qivg==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -4508,64 +4510,67 @@ snapshots:
     dependencies:
       acorn: 8.19.0
 
-  '@swc-next/parser-binding-darwin-arm64@0.7.0':
+  '@swc-next/formatter-js-binding-darwin-arm64@0.7.0':
     optional: true
 
-  '@swc-next/parser-binding-darwin-x64@0.7.0':
+  '@swc-next/formatter-js-binding-darwin-x64@0.7.0':
     optional: true
 
-  '@swc-next/parser-binding-linux-arm64-gnu@0.7.0':
+  '@swc-next/formatter-js-binding-linux-arm64-gnu@0.7.0':
     optional: true
 
-  '@swc-next/parser-binding-linux-arm64-musl@0.7.0':
+  '@swc-next/formatter-js-binding-linux-arm64-musl@0.7.0':
     optional: true
 
-  '@swc-next/parser-binding-linux-ppc64-gnu@0.7.0':
+  '@swc-next/formatter-js-binding-linux-ppc64-gnu@0.7.0':
     optional: true
 
-  '@swc-next/parser-binding-linux-riscv64-gnu@0.7.0':
+  '@swc-next/formatter-js-binding-linux-riscv64-gnu@0.7.0':
     optional: true
 
-  '@swc-next/parser-binding-linux-riscv64-musl@0.7.0':
+  '@swc-next/formatter-js-binding-linux-riscv64-musl@0.7.0':
     optional: true
 
-  '@swc-next/parser-binding-linux-s390x-gnu@0.7.0':
+  '@swc-next/formatter-js-binding-linux-s390x-gnu@0.7.0':
     optional: true
 
-  '@swc-next/parser-binding-linux-x64-gnu@0.7.0':
+  '@swc-next/formatter-js-binding-linux-x64-gnu@0.7.0':
     optional: true
 
-  '@swc-next/parser-binding-linux-x64-musl@0.7.0':
+  '@swc-next/formatter-js-binding-linux-x64-musl@0.7.0':
     optional: true
 
-  '@swc-next/parser-binding-win32-arm64-msvc@0.7.0':
+  '@swc-next/formatter-js-binding-win32-arm64-msvc@0.7.0':
     optional: true
 
-  '@swc-next/parser-binding-win32-ia32-msvc@0.7.0':
+  '@swc-next/formatter-js-binding-win32-ia32-msvc@0.7.0':
     optional: true
 
-  '@swc-next/parser-binding-win32-x64-msvc@0.7.0':
+  '@swc-next/formatter-js-binding-win32-x64-msvc@0.7.0':
     optional: true
 
-  '@swc-next/parser@0.7.0':
-    dependencies:
-      '@swc-next/types': 0.7.0
+  '@swc-next/formatter-js@0.7.0':
     optionalDependencies:
-      '@swc-next/parser-binding-darwin-arm64': 0.7.0
-      '@swc-next/parser-binding-darwin-x64': 0.7.0
-      '@swc-next/parser-binding-linux-arm64-gnu': 0.7.0
-      '@swc-next/parser-binding-linux-arm64-musl': 0.7.0
-      '@swc-next/parser-binding-linux-ppc64-gnu': 0.7.0
-      '@swc-next/parser-binding-linux-riscv64-gnu': 0.7.0
-      '@swc-next/parser-binding-linux-riscv64-musl': 0.7.0
-      '@swc-next/parser-binding-linux-s390x-gnu': 0.7.0
-      '@swc-next/parser-binding-linux-x64-gnu': 0.7.0
-      '@swc-next/parser-binding-linux-x64-musl': 0.7.0
-      '@swc-next/parser-binding-win32-arm64-msvc': 0.7.0
-      '@swc-next/parser-binding-win32-ia32-msvc': 0.7.0
-      '@swc-next/parser-binding-win32-x64-msvc': 0.7.0
+      '@swc-next/formatter-js-binding-darwin-arm64': 0.7.0
+      '@swc-next/formatter-js-binding-darwin-x64': 0.7.0
+      '@swc-next/formatter-js-binding-linux-arm64-gnu': 0.7.0
+      '@swc-next/formatter-js-binding-linux-arm64-musl': 0.7.0
+      '@swc-next/formatter-js-binding-linux-ppc64-gnu': 0.7.0
+      '@swc-next/formatter-js-binding-linux-riscv64-gnu': 0.7.0
+      '@swc-next/formatter-js-binding-linux-riscv64-musl': 0.7.0
+      '@swc-next/formatter-js-binding-linux-s390x-gnu': 0.7.0
+      '@swc-next/formatter-js-binding-linux-x64-gnu': 0.7.0
+      '@swc-next/formatter-js-binding-linux-x64-musl': 0.7.0
+      '@swc-next/formatter-js-binding-win32-arm64-msvc': 0.7.0
+      '@swc-next/formatter-js-binding-win32-ia32-msvc': 0.7.0
+      '@swc-next/formatter-js-binding-win32-x64-msvc': 0.7.0
 
-  '@swc-next/types@0.7.0': {}
+  '@swc-next/formatter-prettier-plugin@0.7.0(prettier@3.9.9)':
+    dependencies:
+      '@swc-next/formatter-js': 0.7.0
+      prettier: 3.9.9
+    transitivePeerDependencies:
+      - '@swc-next/formatter-js-binding-wasm'
 
   '@swc/helpers@0.5.24': {}
 
@@ -5218,9 +5223,9 @@ snapshots:
       property-information: 7.2.0
       space-separated-tokens: 2.0.2
 
-  heading-case@2.0.3(prettier@3.10.1):
+  heading-case@2.0.3(prettier@3.9.9):
     dependencies:
-      prettier: 3.10.1
+      prettier: 3.9.9
 
   hookable@6.1.1: {}
 
@@ -5906,18 +5911,18 @@ snapshots:
 
   powershell-utils@0.2.1: {}
 
-  prettier-plugin-svelte@4.1.1(prettier@3.10.1)(svelte@5.57.3):
+  prettier-plugin-svelte@4.1.1(prettier@3.9.9)(svelte@5.57.3):
     dependencies:
-      prettier: 3.10.1
+      prettier: 3.9.9
       svelte: 5.57.3
 
-  prettier-plugin-tailwindcss@0.8.1(prettier-plugin-svelte@4.1.1)(prettier@3.10.1):
+  prettier-plugin-tailwindcss@0.8.1(prettier-plugin-svelte@4.1.1)(prettier@3.9.9):
     dependencies:
-      prettier: 3.10.1
+      prettier: 3.9.9
     optionalDependencies:
-      prettier-plugin-svelte: 4.1.1(prettier@3.10.1)(svelte@5.57.3)
+      prettier-plugin-svelte: 4.1.1(prettier@3.9.9)(svelte@5.57.3)
 
-  prettier@3.10.1: {}
+  prettier@3.9.9: {}
 
   pretty-format@27.5.1:
     dependencies:

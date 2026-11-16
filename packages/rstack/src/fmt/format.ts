@@ -40,13 +40,17 @@ const formatFmtSource = async (
   { path, options }: FmtFileRequest,
   readSource: () => string,
 ): Promise<FormatFmtSourceResult> => {
-  const plugins = await getPrettierPlugins(options, path);
-  const parser = await resolveFmtParser(path, options, plugins);
+  let plugins = await getPrettierPlugins(options, path);
+  let parser = await resolveFmtParser(path, options, plugins);
   if (!parser) {
     return { status: 'unsupported' };
   }
 
   const source = readSource();
+  if (source.includes('`')) {
+    plugins = await getPrettierPlugins(options, path, source);
+    parser = (await resolveFmtParser(path, options, plugins)) ?? undefined;
+  }
   const formatted = await format(source, {
     ...options,
     filepath: path,
