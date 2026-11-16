@@ -3,7 +3,7 @@
 @@ -59,11 +59,13 @@
              join(import.meta.dirname, 'src/common'),
            );
- 
+
 -          chain.plugin('extra-define').use(rspack.DefinePlugin, [
 -            {
 -              ENABLE_TEST: JSON.stringify(true),
@@ -63,7 +63,7 @@
 +++ fallback/e2e/cases/server/print-urls/index.test.ts
 @@ -38,11 +38,13 @@
  });
- 
+
  test('should print names for multiple network urls', async ({ devOnly }) => {
 -  const networkInterfaces = rs.spyOn(os, 'networkInterfaces').mockReturnValue({
 -    lo: [createIpv4('127.0.0.1', true)],
@@ -77,12 +77,12 @@
 +      xray_tun: [createIpv4('192.0.2.10')],
 +      'Wi-Fi': [createIpv4('198.51.100.20')],
 +    });
- 
+
    try {
      const rsbuild = await devOnly({
 @@ -67,10 +69,12 @@
  });
- 
+
  test('should omit name for a single network url', async ({ devOnly }) => {
 -  const networkInterfaces = rs.spyOn(os, 'networkInterfaces').mockReturnValue({
 -    lo: [createIpv4('127.0.0.1', true)],
@@ -94,13 +94,13 @@
 +      lo: [createIpv4('127.0.0.1', true)],
 +      'Wi-Fi': [createIpv4('198.51.100.20')],
 +    });
- 
+
    try {
      const rsbuild = await devOnly({
 --- original/packages/core/src/plugins/css.ts
 +++ fallback/packages/core/src/plugins/css.ts
 @@ -537,9 +537,11 @@
- 
+
            // Let ignoreCssLoader skip non-CSS Modules before css-loader runs
            if (!emitCss && type === 'main') {
 -            rule.use(CHAIN_ID.USE.IGNORE_CSS).options({
@@ -112,12 +112,12 @@
 +                modules: finalOptions.modules,
 +              });
            }
- 
+
            rule.use(CHAIN_ID.USE.CSS).options(finalOptions);
 @@ -558,15 +560,17 @@
          const cssUrlFilename = getFilename(config, 'css', isProd);
          const cssUrlPath = config.output.distPath.css;
- 
+
 -        urlRule.use(CHAIN_ID.USE.CSS_URL).options({
 -          filename:
 -            typeof cssUrlFilename === 'function'
@@ -138,14 +138,14 @@
 +            modules: cssLoaderOptions.modules,
 +            minimized: cssUrlMinimized,
 +          });
- 
+
          const isStringExport = cssLoaderOptions.exportType === 'string';
          if (
 --- original/packages/core/src/plugins/fileSize.ts
 +++ fallback/packages/core/src/plugins/fileSize.ts
 @@ -120,22 +120,22 @@
      typeof compressed === 'object' ? compressed : {};
- 
+
    return type === 'brotli'
 -    ? ({
 +    ? {
@@ -168,12 +168,12 @@
 -      } as const);
 +      } as const;
  }
- 
+
  function calcCompressedSize(
 --- original/packages/core/src/plugins/html.ts
 +++ fallback/packages/core/src/plugins/html.ts
 @@ -335,12 +335,14 @@
- 
+
          // Follow the order of the entryNames array to keep the HTML plugin registration order stable
          entryNames.forEach((entryName, index) => {
 -          chain.plugin(`${CHAIN_ID.PLUGIN.HTML}-${entryName}`).use(HtmlPlugin, [
@@ -191,14 +191,14 @@
 +              },
 +            ]);
          });
- 
+
          const getExtraData = (entryName: string) => extraDataMap.get(entryName);
 --- original/packages/core/src/plugins/progress.ts
 +++ fallback/packages/core/src/plugins/progress.ts
 @@ -17,12 +17,14 @@
            ? options.id
            : environment.name;
- 
+
 -      chain.plugin(CHAIN_ID.PLUGIN.PROGRESS).use(rspack.ProgressPlugin, [
 -        {
 -          prefix,
@@ -246,7 +246,7 @@
 --- original/packages/core/src/plugins/target.ts
 +++ fallback/packages/core/src/plugins/target.ts
 @@ -31,7 +31,7 @@
- 
+
          const esQuery = isDefaultBrowserslist
            ? 'es2017'
 -          : (`browserslist:${browserslist.join(',')}` as const);
@@ -267,7 +267,7 @@
 +  return `${type} ${range ? `${range.start}-${range.end}` : '*'}:${size}`
 +    .replace(':', '/');
  }
- 
+
  function parseHttpDate(date: string): number {
 --- original/packages/core/src/server/runner/esm.ts
 +++ fallback/packages/core/src/server/runner/esm.ts
@@ -302,12 +302,12 @@
 +        })),
      );
    });
- 
+
 --- original/packages/core/tests/server.test.ts
 +++ fallback/packages/core/tests/server.test.ts
 @@ -347,12 +347,14 @@
  });
- 
+
  test('should resolve network interface names for server URLs', async () => {
 -  rstest.spyOn(os, 'networkInterfaces').mockReturnValue({
 -    lo: [createIpv4('127.0.0.1', true)],
@@ -323,7 +323,7 @@
 +      'Wi-Fi': [createIpv4('198.51.100.20')],
 +      duplicate: [createIpv4('198.51.100.20')],
 +    });
- 
+
    await expect(
      getAddressUrls({
 --- original/packages/plugin-preact/src/index.ts
@@ -331,7 +331,7 @@
 @@ -116,12 +116,14 @@
          paths: [api.context.rootPath],
        });
- 
+
 -      chain.plugin('preact-refresh').use(PreactRefreshRspackPlugin, [
 -        {
 -          ...options.preactRefreshOptions,
@@ -358,12 +358,12 @@
 -    ? (JSON.parse(sourceMap) as Rspack.RawSourceMap)
 +    ? JSON.parse(sourceMap) as Rspack.RawSourceMap
      : (sourceMap ?? undefined);
- 
+
  const mergeSourceMaps = (
 @@ -100,11 +100,14 @@
          return;
        }
- 
+
 -      const result = await nativeTransformAsync(String(source), {
 -        ...solid,
 -        filename,
@@ -377,6 +377,6 @@
 +          sourceMap: true,
 +        } as NativeTransformOptions,
 +      );
- 
+
        callback(
          null,

@@ -193,3 +193,6 @@ All four variants' output hashes match their four-worker original-config
 outputs exactly, and every write and second check exits 0. Their audit wall
 times are excluded from the confirmation medians. The final `pnpm check`,
 full `rs fmt --check --no-cache`, spelling and `git diff --check` pass.
+
+Diff artifacts omit the single context-marker space on empty context lines so
+repository whitespace checks pass; formatted output bytes and hashes are unchanged.

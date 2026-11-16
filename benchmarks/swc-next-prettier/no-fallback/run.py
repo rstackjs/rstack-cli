@@ -114,7 +114,7 @@ for group in a.groups:
                     changed.append(path);dest=output/path;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(content)
                     diff.extend(difflib.unified_diff(originals[path].decode().splitlines(True),content.decode().splitlines(True),fromfile='original/'+path,tofile=name+'/'+path))
             data['outputs'][name]={'sha256':h.hexdigest(),'changed':changed,'changedOutputRoot':str(output),'writeExitCode':write.returncode,'idempotenceExitCode':check.returncode}
-            (a.output/f'{group}-{name}.diff').write_text(''.join(diff))
+            (a.output/f'{group}-{name}.diff').write_text(''.join('\n' if line==' \n' else line for line in diff))
             for path,content in originals.items():
                 if path not in files:assert (workspace/path).read_bytes()==content,path
                 else:(workspace/path).write_bytes(content)

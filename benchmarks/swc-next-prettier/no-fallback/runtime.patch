@@ -13,7 +13,7 @@ index 48c3a14..d2aac91 100644
    if (!parser) {
      return { status: 'unsupported' };
    }
- 
+
    const source = readSource();
 -  if (source.includes('`')) {
 -    plugins = await getPrettierPlugins(options, path, source);
@@ -27,9 +27,9 @@ index 55fea2d..f99cdb7 100644
 --- a/packages/rstack/src/fmt/prettierPlugins.ts
 +++ b/packages/rstack/src/fmt/prettierPlugins.ts
 @@ -17,11 +17,10 @@ const fmtOptionsPlugin = {
- 
+
  const defaultFmtPlugins: PrettierPlugins = [swcNextPlugin, fmtOptionsPlugin];
- 
+
 -/** Uses Prettier for features and plugin ASTs the SWC formatter does not support. */
 +/** Selects SWC for JS/TS unless a parser or project plugin explicitly overrides it. */
  const getPrettierPlugins = async (

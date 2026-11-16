@@ -3,7 +3,7 @@
 @@ -59,11 +59,13 @@
              join(import.meta.dirname, 'src/common'),
            );
- 
+
 -          chain.plugin('extra-define').use(rspack.DefinePlugin, [
 -            {
 -              ENABLE_TEST: JSON.stringify(true),
@@ -52,7 +52,7 @@
 @@ -17,12 +17,14 @@
            ? options.id
            : environment.name;
- 
+
 -      chain.plugin(CHAIN_ID.PLUGIN.PROGRESS).use(rspack.ProgressPlugin, [
 -        {
 -          prefix,
@@ -92,7 +92,7 @@
 +        })),
      );
    });
- 
+
 --- original/packages/plugin-solid/src/solidLoader.ts
 +++ fallback/packages/plugin-solid/src/solidLoader.ts
 @@ -28,7 +28,7 @@
@@ -102,12 +102,12 @@
 -    ? (JSON.parse(sourceMap) as Rspack.RawSourceMap)
 +    ? JSON.parse(sourceMap) as Rspack.RawSourceMap
      : (sourceMap ?? undefined);
- 
+
  const mergeSourceMaps = (
 @@ -100,11 +100,14 @@
          return;
        }
- 
+
 -      const result = await nativeTransformAsync(String(source), {
 -        ...solid,
 -        filename,
@@ -121,6 +121,6 @@
 +          sourceMap: true,
 +        } as NativeTransformOptions,
 +      );
- 
+
        callback(
          null,
