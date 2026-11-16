@@ -388,6 +388,16 @@ const postprocess = (
       setContentEnd(node, text, getTextWithoutComments);
 
       switch (node.type) {
+        case 'TSModuleDeclaration':
+          // Prettier's printer silently drops these attributes.
+          // https://github.com/prettier/prettier/issues/20531
+          if (node.attributes) {
+            throw new SyntaxError(
+              'Prettier does not support formatting ambient module import attributes yet.',
+            );
+          }
+          break;
+
         case 'ParenthesizedExpression': {
           const expression = node.expression as AstNode;
           const start = locStart(node);

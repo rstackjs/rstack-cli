@@ -17,6 +17,44 @@ const run = (files: FmtFileRequest[], mode: FmtMode = 'write') =>
     mode,
   });
 
+const ambientModuleWithAttributes = `declare module "*" with { type: "text" } {
+  const content: string;
+  export default content;
+}
+`;
+
+test('reports unsupported ambient module attributes without rewriting the file', async () => {
+  await withTempProject(async (rootPath) => {
+    const filePath = path.join(rootPath, 'example.d.ts');
+    writeFileSync(filePath, ambientModuleWithAttributes);
+
+    const result = await run([createFmtRequest(filePath, {})]);
+
+    expect(result).toMatchObject({
+      exitCode: 2,
+      files: [{ path: filePath, status: 'error' }],
+    });
+    expect(result.files[0]).toHaveProperty(
+      'error.message',
+      'Prettier does not support formatting ambient module import attributes yet.',
+    );
+    expect(readFileSync(filePath, 'utf8')).toBe(ambientModuleWithAttributes);
+  });
+});
+
+test('preserves unsupported ambient module attributes while formatting MDX', async () => {
+  await withTempProject(async (rootPath) => {
+    const filePath = path.join(rootPath, 'example.mdx');
+    const codeBlock = `\`\`\`ts\n${ambientModuleWithAttributes}\`\`\`\n`;
+    writeFileSync(filePath, `#   Example\n\n${codeBlock}`);
+
+    const result = await run([createFmtRequest(filePath, {})]);
+
+    expect(result.exitCode).toBe(0);
+    expect(readFileSync(filePath, 'utf8')).toBe(`# Example\n\n${codeBlock}`);
+  });
+});
+
 test('does not rewrite unchanged files', async () => {
   await withTempProject(async (rootPath) => {
     const filePath = path.join(rootPath, 'unchanged.ts');
