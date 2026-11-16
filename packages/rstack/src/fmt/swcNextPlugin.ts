@@ -493,7 +493,7 @@ const parseWithOptions = (
 ): ParseResult => {
   const result = parseWithSwcNext(text, {
     preserveParens: true,
-    comments: 'flat',
+    comments: 'all',
     // Return diagnostics so they can be converted to Prettier-compatible errors.
     errorRecovery: true,
     ...options,
