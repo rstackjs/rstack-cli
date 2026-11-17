@@ -14,7 +14,7 @@ Rstack CLI 提供了基于 [Prettier](https://prettier.io/) 的格式化工具�
 
 `rs fmt` 兼容 Prettier 的选项和插件，并提供更多内置能力，例如支持[排序 package.json 字段](#sort-package-json)。
 
-SWC Next 格式化器仍处于实验阶段，输出可能与 Prettier 不同。模板内的 HTML、CSS、GraphQL 等嵌入语言暂不格式化，即使开启了 `embeddedLanguageFormatting`。范围格式化（包括任何有限值的 `rangeEnd`）、pragma 和尚不支持的布局选项会明确报错。覆盖 JavaScript 或 TypeScript 解析器的项目插件仍保留优先级；其他宿主语言（包括 Vue 和 Svelte 中的脚本）继续使用对应的 Prettier 格式化器。在 `define.fmt()` 或 override 中设置 `parser: 'babel'` 或 `parser: 'typescript'`，可显式使用 Prettier 及其嵌入语言支持。
+SWC Next 格式化器仍处于实验阶段，输出可能与 Prettier 不同。Markdown 和 MDX 中的 JavaScript、JSX、TypeScript 和 TSX 代码块也使用 SWC Next；外围文档以及 MDX 的 import/export 和 JSX 节点仍由 Prettier 处理。JavaScript 模板内的 HTML、CSS、GraphQL 等嵌入语言暂不格式化，即使开启了 `embeddedLanguageFormatting`。对使用 SWC 格式化的文件，范围格式化（包括任何有限值的 `rangeEnd`）、pragma 和尚不支持的布局选项会明确报错。覆盖 JavaScript 或 TypeScript 解析器的项目插件仍保留优先级；其他宿主语言（包括 Vue 和 Svelte 中的脚本）继续使用对应的 Prettier 格式化器。在 `define.fmt()` 或 override 中设置 `parser: 'babel'` 或 `parser: 'typescript'`，可显式使用 Prettier 及其嵌入语言支持。
 
 ## 基本用法 \{#basic-usage}
 

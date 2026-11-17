@@ -17,7 +17,7 @@ const fmtOptionsPlugin = {
 
 const defaultFmtPlugins: PrettierPlugins = [swcNextPlugin, fmtOptionsPlugin];
 
-/** Selects SWC for JS/TS unless a parser or project plugin explicitly overrides it. */
+/** Selects SWC for JS/TS files and Markdown fences unless a project plugin overrides it. */
 const getPrettierPlugins = async (
   options: ResolvedFmtOptions,
   filePath: string,
@@ -47,6 +47,12 @@ const getPrettierPlugins = async (
     !options.parser &&
     /\.(?:[cm]?[jt]s|[jt]sx)$/i.test(filePath) &&
     !hasJavaScriptPlugin;
+  // cspell:ignore mkdn mdwn mkdown
+  const isMarkdown = options.parser
+    ? typeof options.parser === 'string' &&
+      /^(?:markdown|mdx|remark)$/.test(options.parser)
+    : /\.(?:md|mdx|markdown|mdown|mkdn|mkd|mdwn|mkdown|ron)$/i.test(filePath);
+  const isSwcEmbedded = isMarkdown && !hasJavaScriptPlugin;
   // Validate before Prettier can skip empty files or files without a pragma.
   // Unsupported SWC options must fail instead of silently selecting another parser.
   if (isSwcParser || isSwcDefault) {
@@ -74,7 +80,9 @@ const getPrettierPlugins = async (
     }
   }
   const defaultPlugins =
-    isSwcParser || isSwcDefault ? defaultFmtPlugins : [fmtOptionsPlugin];
+    isSwcParser || isSwcDefault || isSwcEmbedded
+      ? defaultFmtPlugins
+      : [fmtOptionsPlugin];
   const plugins =
     options.sortPackageJson === true && /(^|[/\\])package\.json$/.test(filePath)
       ? [

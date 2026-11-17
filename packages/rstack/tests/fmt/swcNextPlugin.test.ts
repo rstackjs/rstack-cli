@@ -1,5 +1,5 @@
 import { format, getFileInfo, type Options } from 'prettier';
-import { describe, expect, test } from 'rstack/test';
+import { describe, expect, rs, test } from 'rstack/test';
 import { formatFmtSource } from '../../src/fmt/format.ts';
 import { getPrettierPlugins } from '../../src/fmt/prettierPlugins.ts';
 import { swcNextPlugin } from '../../src/fmt/swcNextPlugin.ts';
@@ -46,6 +46,90 @@ test('keeps SWC enabled for plugins that do not override JavaScript parsers', as
       'example.js',
     ),
   ).resolves.toContain(swcNextPlugin);
+});
+
+test.each([
+  ['js', 'swc'],
+  ['javascript', 'swc'],
+  ['node', 'swc'],
+  ['jsx', 'swc'],
+  ['ts', 'swc-ts'],
+  ['typescript', 'swc-ts'],
+  ['tsx', 'swc-tsx'],
+  ['typescriptreact', 'swc-tsx'],
+])('formats %s Markdown fences with %s', async (language, parser) => {
+  const parse = rs.spyOn(swcNextPlugin.parsers![parser], 'parse');
+  try {
+    for (const extension of ['md', 'mdx']) {
+      const source = `# api usage\n\n\`\`\`${language}\nconst value={answer:42}\n\`\`\`\n`;
+      const request = {
+        path: `example.${extension}`,
+        options: { plugins: [await import('heading-case')] },
+      };
+      const result = await formatFmtSource(request, () => source);
+      expect(result).toMatchObject({
+        formatted: `# api usage\n\n\`\`\`${language}\nconst value = { answer: 42 };\n\`\`\`\n`,
+      });
+      expect(parse).toHaveBeenCalled();
+      parse.mockClear();
+    }
+  } finally {
+    parse.mockRestore();
+  }
+});
+
+test('preserves Markdown host behavior and formats nested fences', async () => {
+  const source = [
+    'import {a} from "a"',
+    '',
+    'export const value={answer:42}',
+    '',
+    '<Component value={1+2} />',
+    '',
+    '> ```tsx',
+    '> const view=<Component value={{a:1}}/>',
+    '> ```',
+    '',
+    '```js',
+    'const = invalid',
+    '```',
+    '',
+    '```css',
+    'a{color:red}',
+    '```',
+  ].join('\n');
+  const request = { path: 'example.mdx', options: {} };
+  const result = await formatFmtSource(request, () => source);
+  const formatted = await format(source, { parser: 'mdx' });
+  expect(result).toMatchObject({ formatted });
+  expect(await formatFmtSource(request, () => formatted)).toMatchObject({
+    formatted,
+  });
+});
+
+test('honors embeddedLanguageFormatting and project JS parsers in Markdown', async () => {
+  const source = '```js\nconst value={answer:42}\n```\n';
+  await expect(
+    formatFmtSource(
+      {
+        path: 'example.md',
+        options: { embeddedLanguageFormatting: 'off' },
+      },
+      () => source,
+    ),
+  ).resolves.toMatchObject({ formatted: source });
+  const parse = rs.spyOn(swcNextPlugin.parsers!.swc, 'parse');
+  try {
+    const options = { plugins: [await import('prettier/plugins/babel')] };
+    await expect(
+      formatFmtSource({ path: 'example.md', options }, () => source),
+    ).resolves.toMatchObject({
+      formatted: '```js\nconst value = { answer: 42 };\n```\n',
+    });
+    expect(parse).not.toHaveBeenCalled();
+  } finally {
+    parse.mockRestore();
+  }
 });
 
 test('parses JSX in JavaScript files', async () => {
