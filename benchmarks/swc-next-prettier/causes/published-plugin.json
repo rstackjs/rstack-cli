@@ -1,9 +1,0 @@
-{
-  "version": "0.7.0",
-  "tarball": "https://registry.npmjs.org/@swc-next/formatter-prettier-plugin/-/formatter-prettier-plugin-0.7.0.tgz",
-  "integrity": "sha512-r+8JPt1Il+gCG8Tof53k3ajm//8y/4gOLJEHudUg8ZPQVTgJkiVcOklzVbBQTkLOMnF4XNNHW1KRzzsUpJe5EQ==",
-  "tarballSha256": "d46eb4141b72b8f39385929c368774d445c05bec54cd0db876120bd8bd6ddceb",
-  "publishedEqualsInstalled": true,
-  "indexSha256": "faa15acc25693f0f432348e684fab99df802e040e459de9f89c075b61b540af2",
-  "sourceReference": "https://github.com/swc-project/swc-next/blob/0f36ba718361279dfaf2b4f2e9a468c2cade976d/npm/formatter-prettier-plugin/src-js/index.js"
-}

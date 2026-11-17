@@ -1,6 +1,0 @@
-{
-  "path": "e2e/cases/wasm/wasm-source-import/src/index.js",
-  "exitCode": 2,
-  "stdout": "start   Checking formatting...\n",
-  "stderr": "error   e2e/cases/wasm/wasm-source-import/src/index.js: SyntaxError: formatting import phase at 0..49 is not implemented\n> 1 | import source wasmModule from './factorial.wasm';\n    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  2 |\n  3 | async function main() {\n  4 |   const instance = await WebAssembly.instantiate(wasmModule);\n"
-}
