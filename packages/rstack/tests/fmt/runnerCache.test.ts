@@ -250,16 +250,14 @@ test('caches only plugins with stable fingerprints', async () => {
 
     writePackageJson('1.0.0');
     await run([file], 'check', cache);
-    const firstHash = (
-      await loadFmtCacheStore(cache.filePath, cacheNamespace)
-    ).get('data.fixture')?.[1];
+    const firstHash = (await loadFmtCacheStore(cache.filePath, cacheNamespace))
+      .get('data.fixture')?.[1];
     expect(firstHash).toHaveLength(cacheHashLength);
 
     writePackageJson('2.0.0');
     await run([file], 'check', cache);
-    const secondHash = (
-      await loadFmtCacheStore(cache.filePath, cacheNamespace)
-    ).get('data.fixture')?.[1];
+    const secondHash = (await loadFmtCacheStore(cache.filePath, cacheNamespace))
+      .get('data.fixture')?.[1];
     expect(secondHash).toHaveLength(cacheHashLength);
     expect(secondHash).not.toBe(firstHash);
   });

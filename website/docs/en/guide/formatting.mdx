@@ -9,10 +9,12 @@ import { PackageManagerTabs } from '@rspress/core/theme';
 Rstack CLI includes a formatter built on [Prettier](https://prettier.io/). Compared with running Prettier directly, `rs fmt` offers better performance in three ways:
 
 - **Parallel formatting**: Files are formatted concurrently in a worker pool.
-- **SWC Next parser**: The high-performance [SWC Next](https://www.npmjs.com/package/@swc-next/parser) parser is used by default for JavaScript, JSX, and TypeScript files.
+- **SWC Next formatter**: The official [SWC Next Prettier plugin](https://www.npmjs.com/package/@swc-next/formatter-prettier-plugin) is used by default for JavaScript, JSX, TypeScript, and TSX files.
 - **Persistent cache**: Content-based results let later runs skip formatting unchanged files.
 
 `rs fmt` supports Prettier options and plugins and adds built-in capabilities such as [sorting package.json fields](#sort-package-json).
+
+The SWC Next formatter is experimental, and its output can differ from Prettier. JavaScript, JSX, TypeScript, and TSX code fences in Markdown and MDX also use SWC Next. Prettier still handles the surrounding document and MDX import/export and JSX nodes. HTML, CSS, GraphQL, and other embedded languages inside JavaScript templates are not formatted, even when `embeddedLanguageFormatting` is enabled. Range formatting (any finite `rangeEnd`), pragma, and unsupported layout options produce an explicit error for SWC-formatted files. Project plugins that override JavaScript or TypeScript parsers retain precedence; other host languages, including Vue and Svelte scripts, continue using their Prettier formatters. Set `parser: 'babel'` or `parser: 'typescript'` in `define.fmt()` or an override to explicitly use Prettier and its embedded-language support.
 
 ## Basic usage
 

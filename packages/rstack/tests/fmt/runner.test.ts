@@ -23,21 +23,23 @@ const ambientModuleWithAttributes = `declare module "*" with { type: "text" } {
 }
 `;
 
-test('reports unsupported ambient module attributes without rewriting the file', async () => {
+test('formats ambient module attributes without dropping them', async () => {
   await withTempProject(async (rootPath) => {
     const filePath = path.join(rootPath, 'example.d.ts');
-    writeFileSync(filePath, ambientModuleWithAttributes);
+    writeFileSync(
+      filePath,
+      ambientModuleWithAttributes.replace(
+        'const content: string;',
+        'const content:string',
+      ),
+    );
 
     const result = await run([createFmtRequest(filePath, {})]);
 
     expect(result).toMatchObject({
-      exitCode: 2,
-      files: [{ path: filePath, status: 'error' }],
+      exitCode: 0,
+      files: [{ path: filePath, status: 'written' }],
     });
-    expect(result.files[0]).toHaveProperty(
-      'error.message',
-      'Prettier does not support formatting ambient module import attributes yet.',
-    );
     expect(readFileSync(filePath, 'utf8')).toBe(ambientModuleWithAttributes);
   });
 });

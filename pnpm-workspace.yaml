@@ -29,7 +29,7 @@ catalog:
   '@rstest/adapter-rsbuild': '~0.12.6'
   '@rstest/adapter-rslib': '~0.12.6'
   '@rstest/core': '~0.12.6'
-  '@swc-next/parser': '0.7.0'
+  '@swc-next/formatter-prettier-plugin': '0.7.0'
   '@testing-library/dom': '^10.4.2'
   '@testing-library/jest-dom': '^7.0.1'
   '@testing-library/react': '^16.3.3'
@@ -67,6 +67,11 @@ catalog:
 dedupePeers: true
 
 autoInstallPeers: false
+
+peerDependencyRules:
+  allowedVersions:
+    # Upstream publishes its pinned test version; 3.10.1 is verified locally.
+    '@swc-next/formatter-prettier-plugin@0.7.0>prettier': '3.10.1'
 
 engineStrict: true
 

@@ -77,7 +77,7 @@
     "@rslib/core": "catalog:",
     "@rslint/core": "catalog:",
     "@rstest/core": "catalog:",
-    "@swc-next/parser": "catalog:",
+    "@swc-next/formatter-prettier-plugin": "catalog:",
     "prettier": "catalog:",
     "tinypool": "catalog:"
   },

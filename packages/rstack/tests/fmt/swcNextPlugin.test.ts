@@ -1,10 +1,6 @@
-import {
-  format,
-  getFileInfo,
-  type Options,
-  type ParserOptions,
-} from 'prettier';
-import { describe, expect, test } from 'rstack/test';
+import { format, getFileInfo, type Options } from 'prettier';
+import { describe, expect, rs, test } from 'rstack/test';
+import { formatFmtSource } from '../../src/fmt/format.ts';
 import { getPrettierPlugins } from '../../src/fmt/prettierPlugins.ts';
 import { swcNextPlugin } from '../../src/fmt/swcNextPlugin.ts';
 
@@ -20,44 +16,15 @@ const formatWithSwcNext = (
       `example.${options.parser === 'swc-next' ? 'js' : 'ts'}`,
   });
 
-test('overrides the default JavaScript and TypeScript parsers', async () => {
-  expect(swcNextPlugin.languages).toBeUndefined();
-  expect(swcNextPlugin.parsers?.babel).not.toBe(
-    swcNextPlugin.parsers?.['swc-next'],
-  );
-  expect(swcNextPlugin.parsers?.typescript).toBe(
-    swcNextPlugin.parsers?.['swc-next-ts'],
-  );
-
+test.each([
+  ['js', 'swc'],
+  ['jsx', 'swc'],
+  ['ts', 'swc-ts'],
+  ['tsx', 'swc-tsx'],
+])('infers the official parser for .%s files', async (extension, parser) => {
   await expect(
-    Promise.all(
-      ['js', 'jsx', 'ts', 'tsx'].map(async (extension) =>
-        getFileInfo(`example.${extension}`, { plugins: [swcNextPlugin] }),
-      ),
-    ),
-  ).resolves.toEqual([
-    { ignored: false, inferredParser: 'babel' },
-    { ignored: false, inferredParser: 'babel' },
-    { ignored: false, inferredParser: 'typescript' },
-    { ignored: false, inferredParser: 'typescript' },
-  ]);
-});
-
-test('matches the native Babel AST root shape', async () => {
-  const parser = swcNextPlugin.parsers?.babel;
-  if (!parser) {
-    throw new Error('The Babel-compatible SWC Next parser is not registered.');
-  }
-
-  const ast = (await parser.parse('// comment\nconst value = 1', {
-    filepath: 'example.js',
-  } as ParserOptions)) as Record<string, unknown>;
-  const program = ast.program as Record<string, unknown>;
-
-  expect(ast.type).toBe('File');
-  expect(ast.comments).toHaveLength(1);
-  expect(program.type).toBe('Program');
-  expect(program.comments).toBeUndefined();
+    getFileInfo(`example.${extension}`, { plugins: [swcNextPlugin] }),
+  ).resolves.toEqual({ ignored: false, inferredParser: parser });
 });
 
 test.each(['babel', 'typescript'] as const)(
@@ -71,6 +38,99 @@ test.each(['babel', 'typescript'] as const)(
     ).resolves.not.toContain(swcNextPlugin);
   },
 );
+
+test('keeps SWC enabled for plugins that do not override JavaScript parsers', async () => {
+  await expect(
+    getPrettierPlugins(
+      { plugins: [await import('heading-case')] },
+      'example.js',
+    ),
+  ).resolves.toContain(swcNextPlugin);
+});
+
+test.each([
+  ['js', 'swc'],
+  ['javascript', 'swc'],
+  ['node', 'swc'],
+  ['jsx', 'swc'],
+  ['ts', 'swc-ts'],
+  ['typescript', 'swc-ts'],
+  ['tsx', 'swc-tsx'],
+  ['typescriptreact', 'swc-tsx'],
+])('formats %s Markdown fences with %s', async (language, parser) => {
+  const parse = rs.spyOn(swcNextPlugin.parsers![parser], 'parse');
+  try {
+    for (const extension of ['md', 'mdx']) {
+      const source = `# api usage\n\n\`\`\`${language}\nconst value={answer:42}\n\`\`\`\n`;
+      const request = {
+        path: `example.${extension}`,
+        options: { plugins: [await import('heading-case')] },
+      };
+      const result = await formatFmtSource(request, () => source);
+      expect(result).toMatchObject({
+        formatted: `# api usage\n\n\`\`\`${language}\nconst value = { answer: 42 };\n\`\`\`\n`,
+      });
+      expect(parse).toHaveBeenCalled();
+      parse.mockClear();
+    }
+  } finally {
+    parse.mockRestore();
+  }
+});
+
+test('preserves Markdown host behavior and formats nested fences', async () => {
+  const source = [
+    'import {a} from "a"',
+    '',
+    'export const value={answer:42}',
+    '',
+    '<Component value={1+2} />',
+    '',
+    '> ```tsx',
+    '> const view=<Component value={{a:1}}/>',
+    '> ```',
+    '',
+    '```js',
+    'const = invalid',
+    '```',
+    '',
+    '```css',
+    'a{color:red}',
+    '```',
+  ].join('\n');
+  const request = { path: 'example.mdx', options: {} };
+  const result = await formatFmtSource(request, () => source);
+  const formatted = await format(source, { parser: 'mdx' });
+  expect(result).toMatchObject({ formatted });
+  expect(await formatFmtSource(request, () => formatted)).toMatchObject({
+    formatted,
+  });
+});
+
+test('honors embeddedLanguageFormatting and project JS parsers in Markdown', async () => {
+  const source = '```js\nconst value={answer:42}\n```\n';
+  await expect(
+    formatFmtSource(
+      {
+        path: 'example.md',
+        options: { embeddedLanguageFormatting: 'off' },
+      },
+      () => source,
+    ),
+  ).resolves.toMatchObject({ formatted: source });
+  const parse = rs.spyOn(swcNextPlugin.parsers!.swc, 'parse');
+  try {
+    const options = { plugins: [await import('prettier/plugins/babel')] };
+    await expect(
+      formatFmtSource({ path: 'example.md', options }, () => source),
+    ).resolves.toMatchObject({
+      formatted: '```js\nconst value = { answer: 42 };\n```\n',
+    });
+    expect(parse).not.toHaveBeenCalled();
+  } finally {
+    parse.mockRestore();
+  }
+});
 
 test('parses JSX in JavaScript files', async () => {
   await expect(
@@ -107,7 +167,7 @@ test.each(['example.d.ts', 'example.d.mts', 'example.d.cts'])(
   },
 );
 
-describe("should match Prettier's postprocess behavior", () => {
+describe('formatting compatibility', () => {
   test.each([
     {
       name: 'hashbangs and unicode locations',
@@ -165,7 +225,7 @@ describe("should match Prettier's postprocess behavior", () => {
       expected:
         'const view = <Component value={{ foo: 1 }}>{item}</Component>;\n',
     },
-  ])('normalizes $name for the ESTree printer', async (fixture) => {
+  ])('formats $name', async (fixture) => {
     await expect(
       formatWithSwcNext(fixture.source, {
         filepath: fixture.filepath,
@@ -187,166 +247,83 @@ describe("should match Prettier's postprocess behavior", () => {
       expect(await formatWithSwcNext(formatted, { parser })).toBe(formatted);
     },
   );
-
-  test('matches the official hashbang AST shape', async () => {
-    const parser = swcNextPlugin.parsers?.['swc-next'];
-    if (!parser) {
-      throw new Error('The SWC Next parser is not registered.');
-    }
-
-    const options = { filepath: 'example.js' } as ParserOptions;
-    const astWithoutHashbang = (await parser.parse(
-      'const value = 1',
-      options,
-    )) as Record<string, unknown>;
-    const astWithHashbang = (await parser.parse(
-      '#!/usr/bin/env node\nconst value = 1',
-      options,
-    )) as Record<string, unknown>;
-
-    expect(Object.hasOwn(astWithoutHashbang, 'hashbang')).toBe(true);
-    expect(astWithoutHashbang.hashbang).toBeNull();
-    expect(Object.hasOwn(astWithHashbang, 'hashbang')).toBe(false);
-  });
-});
-
-test('reuses Prettier options and pragma handling', async () => {
-  await expect(
-    formatWithSwcNext('/** @format */\nconst value={answer:"yes"}', {
-      parser: 'swc-next',
-      requirePragma: true,
-      singleQuote: true,
-    }),
-  ).resolves.toBe("/** @format */\nconst value = { answer: 'yes' };\n");
-
-  await expect(
-    formatWithSwcNext('/** @noformat */\nconst value={answer:"yes"}', {
-      checkIgnorePragma: true,
-      parser: 'swc-next',
-    }),
-  ).resolves.toBe('/** @noformat */\nconst value={answer:"yes"}');
 });
 
 test.each([
-  {
-    source: '/** @prettier */\nconst value=1',
-    hasPragma: true,
-    hasIgnorePragma: false,
-  },
-  {
-    source: '/* @format */\nconst value=1',
-    hasPragma: true,
-    hasIgnorePragma: false,
-  },
-  {
-    source: '#!/usr/bin/env node\r\n/** @format */\r\nconst value=1',
-    hasPragma: true,
-    hasIgnorePragma: false,
-  },
-  {
-    source: '/**\n * @prettier\n * @noformat\n */\nconst value=1',
-    hasPragma: true,
-    hasIgnorePragma: true,
-  },
-  {
-    source: '/** @prettier @noformat */\nconst value=1',
-    hasPragma: true,
-    hasIgnorePragma: false,
-  },
-  {
-    source: '/** text @prettier */\nconst value=1',
-    hasPragma: false,
-    hasIgnorePragma: false,
-  },
-  {
-    source: '// before\n/** @prettier */\nconst value=1',
-    hasPragma: false,
-    hasIgnorePragma: false,
-  },
+  { requirePragma: true },
+  { insertPragma: true },
+  { checkIgnorePragma: true },
+  { rangeStart: 20 },
+  { rangeEnd: 20 },
+  { objectWrap: 'collapse' as const },
+  { experimentalTernaries: true },
+  { experimentalOperatorPosition: 'start' as const },
 ])(
-  'matches Prettier pragma detection for $source',
-  ({ source, hasPragma, hasIgnorePragma }) => {
-    const parser = swcNextPlugin.parsers?.['swc-next'];
-    if (!parser?.hasPragma || !parser.hasIgnorePragma) {
-      throw new Error('The SWC Next parser does not expose pragma handlers.');
-    }
-
-    expect(parser.hasPragma(source)).toBe(hasPragma);
-    expect(parser.hasIgnorePragma(source)).toBe(hasIgnorePragma);
+  'rejects unsupported SWC options instead of changing parsers: %j',
+  async (options) => {
+    await expect(
+      formatFmtSource({ path: 'example.js', options }, () => ''),
+    ).rejects.toThrow('SWCFMT');
   },
 );
 
-test('matches Prettier JavaScript location overrides', () => {
-  const parser = swcNextPlugin.parsers?.['swc-next'];
-  if (!parser) {
-    throw new Error('The SWC Next parser is not registered.');
-  }
+test.each([
+  '// a ` marker\nconst value={answer:42}',
+  'const value=`answer: ${42}`',
+  'const query = /* GraphQL */ `query{user{id name}}`',
+])('uses SWCFMT for templates and comments: %s', async (source) => {
+  const result = await formatFmtSource(
+    { path: 'example.js', options: {} },
+    () => source,
+  );
+  expect(result).toEqual({
+    status: 'formatted',
+    source,
+    formatted: await formatWithSwcNext(source, { parser: 'swc-next' }),
+  });
+});
 
-  expect(
-    parser.locStart({
-      type: 'ClassDeclaration',
-      range: [10, 80],
-      decorators: [{ type: 'Decorator', range: [2, 9] }],
-    }),
-  ).toBe(2);
+test('leaves embedded template contents unchanged unless Prettier is explicitly selected', async () => {
+  const source = 'const query = /* GraphQL */ `query{user{id name}}`';
+  const result = await formatFmtSource(
+    { path: 'example.js', options: {} },
+    () => source,
+  );
+  expect(result).toMatchObject({ formatted: `${source};\n` });
+  const explicit = await formatFmtSource(
+    { path: 'example.js', options: { parser: 'babel' } },
+    () => source,
+  );
+  expect(explicit).toMatchObject({
+    formatted: await format(source, { parser: 'babel' }),
+  });
+  expect(explicit).not.toEqual(result);
+});
 
-  expect(
-    parser.locStart({
-      type: 'ExportNamedDeclaration',
-      range: [10, 80],
-      declaration: { decorators: [{ type: 'Decorator', range: [2, 9] }] },
-    }),
-  ).toBe(2);
-
-  const endCases = [
+test('honors a project parser plugin and its embedded-language support', async () => {
+  const source = 'const query = /* GraphQL */ `query{user{id name}}`';
+  const result = await formatFmtSource(
     {
-      expected: 44,
-      node: {
-        type: 'IfStatement',
-        range: [0, 50],
-        consequent: { type: 'BlockStatement', range: [3, 20] },
-        alternate: { type: 'BlockStatement', range: [21, 44] },
+      path: 'example.js',
+      options: {
+        plugins: [await import('prettier/plugins/babel')],
+        rangeEnd: 1000,
       },
     },
-    {
-      expected: 45,
-      node: {
-        type: 'ForStatement',
-        range: [0, 50],
-        body: { type: 'BlockStatement', range: [20, 45] },
-      },
-    },
-    { expected: 15, node: { type: 'BreakStatement', range: [10, 50] } },
-    {
-      expected: 21,
-      node: {
-        type: 'BreakStatement',
-        range: [10, 50],
-        label: { type: 'Identifier', range: [16, 21] },
-      },
-    },
-    { expected: 18, node: { type: 'ContinueStatement', range: [10, 50] } },
-    { expected: 18, node: { type: 'DebuggerStatement', range: [10, 50] } },
-    {
-      expected: 22,
-      node: {
-        type: 'VariableDeclaration',
-        range: [0, 30],
-        declarations: [
-          { type: 'VariableDeclarator', range: [4, 10] },
-          { type: 'VariableDeclarator', range: [12, 22] },
-        ],
-      },
-    },
-    {
-      expected: 10,
-      node: { type: 'ExpressionStatement', range: [0, 12], __contentEnd: 10 },
-    },
-  ];
+    () => source,
+  );
+  expect(result).toMatchObject({
+    formatted: await format(source, { parser: 'babel' }),
+  });
+});
 
-  for (const { node, expected } of endCases) {
-    expect(parser.locEnd(node)).toBe(expected);
-  }
+test('reports unsupported import-source syntax instead of retrying another parser', async () => {
+  await expect(
+    formatFmtSource(
+      { path: 'example.js', options: {} },
+      () => 'import source mod from "./module.wasm";',
+    ),
+  ).rejects.toThrow('formatting import phase');
 });
 
 test('supports CommonJS source semantics for .cjs files', async () => {

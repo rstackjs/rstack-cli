@@ -67,7 +67,7 @@ export async function runStagedCLI(args: string[]): Promise<void> {
     concurrent:
       values.concurrent === undefined
         ? undefined
-        : (JSON.parse(values.concurrent) as boolean | number),
+        : JSON.parse(values.concurrent) as boolean | number,
     config: stagedConfig,
     cwd: values.cwd,
     debug: values.debug,
