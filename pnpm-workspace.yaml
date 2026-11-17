@@ -46,8 +46,7 @@ catalog:
   'lint-staged': '^17.6.0'
   'micromatch': '4.0.8'
   pkg-pr-new: 0.0.93
-  # Match the formatter plugin's exact Prettier peer dependency.
-  prettier: '3.9.9'
+  prettier: '3.10.1'
   'prettier-plugin-tailwindcss': '0.8.1'
   'prettier-plugin-svelte': '^4.1.1'
   'react': '^19.3.1'
@@ -68,6 +67,11 @@ catalog:
 dedupePeers: true
 
 autoInstallPeers: false
+
+peerDependencyRules:
+  allowedVersions:
+    # Upstream publishes its pinned test version; 3.10.1 is verified locally.
+    '@swc-next/formatter-prettier-plugin@0.7.0>prettier': '3.10.1'
 
 engineStrict: true
 
