@@ -51,7 +51,7 @@ jobs:
         if: contains(inputs.target, 'musl')
         uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
-          version: 0.14.1
+          version: 0.17.1
 
       - name: Install cargo-zigbuild
         if: contains(inputs.target, 'musl')
