@@ -211,7 +211,7 @@ catalogs:
       specifier: ~0.12.6
       version: 0.12.6
     '@swc-next/parser':
-      specifier: 0.7.0
+      specifier: ~0.7.0
       version: 0.7.0
     '@testing-library/dom':
       specifier: ^10.4.2
