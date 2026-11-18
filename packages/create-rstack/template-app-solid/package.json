@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "@rsbuild/plugin-babel": "^2.1.0",
-    "@rsbuild/plugin-solid": "^1.2.2",
+    "@rsbuild/plugin-solid": "^2.0.0",
     "@solidjs/testing-library": "^0.8.10",
     "@testing-library/jest-dom": "^7.0.1",
     "happy-dom": "^21.0.4",
