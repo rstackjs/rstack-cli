@@ -2,14 +2,8 @@
 import { define } from 'rstack';
 
 define.lib({
+  exports: true,
   syntax: 'es2023',
-  tools: {
-    rspack: {
-      experiments: {
-        runtimeMode: 'rspack',
-      },
-    },
-  },
 });
 
 define.test({

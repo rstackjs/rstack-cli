@@ -14,30 +14,12 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./config": {
-      "types": "./dist/configExports.d.ts",
-      "default": "./dist/configExports.js"
-    },
-    "./app": {
-      "types": "./dist/app.d.ts",
-      "default": "./dist/app.js"
-    },
-    "./test": {
-      "types": "./dist/test.d.ts",
-      "default": "./dist/test.js"
-    },
-    "./lib": {
-      "types": "./dist/lib.d.ts",
-      "default": "./dist/lib.js"
-    },
-    "./lint": {
-      "types": "./dist/lint.d.ts",
-      "default": "./dist/lint.js"
-    },
+    ".": "./dist/index.js",
+    "./app": "./dist/app.js",
+    "./lib": "./dist/lib.js",
+    "./lint": "./dist/lint.js",
+    "./test": "./dist/test.js",
+    "./config": "./dist/configExports.js",
     "./types": {
       "types": "./types/index.d.ts"
     },

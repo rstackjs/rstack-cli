@@ -6,6 +6,16 @@ const fullyMinifiedChunks =
   /(?:fmt(?:Lsp|Plugins)?|sortPackageJsonPlugin|staged)\.js$/;
 
 export default defineConfig({
+  exports: {
+    include: ['index', 'app', 'test', 'lib', 'lint'],
+    custom: {
+      './config': './dist/configExports.js',
+      './types': { types: './types/index.d.ts' },
+      './test/globals': { types: './types/test/globals.d.ts' },
+      './test/importMeta': { types: './types/test/importMeta.d.ts' },
+      './package.json': './package.json',
+    },
+  },
   dts: true,
   syntax: 'es2023',
   source: {
@@ -53,13 +63,6 @@ export default defineConfig({
           },
         },
       ],
-    },
-  },
-  tools: {
-    rspack: {
-      experiments: {
-        runtimeMode: 'rspack',
-      },
     },
   },
 });
