@@ -19,7 +19,6 @@
       "default": "./dist/index.js"
     }
   },
-  "types": "./dist/index.d.ts",
   "bin": {
     "create-rstack": "./bin.js"
   },
