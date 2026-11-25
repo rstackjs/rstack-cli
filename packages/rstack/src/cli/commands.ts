@@ -34,7 +34,7 @@ async function runRsbuildCLI(args: string[]): Promise<void> {
 async function runRstestCLI(args: string[]): Promise<void> {
   if (args[0] === 'init') {
     logger.error(
-      'Rstack CLI does not support "rs test init". Configure browser tests manually with define.test() in rstack.config.ts.',
+      'Rstack CLI does not support "rs test init". Configure browser tests manually with `define.test()` in your Rstack config.',
     );
     process.exitCode = 1;
     return;

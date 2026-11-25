@@ -59,6 +59,6 @@ test('directs test init users to manual browser setup', ({
   expect,
 }) => {
   expect(() => execCli('test init browser')).toThrow(
-    'Configure browser tests manually with define.test()',
+    'Configure browser tests manually with `define.test()` in your Rstack config.',
   );
 });
