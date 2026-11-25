@@ -37,7 +37,7 @@ Rstack CLI 提供面向特定领域的 Agent Skills，帮助 Coding Agent 更准
 
 [rstack-cli-docs](https://github.com/rstackjs/rstack-cli/tree/main/.agents/skills/rstack-cli-docs) Skill 帮助 Coding Agent 查阅与当前版本匹配的 Rstack CLI 命令、配置和公共 API 文档。
 
-`rstack` npm 包内置了这个 Skill。如果项目使用 pnpm 12.11.0 或更高版本，并将 `rstack` 列为直接依赖，运行 `pnpm approve` 并批准 `rstack`，即可将它链接到 Agent 的 skills 目录。
+这个 Skill 随 `rstack` npm 包一起发布。使用 pnpm 12.11.0 或更高版本安装 `rstack` 后，运行 `pnpm approve` 并选择 `rstack`。pnpm 会将 Skill 链接到项目的 Agent Skills 目录。详情见 [pnpm 的 Agent Skills 文档](https://pnpm.io/agent-skills)。
 
 也可以使用 [skills](https://www.npmjs.com/package/skills) 包安装该 Skill：
 
