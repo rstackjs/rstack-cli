@@ -5,6 +5,16 @@ packages:
 
 autoDedupe: true
 
+permissions:
+  '@rstackjs/maintainer-skills':
+    skills:
+      - create-draft-release-notes
+      - pr-creator
+      - rstack-docs-writer
+  '@rstackjs/skills':
+    skills:
+      - rspress-description-generator
+
 allowBuilds:
   core-js: false
   simple-git-hooks: false
@@ -25,6 +35,8 @@ catalog:
   '@rstackjs/doc-ui': '1.14.12'
   '@rstackjs/create-toolkit': '2.2.11'
   '@rstackjs/load-config': ^1.0.2
+  '@rstackjs/maintainer-skills': '^1.0.0'
+  '@rstackjs/skills': '^1.0.0'
   '@rstackjs/test-utils': ^1.0.0
   '@rstest/adapter-rsbuild': '~0.12.6'
   '@rstest/adapter-rslib': '~0.12.6'

@@ -17,6 +17,8 @@
     "test": "pnpm --parallel --filter \"./packages/**\" test"
   },
   "devDependencies": {
+    "@rstackjs/maintainer-skills": "catalog:",
+    "@rstackjs/skills": "catalog:",
     "@types/node": "catalog:",
     "cspell-ban-words": "catalog:",
     "heading-case": "catalog:",
