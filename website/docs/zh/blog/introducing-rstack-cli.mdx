@@ -14,3 +14,21 @@ import { BlogAuthors } from '@rstackjs/doc-ui/blog-authors';
 _2026 年 11 月 17 日_
 
 <BlogAuthors />
+
+我们很高兴地宣布 [Rstack CLI](https://github.com/rstackjs/rstack-cli) 正式发布！
+
+Rstack CLI 是一个为 JavaScript 开发者和 Agents 设计的统一命令行工具，内置开发、构建、测试、代码检查、格式化等能力，旨在简化 JavaScript 项目的开发流程，并提供统一的体验。
+
+## Rstack 的诞生
+
+回望 2022 年，为了解决字节跳动内部 webpack 项目的构建性能问题，我们开发了 [Rspack](https://rspack.rs/)，一个基于 Rust 编写的高性能打包工具，并在 2023 年初将它开源。Rspack 兼顾了性能、产物质量和迁移成本，因此很快获得了社区的关注，并逐渐被微软、OpenAI、DeepSeek 等公司采用，npm 周下载量也增长到一千多万次。
+
+随着构建性能问题得到缓解，另一个不可忽视的问题是 webpack 高昂的配置成本。在 2023 至 2024 年，我们基于 Rspack 陆续开发了 [Rsbuild](https://rsbuild.rs/)、[Rslib](https://rslib.rs/) 和 [Rspress](https://rspress.rs/)。它们将复杂的打包配置封装在工具内部，分别为应用开发、库开发和文档站点提供开箱即用的支持。
+
+随着 Agentic Coding 的流行，我们希望打造更可靠的工具，为 Agent 的开发过程建立质量约束。因此我们继续开发了构建分析工具 [Rsdoctor](https://rsdoctor.rs/)，测试框架 [Rstest](https://rstest.rs/)，以及代码检查工具 [Rslint](https://rslint.rs/)。它们能和其他工具相互配合，提供更连贯的开发体验。例如，Rstest 可以复用 Rsbuild 的配置和插件，Rslint 则内置了针对 Rstest 测试代码的 lint 规则。
+
+所有这些工具共同组成了 Rstack ——
+
+![](https://assets.rspack.rs/rstack/rstack-overview-dark-zh.png)
+
+## 从独立工具到统一 CLI

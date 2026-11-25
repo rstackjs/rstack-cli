@@ -25,6 +25,7 @@ oxfmt
 precheck
 quasis
 rsbuild
+Rsdoctor
 rslib
 rslint
 rslog
