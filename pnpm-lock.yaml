@@ -198,6 +198,12 @@ catalogs:
     '@rstackjs/load-config':
       specifier: ^1.0.2
       version: 1.0.2
+    '@rstackjs/maintainer-skills':
+      specifier: ^1.0.0
+      version: 1.0.0
+    '@rstackjs/skills':
+      specifier: ^1.0.0
+      version: 1.0.0
     '@rstackjs/test-utils':
       specifier: ^1.0.0
       version: 1.0.0
@@ -314,6 +320,12 @@ importers:
 
   .:
     devDependencies:
+      '@rstackjs/maintainer-skills':
+        specifier: 'catalog:'
+        version: 1.0.0
+      '@rstackjs/skills':
+        specifier: 'catalog:'
+        version: 1.0.0
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.6
@@ -1580,6 +1592,12 @@ packages:
     peerDependenciesMeta:
       jiti:
         optional: true
+
+  '@rstackjs/maintainer-skills@1.0.0':
+    resolution: {integrity: sha512-CipBsqUHX+hBSPiXdgUTh8sZJqhlViNw/Qmqyanceo8COisgkMSf/TD4q3F8bD0rNRZetnFVKXXf1sl1h8NJvg==}
+
+  '@rstackjs/skills@1.0.0':
+    resolution: {integrity: sha512-YwIwPqstAHJLeZNmbZ0No7v3kf9j5/WXjxua+s/GC0e8012C2Sr6vLHFYfWal0ilNGI0ndEJz7iAgbSf+vqpvA==}
 
   '@rstackjs/test-utils@1.0.0':
     resolution: {integrity: sha512-g7oEZzqwke/pRVGAsvEpML+37PDOo9BwR8nKignbtXlKmW9Cb202pRRUSVEsWG//7pnyIi+q4P7b1H/h1ianGA==}
@@ -4397,6 +4415,10 @@ snapshots:
   '@rstackjs/load-config@1.0.2(jiti@2.7.0)':
     optionalDependencies:
       jiti: 2.7.0
+
+  '@rstackjs/maintainer-skills@1.0.0': {}
+
+  '@rstackjs/skills@1.0.0': {}
 
   '@rstackjs/test-utils@1.0.0': {}
 
