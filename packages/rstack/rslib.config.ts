@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { defineConfig } from '@rslib/core';
 import prettierPkgJson from 'prettier/package.json' with { type: 'json' };
 import pkgJson from './package.json' with { type: 'json' };
@@ -40,6 +41,15 @@ export default defineConfig({
     },
   },
   output: {
+    copy: [
+      {
+        from: resolve(
+          import.meta.dirname,
+          '../../.agents/skills/rstack-cli-docs',
+        ),
+        to: resolve(import.meta.dirname, 'skills/rstack-cli-docs'),
+      },
+    ],
     // Rstack always passes an explicit config object to lint-staged, so its
     // optional YAML config loader is not used.
     externals: ['jiti', 'yaml'],

@@ -37,7 +37,9 @@ Rstack CLI provides domain-specific Agent Skills that help coding agents give mo
 
 The [rstack-cli-docs](https://github.com/rstackjs/rstack-cli/tree/main/.agents/skills/rstack-cli-docs) Skill helps coding agents consult version-matched documentation for Rstack CLI commands, configuration, and public APIs.
 
-Install it with the [skills](https://www.npmjs.com/package/skills) package:
+The `rstack` npm package includes this Skill. If your project uses pnpm 12.11.0 or later and lists `rstack` as a direct dependency, run `pnpm approve` and approve `rstack` to link the Skill into your agent's skills directory.
+
+You can also install it with the [skills](https://www.npmjs.com/package/skills) package:
 
 <PackageManagerTabs
   command="skills add rstackjs/rstack-cli --skill rstack-cli-docs"
