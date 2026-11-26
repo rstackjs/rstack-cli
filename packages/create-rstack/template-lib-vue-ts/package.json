@@ -25,12 +25,12 @@
   "devDependencies": {
     "@rsbuild/plugin-vue": "^2.0.1",
     "@testing-library/jest-dom": "^8.0.0",
-    "@types/node": "^26.6.6",
-    "@vue/test-utils": "^2.5.1",
+    "@types/node": "^26.6.10",
+    "@vue/test-utils": "^2.6.0",
     "happy-dom": "^21.0.4",
     "rstack": "^0.9.4",
     "typescript": "^6.0.3",
-    "vue": "^3.5.45",
+    "vue": "^3.5.46",
     "vue-tsc": "^3.3.14"
   },
   "peerDependencies": {
