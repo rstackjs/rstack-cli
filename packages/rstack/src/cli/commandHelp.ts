@@ -37,7 +37,6 @@ export type HelpTopic =
   | 'test watch'
   | 'test list'
   | 'test merge-reports'
-  | 'test init'
   | 'lib'
   | 'lib build'
   | 'lib inspect'
@@ -259,7 +258,6 @@ const HELP_DEFINITIONS = {
           ['watch [...filters]', 'Run tests in watch mode'],
           ['list [...filters]', 'List matching tests'],
           ['merge-reports [path]', 'Merge blob reports'],
-          ['init [project]', 'Initialize Rstest configuration'],
         ],
       },
       commandHint('test'),
@@ -335,16 +333,6 @@ const HELP_DEFINITIONS = {
           ['--cleanup', 'Remove blob reports after merging'],
           ...CONFIG_HELP_OPTIONS,
         ],
-      },
-    ],
-  },
-  'test init': {
-    usage: 'rs test init [project] [options]',
-    description: 'Initialize Rstest configuration',
-    sections: [
-      {
-        title: 'Options',
-        items: [['--yes', 'Use default options without prompts'], HELP_OPTION],
       },
     ],
   },

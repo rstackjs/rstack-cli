@@ -45,7 +45,6 @@ for (const command of [
   'test watch',
   'test list',
   'test merge-reports',
-  'test init',
 ]) {
   test(`displays ${command} help`, ({ execCli, expect }) => {
     const output = execCli(`${command} --help`);
@@ -54,3 +53,12 @@ for (const command of [
     expect(normalizeHelpOutput(output)).toMatchSnapshot();
   });
 }
+
+test('directs test init users to manual browser setup', ({
+  execCli,
+  expect,
+}) => {
+  expect(() => execCli('test init browser')).toThrow(
+    'Configure browser tests manually with `define.test()` in your Rstack config.',
+  );
+});

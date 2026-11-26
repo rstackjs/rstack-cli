@@ -1,5 +1,6 @@
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { logger } from 'rslog';
 import { CLI_CONFIG_PATH_ENV, getConfigState } from './config.ts';
 import { insertConfigArg, parseArgs, parseCliArgs } from './args.ts';
 import { hasHelpFlag, printCommandHelp } from './help.ts';
@@ -31,6 +32,14 @@ async function runRsbuildCLI(args: string[]): Promise<void> {
 }
 
 async function runRstestCLI(args: string[]): Promise<void> {
+  if (args[0] === 'init') {
+    logger.error(
+      'Rstack CLI does not support "rs test init". Configure browser tests manually with `define.test()` in your Rstack config.',
+    );
+    process.exitCode = 1;
+    return;
+  }
+
   if (hasHelpFlag(args)) {
     switch (args[0]) {
       case 'run':
@@ -41,8 +50,6 @@ async function runRstestCLI(args: string[]): Promise<void> {
         return printCommandHelp('test list');
       case 'merge-reports':
         return printCommandHelp('test merge-reports');
-      case 'init':
-        return printCommandHelp('test init');
       default:
         return printCommandHelp('test');
     }

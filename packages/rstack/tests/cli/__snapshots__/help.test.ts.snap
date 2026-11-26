@@ -226,7 +226,6 @@ Commands:
   watch [...filters]    Run tests in watch mode
   list [...filters]     List matching tests
   merge-reports [path]  Merge blob reports
-  init [project]        Initialize Rstest configuration
 
 For command-specific options, run:
   $ rs test <command> -h
@@ -239,20 +238,6 @@ Options:
   -t, --test-name-pattern <pattern>  Run tests with names matching the pattern
   -c, --config <path>                Specify Rstack config file path
   -h, --help                         Display this help message
-"
-`;
-
-exports[`displays test init help 1`] = `
-"Rstack v<version>
-
-Usage:
-  $ rs test init [project] [options]
-
-Initialize Rstest configuration
-
-Options:
-  --yes       Use default options without prompts
-  -h, --help  Display this help message
 "
 `;
 
