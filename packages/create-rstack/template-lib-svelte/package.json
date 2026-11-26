@@ -20,7 +20,7 @@
     "@rsbuild/plugin-svelte": "^2.0.1",
     "happy-dom": "^21.0.4",
     "prettier-plugin-svelte": "^4.2.0",
-    "rstack": "^0.9.4",
+    "rstack": "^0.9.5",
     "svelte": "^5.59.1"
   },
   "peerDependencies": {
