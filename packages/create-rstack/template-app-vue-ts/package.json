@@ -22,7 +22,7 @@
     "@types/node": "^26.6.10",
     "@vue/test-utils": "^2.6.0",
     "happy-dom": "^21.0.4",
-    "rstack": "^0.9.4",
+    "rstack": "^0.9.5",
     "typescript": "^6.0.3",
     "vue-tsc": "^3.3.14"
   }
