@@ -5,6 +5,11 @@
     "activeMatch": "/guide/"
   },
   {
+    "text": "Blog",
+    "link": "/blog/",
+    "activeMatch": "/blog/"
+  },
+  {
     "text": "Changelog",
     "link": "https://github.com/rstackjs/rstack-cli/releases"
   }
