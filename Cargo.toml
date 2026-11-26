@@ -8,10 +8,10 @@ license = "MIT"
 repository = "https://github.com/rstackjs/rstack-cli"
 
 [workspace.dependencies]
-ignore = { version = "0.4.34", default-features = false }
-napi = { version = "3.16.2", default-features = false, features = ["napi9"] }
-napi-build = "2.6.0"
-napi-derive = "3.7.1"
+ignore = { version = "0.4.35", default-features = false }
+napi = { version = "3.16.3", default-features = false, features = ["napi9"] }
+napi-build = "2.7.0"
+napi-derive = "3.7.2"
 pathdiff = "0.2.3"
 rstack-ignore = { path = "crates/rstack-ignore" }
 
